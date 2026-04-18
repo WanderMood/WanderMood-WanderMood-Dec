@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
+import 'package:wandermood/core/utils/places_new_photo_resolver.dart';
 
 bool isGooglePlacePhotoHttpUrl(String raw) {
   final trimmed = raw.trim();
@@ -108,8 +109,40 @@ class WmPlacePhotoNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accessible = deviceAccessibleGooglePlacePhotoUrl(src);
+
+    // Places API (New) `/media` URLs respond with a 302 to the binary image host.
+    // Following that redirect hangs forever on signed iOS release (dart:io HttpClient
+    // used by both Image.network and flutter_cache_manager). Resolve to the direct
+    // photoUri once via `?skipHttpRedirect=true`, then load via the disk cache.
+    if (isPlacesApiNewPhotoUrl(accessible)) {
+      return FutureBuilder<String>(
+        future: resolvePlacesNewPhotoUri(accessible),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return ColoredBox(
+              color: Colors.grey.shade200,
+              child: const SizedBox.expand(),
+            );
+          }
+          final resolved = (snapshot.data ?? accessible).trim();
+          return WmNetworkImage(
+            resolved.isEmpty ? accessible : resolved,
+            fit: fit,
+            width: width,
+            height: height,
+            alignment: alignment,
+            filterQuality: filterQuality,
+            errorBuilder: errorBuilder,
+            scale: scale,
+            progressIndicatorBuilder: progressIndicatorBuilder,
+          );
+        },
+      );
+    }
+
     return WmNetworkImage(
-      deviceAccessibleGooglePlacePhotoUrl(src),
+      accessible,
       fit: fit,
       width: width,
       height: height,
