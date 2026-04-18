@@ -25,7 +25,7 @@ import 'package:wandermood/features/places/presentation/widgets/place_card.dart'
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// Shared Mood Match plan — Explore-style [PlaceCard] rows + premium header.
+/// Change 6 — Shared Mood Match plan with activity reactions.
 class GroupPlanningResultScreen extends ConsumerStatefulWidget {
   const GroupPlanningResultScreen({super.key, required this.sessionId});
 
@@ -46,7 +46,13 @@ class _GroupPlanningResultScreenState
   final Set<int> _addedIndices = {};
   int? _addingIndex;
 
+  // Reactions: index → 'love' | 'skip' | 'swap'
+  final Map<int, String> _myReactions = {};
+  final Map<int, String> _theirReactions = {};
+
   late final AnimationController _header;
+
+  static const _sunset = Color(0xFFE8784A);
 
   @override
   void initState() {
@@ -89,6 +95,9 @@ class _GroupPlanningResultScreenState
       }
       await MoodMatchSessionPrefs.clear();
       if (!mounted) return;
+
+      _loadReactions(plan.planData, members);
+
       setState(() {
         _planData = plan.planData;
         _members = members;
@@ -105,26 +114,75 @@ class _GroupPlanningResultScreenState
     }
   }
 
+  void _loadReactions(Map<String, dynamic> planData, List<GroupMemberView> members) {
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final reactions = planData['reactions'] as Map<dynamic, dynamic>? ?? {};
+    _myReactions.clear();
+    _theirReactions.clear();
+    for (final entry in reactions.entries) {
+      final userId = entry.key as String;
+      final userMap = entry.value as Map<dynamic, dynamic>? ?? {};
+      final target = userId == uid ? _myReactions : _theirReactions;
+      for (final r in userMap.entries) {
+        final idx = int.tryParse(r.key.toString());
+        if (idx != null) target[idx] = r.value.toString();
+      }
+    }
+  }
+
+  void _tapReaction(int index, String reaction) {
+    HapticFeedback.selectionClick();
+    final current = _myReactions[index];
+    setState(() {
+      if (current == reaction) {
+        _myReactions.remove(index); // toggle off
+      } else {
+        _myReactions[index] = reaction;
+      }
+    });
+    // Fire-and-forget save
+    final repo = ref.read(groupPlanningRepositoryProvider);
+    repo.updatePlanReaction(
+      sessionId: widget.sessionId,
+      activityIndex: index,
+      reaction: _myReactions[index] ?? '',
+    );
+  }
+
+  bool _hasConflict(int index) {
+    final mine = _myReactions[index];
+    final theirs = _theirReactions[index];
+    if (mine == null || theirs == null) return false;
+    return mine != theirs;
+  }
+
+  String _otherName() {
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    for (final m in _members) {
+      if (m.member.userId != uid) {
+        final s = m.displayName.trim();
+        final beforeAt = s.split('@').first.trim();
+        final parts = beforeAt.split(RegExp(r'\s+'));
+        return parts.isNotEmpty ? parts.first : '?';
+      }
+    }
+    return '?';
+  }
+
   Future<void> _showAddSheet(Place place, int index) async {
     final user = Supabase.instance.client.auth.currentUser;
     final l10n = AppLocalizations.of(context)!;
     if (user == null) {
       if (mounted) {
-        showWanderMoodToast(
-          context,
-          message: l10n.myDayAddSignInRequired,
-          isError: true,
-        );
+        showWanderMoodToast(context,
+            message: l10n.myDayAddSignInRequired, isError: true);
       }
       return;
     }
 
     final selectedDate = ref.read(selectedMyDayDateProvider);
     final planningDate = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-    );
+        selectedDate.year, selectedDate.month, selectedDate.day);
 
     final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     final occupied =
@@ -135,11 +193,8 @@ class _GroupPlanningResultScreenState
 
     if (!mounted) return;
     if (occupied.length >= 3) {
-      showWanderMoodToast(
-        context,
-        message: l10n.exploreAlreadyInDayPlan,
-        isWarning: true,
-      );
+      showWanderMoodToast(context,
+          message: l10n.exploreAlreadyInDayPlan, isWarning: true);
       return;
     }
 
@@ -161,9 +216,7 @@ class _GroupPlanningResultScreenState
             startTime: startTime,
             photoSelectionSeed: 0,
           );
-          if (ok && mounted) {
-            setState(() => _addedIndices.add(index));
-          }
+          if (ok && mounted) setState(() => _addedIndices.add(index));
         },
       ),
     );
@@ -229,9 +282,7 @@ class _GroupPlanningResultScreenState
                               _error!,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
-                                color: GroupPlanningUi.dusk,
-                                fontSize: 14,
-                              ),
+                                  color: GroupPlanningUi.dusk, fontSize: 14),
                             ),
                           ),
                         )
@@ -278,10 +329,8 @@ class _GroupPlanningResultScreenState
     if (withMood.length >= 2) {
       final a = withMood[0];
       final b = withMood[1];
-      final ia =
-          a.displayName.isNotEmpty ? a.displayName[0].toUpperCase() : '?';
-      final ib =
-          b.displayName.isNotEmpty ? b.displayName[0].toUpperCase() : '?';
+      final ia = a.displayName.isNotEmpty ? a.displayName[0].toUpperCase() : '?';
+      final ib = b.displayName.isNotEmpty ? b.displayName[0].toUpperCase() : '?';
       initialsRow = '$ia + $ib';
       final ta = a.member.moodTag;
       final tb = b.member.moodTag;
@@ -298,6 +347,10 @@ class _GroupPlanningResultScreenState
       parent: _header,
       curve: Curves.easeOutCubic,
     );
+
+    final otherName = _otherName();
+    final myCount = _myReactions.length;
+    final theirCount = _theirReactions.length;
 
     return SingleChildScrollView(
       child: Column(
@@ -319,8 +372,32 @@ class _GroupPlanningResultScreenState
               ),
             ),
           ),
+          // ── Participant status bar ──────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ParticipantStatus(
+                    label: l10n.moodMatchFriendYou,
+                    reviewed: myCount,
+                    total: recs.length,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ParticipantStatus(
+                    label: otherName,
+                    reviewed: theirCount,
+                    total: recs.length,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // ── Activity cards ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
             child: Column(
               children: recs.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -331,6 +408,9 @@ class _GroupPlanningResultScreenState
                   index: index,
                 );
                 final added = _addedIndices.contains(index);
+                final myReaction = _myReactions[index];
+                final conflict = _hasConflict(index);
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -348,9 +428,7 @@ class _GroupPlanningResultScreenState
                               try {
                                 await _showAddSheet(place, index);
                               } finally {
-                                if (mounted) {
-                                  setState(() => _addingIndex = null);
-                                }
+                                if (mounted) setState(() => _addingIndex = null);
                               }
                             },
                       onTap: () => context.push('/place/${place.id}'),
@@ -368,6 +446,66 @@ class _GroupPlanningResultScreenState
                           delay: Duration(milliseconds: 80 * index),
                           curve: Curves.easeOutCubic,
                         ),
+                    // Reaction buttons
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                      child: Row(
+                        children: [
+                          _ReactionChip(
+                            emoji: '👍',
+                            label: l10n.moodMatchReactionLoveIt,
+                            active: myReaction == 'love',
+                            onTap: () => _tapReaction(index, 'love'),
+                          ),
+                          const SizedBox(width: 6),
+                          _ReactionChip(
+                            emoji: '👎',
+                            label: l10n.moodMatchReactionSkip,
+                            active: myReaction == 'skip',
+                            onTap: () => _tapReaction(index, 'skip'),
+                          ),
+                          const SizedBox(width: 6),
+                          _ReactionChip(
+                            emoji: '🔄',
+                            label: l10n.moodMatchReactionSwap,
+                            active: myReaction == 'swap',
+                            onTap: () => _tapReaction(index, 'swap'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Conflict banner
+                    if (conflict) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _sunset.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: _sunset.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.swap_horiz_rounded,
+                                size: 15, color: _sunset),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                l10n.moodMatchConflictBanner(
+                                    otherName, place.name),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: _sunset,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (added)
                       Padding(
                         padding: const EdgeInsets.only(top: 6, bottom: 12),
@@ -394,12 +532,118 @@ class _GroupPlanningResultScreenState
               }).toList(),
             ),
           ),
-          const SizedBox(height: 8),
+          // ── CTAs ───────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: GroupPlanningUi.primaryCta(
+              label: l10n.moodMatchPlanSortedCta,
+              onPressed: () =>
+                  context.go('/group-planning/day-picker/${widget.sessionId}'),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             child: GroupPlanningUi.secondaryCta(
               label: l10n.groupPlanResultBackToApp,
               onPressed: () => context.go('/main'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReactionChip extends StatelessWidget {
+  const _ReactionChip({
+    required this.emoji,
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  final String emoji;
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: active
+              ? GroupPlanningUi.forest.withValues(alpha: 0.12)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: active
+                ? GroupPlanningUi.forest.withValues(alpha: 0.4)
+                : GroupPlanningUi.cardBorder,
+            width: active ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 13)),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                color: active
+                    ? GroupPlanningUi.forest
+                    : GroupPlanningUi.stone,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ParticipantStatus extends StatelessWidget {
+  const _ParticipantStatus({
+    required this.label,
+    required this.reviewed,
+    required this.total,
+  });
+
+  final String label;
+  final int reviewed;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: GroupPlanningUi.softCardDecoration(
+        background: Colors.white,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: GroupPlanningUi.charcoal,
+              ),
+            ),
+          ),
+          Text(
+            '$reviewed/$total',
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              color: GroupPlanningUi.stone,
             ),
           ),
         ],
@@ -450,11 +694,13 @@ class _PremiumHeader extends StatelessWidget {
           const SizedBox(height: 8),
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.22)),
               ),
               child: Text(
                 blendChip,

@@ -24,6 +24,38 @@ import 'package:wandermood/core/notifications/notification_ids.dart';
 import 'package:wandermood/core/services/notification_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
+/// Returns Moody's reaction string for the selected mood tag.
+String _moodyReactionForMood(AppLocalizations l10n, String tag) {
+  switch (tag) {
+    case 'curious':
+      return l10n.moodMatchMoodyReactionCurious;
+    case 'romantic':
+      return l10n.moodMatchMoodyReactionRomantic;
+    case 'foody':
+      return l10n.moodMatchMoodyReactionFoody;
+    case 'relaxed':
+      return l10n.moodMatchMoodyReactionRelaxed;
+    case 'energetic':
+      return l10n.moodMatchMoodyReactionEnergetic;
+    case 'cozy':
+      return l10n.moodMatchMoodyReactionCozy;
+    case 'adventurous':
+      return l10n.moodMatchMoodyReactionAdventurous;
+    case 'cultural':
+      return l10n.moodMatchMoodyReactionCultural;
+    case 'social':
+      return l10n.moodMatchMoodyReactionSocial;
+    case 'excited':
+      return l10n.moodMatchMoodyReactionExcited;
+    case 'happy':
+      return l10n.moodMatchMoodyReactionHappy;
+    case 'surprise':
+      return l10n.moodMatchMoodyReactionSurprise;
+    default:
+      return l10n.moodMatchMoodyReactionHappy;
+  }
+}
+
 /// Mood Match lobby — mood grid, code, members, Moody commentary, generate.
 class GroupPlanningLobbyScreen extends ConsumerStatefulWidget {
   const GroupPlanningLobbyScreen({
@@ -325,6 +357,150 @@ class _GroupPlanningLobbyScreenState
       return l10n.moodMatchLobbyEveryoneReadySubtitle;
     }
     return l10n.moodMatchLobbyWaitingSubtitle;
+  }
+
+  // ── Change 1: Mood confirmation popup ─────────────────────────────────────
+
+  String _liveStatusText(AppLocalizations l10n) {
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    if (_members.length < 2) {
+      return l10n.groupPlanLobbyWaitingFriend;
+    }
+    for (final m in _members) {
+      if (m.member.userId != uid) {
+        if (m.member.hasSubmittedMood) {
+          return l10n.moodMatchLiveUpdateLocked(_firstName(m.displayName));
+        }
+        return l10n.moodMatchLiveUpdatePicking(_firstName(m.displayName));
+      }
+    }
+    return l10n.groupPlanLobbyWaitingFriend;
+  }
+
+  Future<void> _showMoodConfirmDialog(String moodTag) async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final emoji = kMoodMatchMoodEmoji[moodTag] ?? '✨';
+    final moodLabel = groupPlanLocalizedMoodTag(l10n, moodTag);
+    final otherName = _friendThey(l10n);
+    final reaction = _moodyReactionForMood(l10n, moodTag);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      builder: (ctx) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+            decoration: BoxDecoration(
+              color: GroupPlanningUi.cream,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 40,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.moodMatchLockInVibeTitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: GroupPlanningUi.charcoal,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8784A),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Text(
+                    '$emoji  $moodLabel',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: GroupPlanningUi.forestTint,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    reaction,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: GroupPlanningUi.forest,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    const Icon(Icons.lock_outline_rounded,
+                        size: 14, color: GroupPlanningUi.stone),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        l10n.moodMatchPrivacyNoteLockIn(otherName),
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          color: GroupPlanningUi.stone,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: GroupPlanningUi.primaryCta(
+                    label: l10n.moodMatchLockInVibeBtn,
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () => Navigator.of(ctx).pop(false),
+                  child: Text(
+                    l10n.moodMatchChangeMind,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: GroupPlanningUi.stone,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed == true) {
+      await _submitMood();
+    } else {
+      if (mounted) setState(() => _selectedMood = null);
+    }
   }
 
   Future<void> _shareLink() async {
@@ -713,9 +889,10 @@ class _GroupPlanningLobbyScreenState
                             const SizedBox(height: 14),
                             GroupPlanningMoodMatchGrid(
                               selectedTag: _selectedMood,
-                              onSelect: (tag) {
+                              onSelect: (tag) async {
                                 HapticFeedback.selectionClick();
                                 setState(() => _selectedMood = tag);
+                                await _showMoodConfirmDialog(tag);
                               },
                               enabled: !_submitting,
                             ),
@@ -728,17 +905,48 @@ class _GroupPlanningLobbyScreenState
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: GroupPlanningUi.softCardDecoration(
-                          background: const Color(0xFFFFF8E6),
+                          background: GroupPlanningUi.forestTint,
                         ),
-                        child: Text(
-                          l10n.moodMatchWhileYouWaitHint(_friendThey(l10n)),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            height: 1.35,
-                            color: GroupPlanningUi.forest,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🌀',
+                                    style: TextStyle(fontSize: 14)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    l10n.moodMatchWaitingBothBetter,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                      height: 1.35,
+                                      color: GroupPlanningUi.forest,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                _liveStatusText(l10n),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: GroupPlanningUi.charcoal,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -908,22 +1116,24 @@ class _MemberRow extends StatelessWidget {
                     color: GroupPlanningUi.charcoal,
                   ),
                 ),
-                if (locked && moodTag != null) ...[
+                if (locked) ...[
                   const SizedBox(height: 4),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: groupPlanMoodChipTint(moodTag),
-                      borderRadius: BorderRadius.circular(10),
+                  Text(
+                    l10n.moodMatchStatusMoodLocked,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: GroupPlanningUi.forest,
                     ),
-                    child: Text(
-                      '${kMoodMatchMoodEmoji[moodTag] ?? '✨'} ${groupPlanLocalizedMoodTag(l10n, moodTag)}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: GroupPlanningUi.charcoal,
-                      ),
+                  ),
+                ] else if (showTypingDots) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.moodMatchStatusPickingMood,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: GroupPlanningUi.stone,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
@@ -933,6 +1143,7 @@ class _MemberRow extends StatelessWidget {
           if (!locked)
             _PulsingBadge(
               label: '● ${l10n.moodMatchLobbyChoosingBadge}',
+              amber: true,
             )
           else
             TweenAnimationBuilder<double>(
@@ -951,7 +1162,7 @@ class _MemberRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '✓ ${l10n.moodMatchLobbyReadyBadge}',
+                  '✓ ${l10n.moodMatchBadgeLocked}',
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -1243,9 +1454,10 @@ class _TypingDots extends StatelessWidget {
 }
 
 class _PulsingBadge extends StatefulWidget {
-  const _PulsingBadge({required this.label});
+  const _PulsingBadge({required this.label, this.amber = false});
 
   final String label;
+  final bool amber;
 
   @override
   State<_PulsingBadge> createState() => _PulsingBadgeState();
@@ -1272,12 +1484,18 @@ class _PulsingBadgeState extends State<_PulsingBadge>
 
   @override
   Widget build(BuildContext context) {
+    final bg = widget.amber
+        ? const Color(0xFFFFF3CD)
+        : GroupPlanningUi.cream;
+    final fg = widget.amber
+        ? const Color(0xFF8B6900)
+        : GroupPlanningUi.stone;
     return FadeTransition(
       opacity: Tween<double>(begin: 0.45, end: 1).animate(_c),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: GroupPlanningUi.cream,
+          color: bg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: GroupPlanningUi.cardBorder),
         ),
@@ -1286,7 +1504,7 @@ class _PulsingBadgeState extends State<_PulsingBadge>
           style: GoogleFonts.poppins(
             fontSize: 10,
             fontWeight: FontWeight.w600,
-            color: GroupPlanningUi.stone,
+            color: fg,
           ),
         ),
       ),

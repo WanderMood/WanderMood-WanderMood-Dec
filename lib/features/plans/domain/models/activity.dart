@@ -44,6 +44,7 @@ class Activity {
   final List<DietaryOption> dietaryOptions;
   final List<InclusivityTag> inclusivityTags;
   int refreshCount;
+  final String? groupSessionId;
 
   Activity({
     required this.id,
@@ -71,6 +72,7 @@ class Activity {
     this.refreshCount = 0,
     this.dietaryOptions = const [],
     this.inclusivityTags = const [],
+    this.groupSessionId,
   });
 
   // Helper method to check if this activity is a restaurant or dining-related

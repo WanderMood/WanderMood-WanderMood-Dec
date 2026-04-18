@@ -60,6 +60,9 @@ import '../../features/group_planning/presentation/group_planning_result_screen.
 import '../../features/group_planning/presentation/group_planning_reveal_screen.dart';
 import '../../features/group_planning/presentation/group_planning_scan_screen.dart';
 import '../../features/group_planning/presentation/group_planning_invite_wanderer_screen.dart';
+import '../../features/group_planning/presentation/group_planning_day_picker_screen.dart';
+import '../../features/group_planning/presentation/group_planning_time_picker_screen.dart';
+import '../../features/group_planning/presentation/group_planning_confirmation_screen.dart';
 import '../../features/social/presentation/screens/create_post_screen.dart';
 import '../../features/social/presentation/screens/create_story_screen.dart';
 import '../../features/social/presentation/screens/post_detail_screen.dart';
@@ -719,6 +722,49 @@ GoRouter router(RouterRef ref) {
           return moodMatchTransitionPage<void>(
             key: state.pageKey,
             child: GroupPlanningResultScreen(sessionId: id),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/day-picker/:sessionId',
+        name: 'group-planning-day-picker',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningDayPickerScreen(sessionId: id),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/time-picker/:sessionId',
+        name: 'group-planning-time-picker',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          final date = state.uri.queryParameters['date'] ?? '';
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningTimePickerScreen(
+              sessionId: id,
+              plannedDate: date,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/group-planning/confirmation/:sessionId',
+        name: 'group-planning-confirmation',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          final date = state.uri.queryParameters['date'] ?? '';
+          final slot = state.uri.queryParameters['slot'] ?? 'morning';
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningConfirmationScreen(
+              sessionId: id,
+              scheduledDate: date,
+              timeSlot: slot,
+            ),
           );
         },
       ),

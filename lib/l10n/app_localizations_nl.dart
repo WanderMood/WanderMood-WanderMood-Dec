@@ -10941,4 +10941,250 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get moodMatchLobbyBothLockedHold =>
       'Twee vibes binnen. Geef me een seconde… 🤔';
+
+  @override
+  String get moodMatchLockInVibeTitle => 'Zet je vibe vast';
+
+  @override
+  String get moodMatchLockInVibeBtn => 'Mijn stemming vastzetten';
+
+  @override
+  String get moodMatchChangeMind => 'Toch niet';
+
+  @override
+  String moodMatchPrivacyNoteLockIn(String name) {
+    return 'Je stemming wordt alleen gedeeld als $name ook vastzet.';
+  }
+
+  @override
+  String get moodMatchMoodyReactionCurious =>
+      'Ooh, nieuwsgierige energie! Ik ben benieuwd...';
+
+  @override
+  String get moodMatchMoodyReactionRomantic =>
+      'Liefde in de lucht... *wappert zichzelf koelte toe*';
+
+  @override
+  String get moodMatchMoodyReactionFoody =>
+      'Oh! Iemand heeft honger. Ik zoek iets lekkers.';
+
+  @override
+  String get moodMatchMoodyReactionRelaxed =>
+      'Diep ademhalen. We zoeken iets chill.';
+
+  @override
+  String get moodMatchMoodyReactionEnergetic =>
+      'Let\'s GO! Hoge energie onderweg... 🔥';
+
+  @override
+  String get moodMatchMoodyReactionCozy =>
+      'Warme vibes gedetecteerd. Gezelligheid incoming...';
+
+  @override
+  String get moodMatchMoodyReactionAdventurous =>
+      'Avontuursmodus: geactiveerd! Vasthouden...';
+
+  @override
+  String get moodMatchMoodyReactionCultural =>
+      'Culturele smaak! Ik heb precies het juiste.';
+
+  @override
+  String get moodMatchMoodyReactionSocial =>
+      'Sociale vlinder! Laten we een levendige plek vinden.';
+
+  @override
+  String get moodMatchMoodyReactionExcited =>
+      'De opwinding is ECHT. Laten we het waarmaken!';
+
+  @override
+  String get moodMatchMoodyReactionHappy =>
+      'Blije vibes zijn de beste vibes 😄';
+
+  @override
+  String get moodMatchMoodyReactionSurprise =>
+      'Een verrassende stemming! Mijn favoriet.';
+
+  @override
+  String get moodMatchStatusMoodLocked => 'Stemming vergrendeld ✓';
+
+  @override
+  String get moodMatchStatusPickingMood => 'Stemming kiezen...';
+
+  @override
+  String get moodMatchStatusLockedIn => 'Vergrendeld';
+
+  @override
+  String get moodMatchBadgeLocked => 'Vergrendeld';
+
+  @override
+  String moodMatchLiveUpdateOpened(String name) {
+    return '$name heeft de app geopend';
+  }
+
+  @override
+  String moodMatchLiveUpdatePicking(String name) {
+    return '$name kiest hun stemming...';
+  }
+
+  @override
+  String moodMatchLiveUpdateLocked(String name) {
+    return '$name heeft hun stemming vergrendeld!';
+  }
+
+  @override
+  String get moodMatchWaitingBothBetter =>
+      'Beide stemmingen binnen? Nog beter samen.';
+
+  @override
+  String get moodMatchDayPickerStep => 'Stap 1 van 2 — jij beslist';
+
+  @override
+  String get moodMatchDayPickerTitle => 'Welke dag werkt voor jullie allebei?';
+
+  @override
+  String moodMatchDayPickerSubtitle(String name) {
+    return 'Jij kiest — $name mag bevestigen.';
+  }
+
+  @override
+  String get moodMatchDayPickerToday => 'Vandaag';
+
+  @override
+  String moodMatchDayPickerNote(String name) {
+    return '$name krijgt een seintje om te bevestigen.';
+  }
+
+  @override
+  String moodMatchDayPickerPreview(String ownerName, String day) {
+    return '$ownerName stelde $day voor';
+  }
+
+  @override
+  String get moodMatchDayPickerCta => 'Volgende — kies je starttijd →';
+
+  @override
+  String moodMatchGuestWaitingDay(String name) {
+    return '$name kiest een dag voor jullie allebei...';
+  }
+
+  @override
+  String moodMatchGuestConfirmDay(String day) {
+    return 'Werkt $day voor jou?';
+  }
+
+  @override
+  String get moodMatchGuestConfirmYes => 'Werkt voor mij ✓';
+
+  @override
+  String get moodMatchGuestConfirmNo => 'Andere dag voorstellen';
+
+  @override
+  String get moodMatchTimePickerStep => 'Stap 2 van 2 — alleen voor jou';
+
+  @override
+  String get moodMatchTimePickerTitle => 'Wanneer wil JIJ beginnen?';
+
+  @override
+  String moodMatchTimePickerSubtitle(String day, String name) {
+    return '$day · $name kiest ook hun eigen slot';
+  }
+
+  @override
+  String get moodMatchTimePickerMorning => 'Ochtend';
+
+  @override
+  String get moodMatchTimePickerAfternoon => 'Middag';
+
+  @override
+  String get moodMatchTimePickerEvening => 'Avond';
+
+  @override
+  String get moodMatchTimePickerMorningNote =>
+      'Begin fris en loop de drukte voor.';
+
+  @override
+  String get moodMatchTimePickerAfternoonNote =>
+      'Middagenergie — perfect voor de meeste plekken.';
+
+  @override
+  String get moodMatchTimePickerEveningNote => 'Golden hour vibes helemaal.';
+
+  @override
+  String moodMatchTimePickerWithBadge(String name) {
+    return 'Jij en $name plannen dit samen 💕';
+  }
+
+  @override
+  String get moodMatchTimePickerCta => 'Toevoegen aan Mijn Dag';
+
+  @override
+  String moodMatchTimePickerOtherNote(String name) {
+    return '$name kiest zijn/haar eigen slot apart';
+  }
+
+  @override
+  String get moodMatchResultTag => 'MATCH RESULTAAT';
+
+  @override
+  String get moodMatchResultCompatibility => 'Compatibiliteit';
+
+  @override
+  String get moodMatchFriendYou => 'Jij';
+
+  @override
+  String get moodMatchReactionLoveIt => 'Geweldig';
+
+  @override
+  String get moodMatchReactionSkip => 'Overslaan';
+
+  @override
+  String get moodMatchReactionSwap => 'Wisselen';
+
+  @override
+  String get moodMatchConflictBadge => 'Conflict';
+
+  @override
+  String moodMatchConflictBanner(String name, String place) {
+    return '$name stelde $place voor in de plaats';
+  }
+
+  @override
+  String get moodMatchConflictKeep => 'Origineel houden';
+
+  @override
+  String moodMatchConflictAccept(String name) {
+    return 'Keuze van $name accepteren';
+  }
+
+  @override
+  String get moodMatchPlanSortedCta => 'Plan klaar → Kies je dag';
+
+  @override
+  String get moodMatchConfirmTitle => 'Toegevoegd aan jouw dag';
+
+  @override
+  String moodMatchConfirmSubtitle(String day, String slot) {
+    return '$day · $slot start';
+  }
+
+  @override
+  String moodMatchConfirmOtherNote(String name) {
+    return '$name krijgt een seintje om hun slot te kiezen.';
+  }
+
+  @override
+  String moodMatchConfirmOtherStatus(String name) {
+    return '$name — Op de hoogte, kiest starttijd';
+  }
+
+  @override
+  String get moodMatchConfirmViewMyDay => 'Bekijk Mijn Dag';
+
+  @override
+  String get moodMatchConfirmBackToPlan => '← Terug naar plan';
+
+  @override
+  String moodMatchWithBadge(String name) {
+    return 'Met $name 💕';
+  }
 }

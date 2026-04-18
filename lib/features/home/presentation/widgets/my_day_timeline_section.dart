@@ -451,6 +451,28 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                               color: _kWmStone,
                             ),
                           ),
+                          if (activity.rawData['groupSessionId'] != null) ...[
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF0F5),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: const Color(0xFFE8B4C4)),
+                              ),
+                              child: Text(
+                                l10n.moodMatchWithBadge(
+                                    l10n.moodMatchFriendThey),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFB5375E),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

@@ -158,6 +158,7 @@ Map<String, dynamic> _activityToRawData(Activity activity) {
     'price': activity.price ?? 0.0,
     'rating': activity.rating,
     'placeId': activity.placeId,
+    'groupSessionId': activity.groupSessionId,
   };
 }
 

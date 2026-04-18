@@ -10,6 +10,7 @@ class GroupSessionRow {
     required this.expiresAt,
     required this.createdAt,
     required this.updatedAt,
+    this.plannedDate,
   });
 
   final String id;
@@ -21,6 +22,7 @@ class GroupSessionRow {
   final DateTime expiresAt;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? plannedDate; // YYYY-MM-DD, written by owner in day picker
 
   factory GroupSessionRow.fromMap(Map<String, dynamic> map) {
     return GroupSessionRow(
@@ -33,6 +35,7 @@ class GroupSessionRow {
       expiresAt: DateTime.parse(map['expires_at'] as String),
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
+      plannedDate: map['planned_date'] as String?,
     );
   }
 }

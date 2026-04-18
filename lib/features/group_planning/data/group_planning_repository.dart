@@ -279,6 +279,120 @@ class GroupPlanningRepository {
     }
   }
 
+  /// Write the planned date (YYYY-MM-DD) chosen by the OWNER to group_sessions.
+  Future<void> writePlannedDate(String sessionId, String plannedDate) async {
+    await _client.from('group_sessions').update({
+      'planned_date': plannedDate,
+      'updated_at': MoodyClock.now().toUtc().toIso8601String(),
+    }).eq('id', sessionId);
+  }
+
+  /// Send a realtime planUpdate event to another participant (used for day_proposed).
+  Future<void> sendPlanUpdateEvent({
+    required String targetUserId,
+    required String sessionId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      await _client.rpc(
+        'send_realtime_notification',
+        params: {
+          'target_user_id': targetUserId,
+          'event_type': 'planUpdate',
+          'event_title': 'Mood Match update',
+          'event_message': 'Plan update from your match',
+          'event_data': {
+            'session_id': sessionId,
+            ...payload,
+          },
+          'source_user_id': uid,
+          'related_post_id': null,
+          'priority_level': 3,
+        },
+      );
+    } catch (e) {
+      debugPrint('sendPlanUpdateEvent: $e');
+    }
+  }
+
+  /// Save scheduled activities for a group session (time picker save).
+  Future<void> saveGroupScheduledActivities({
+    required String sessionId,
+    required String scheduledDate,
+    required String timeSlot,
+    required List<Map<String, dynamic>> activities,
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw Exception('Not signed in');
+
+    // Calculate start times based on slot
+    final slotHour = switch (timeSlot) {
+      'morning' => 9,
+      'afternoon' => 12,
+      'evening' => 17,
+      _ => 12,
+    };
+
+    var currentMinute = slotHour * 60;
+    final rows = <Map<String, dynamic>>[];
+    for (final a in activities) {
+      final durationMin = (a['duration_minutes'] as num?)?.toInt() ?? 60;
+      final h = currentMinute ~/ 60;
+      final m = currentMinute % 60;
+      final startTime =
+          '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:00';
+      rows.add({
+        'user_id': uid,
+        'place_id': a['place_id']?.toString() ?? '',
+        'place_name': a['name']?.toString() ?? '',
+        'scheduled_date': scheduledDate,
+        'start_time': startTime,
+        'duration_minutes': durationMin,
+        'group_session_id': sessionId,
+        'time_slot': timeSlot,
+      });
+      currentMinute += durationMin + 30; // 30 min buffer between activities
+    }
+
+    if (rows.isEmpty) return;
+    try {
+      await _client.from('scheduled_activities').insert(rows);
+    } on PostgrestException catch (e) {
+      if (e.code != '23505') rethrow;
+    }
+  }
+
+  /// Optimistically save a single reaction into group_plans.plan_data['reactions'][uid][index].
+  Future<void> updatePlanReaction({
+    required String sessionId,
+    required int activityIndex,
+    required String reaction, // 'love' | 'skip' | 'swap'
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return;
+    final plan = await fetchPlan(sessionId);
+    if (plan == null) return;
+    final planData = Map<String, dynamic>.from(plan.planData);
+    final reactions = Map<String, dynamic>.from(
+      planData['reactions'] is Map ? planData['reactions'] as Map : {},
+    );
+    final userReactions = Map<String, dynamic>.from(
+      reactions[uid] is Map ? reactions[uid] as Map : {},
+    );
+    userReactions['$activityIndex'] = reaction;
+    reactions[uid] = userReactions;
+    planData['reactions'] = reactions;
+    try {
+      await _client
+          .from('group_plans')
+          .update({'plan_data': planData}).eq('session_id', sessionId);
+    } catch (e) {
+      debugPrint('updatePlanReaction: $e');
+    }
+  }
+
   /// Username substring search for inviting someone already on WanderMood.
   Future<List<ProfileInviteSearchRow>> searchProfilesByUsernameForInvite(
     String query, {

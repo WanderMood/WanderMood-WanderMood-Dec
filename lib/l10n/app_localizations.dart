@@ -19178,6 +19178,396 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got both vibes. Give me a second… 🤔'**
   String get moodMatchLobbyBothLockedHold;
+
+  /// No description provided for @moodMatchLockInVibeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock in your vibe'**
+  String get moodMatchLockInVibeTitle;
+
+  /// No description provided for @moodMatchLockInVibeBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock my mood'**
+  String get moodMatchLockInVibeBtn;
+
+  /// No description provided for @moodMatchChangeMind.
+  ///
+  /// In en, this message translates to:
+  /// **'Change my mind'**
+  String get moodMatchChangeMind;
+
+  /// No description provided for @moodMatchPrivacyNoteLockIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mood is only shared once {name} locks in too.'**
+  String moodMatchPrivacyNoteLockIn(String name);
+
+  /// No description provided for @moodMatchMoodyReactionCurious.
+  ///
+  /// In en, this message translates to:
+  /// **'Ooh, curious energy! I like where this is going...'**
+  String get moodMatchMoodyReactionCurious;
+
+  /// No description provided for @moodMatchMoodyReactionRomantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Love is in the air... *fans self*'**
+  String get moodMatchMoodyReactionRomantic;
+
+  /// No description provided for @moodMatchMoodyReactionFoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Oh! Someone\'s hungry. I\'ll find you something delicious.'**
+  String get moodMatchMoodyReactionFoody;
+
+  /// No description provided for @moodMatchMoodyReactionRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep breath. We\'re finding you something chill.'**
+  String get moodMatchMoodyReactionRelaxed;
+
+  /// No description provided for @moodMatchMoodyReactionEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s GO! High energy incoming... 🔥'**
+  String get moodMatchMoodyReactionEnergetic;
+
+  /// No description provided for @moodMatchMoodyReactionCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm vibes detected. Bringing the comfort...'**
+  String get moodMatchMoodyReactionCozy;
+
+  /// No description provided for @moodMatchMoodyReactionAdventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure mode: activated! Hold on tight...'**
+  String get moodMatchMoodyReactionAdventurous;
+
+  /// No description provided for @moodMatchMoodyReactionCultural.
+  ///
+  /// In en, this message translates to:
+  /// **'A taste for culture! I\'ve got just the thing.'**
+  String get moodMatchMoodyReactionCultural;
+
+  /// No description provided for @moodMatchMoodyReactionSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Social butterfly! Let\'s find a buzzing spot.'**
+  String get moodMatchMoodyReactionSocial;
+
+  /// No description provided for @moodMatchMoodyReactionExcited.
+  ///
+  /// In en, this message translates to:
+  /// **'The excitement is REAL. Let\'s make it happen!'**
+  String get moodMatchMoodyReactionExcited;
+
+  /// No description provided for @moodMatchMoodyReactionHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy vibes are the best vibes 😄'**
+  String get moodMatchMoodyReactionHappy;
+
+  /// No description provided for @moodMatchMoodyReactionSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'A surprise mood! My favorite kind.'**
+  String get moodMatchMoodyReactionSurprise;
+
+  /// No description provided for @moodMatchStatusMoodLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood locked ✓'**
+  String get moodMatchStatusMoodLocked;
+
+  /// No description provided for @moodMatchStatusPickingMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Picking a mood...'**
+  String get moodMatchStatusPickingMood;
+
+  /// No description provided for @moodMatchStatusLockedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked in'**
+  String get moodMatchStatusLockedIn;
+
+  /// No description provided for @moodMatchBadgeLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked in'**
+  String get moodMatchBadgeLocked;
+
+  /// No description provided for @moodMatchLiveUpdateOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} just opened the app'**
+  String moodMatchLiveUpdateOpened(String name);
+
+  /// No description provided for @moodMatchLiveUpdatePicking.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is picking their mood...'**
+  String moodMatchLiveUpdatePicking(String name);
+
+  /// No description provided for @moodMatchLiveUpdateLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} locked in their mood!'**
+  String moodMatchLiveUpdateLocked(String name);
+
+  /// No description provided for @moodMatchWaitingBothBetter.
+  ///
+  /// In en, this message translates to:
+  /// **'Both moods in? Even better together.'**
+  String get moodMatchWaitingBothBetter;
+
+  /// No description provided for @moodMatchDayPickerStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 2 — you decide'**
+  String get moodMatchDayPickerStep;
+
+  /// No description provided for @moodMatchDayPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which day works for you both?'**
+  String get moodMatchDayPickerTitle;
+
+  /// No description provided for @moodMatchDayPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You choose — {name} gets to confirm.'**
+  String moodMatchDayPickerSubtitle(String name);
+
+  /// No description provided for @moodMatchDayPickerToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get moodMatchDayPickerToday;
+
+  /// No description provided for @moodMatchDayPickerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will get a nudge to confirm.'**
+  String moodMatchDayPickerNote(String name);
+
+  /// No description provided for @moodMatchDayPickerPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'{ownerName} suggested {day}'**
+  String moodMatchDayPickerPreview(String ownerName, String day);
+
+  /// No description provided for @moodMatchDayPickerCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Next — pick your start time →'**
+  String get moodMatchDayPickerCta;
+
+  /// No description provided for @moodMatchGuestWaitingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is picking a day for you both...'**
+  String moodMatchGuestWaitingDay(String name);
+
+  /// No description provided for @moodMatchGuestConfirmDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Works for {day}?'**
+  String moodMatchGuestConfirmDay(String day);
+
+  /// No description provided for @moodMatchGuestConfirmYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Works for me ✓'**
+  String get moodMatchGuestConfirmYes;
+
+  /// No description provided for @moodMatchGuestConfirmNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest another day'**
+  String get moodMatchGuestConfirmNo;
+
+  /// No description provided for @moodMatchTimePickerStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 2 — just for you'**
+  String get moodMatchTimePickerStep;
+
+  /// No description provided for @moodMatchTimePickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When do YOU want to start?'**
+  String get moodMatchTimePickerTitle;
+
+  /// No description provided for @moodMatchTimePickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} · {name} picks their own slot too'**
+  String moodMatchTimePickerSubtitle(String day, String name);
+
+  /// No description provided for @moodMatchTimePickerMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get moodMatchTimePickerMorning;
+
+  /// No description provided for @moodMatchTimePickerAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get moodMatchTimePickerAfternoon;
+
+  /// No description provided for @moodMatchTimePickerEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get moodMatchTimePickerEvening;
+
+  /// No description provided for @moodMatchTimePickerMorningNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Start fresh and beat the crowds.'**
+  String get moodMatchTimePickerMorningNote;
+
+  /// No description provided for @moodMatchTimePickerAfternoonNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Midday energy — perfect for most spots.'**
+  String get moodMatchTimePickerAfternoonNote;
+
+  /// No description provided for @moodMatchTimePickerEveningNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Golden hour vibes all the way.'**
+  String get moodMatchTimePickerEveningNote;
+
+  /// No description provided for @moodMatchTimePickerWithBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'You and {name} are planning this together 💕'**
+  String moodMatchTimePickerWithBadge(String name);
+
+  /// No description provided for @moodMatchTimePickerCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day'**
+  String get moodMatchTimePickerCta;
+
+  /// No description provided for @moodMatchTimePickerOtherNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will pick their own slot separately'**
+  String moodMatchTimePickerOtherNote(String name);
+
+  /// No description provided for @moodMatchResultTag.
+  ///
+  /// In en, this message translates to:
+  /// **'MATCH RESULT'**
+  String get moodMatchResultTag;
+
+  /// No description provided for @moodMatchResultCompatibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Compatibility'**
+  String get moodMatchResultCompatibility;
+
+  /// No description provided for @moodMatchFriendYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get moodMatchFriendYou;
+
+  /// No description provided for @moodMatchReactionLoveIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Love it'**
+  String get moodMatchReactionLoveIt;
+
+  /// No description provided for @moodMatchReactionSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get moodMatchReactionSkip;
+
+  /// No description provided for @moodMatchReactionSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap'**
+  String get moodMatchReactionSwap;
+
+  /// No description provided for @moodMatchConflictBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflict'**
+  String get moodMatchConflictBadge;
+
+  /// No description provided for @moodMatchConflictBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} proposed {place} instead'**
+  String moodMatchConflictBanner(String name, String place);
+
+  /// No description provided for @moodMatchConflictKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep original'**
+  String get moodMatchConflictKeep;
+
+  /// No description provided for @moodMatchConflictAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept {name}\'s pick'**
+  String moodMatchConflictAccept(String name);
+
+  /// No description provided for @moodMatchPlanSortedCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan sorted → Pick your day'**
+  String get moodMatchPlanSortedCta;
+
+  /// No description provided for @moodMatchConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your day'**
+  String get moodMatchConfirmTitle;
+
+  /// No description provided for @moodMatchConfirmSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} · {slot} start'**
+  String moodMatchConfirmSubtitle(String day, String slot);
+
+  /// No description provided for @moodMatchConfirmOtherNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} gets a nudge to pick their slot.'**
+  String moodMatchConfirmOtherNote(String name);
+
+  /// No description provided for @moodMatchConfirmOtherStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — Notified, picking their start time'**
+  String moodMatchConfirmOtherStatus(String name);
+
+  /// No description provided for @moodMatchConfirmViewMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'View My Day'**
+  String get moodMatchConfirmViewMyDay;
+
+  /// No description provided for @moodMatchConfirmBackToPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'← Back to plan'**
+  String get moodMatchConfirmBackToPlan;
+
+  /// No description provided for @moodMatchWithBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'With {name} 💕'**
+  String moodMatchWithBadge(String name);
 }
 
 class _AppLocalizationsDelegate

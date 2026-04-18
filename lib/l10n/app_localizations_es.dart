@@ -11012,4 +11012,250 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get moodMatchLobbyBothLockedHold =>
       'Dos estados de ánimo listos. Dame un segundo… 🤔';
+
+  @override
+  String get moodMatchLockInVibeTitle => 'Confirma tu vibra';
+
+  @override
+  String get moodMatchLockInVibeBtn => 'Confirmar mi estado';
+
+  @override
+  String get moodMatchChangeMind => 'He cambiado de opinión';
+
+  @override
+  String moodMatchPrivacyNoteLockIn(String name) {
+    return 'Tu estado solo se comparte cuando $name también confirme.';
+  }
+
+  @override
+  String get moodMatchMoodyReactionCurious =>
+      '¡Ooh, energía curiosa! Me gusta...';
+
+  @override
+  String get moodMatchMoodyReactionRomantic => 'El amor está en el aire...';
+
+  @override
+  String get moodMatchMoodyReactionFoody =>
+      '¡Oh! Alguien tiene hambre. Encontraré algo delicioso.';
+
+  @override
+  String get moodMatchMoodyReactionRelaxed =>
+      'Respira hondo. Buscamos algo tranquilo.';
+
+  @override
+  String get moodMatchMoodyReactionEnergetic =>
+      '¡Vamos! Mucha energía llegando... 🔥';
+
+  @override
+  String get moodMatchMoodyReactionCozy =>
+      'Vibraciones cálidas detectadas. Comodidad en camino...';
+
+  @override
+  String get moodMatchMoodyReactionAdventurous =>
+      'Modo aventura: ¡activado! Agárrate...';
+
+  @override
+  String get moodMatchMoodyReactionCultural =>
+      '¡Gusto cultural! Tengo justo lo que necesitas.';
+
+  @override
+  String get moodMatchMoodyReactionSocial =>
+      '¡Mariposa social! Busquemos un lugar animado.';
+
+  @override
+  String get moodMatchMoodyReactionExcited =>
+      '¡La emoción es REAL. ¡Hagámoslo realidad!';
+
+  @override
+  String get moodMatchMoodyReactionHappy =>
+      'Las vibraciones felices son las mejores 😄';
+
+  @override
+  String get moodMatchMoodyReactionSurprise =>
+      '¡Un estado sorpresa! Mi favorito.';
+
+  @override
+  String get moodMatchStatusMoodLocked => 'Estado confirmado ✓';
+
+  @override
+  String get moodMatchStatusPickingMood => 'Eligiendo estado...';
+
+  @override
+  String get moodMatchStatusLockedIn => 'Confirmado';
+
+  @override
+  String get moodMatchBadgeLocked => 'Confirmado';
+
+  @override
+  String moodMatchLiveUpdateOpened(String name) {
+    return '$name acaba de abrir la app';
+  }
+
+  @override
+  String moodMatchLiveUpdatePicking(String name) {
+    return '$name está eligiendo su estado...';
+  }
+
+  @override
+  String moodMatchLiveUpdateLocked(String name) {
+    return '¡$name confirmó su estado!';
+  }
+
+  @override
+  String get moodMatchWaitingBothBetter =>
+      '¿Los dos estados listos? Mejor juntos.';
+
+  @override
+  String get moodMatchDayPickerStep => 'Paso 1 de 2 — tú decides';
+
+  @override
+  String get moodMatchDayPickerTitle => '¿Qué día les viene bien a los dos?';
+
+  @override
+  String moodMatchDayPickerSubtitle(String name) {
+    return 'Tú eliges — $name puede confirmar.';
+  }
+
+  @override
+  String get moodMatchDayPickerToday => 'Hoy';
+
+  @override
+  String moodMatchDayPickerNote(String name) {
+    return '$name recibirá un aviso para confirmar.';
+  }
+
+  @override
+  String moodMatchDayPickerPreview(String ownerName, String day) {
+    return '$ownerName sugirió $day';
+  }
+
+  @override
+  String get moodMatchDayPickerCta => 'Siguiente — elige tu hora de inicio →';
+
+  @override
+  String moodMatchGuestWaitingDay(String name) {
+    return '$name está eligiendo un día para los dos...';
+  }
+
+  @override
+  String moodMatchGuestConfirmDay(String day) {
+    return '¿Te viene bien $day?';
+  }
+
+  @override
+  String get moodMatchGuestConfirmYes => 'Me viene bien ✓';
+
+  @override
+  String get moodMatchGuestConfirmNo => 'Sugerir otro día';
+
+  @override
+  String get moodMatchTimePickerStep => 'Paso 2 de 2 — solo para ti';
+
+  @override
+  String get moodMatchTimePickerTitle => '¿Cuándo quieres TÚ empezar?';
+
+  @override
+  String moodMatchTimePickerSubtitle(String day, String name) {
+    return '$day · $name también elige su turno';
+  }
+
+  @override
+  String get moodMatchTimePickerMorning => 'Mañana';
+
+  @override
+  String get moodMatchTimePickerAfternoon => 'Tarde';
+
+  @override
+  String get moodMatchTimePickerEvening => 'Noche';
+
+  @override
+  String get moodMatchTimePickerMorningNote =>
+      'Empieza fresco y evita la multitud.';
+
+  @override
+  String get moodMatchTimePickerAfternoonNote =>
+      'Energía de mediodía — perfecto para la mayoría.';
+
+  @override
+  String get moodMatchTimePickerEveningNote =>
+      'Vibras de hora dorada todo el camino.';
+
+  @override
+  String moodMatchTimePickerWithBadge(String name) {
+    return 'Tú y $name están planeando esto juntos 💕';
+  }
+
+  @override
+  String get moodMatchTimePickerCta => 'Añadir a Mi Día';
+
+  @override
+  String moodMatchTimePickerOtherNote(String name) {
+    return '$name elegirá su propio turno por separado';
+  }
+
+  @override
+  String get moodMatchResultTag => 'RESULTADO DEL MATCH';
+
+  @override
+  String get moodMatchResultCompatibility => 'Compatibilidad';
+
+  @override
+  String get moodMatchFriendYou => 'Tú';
+
+  @override
+  String get moodMatchReactionLoveIt => 'Me encanta';
+
+  @override
+  String get moodMatchReactionSkip => 'Saltar';
+
+  @override
+  String get moodMatchReactionSwap => 'Cambiar';
+
+  @override
+  String get moodMatchConflictBadge => 'Conflicto';
+
+  @override
+  String moodMatchConflictBanner(String name, String place) {
+    return '$name propuso $place en su lugar';
+  }
+
+  @override
+  String get moodMatchConflictKeep => 'Mantener original';
+
+  @override
+  String moodMatchConflictAccept(String name) {
+    return 'Aceptar elección de $name';
+  }
+
+  @override
+  String get moodMatchPlanSortedCta => 'Plan listo → Elige tu día';
+
+  @override
+  String get moodMatchConfirmTitle => 'Añadido a tu día';
+
+  @override
+  String moodMatchConfirmSubtitle(String day, String slot) {
+    return '$day · inicio $slot';
+  }
+
+  @override
+  String moodMatchConfirmOtherNote(String name) {
+    return '$name recibirá un aviso para elegir su turno.';
+  }
+
+  @override
+  String moodMatchConfirmOtherStatus(String name) {
+    return '$name — Notificado, eligiendo hora de inicio';
+  }
+
+  @override
+  String get moodMatchConfirmViewMyDay => 'Ver Mi Día';
+
+  @override
+  String get moodMatchConfirmBackToPlan => '← Volver al plan';
+
+  @override
+  String moodMatchWithBadge(String name) {
+    return 'Con $name 💕';
+  }
 }

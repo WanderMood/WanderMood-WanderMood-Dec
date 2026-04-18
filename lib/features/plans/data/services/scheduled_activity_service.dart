@@ -323,6 +323,7 @@ class ScheduledActivityService {
       rating: (json['rating'] as num?)?.toDouble() ?? 4.5,
       isPaid: paymentType != PaymentType.free,
       placeId: json['place_id'] as String?,
+      groupSessionId: json['group_session_id'] as String?,
     );
   }
   

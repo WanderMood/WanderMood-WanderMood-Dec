@@ -17,7 +17,7 @@ import 'package:wandermood/features/group_planning/presentation/share_sheet_orig
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// Emotional payoff between lobby and shared plan.
+/// Change 5 — Match result reveal. Emotional payoff between lobby and shared plan.
 class GroupPlanningRevealScreen extends ConsumerStatefulWidget {
   const GroupPlanningRevealScreen({super.key, required this.sessionId});
 
@@ -40,10 +40,9 @@ class _GroupPlanningRevealScreenState
   final GlobalKey _shareKey = GlobalKey();
 
   static const _bg = Color(0xFF0F0E0C);
-  static const _mint = Color(0xFF5DCAA5);
+  static const _sunset = Color(0xFFE8784A);
 
-  /// Total timeline: phase4 ends at 2000 + 350 ms.
-  static const double _totalMs = 2350;
+  static const double _totalMs = 2600;
 
   static double _phase(double tMs, double startMs, double durationMs) {
     if (durationMs <= 0) return 1;
@@ -57,7 +56,7 @@ class _GroupPlanningRevealScreenState
     super.initState();
     _master = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2350),
+      duration: const Duration(milliseconds: 2600),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
@@ -125,7 +124,7 @@ class _GroupPlanningRevealScreenState
             height: 28,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              color: _mint.withValues(alpha: 0.9),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ),
@@ -186,14 +185,20 @@ class _GroupPlanningRevealScreenState
           animation: _master,
           builder: (context, _) {
             final tMs = _master.value * _totalMs;
-            // Phase 1: 0–500 ms · Phase 2: 600–1500 · Phase 3: 1500–1900 · Phase 4: 2000–2350
+            // Phase 1: 0–500ms  — mood bubbles slide in
+            // Phase 2: 500–1100ms — tag + title + subtitle fade up
+            // Phase 3: 1100–1800ms — compat bar + Moody bubble
+            // Phase 4: 2000–2600ms — CTA slides up
             final p1 = _phase(tMs, 0, 500);
-            final p2 = _phase(tMs, 600, 900);
-            final p3 = _phase(tMs, 1500, 400);
-            final p4 = _phase(tMs, 2000, 350);
+            final p2 = _phase(tMs, 500, 600);
+            final p3 = _phase(tMs, 1100, 700);
+            final p4 = _phase(tMs, 2000, 600);
 
-            final curve1 = Curves.easeOutCubic.transform(p1);
             final ease = Curves.easeOutCubic;
+            final c1 = ease.transform(p1);
+            final c2 = ease.transform(p2);
+            final c3 = ease.transform(p3);
+            final c4 = ease.transform(p4);
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -208,90 +213,146 @@ class _GroupPlanningRevealScreenState
                     ),
                   ),
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (a != null &&
-                            b != null &&
-                            tagA != null &&
-                            tagB != null) ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Transform.translate(
-                                  offset: Offset(
-                                    ease.transform(1 - curve1) * -80,
-                                    0,
-                                  ),
-                                  child: Opacity(
-                                    opacity: curve1,
-                                    child: _MoodBubble(
-                                      emoji: groupPlanMoodEmoji(tagA),
-                                      mood:
-                                          groupPlanLocalizedMoodTag(l10n, tagA),
-                                      name: _firstName(a),
-                                      color: groupPlanMoodChipTint(tagA),
-                                    ),
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 8),
+                          // ── MATCH RESULT tag ──────────────────────────────
+                          Opacity(
+                            opacity: c2,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - c2) * 12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _sunset.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                      color: _sunset.withValues(alpha: 0.35)),
+                                ),
+                                child: Text(
+                                  l10n.moodMatchResultTag,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.4,
+                                    color: _sunset,
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 6),
-                                child: Opacity(
-                                  opacity: (p1 * 1.2).clamp(0.0, 1.0),
-                                  child: Text(
-                                    '+',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white54,
-                                    ),
-                                  ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // ── Title: moodyMessage ────────────────────────────
+                          Opacity(
+                            opacity: c2,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - c2) * 16),
+                              child: Text(
+                                moodyText,
+                                textAlign: TextAlign.center,
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  height: 1.3,
                                 ),
                               ),
-                              Expanded(
-                                child: Transform.translate(
-                                  offset: Offset(
-                                    ease.transform(1 - curve1) * 80,
-                                    0,
-                                  ),
-                                  child: Opacity(
-                                    opacity: curve1,
-                                    child: _MoodBubble(
-                                      emoji: groupPlanMoodEmoji(tagB),
-                                      mood:
-                                          groupPlanLocalizedMoodTag(l10n, tagB),
-                                      name: _firstName(b),
-                                      color: groupPlanMoodChipTint(tagB),
-                                    ),
-                                  ),
-                                ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          // ── Subtitle: scoreLabel ───────────────────────────
+                          Opacity(
+                            opacity: c2,
+                            child: Text(
+                              scoreLabel,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.white54,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
+                            ),
                           ),
                           const SizedBox(height: 28),
-                        ],
-                        _ScoreRing(
-                          progress: ease.transform(p2),
-                          score: score,
-                          countT: ease.transform(p2),
-                          mint: _mint,
-                          label: scoreLabel,
-                          labelOpacity: ease.transform(p2),
-                        ),
-                        SizedBox(
-                          height: 20 + 24 * ease.transform(p3),
-                        ),
-                        Opacity(
-                          opacity: ease.transform(p3),
-                          child: Transform.translate(
-                            offset: Offset(
-                              0,
-                              (1 - ease.transform(p3)) * 28,
+                          // ── Two mood bubbles ───────────────────────────────
+                          if (a != null &&
+                              b != null &&
+                              tagA != null &&
+                              tagB != null)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Transform.translate(
+                                    offset: Offset((1 - c1) * -80, 0),
+                                    child: Opacity(
+                                      opacity: c1,
+                                      child: _MoodBubble(
+                                        emoji: groupPlanMoodEmoji(tagA),
+                                        mood: groupPlanLocalizedMoodTag(
+                                            l10n, tagA),
+                                        name: _firstName(a),
+                                        color: groupPlanMoodChipTint(tagA),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Opacity(
+                                    opacity: (p1 * 1.4).clamp(0.0, 1.0),
+                                    child: Text(
+                                      '+',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white38,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Transform.translate(
+                                    offset: Offset((1 - c1) * 80, 0),
+                                    child: Opacity(
+                                      opacity: c1,
+                                      child: _MoodBubble(
+                                        emoji: groupPlanMoodEmoji(tagB),
+                                        mood: groupPlanLocalizedMoodTag(
+                                            l10n, tagB),
+                                        name: _firstName(b),
+                                        color: groupPlanMoodChipTint(tagB),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: Transform.scale(
-                              scale: 0.85 + 0.15 * ease.transform(p3),
+                          const SizedBox(height: 28),
+                          // ── Compatibility bar ──────────────────────────────
+                          Opacity(
+                            opacity: c3,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - c3) * 20),
+                              child: _CompatBar(
+                                progress: c3,
+                                score: score,
+                                label: l10n.moodMatchResultCompatibility,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // ── Moody chat bubble ──────────────────────────────
+                          Opacity(
+                            opacity: c3,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - c3) * 20),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -301,17 +362,16 @@ class _GroupPlanningRevealScreenState
                                     child: Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.08),
+                                        color: Colors.white.withValues(alpha: 0.08),
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: Text(
                                         moodyText,
-                                        textAlign: TextAlign.center,
+                                        textAlign: TextAlign.left,
                                         style: GoogleFonts.poppins(
-                                          fontSize: 13,
+                                          fontSize: 12,
                                           fontStyle: FontStyle.italic,
-                                          height: 1.4,
+                                          height: 1.45,
                                           color: Colors.white
                                               .withValues(alpha: 0.75),
                                         ),
@@ -322,14 +382,16 @@ class _GroupPlanningRevealScreenState
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                        ],
+                      ),
                     ),
                   ),
+                  // ── CTA ───────────────────────────────────────────────────
                   Transform.translate(
-                    offset: Offset(0, (1 - ease.transform(p4)) * 40),
+                    offset: Offset(0, (1 - c4) * 40),
                     child: Opacity(
-                      opacity: ease.transform(p4),
+                      opacity: c4,
                       child: Column(
                         children: [
                           SizedBox(
@@ -463,104 +525,72 @@ class _MoodBubble extends StatelessWidget {
   }
 }
 
-class _ScoreRing extends StatelessWidget {
-  const _ScoreRing({
+class _CompatBar extends StatelessWidget {
+  const _CompatBar({
     required this.progress,
     required this.score,
-    required this.countT,
-    required this.mint,
     required this.label,
-    required this.labelOpacity,
   });
 
   final double progress;
   final int score;
-  final double countT;
-  final Color mint;
   final String label;
-  final double labelOpacity;
 
   @override
   Widget build(BuildContext context) {
-    final shown = (score * countT).round().clamp(0, score);
-    return SizedBox(
-      width: 160,
-      height: 160,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: const Size(160, 160),
-            painter: _RingPainter(
-              progress: progress,
-              color: mint,
-            ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$shown',
-                style: GoogleFonts.poppins(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  height: 1,
-                ),
+    final fill = ((score / 100) * progress).clamp(0.0, 1.0);
+    final shown = (score * progress).round().clamp(0, score);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.white60,
+                letterSpacing: 0.5,
               ),
-              Opacity(
-                opacity: labelOpacity,
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white60,
+            ),
+            Text(
+              '$shown%',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: SizedBox(
+            height: 6,
+            child: Stack(
+              children: [
+                Container(color: Colors.white.withValues(alpha: 0.12)),
+                FractionallySizedBox(
+                  widthFactor: fill,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF5DCAA5),
+                          GroupPlanningUi.forest,
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter({required this.progress, required this.color});
-
-  final double progress;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = 8.0;
-    final rect = Offset.zero & size;
-    final center = rect.center;
-    final radius = (size.shortestSide - stroke) / 2;
-    final bg = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke;
-    canvas.drawCircle(center, radius, bg);
-    final fg = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.round;
-    final sweep = 1.75 * 3.141592653589793 * progress;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -3.141592653589793 / 2,
-      sweep,
-      false,
-      fg,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _RingPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.color != color;
 }
