@@ -32,6 +32,7 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
+import 'package:wandermood/core/utils/place_gallery_merge.dart';
 import 'package:wandermood/core/utils/place_type_formatter.dart';
 
 /// WanderMood v2 — Place detail (SCREEN 8)
