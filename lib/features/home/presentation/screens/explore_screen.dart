@@ -1072,10 +1072,27 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  /// Opens place detail with light haptic — same cache + route as before.
-  void _openPlaceFromExplore(Place place) {
+  /// Opens place detail — caches the **same** photo URLs the list card resolved.
+  ///
+  /// [PlaceCard] renders images via [PlacesService.resolveExploreCardPhotos] inside
+  /// a [FutureBuilder], but the parent still holds the raw [Place] from Moody (often
+  /// `photos` empty for `google_*` ids). We only called [cachePlaceObject] with that
+  /// raw model, so [PlaceDetailScreen] read an empty `photos` list while the card had
+  /// just shown enriched URLs — especially visible on TestFlight when the detail
+  /// unified-fetch path differs or fails. Await the same resolver, merge, then push.
+  Future<void> _openPlaceFromExplore(Place place) async {
     HapticFeedback.lightImpact();
-    ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
+    final notifier = ref.read(placesServiceProvider.notifier);
+    final resolved = await notifier.resolveExploreCardPhotos(place);
+    final merged = PlacesService.mergeUniquePhotoUrls(
+      place.photos,
+      resolved,
+      maxPhotos: 10,
+    );
+    final enriched =
+        merged.isEmpty ? place : place.copyWith(photos: merged);
+    notifier.cachePlaceObject(enriched);
+    if (!mounted) return;
     context.push('/place/${place.id}');
   }
 
@@ -2257,7 +2274,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   userLocation: ul,
                   cityName: currentCity,
                   photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-                  onTap: () => _openPlaceFromExplore(place),
+                  onTap: () => unawaited(_openPlaceFromExplore(place)),
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
                 ).animate().fadeIn(
                     duration: 300.ms,
@@ -2280,7 +2297,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
                   showAddToMyDayButton: true,
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
-                  onTap: () => _openPlaceFromExplore(place),
+                  onTap: () => unawaited(_openPlaceFromExplore(place)),
                 ).animate().fadeIn(
                     duration: 300.ms,
                     delay: Duration(milliseconds: index * 50));
@@ -3908,7 +3925,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               context: context,
               place: place,
               photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-              onViewFullPlace: () => _openPlaceFromExplore(place),
+              onViewFullPlace: () => unawaited(_openPlaceFromExplore(place)),
               onAddToMyDay: () {
                 unawaited(_showAddToMyDaySheet(place));
               },

@@ -31,6 +31,8 @@ import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
+import 'package:wandermood/core/utils/place_type_formatter.dart';
 
 /// WanderMood v2 — Place detail (SCREEN 8)
 const Color _pdWmWhite = Color(0xFFFFFFFF);
@@ -70,9 +72,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   Future<List<String>>? _cachedMoodyTipsFuture; // Cache AI tips Future
   String? _cachedPlaceIdForTips; // Track which place the tips are for
   bool _isInitialized = false; // Track if widget has been initialized to prevent rebuild loops
-  /// One enrichment pass per place id (post-frame + rebuilds would otherwise re-invoke).
-  final Set<String> _heroPhotoEnrichAttempted = {};
-  bool _isEnrichingPhotos = false;
+  /// Single resolved gallery for hero, Foto's tab, gallery strip, fullscreen (deduped, max 10).
+  List<String> _unifiedDetailPhotos = [];
+  bool _unifiedDetailPhotosLoading = false;
+  bool _unifiedDetailPhotosResolutionComplete = false;
+  String? _unifiedPhotosResolvedPlaceId;
+  String? _unifiedDetailPhotosInflightForPlaceId;
   final Set<String> _descriptionEnrichAttempted = {};
   String? _enrichedWebsite;
   String? _enrichedPhone;
@@ -110,8 +115,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       }
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
-        body: _buildPlaceDetail(memoryPlace),
-        bottomNavigationBar: _buildBottomActionBar(memoryPlace),
+        body: _buildPlaceDetail(_placeForDetailBody(memoryPlace)),
+        bottomNavigationBar: _buildBottomActionBar(_placeForDetailBody(memoryPlace)),
       );
     }
 
@@ -143,7 +148,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               _cachedPlace = place;
               _syncResolvedPlace(place);
               if (kDebugMode) debugPrint('✅ Place found in Edge Function cache');
-              return _buildPlaceDetail(place);
+              return _buildPlaceDetail(_placeForDetailBody(place));
             } catch (e) {
               // Place not found in Edge Function cache - always attempt direct fetch fallback.
               if (kDebugMode) {
@@ -165,7 +170,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     final place = snapshot.data!;
                     _cachedPlace = place;
                     _syncResolvedPlace(place);
-                    return _buildPlaceDetail(place);
+                    return _buildPlaceDetail(_placeForDetailBody(place));
                   }
                   return _buildErrorState(Exception(l10n.placeDetailNotFound));
                 },
@@ -192,7 +197,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       _cachedPlace = place;
       _hasAttemptedReviewFetch = false;
       _realReviews = [];
-      _heroPhotoEnrichAttempted.clear();
+      _unifiedDetailPhotos = [];
+      _unifiedDetailPhotosLoading = false;
+      _unifiedDetailPhotosResolutionComplete = false;
+      _unifiedPhotosResolvedPlaceId = null;
+      _unifiedDetailPhotosInflightForPlaceId = null;
       _descriptionEnrichAttempted.clear();
       _enrichedWebsite = null;
       _enrichedPhone = null;
@@ -206,44 +215,180 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _cachedPlace == null) return;
-      _maybeEnrichHeroPhotos(_cachedPlace!);
+      _ensureUnifiedDetailPhotos(_cachedPlace!);
       _maybeEnrichDescription(_cachedPlace!);
     });
   }
 
-  bool _samePhotoList(List<String> a, List<String> b) {
-    if (identical(a, b)) return true;
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
+  /// Prefer [_cachedPlace] when it matches the same id so photo merges / unified
+  /// resolution are visible (memory path used to pass a stale [memoryPlace]).
+  Place _placeForDetailBody(Place candidate) {
+    final c = _cachedPlace;
+    if (c != null && c.id == candidate.id) return c;
+    return candidate;
   }
 
-  /// Fetches canonical Google photo URLs so the hero matches the Photos tab even when
-  /// the hub cache held empty, stale, or non-loadable URLs.
-  Future<void> _maybeEnrichHeroPhotos(Place place) async {
-    if (!_isGoogleBackedPlace(place.id)) return;
-    if (_heroPhotoEnrichAttempted.contains(place.id)) return;
-    _heroPhotoEnrichAttempted.add(place.id);
-    if (place.photos.isEmpty && mounted) {
-      setState(() => _isEnrichingPhotos = true);
+  /// Interim: [place.photos] until unified resolution completes; then the same
+  /// merged list for hero, Foto's tab, strip, and fullscreen.
+  List<String> _displayPhotosForDetail(Place place) {
+    if (_unifiedDetailPhotosResolutionComplete &&
+        _unifiedPhotosResolvedPlaceId == place.id) {
+      return _unifiedDetailPhotos;
     }
+    return place.photos;
+  }
+
+  Future<List<String>> _resolveUnifiedDetailPhotos(Place place) async {
     try {
-      final urls = await ref.read(placesServiceProvider.notifier).fetchPhotoUrlsForGooglePlace(place.id);
-      if (!mounted || _cachedPlace?.id != place.id) return;
-      final merged = urls.isNotEmpty
-          ? PlacesService.mergeUniquePhotoUrls(urls, place.photos, maxPhotos: 10)
-          : place.photos.take(10).toList();
-      setState(() {
-        if (!_samePhotoList(merged, _cachedPlace!.photos)) {
-          _cachedPlace = _cachedPlace!.copyWith(photos: merged);
-          _currentPlace = _cachedPlace;
+      // 1. Card / cache order first (legacy /place/photo URLs that already work).
+      var photos = place.photos.take(10).toList();
+
+      // 2. Append legacy Details photo URLs only when the card did not already ship
+      // a multi-image Places v1 gallery. Merging v1 + legacy repeats the same frames
+      // (different URL strings for the same bitmap) and fills Foto's with duplicates.
+      final hasMultiV1Gallery =
+          photos.length >= 2 && photos.any(isPlacesApiNewPhotoMediaUrl);
+      if (place.id.isNotEmpty && _isGoogleBackedPlace(place.id) && !hasMultiV1Gallery) {
+        try {
+          final urls = await ref
+              .read(placesServiceProvider.notifier)
+              .fetchPhotoUrlsForGooglePlace(place.id);
+          if (urls.isNotEmpty) {
+            photos = PlacesService.mergeUniquePhotoUrls(
+              photos,
+              urls,
+              maxPhotos: 10,
+            );
+          }
+        } catch (e) {
+          debugPrint(
+            '📷 place_detail: fetchPhotoUrlsForGooglePlace failed for '
+            '${place.id}: $e',
+          );
         }
-        _isEnrichingPhotos = false;
+      }
+
+      // 3. Last-resort rescue: still empty (e.g. deep-link / saved-place id
+      // that doesn't match the google heuristic but DOES resolve via the
+      // existing direct-fetch path). Reuse [_fetchPlaceDirectly] so the hero
+      // does not stay grey just because the Place arrived without photos.
+      if (photos.isEmpty) {
+        try {
+          final fetched = await _fetchPlaceDirectly(place.id);
+          if (fetched.photos.isNotEmpty) {
+            photos = fetched.photos.take(10).toList();
+            if (kDebugMode) {
+              debugPrint(
+                '📷 place_detail: rescued ${photos.length} photo(s) via '
+                '_fetchPlaceDirectly for non-Google id ${place.id}',
+              );
+            }
+          }
+        } catch (e) {
+          debugPrint(
+            '📷 place_detail: rescue _fetchPlaceDirectly failed for '
+            '${place.id}: $e',
+          );
+        }
+      }
+
+      // Collapse exact + semantic dupes; strip repeats of the hero frame (v1 vs legacy).
+      var merged = PlacesService.mergeUniquePhotoUrls(photos, [], maxPhotos: 10);
+      merged = dedupeRepeatedHeroIdentity(merged);
+      return PlacesService.mergeUniquePhotoUrls(merged, [], maxPhotos: 10);
+    } catch (e) {
+      debugPrint('📷 place_detail: error resolving unified detail photos: $e');
+      final fb = PlacesService.mergeUniquePhotoUrls(place.photos, [], maxPhotos: 10);
+      return dedupeRepeatedHeroIdentity(fb);
+    }
+  }
+
+  /// One async pass: merges [place.photos] + Places API gallery, updates state
+  /// and [_cachedPlace].photos so every surface reads the same list.
+  Future<void> _ensureUnifiedDetailPhotos(Place place) async {
+    if (!mounted) return;
+    if (_unifiedPhotosResolvedPlaceId == place.id &&
+        _unifiedDetailPhotosResolutionComplete) {
+      return;
+    }
+    if (_unifiedDetailPhotosInflightForPlaceId == place.id) {
+      return;
+    }
+    _unifiedDetailPhotosInflightForPlaceId = place.id;
+
+    if (kDebugMode) {
+      debugPrint(
+        '📷 place_detail[${place.id}]: unified photos START '
+        'initialPlacePhotos.len=${place.photos.length}',
+      );
+    }
+
+    setState(() {
+      _unifiedDetailPhotosLoading = true;
+      if (_unifiedPhotosResolvedPlaceId != place.id) {
+        _unifiedDetailPhotosResolutionComplete = false;
+        _unifiedDetailPhotos = [];
+      }
+    });
+
+    try {
+      var merged = await _resolveUnifiedDetailPhotos(place);
+      // If enrichment failed but the tapped card / cache already had URLs, keep them
+      // (Explore list can show resolver-backed photos while unified merge returned []).
+      if (merged.isEmpty && place.photos.isNotEmpty) {
+        merged = place.photos.take(10).toList();
+      }
+      if (!mounted || _cachedPlace?.id != place.id) return;
+      setState(() {
+        _unifiedDetailPhotos = merged;
+        _unifiedDetailPhotosResolutionComplete = true;
+        _unifiedDetailPhotosLoading = false;
+        _unifiedPhotosResolvedPlaceId = place.id;
+        _cachedPlace = _cachedPlace!.copyWith(photos: merged);
+        _currentPlace = _cachedPlace;
+        if (merged.isEmpty) {
+          _currentPhotoIndex = 0;
+        } else if (_currentPhotoIndex >= merged.length) {
+          _currentPhotoIndex = 0;
+        }
       });
-    } catch (_) {
-      if (mounted) setState(() => _isEnrichingPhotos = false);
+      // Warm the disk cache for the whole resolved gallery so swiping the hero
+      // carousel (and opening Foto's / fullscreen) is instant. Fire-and-forget,
+      // deduped, no UI side effects — the rendering path is unchanged.
+      prefetchPlacePhotos(merged);
+      if (kDebugMode) {
+        debugPrint(
+          '📷 place_detail[${place.id}]: unified photos DONE '
+          'resolvedLen=${merged.length} heroAndFotosUseSameList=true '
+          'prefetchScheduled=${merged.length}',
+        );
+      }
+    } catch (e) {
+      if (!mounted || _cachedPlace?.id != place.id) return;
+      final fallback = place.photos.take(10).toList();
+      setState(() {
+        _unifiedDetailPhotos = fallback;
+        _unifiedDetailPhotosResolutionComplete = true;
+        _unifiedDetailPhotosLoading = false;
+        _unifiedPhotosResolvedPlaceId = place.id;
+        _cachedPlace = _cachedPlace!.copyWith(photos: fallback);
+        _currentPlace = _cachedPlace;
+        if (fallback.isEmpty) {
+          _currentPhotoIndex = 0;
+        } else if (_currentPhotoIndex >= fallback.length) {
+          _currentPhotoIndex = 0;
+        }
+      });
+      if (kDebugMode) {
+        debugPrint(
+          '📷 place_detail[${place.id}]: unified photos ERROR -> fallback '
+          'len=${fallback.length} $e',
+        );
+      }
+    } finally {
+      if (_unifiedDetailPhotosInflightForPlaceId == place.id) {
+        _unifiedDetailPhotosInflightForPlaceId = null;
+      }
     }
   }
 
@@ -437,9 +582,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   }
 
   Widget _buildPhotoCarousel(Place place, AppLocalizations l10n) {
-    if (place.photos.isEmpty) {
-      if (_isEnrichingPhotos) {
-        // Shimmer-style placeholder while photos are loading from the Places API.
+    final photos = _displayPhotosForDetail(place);
+    if (kDebugMode) {
+      debugPrint(
+        '📷 place_detail HERO placeId=${place.id} displayPhotos.len=${photos.length} '
+        'unifiedComplete=$_unifiedDetailPhotosResolutionComplete '
+        'unifiedLen=${_unifiedDetailPhotos.length}',
+      );
+    }
+
+    if (photos.isEmpty) {
+      if (_unifiedDetailPhotosLoading) {
+        // Same loading path as Foto's tab while the unified list is resolving.
         return Container(
           color: const Color(0xFFE0E4E8),
           child: Center(
@@ -485,11 +639,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onHorizontalDragEnd: place.photos.length < 2
+      onHorizontalDragEnd: photos.length < 2
           ? null
           : (details) {
               final v = details.primaryVelocity ?? 0;
-              if (v < -280 && _currentPhotoIndex < place.photos.length - 1) {
+              if (v < -280 && _currentPhotoIndex < photos.length - 1) {
                 _photoController.nextPage(
                   duration: const Duration(milliseconds: 280),
                   curve: Curves.easeOutCubic,
@@ -502,21 +656,21 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               }
             },
       child: Stack(
-      key: ValueKey<int>(place.photos.length),
+      key: ValueKey<int>(photos.length),
       children: [
         PageView.builder(
           controller: _photoController,
           physics: const NeverScrollableScrollPhysics(),
           onPageChanged: (index) => setState(() => _currentPhotoIndex = index),
-          itemCount: place.photos.length,
+          itemCount: photos.length,
           itemBuilder: (context, index) {
-            final photoUrl = place.photos[index].trim();
+            final photoUrl = photos[index].trim();
             if (!place.isAsset && photoUrl.isEmpty) {
               return _buildImageFallback();
             }
             return place.isAsset
                 ? Image.asset(
-                    place.photos[index],
+                    photos[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
                   )
@@ -524,6 +678,23 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     photoUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
+                    progressIndicatorBuilder: (context, url, progress) {
+                      return Container(
+                        color: const Color(0xFFE0E4E8),
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            value: progress.progress,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF2A6049),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   );
           },
         ),
@@ -642,7 +813,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ),
           ),
         ),
-        if (place.photos.length > 1) ...[
+        if (photos.length > 1) ...[
           IgnorePointer(
             child: Positioned(
             bottom: 80,
@@ -650,7 +821,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(place.photos.length, (index) {
+              children: List.generate(photos.length, (index) {
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   width: 8,
@@ -1028,7 +1199,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       case 'beauty salon':
         return l10n.placeCategoryCulture;
       default:
-        return l10n.placeCategorySpot;
+        return formatPlaceType(rawType, languageCode: l10n.localeName);
     }
   }
 
@@ -1853,25 +2024,22 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildImageCarousel(Place place) {
     final l10n = AppLocalizations.of(context)!;
-    return FutureBuilder<List<String>>(
-      future: _getMorePlacePhotos(place),
-      builder: (context, snapshot) {
-        List<String> allImages = [];
-        
-        if (snapshot.hasData) {
-          allImages.addAll(snapshot.data!);
-        } else {
-          // Add existing photos while loading more
-          allImages.addAll(place.photos);
-        }
-        
-        // Always ensure we have at least some images
-        if (allImages.isEmpty) {
-          allImages = [
-      'assets/images/fallbacks/default.jpg',
-      'assets/images/fallbacks/default_place.jpg',
-    ];
-        }
+    final raw = _displayPhotosForDetail(place);
+    if (kDebugMode) {
+      debugPrint(
+        '📷 place_detail STRIP placeId=${place.id} displayPhotos.len=${raw.length} '
+        'sameUnifiedListAsHero=true',
+      );
+    }
+    var allImages = List<String>.from(raw);
+    if (allImages.isEmpty) {
+      allImages = [
+        'assets/images/fallbacks/default.jpg',
+        'assets/images/fallbacks/default_place.jpg',
+      ];
+    }
+    final showStripSpinner =
+        _unifiedDetailPhotosLoading && raw.isEmpty && !place.isAsset;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1886,7 +2054,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             color: Colors.black87,
           ),
                 ),
-                if (snapshot.connectionState == ConnectionState.waiting) ...[
+                if (showStripSpinner) ...[
                   const SizedBox(width: 8),
                   SizedBox(
                     width: 12,
@@ -1974,30 +2142,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ),
       ],
     );
-      },
-    );
-  }
-
-  /// Gallery under "Foto's": up to 10 photos via the same details pipeline as Explore cards.
-  Future<List<String>> _getMorePlacePhotos(Place place) async {
-    try {
-      if (place.id.isNotEmpty && place.id.startsWith('google_')) {
-        final urls = await ref
-            .read(placesServiceProvider.notifier)
-            .fetchPhotoUrlsForGooglePlace(place.id);
-        if (urls.isNotEmpty) {
-          return PlacesService.mergeUniquePhotoUrls(
-            urls,
-            place.photos,
-            maxPhotos: 10,
-          );
-        }
-      }
-      return place.photos.take(10).toList();
-    } catch (e) {
-      debugPrint('Error fetching additional photos: $e');
-      return place.photos.take(10).toList();
-    }
   }
 
   /// Rich info card shown between Moody tips and Opening Hours.
@@ -2626,61 +2770,84 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildPhotosTab(Place place) {
     final l10n = AppLocalizations.of(context)!;
-    // Same merged URL list as the gallery strip (hero enrichment + details API).
-    return FutureBuilder<List<String>>(
-      future: _getMorePlacePhotos(place),
-      builder: (context, snapshot) {
-        final urls = (snapshot.hasData && snapshot.data!.isNotEmpty)
-            ? snapshot.data!
-            : place.photos;
-        if (urls.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.photo_library_outlined,
-                  size: 64,
-                  color: Colors.grey[400],
+    final urls = _displayPhotosForDetail(place);
+    if (kDebugMode) {
+      debugPrint(
+        '📷 place_detail FOTOS_TAB placeId=${place.id} displayPhotos.len=${urls.length} '
+        'sameUnifiedListAsHero=true',
+      );
+    }
+    if (urls.isEmpty) {
+      if (_unifiedDetailPhotosLoading) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                width: 40,
+                height: 40,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.placeDetailNoPhotos,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
-          itemCount: urls.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () => _showFullScreenPhoto(urls, index, place.isAsset),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: place.isAsset
-                    ? Image.asset(
-                        urls[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildImageFallback(),
-                      )
-                    : WmPlacePhotoNetworkImage(
-                        urls[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildImageFallback(),
-                      ),
               ),
-            );
-          },
+              const SizedBox(height: 16),
+              Text(
+                l10n.placeDetailLoadingPhotos,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.photo_library_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.placeDetailNoPhotos,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: urls.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () => _showFullScreenPhoto(urls, index, place.isAsset),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: place.isAsset
+                ? Image.asset(
+                    urls[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildImageFallback(),
+                  )
+                : WmPlacePhotoNetworkImage(
+                    urls[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildImageFallback(),
+                  ),
+          ),
         );
       },
     );
