@@ -1,0 +1,14 @@
+---
+description: Supabase Edge Functions — no silent deploys; share diffs first; user merges/deploys
+alwaysApply: true
+---
+
+# Supabase Edge Functions — deploy workflow
+
+When a task would require **deploying** any **Supabase Edge Function** under `supabase/functions/` (including **`moody`**, **`places`**, **`weather`**, **`delete-user`**, **`wandermood_ai`**, **`api-monitor`**, or any other function in this repo):
+
+1. **Do not** run `supabase functions deploy <name>` (or bulk deploy) yourself as the default action, and do not assume production should be updated immediately.
+2. **Share the changed code with the user first**: list edited paths under `supabase/functions/`, show the diff or the important hunks, and summarize what will change in production.
+3. The **user merges and deploys** (or delegates deploy) so git and the Supabase project stay in sync and nothing is overwritten unexpectedly.
+
+If the user **explicitly** asks you to deploy from this machine, confirm the **function name(s)**, **project ref**, and that they want a live deploy despite this workflow.

@@ -1,4 +1,5 @@
 import 'package:wandermood/core/utils/canonical_communication_style.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Maps stored `communication_style` (onboarding or profile prefs) to Mood Match keys.
@@ -108,4 +109,61 @@ String moodMatchScoreBucketLabel(AppLocalizations l10n, int score) {
   if (score >= 65) return l10n.moodMatchScoreLabelGoodBalance;
   if (score >= 50) return l10n.moodMatchScoreLabelInteresting;
   return l10n.moodMatchScoreLabelCreative;
+}
+
+String moodMatchPlanBuildingMessage(AppLocalizations l10n) =>
+    l10n.moodMatchHubPendingBuilding;
+
+String moodMatchMatchLoadingAppBarTitle(AppLocalizations l10n) =>
+    l10n.moodMatchMatchLoadingAppBar;
+
+String moodMatchPlanBuildingButtonLabel(AppLocalizations l10n) =>
+    l10n.moodMatchPlanBuildButton;
+
+String moodMatchFeelQuestionForNow(AppLocalizations l10n) {
+  final h = MoodyClock.now().hour;
+  if (h < 12) return l10n.moodMatchFeelQuestionMorning;
+  if (h < 17) return l10n.moodMatchFeelQuestionAfternoon;
+  if (h < 21) return l10n.moodMatchFeelQuestionEvening;
+  return l10n.moodMatchFeelQuestionLate;
+}
+
+String moodMatchWaitingPreviewHeadline(
+  AppLocalizations l10n, {
+  required String friendFirstName,
+  required bool locked,
+}) {
+  if (locked) return l10n.moodMatchWaitingPreviewHeadlineGeneric;
+  final n = friendFirstName.trim();
+  if (n.isEmpty) return l10n.moodMatchWaitingPreviewHeadlineGeneric;
+  return l10n.moodMatchWaitingPreviewHeadlineNamed(n);
+}
+
+String moodMatchPlanResultMoodyLine(
+  AppLocalizations l10n, {
+  required String sessionId,
+  required String guestName,
+  required String commStyle,
+  String? backendOverride,
+}) {
+  final t = backendOverride?.trim();
+  if (t != null && t.isNotEmpty) return t;
+  final name = guestName.trim().isEmpty ? 'your match' : guestName.trim();
+  final i = (sessionId + commStyle).hashCode.abs() % 4;
+  switch (i) {
+    case 0:
+      return l10n.moodMatchPlanResultMoodyV1(name);
+    case 1:
+      return l10n.moodMatchPlanResultMoodyV2(name);
+    case 2:
+      return l10n.moodMatchPlanResultMoodyV3(name);
+    default:
+      return l10n.moodMatchPlanResultMoodyV4(name);
+  }
+}
+
+String moodMatchResultHeroMoodyTeaser(String full) {
+  final t = full.trim();
+  if (t.length <= 96) return t;
+  return '${t.substring(0, 93)}…';
 }

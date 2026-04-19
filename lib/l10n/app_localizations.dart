@@ -1631,7 +1631,7 @@ abstract class AppLocalizations {
   /// No description provided for @demoMoodyResponseRomantic.
   ///
   /// In en, this message translates to:
-  /// **'A romantic day? I\'ve got you 💕'**
+  /// **'A romantic day? I\'ve got you.'**
   String get demoMoodyResponseRomantic;
 
   /// No description provided for @demoMoodyResponseCultural.
@@ -6773,7 +6773,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodHubMoodyThinking.
   ///
   /// In en, this message translates to:
-  /// **'Moody is thinking...'**
+  /// **'Let me think…'**
   String get moodHubMoodyThinking;
 
   /// No description provided for @moodHubMoodHappy.
@@ -6907,6 +6907,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Building your plan…'**
   String get planLoadingMessage;
+
+  /// No description provided for @planLoadingCreatingYourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m putting your day together…'**
+  String get planLoadingCreatingYourDay;
+
+  /// No description provided for @planLoadingPhaseChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m checking what fits you…'**
+  String get planLoadingPhaseChecking;
+
+  /// No description provided for @planLoadingPhaseBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m lining up the right spots…'**
+  String get planLoadingPhaseBuilding;
+
+  /// No description provided for @planLoadingPhaseAlmost.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost there — one sec…'**
+  String get planLoadingPhaseAlmost;
+
+  /// No description provided for @planLoadingCompactHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m finishing your day…'**
+  String get planLoadingCompactHeadline;
+
+  /// No description provided for @groupPlanLoadingCompactHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m finishing your shared day…'**
+  String get groupPlanLoadingCompactHeadline;
+
+  /// No description provided for @planLoadingCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get planLoadingCancel;
+
+  /// No description provided for @planLoadingErrorBackToMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Moody'**
+  String get planLoadingErrorBackToMoody;
+
+  /// No description provided for @moodyHubCompanionFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is taking shape — I\'m right here with you. Change your mood, peek at Explore, or chat with me whenever you like.'**
+  String get moodyHubCompanionFallback;
+
+  /// No description provided for @moodyHubNudgeNoPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a mood and I’ll build you a day that actually fits.'**
+  String get moodyHubNudgeNoPlan;
+
+  /// No description provided for @moodyHubNudgePlanNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next up: {title} at {time}. I’ll keep the flow smooth.'**
+  String moodyHubNudgePlanNext(String title, String time);
+
+  /// No description provided for @moodyHubNudgePlanWrap.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total} done. Tell me if you want the rest lighter or bolder.'**
+  String moodyHubNudgePlanWrap(String done, String total);
+
+  /// No description provided for @dayPlanMoodyMessageFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s what I picked for your vibe. Add what you love to My Day, then tap View My Day when you\'re ready.'**
+  String get dayPlanMoodyMessageFallback;
+
+  /// No description provided for @dayPlanMoodyReplaceEnergeticVibePhrase.
+  ///
+  /// In en, this message translates to:
+  /// **'a great match for your mood'**
+  String get dayPlanMoodyReplaceEnergeticVibePhrase;
+
+  /// No description provided for @dayPlanFirstViewportGuidance.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a card for details. Add with the green button, then View My Day.'**
+  String get dayPlanFirstViewportGuidance;
+
+  /// No description provided for @moodHomeChatIntroWithCity.
+  ///
+  /// In en, this message translates to:
+  /// **'I know {city} well and love helping you discover it. Tell me your mood — I\'ll suggest a day that fits. Adventurous, romantic, or chill — we\'ve got this.'**
+  String moodHomeChatIntroWithCity(String city);
+
+  /// No description provided for @moodHomeChatIntroNoCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me your mood and I\'ll help shape a day that fits. Adventurous, romantic, or chill — we\'ve got this.'**
+  String get moodHomeChatIntroNoCity;
+
+  /// No description provided for @moodHomeConversationEmptyTitleMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning!'**
+  String get moodHomeConversationEmptyTitleMorning;
+
+  /// No description provided for @moodHomeConversationEmptyBodyMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s shape a day that feels like you. Tell me your mood when you\'re ready.'**
+  String get moodHomeConversationEmptyBodyMorning;
+
+  /// No description provided for @moodHomeConversationEmptyTitleMidday.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey there!'**
+  String get moodHomeConversationEmptyTitleMidday;
+
+  /// No description provided for @moodHomeConversationEmptyBodyMidday.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve been thinking about your perfect day — share your mood when you\'re ready.'**
+  String get moodHomeConversationEmptyBodyMidday;
+
+  /// No description provided for @moodHomeConversationEmptyTitleAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon!'**
+  String get moodHomeConversationEmptyTitleAfternoon;
+
+  /// No description provided for @moodHomeConversationEmptyBodyAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind for today? Your mood is a great place to start.'**
+  String get moodHomeConversationEmptyBodyAfternoon;
+
+  /// No description provided for @moodHomeConversationEmptyTitleEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening explorer!'**
+  String get moodHomeConversationEmptyTitleEvening;
+
+  /// No description provided for @moodHomeConversationEmptyBodyEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend or weekday — let\'s find the right energy for tonight.'**
+  String get moodHomeConversationEmptyBodyEvening;
+
+  /// No description provided for @moodHomeConversationEmptyTitleNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Still up?'**
+  String get moodHomeConversationEmptyTitleNight;
+
+  /// No description provided for @moodHomeConversationEmptyBodyNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Late-night ideas are welcome — tell me how you\'re feeling.'**
+  String get moodHomeConversationEmptyBodyNight;
 
   /// No description provided for @moodySays.
   ///
@@ -9575,7 +9737,7 @@ abstract class AppLocalizations {
   /// No description provided for @guestDemoMoodyRomantic0.
   ///
   /// In en, this message translates to:
-  /// **'Low lights, shared plates — keep the phones away 💕'**
+  /// **'Low lights, shared plates — keep the phones away.'**
   String get guestDemoMoodyRomantic0;
 
   /// No description provided for @guestDemoMoodyRomantic1.
@@ -10483,6 +10645,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add activity'**
   String get agendaAddActivity;
+
+  /// No description provided for @agendaMoodyOverviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s still wide open — we\'ll make it good ✨'**
+  String get agendaMoodyOverviewEmpty;
+
+  /// No description provided for @agendaMoodyOverviewOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s what I lined up for you today 👀'**
+  String get agendaMoodyOverviewOne;
+
+  /// No description provided for @agendaMoodyOverviewTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking solid today'**
+  String get agendaMoodyOverviewTwo;
+
+  /// No description provided for @agendaMoodyOverviewMany.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve got a nice stack ready for you'**
+  String get agendaMoodyOverviewMany;
+
+  /// No description provided for @agendaMoodyOverviewLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Let me peek at your day...'**
+  String get agendaMoodyOverviewLoading;
+
+  /// No description provided for @agendaMoodyOverviewError.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeping it simple for today'**
+  String get agendaMoodyOverviewError;
+
+  /// No description provided for @agendaMoodyCardLineDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice — you already checked this one off.'**
+  String get agendaMoodyCardLineDone;
+
+  /// No description provided for @agendaMoodyCardLineActive.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in the middle of this — good energy.'**
+  String get agendaMoodyCardLineActive;
+
+  /// No description provided for @agendaMoodyCardLineBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid pick — this one\'s locked in for you.'**
+  String get agendaMoodyCardLineBooked;
+
+  /// No description provided for @agendaMoodyCardLineDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re going to enjoy this one.'**
+  String get agendaMoodyCardLineDefault;
+
+  /// No description provided for @agendaViewActivityCta.
+  ///
+  /// In en, this message translates to:
+  /// **'View activity'**
+  String get agendaViewActivityCta;
+
+  /// No description provided for @agendaRouteCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get agendaRouteCta;
 
   /// No description provided for @agendaUntitledActivity.
   ///
@@ -14108,16 +14342,22 @@ abstract class AppLocalizations {
   /// **'Plan again'**
   String get moodHomePlanAgain;
 
+  /// No description provided for @planLoadingRotating1.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m weighing your mood and the time of day…'**
+  String get planLoadingRotating1;
+
   /// No description provided for @planLoadingRotating2.
   ///
   /// In en, this message translates to:
-  /// **'Putting your day together…'**
+  /// **'I\'m scanning the map for strong picks…'**
   String get planLoadingRotating2;
 
   /// No description provided for @planLoadingRotating3.
   ///
   /// In en, this message translates to:
-  /// **'Almost there — your plan is almost ready ✨'**
+  /// **'Tightening the last details ✨'**
   String get planLoadingRotating3;
 
   /// No description provided for @settingsTravelModeHelpLabel.
@@ -18120,7 +18360,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupPlanLobbyBuilding.
   ///
   /// In en, this message translates to:
-  /// **'Moody is building your shared plan…'**
+  /// **'Your shared plan is coming together.'**
   String get groupPlanLobbyBuilding;
 
   /// No description provided for @groupPlanLobbyPlanFailed.
@@ -18615,6 +18855,24 @@ abstract class AppLocalizations {
   /// **'I\'m building your shared plan…'**
   String get moodMatchHubPendingBuilding;
 
+  /// No description provided for @moodMatchHubPendingMoodsStory.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re waiting for your match to lock in their mood.'**
+  String get moodMatchHubPendingMoodsStory;
+
+  /// No description provided for @moodMatchHubPendingResumeStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue where you left off — your day and shared plan are next.'**
+  String get moodMatchHubPendingResumeStory;
+
+  /// No description provided for @moodMatchHubContinueSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get moodMatchHubContinueSession;
+
   /// No description provided for @moodMatchHubCancelSession.
   ///
   /// In en, this message translates to:
@@ -18638,6 +18896,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See the plan'**
   String get moodMatchHubSeePlanCta;
+
+  /// No description provided for @moodMatchHubCardBadgeReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is ready'**
+  String get moodMatchHubCardBadgeReady;
+
+  /// No description provided for @moodMatchHubCardBadgeUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming plan'**
+  String get moodMatchHubCardBadgeUpcoming;
+
+  /// No description provided for @moodMatchHubCardBadgeWaitingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name}…'**
+  String moodMatchHubCardBadgeWaitingFor(String name);
+
+  /// No description provided for @moodMatchHubCardStartsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s the day ✨'**
+  String get moodMatchHubCardStartsToday;
+
+  /// No description provided for @moodMatchHubCardStartsTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts tomorrow ✨'**
+  String get moodMatchHubCardStartsTomorrow;
+
+  /// No description provided for @moodMatchHubCardStartsInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in {days} days ✨'**
+  String moodMatchHubCardStartsInDays(int days);
+
+  /// No description provided for @moodMatchHubCardYouAndPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'You + {name} 💕'**
+  String moodMatchHubCardYouAndPartner(String name);
+
+  /// No description provided for @moodMatchHubCardDateToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get moodMatchHubCardDateToday;
+
+  /// No description provided for @moodMatchHubCardDateTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get moodMatchHubCardDateTomorrow;
+
+  /// No description provided for @moodMatchHubCardWaitingHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan is waiting to be completed…'**
+  String get moodMatchHubCardWaitingHeadline;
+
+  /// No description provided for @moodMatchHubCardInfoPickingMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Picking a mood…'**
+  String get moodMatchHubCardInfoPickingMood;
+
+  /// No description provided for @moodMatchHubCardInfoJoining.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to join…'**
+  String get moodMatchHubCardInfoJoining;
+
+  /// No description provided for @moodMatchHubCardInfoBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'Building your plan…'**
+  String get moodMatchHubCardInfoBuilding;
+
+  /// No description provided for @moodMatchHubCardInfoNextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: your day & plan'**
+  String get moodMatchHubCardInfoNextStep;
+
+  /// No description provided for @moodMatchHubStatusGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'I’m stitching your shared day together—almost there ✨'**
+  String get moodMatchHubStatusGenerating;
+
+  /// No description provided for @moodMatchHubStatusNeedGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Your match hasn’t joined yet—open the lobby or give them a gentle nudge.'**
+  String get moodMatchHubStatusNeedGuest;
+
+  /// No description provided for @moodMatchHubStatusNeedMood.
+  ///
+  /// In en, this message translates to:
+  /// **'We’re one mood away—waiting on them to lock theirs in 👀'**
+  String get moodMatchHubStatusNeedMood;
+
+  /// No description provided for @moodMatchHubStatusNeedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Both moods are in—pick your day next and I’ll finish the plan.'**
+  String get moodMatchHubStatusNeedDay;
+
+  /// No description provided for @moodMatchHubStatusPlanReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared day is ready—tap through whenever you feel like it.'**
+  String get moodMatchHubStatusPlanReady;
+
+  /// No description provided for @moodMatchHubStatusPlanUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re on for {when}—your plan’s warm and waiting.'**
+  String moodMatchHubStatusPlanUpcoming(String when);
 
   /// No description provided for @moodMatchHubUntitledSession.
   ///
@@ -18681,11 +19059,29 @@ abstract class AppLocalizations {
   /// **'Step 1 of 2 · Your mood'**
   String get moodMatchStepYourMood;
 
-  /// No description provided for @moodMatchFeelQuestion.
+  /// No description provided for @moodMatchFeelQuestionMorning.
   ///
   /// In en, this message translates to:
   /// **'How are you feeling this morning?'**
-  String get moodMatchFeelQuestion;
+  String get moodMatchFeelQuestionMorning;
+
+  /// No description provided for @moodMatchFeelQuestionAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling this afternoon?'**
+  String get moodMatchFeelQuestionAfternoon;
+
+  /// No description provided for @moodMatchFeelQuestionEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling this evening?'**
+  String get moodMatchFeelQuestionEvening;
+
+  /// No description provided for @moodMatchFeelQuestionLate.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling right now?'**
+  String get moodMatchFeelQuestionLate;
 
   /// No description provided for @moodMatchPrivateHint.
   ///
@@ -18738,7 +19134,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchLobbyEveryoneReadySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Moody is blending your vibes…'**
+  /// **'Blending both vibes into your shared plan…'**
   String get moodMatchLobbyEveryoneReadySubtitle;
 
   /// No description provided for @moodMatchLobbyWaitingSubtitle.
@@ -19101,6 +19497,60 @@ abstract class AppLocalizations {
   /// **'{inviter} invited you to Mood Match.\nCode: {code}\n{link}'**
   String moodMatchInviteNotifMessage(String inviter, String code, String link);
 
+  /// No description provided for @moodMatchInviteInboxTag.
+  ///
+  /// In en, this message translates to:
+  /// **'New Mood Match invite'**
+  String get moodMatchInviteInboxTag;
+
+  /// No description provided for @moodMatchInviteInboxBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to plan a day together. Lock in your mood and see where you match.'**
+  String moodMatchInviteInboxBody(String name);
+
+  /// No description provided for @moodMatchInviteInboxJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Mood Match'**
+  String get moodMatchInviteInboxJoin;
+
+  /// No description provided for @moodMatchInviteInboxJoining.
+  ///
+  /// In en, this message translates to:
+  /// **'Joining…'**
+  String get moodMatchInviteInboxJoining;
+
+  /// No description provided for @moodMatchInviteInboxDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get moodMatchInviteInboxDismiss;
+
+  /// No description provided for @moodMatchInviteInboxJoinError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t join right now. Try again in a moment.'**
+  String get moodMatchInviteInboxJoinError;
+
+  /// No description provided for @moodMatchInvitedWaitingTag.
+  ///
+  /// In en, this message translates to:
+  /// **'INVITE SENT'**
+  String get moodMatchInvitedWaitingTag;
+
+  /// No description provided for @moodMatchInvitedWaitingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to open the app and join.'**
+  String moodMatchInvitedWaitingBody(String name);
+
+  /// No description provided for @moodMatchInvitedWaitingNudge.
+  ///
+  /// In en, this message translates to:
+  /// **'Nudge again'**
+  String get moodMatchInvitedWaitingNudge;
+
   /// No description provided for @moodMatchShareShareLink.
   ///
   /// In en, this message translates to:
@@ -19142,6 +19592,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nudge friend'**
   String get moodMatchHubNudgeFriend;
+
+  /// No description provided for @moodMatchHubOngoingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing matches'**
+  String get moodMatchHubOngoingTitle;
 
   /// No description provided for @moodMatchLobbyWaitTease0.
   ///
@@ -19323,11 +19779,215 @@ abstract class AppLocalizations {
   /// **'Both moods in? Even better together.'**
   String get moodMatchWaitingBothBetter;
 
+  /// No description provided for @moodMatchStepAlmostTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost there'**
+  String get moodMatchStepAlmostTag;
+
+  /// No description provided for @moodMatchWaitingOnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on {name}'**
+  String moodMatchWaitingOnTitle(String name);
+
+  /// No description provided for @moodMatchWaitingOnSub.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is still choosing — privately. When they lock in, you both move on together.'**
+  String moodMatchWaitingOnSub(String name);
+
+  /// No description provided for @moodMatchWaitingTeaserTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked in'**
+  String get moodMatchWaitingTeaserTag;
+
+  /// No description provided for @moodMatchWaitingTeaserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} picked their vibe'**
+  String moodMatchWaitingTeaserTitle(String name);
+
+  /// No description provided for @moodMatchWaitingTeaserSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Shhh — the actual mood stays a secret till the reveal.'**
+  String get moodMatchWaitingTeaserSub;
+
+  /// No description provided for @moodMatchPlanBuildSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually just a few seconds.'**
+  String get moodMatchPlanBuildSub;
+
+  /// No description provided for @moodMatchMatchLoadingAppBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Hang on'**
+  String get moodMatchMatchLoadingAppBar;
+
+  /// No description provided for @moodMatchPlanBuildButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Building your plan…'**
+  String get moodMatchPlanBuildButton;
+
+  /// No description provided for @moodMatchWaitingPreviewHeadlineNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s turn'**
+  String moodMatchWaitingPreviewHeadlineNamed(String name);
+
+  /// No description provided for @moodMatchWaitingPreviewHeadlineGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Your match\'s turn'**
+  String get moodMatchWaitingPreviewHeadlineGeneric;
+
+  /// No description provided for @moodMatchWaitingQuietHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared ideas will show here once you\'ve picked a day together.'**
+  String get moodMatchWaitingQuietHint;
+
+  /// No description provided for @moodMatchRemoveSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this Mood Match?'**
+  String get moodMatchRemoveSessionTitle;
+
+  /// No description provided for @moodMatchRemoveSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your match will leave this session too. This can\'t be undone.'**
+  String get moodMatchRemoveSessionBody;
+
+  /// No description provided for @moodMatchRemoveSessionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get moodMatchRemoveSessionConfirm;
+
+  /// No description provided for @moodMatchRemoveSessionCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get moodMatchRemoveSessionCancel;
+
+  /// No description provided for @moodMatchOwnerWaitingConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on {name} to confirm'**
+  String moodMatchOwnerWaitingConfirmTitle(String name);
+
+  /// No description provided for @moodMatchOwnerWaitingConfirmSub.
+  ///
+  /// In en, this message translates to:
+  /// **'They\'ll get a ping to confirm the day + time you suggested. You\'ll both land back on your shared plan when it\'s set.'**
+  String get moodMatchOwnerWaitingConfirmSub;
+
+  /// No description provided for @moodMatchGuestConfirmTitleWithTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} · {time}'**
+  String moodMatchGuestConfirmTitleWithTime(String day, String time);
+
+  /// No description provided for @moodMatchGuestConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} picked {day} around {time}. Works for you?'**
+  String moodMatchGuestConfirmBody(String name, String day, String time);
+
+  /// No description provided for @moodMatchGuestCounterCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest a different moment'**
+  String get moodMatchGuestCounterCta;
+
+  /// No description provided for @moodMatchGuestCounterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a moment that works'**
+  String get moodMatchGuestCounterTitle;
+
+  /// No description provided for @moodMatchGuestCounterSub.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} can accept or suggest another moment before you both go back to your shared plan.'**
+  String moodMatchGuestCounterSub(String name);
+
+  /// No description provided for @moodMatchGuestCounterSendCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Send back'**
+  String get moodMatchGuestCounterSendCta;
+
+  /// No description provided for @moodMatchOwnerCounterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} suggested {day} · {time}'**
+  String moodMatchOwnerCounterTitle(String name, String day, String time);
+
+  /// No description provided for @moodMatchOwnerCounterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your match suggested a different moment. Accept it, or propose another day and time.'**
+  String get moodMatchOwnerCounterBody;
+
+  /// No description provided for @moodMatchOwnerCounterAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept {day}'**
+  String moodMatchOwnerCounterAccept(String day);
+
+  /// No description provided for @moodMatchOwnerCounterKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my pick'**
+  String get moodMatchOwnerCounterKeep;
+
+  /// No description provided for @moodMatchOwnerCounterSuggestAnother.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest another time →'**
+  String get moodMatchOwnerCounterSuggestAnother;
+
+  /// No description provided for @moodMatchWaitingGuestReviewPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to review…'**
+  String moodMatchWaitingGuestReviewPlan(String name);
+
+  /// No description provided for @moodMatchPlanSentToGuestBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to {name}'**
+  String moodMatchPlanSentToGuestBanner(String name);
+
+  /// No description provided for @moodMatchPlanV2SelectAllThreeToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all 3 to continue'**
+  String get moodMatchPlanV2SelectAllThreeToContinue;
+
+  /// No description provided for @moodMatchSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get moodMatchSaving;
+
   /// No description provided for @moodMatchDayPickerStep.
   ///
   /// In en, this message translates to:
   /// **'Step 1 of 2 — you decide'**
   String get moodMatchDayPickerStep;
+
+  /// No description provided for @moodMatchDayPickerStepGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 2 — your match picks'**
+  String get moodMatchDayPickerStepGuest;
 
   /// No description provided for @moodMatchDayPickerTitle.
   ///
@@ -19362,8 +20022,80 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchDayPickerCta.
   ///
   /// In en, this message translates to:
-  /// **'Next — pick your start time →'**
+  /// **'Continue — see your match →'**
   String get moodMatchDayPickerCta;
+
+  /// No description provided for @moodMatchDayPickerOpenSheetCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose day & time'**
+  String get moodMatchDayPickerOpenSheetCta;
+
+  /// No description provided for @moodMatchDayPickerSheetChangeCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Change day or time'**
+  String get moodMatchDayPickerSheetChangeCta;
+
+  /// No description provided for @moodMatchDayPickerWholeDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole day'**
+  String get moodMatchDayPickerWholeDay;
+
+  /// No description provided for @moodMatchPlanResultMoodyV1.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s your day with {name} — three picks Moody thinks fit both your vibes.'**
+  String moodMatchPlanResultMoodyV1(String name);
+
+  /// No description provided for @moodMatchPlanResultMoodyV2.
+  ///
+  /// In en, this message translates to:
+  /// **'Built around what you both wanted today. Tap any spot to peek inside before you confirm with {name}.'**
+  String moodMatchPlanResultMoodyV2(String name);
+
+  /// No description provided for @moodMatchPlanResultMoodyV3.
+  ///
+  /// In en, this message translates to:
+  /// **'Try them in order, or shuffle — your call. {name} sees the same plan from their side.'**
+  String moodMatchPlanResultMoodyV3(String name);
+
+  /// No description provided for @moodMatchPlanResultMoodyV4.
+  ///
+  /// In en, this message translates to:
+  /// **'Three small moments shaped around your moods. Anything off? Hit Swap and Moody finds an alternative.'**
+  String moodMatchPlanResultMoodyV4(String name);
+
+  /// No description provided for @moodMatchDayPickerSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a date for both of you'**
+  String get moodMatchDayPickerSheetTitle;
+
+  /// No description provided for @moodMatchDayPickerSheetMoodyLine.
+  ///
+  /// In en, this message translates to:
+  /// **'No rush — {name} will confirm your pick.'**
+  String moodMatchDayPickerSheetMoodyLine(String name);
+
+  /// No description provided for @moodMatchDayPickerSheetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock it in →'**
+  String get moodMatchDayPickerSheetDone;
+
+  /// No description provided for @moodMatchDayPickerTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We’ll use this after your plan is ready. Your match still picks their own slot.'**
+  String get moodMatchDayPickerTimeHint;
+
+  /// No description provided for @moodMatchDayNotifyMaybeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t notify your match in time — ask them to open the app to confirm the day.'**
+  String get moodMatchDayNotifyMaybeFailed;
 
   /// No description provided for @moodMatchGuestWaitingDay.
   ///
@@ -19446,7 +20178,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchTimePickerWithBadge.
   ///
   /// In en, this message translates to:
-  /// **'You and {name} are planning this together 💕'**
+  /// **'You and {name} are planning this together'**
   String moodMatchTimePickerWithBadge(String name);
 
   /// No description provided for @moodMatchTimePickerCta.
@@ -19524,8 +20256,32 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchPlanSortedCta.
   ///
   /// In en, this message translates to:
-  /// **'Plan sorted → Pick your day'**
+  /// **'Plan sorted → Choose start time'**
   String get moodMatchPlanSortedCta;
+
+  /// No description provided for @moodMatchPlanHeroLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your morning here'**
+  String get moodMatchPlanHeroLabel;
+
+  /// No description provided for @moodMatchPlanMoreIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'More ideas'**
+  String get moodMatchPlanMoreIdeas;
+
+  /// No description provided for @moodMatchPlanMoreIdeasCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more idea} other{{count} more ideas}}'**
+  String moodMatchPlanMoreIdeasCount(int count);
+
+  /// No description provided for @moodMatchPlanSwapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Swapped picks come from your match\'s other ideas.'**
+  String get moodMatchPlanSwapHint;
 
   /// No description provided for @moodMatchConfirmTitle.
   ///
@@ -19557,6 +20313,18 @@ abstract class AppLocalizations {
   /// **'View My Day'**
   String get moodMatchConfirmViewMyDay;
 
+  /// No description provided for @moodMatchInMyDaySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan for {date} is in My Day.'**
+  String moodMatchInMyDaySuccess(String date);
+
+  /// No description provided for @moodMatchInMyDaySuccessShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is in My Day.'**
+  String get moodMatchInMyDaySuccessShort;
+
   /// No description provided for @moodMatchConfirmBackToPlan.
   ///
   /// In en, this message translates to:
@@ -19566,8 +20334,345 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchWithBadge.
   ///
   /// In en, this message translates to:
-  /// **'With {name} 💕'**
+  /// **'With {name}'**
   String moodMatchWithBadge(String name);
+
+  /// No description provided for @moodMatchPlanV2GuestMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} picked these for you both. Say what works.'**
+  String moodMatchPlanV2GuestMoody(String name);
+
+  /// No description provided for @moodMatchPlanV2ContextYouPickedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'📅 {day} · You picked the day'**
+  String moodMatchPlanV2ContextYouPickedDay(String day);
+
+  /// No description provided for @moodMatchPlanV2ContextOwnerPickedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'📅 {day} · {name} picked the day'**
+  String moodMatchPlanV2ContextOwnerPickedDay(String day, String name);
+
+  /// No description provided for @moodMatchPlanV2ContextPlannedDay.
+  ///
+  /// In en, this message translates to:
+  /// **'📅 {day} · Planned day'**
+  String moodMatchPlanV2ContextPlannedDay(String day);
+
+  /// No description provided for @moodMatchPlanV2ImIn.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m in ✓'**
+  String get moodMatchPlanV2ImIn;
+
+  /// No description provided for @moodMatchPlanV2SwapThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap this'**
+  String get moodMatchPlanV2SwapThis;
+
+  /// No description provided for @moodMatchPlanV2YouConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'You confirmed ✓'**
+  String get moodMatchPlanV2YouConfirmed;
+
+  /// No description provided for @moodMatchPlanV2WaitingForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you'**
+  String get moodMatchPlanV2WaitingForYou;
+
+  /// No description provided for @moodMatchPlanV2ConfirmBeforeSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm or swap before sending'**
+  String get moodMatchPlanV2ConfirmBeforeSend;
+
+  /// No description provided for @moodMatchPlanV2ConfirmedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed by you · {name} hasn\'t seen it yet'**
+  String moodMatchPlanV2ConfirmedByYou(String name);
+
+  /// No description provided for @moodMatchPlanV2SendToGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to {name} →'**
+  String moodMatchPlanV2SendToGuest(String name);
+
+  /// No description provided for @moodMatchPlanV2ConfirmAllToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Confirm your pick to send to {name}} other{Confirm all {count} spots to send to {name}}}'**
+  String moodMatchPlanV2ConfirmAllToSend(int count, String name);
+
+  /// No description provided for @moodMatchPlanV2GuestWaitingShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to share the plan'**
+  String moodMatchPlanV2GuestWaitingShare(String name);
+
+  /// No description provided for @moodMatchPlanV2WorksForMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Works for me ✓'**
+  String get moodMatchPlanV2WorksForMe;
+
+  /// No description provided for @moodMatchPlanV2NotForMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Not for me'**
+  String get moodMatchPlanV2NotForMe;
+
+  /// No description provided for @moodMatchPlanV2BothIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Both in ✓'**
+  String get moodMatchPlanV2BothIn;
+
+  /// No description provided for @moodMatchPlanV2YourTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn'**
+  String get moodMatchPlanV2YourTurn;
+
+  /// No description provided for @moodMatchPlanV2SwapRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap requested'**
+  String get moodMatchPlanV2SwapRequested;
+
+  /// No description provided for @moodMatchPlanV2OwnerInYourCall.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in · your call'**
+  String moodMatchPlanV2OwnerInYourCall(String name);
+
+  /// No description provided for @moodMatchPlanV2YouBothIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You and {name} are both in'**
+  String moodMatchPlanV2YouBothIn(String name);
+
+  /// No description provided for @moodMatchPlanV2WaitingOwnerSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} on the swap…'**
+  String moodMatchPlanV2WaitingOwnerSwap(String name);
+
+  /// No description provided for @moodMatchPlanV2ConfirmAllGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Confirm your pick to finish} other{Confirm all {count} picks to finish}}'**
+  String moodMatchPlanV2ConfirmAllGuest(int count);
+
+  /// No description provided for @moodMatchPlanV2PlanConfirmedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan confirmed — pick your start time →'**
+  String get moodMatchPlanV2PlanConfirmedTime;
+
+  /// No description provided for @moodMatchPlanV2OpenMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day ✓'**
+  String get moodMatchPlanV2OpenMyDay;
+
+  /// No description provided for @moodMatchRevealMaeMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'MORNING'**
+  String get moodMatchRevealMaeMorning;
+
+  /// No description provided for @moodMatchRevealMaeAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'AFTERNOON'**
+  String get moodMatchRevealMaeAfternoon;
+
+  /// No description provided for @moodMatchRevealMaeEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'EVENING'**
+  String get moodMatchRevealMaeEvening;
+
+  /// No description provided for @moodMatchPlanV2SwapSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick something else for {slot}'**
+  String moodMatchPlanV2SwapSheetTitle(String slot);
+
+  /// No description provided for @moodMatchPlanV2SwapSheetMoody.
+  ///
+  /// In en, this message translates to:
+  /// **'Here are some other options to try.'**
+  String get moodMatchPlanV2SwapSheetMoody;
+
+  /// No description provided for @moodMatchPlanV2PickThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick this'**
+  String get moodMatchPlanV2PickThis;
+
+  /// No description provided for @moodMatchPlanV2SwapBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to swap the {slot}'**
+  String moodMatchPlanV2SwapBannerTitle(String name, String slot);
+
+  /// No description provided for @moodMatchPlanV2SwapBannerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'They suggested {proposed} instead of {original}'**
+  String moodMatchPlanV2SwapBannerSubtitle(String proposed, String original);
+
+  /// No description provided for @moodMatchPlanV2KeepOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep {name}'**
+  String moodMatchPlanV2KeepOriginal(String name);
+
+  /// No description provided for @moodMatchPlanV2AcceptSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept {name}'**
+  String moodMatchPlanV2AcceptSwap(String name);
+
+  /// No description provided for @moodMatchPlanV2SentToGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan sent to {name}'**
+  String moodMatchPlanV2SentToGuest(String name);
+
+  /// No description provided for @moodMatchPlanV2GuestSuggestedSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} suggested: {proposed} instead'**
+  String moodMatchPlanV2GuestSuggestedSwap(String name, String proposed);
+
+  /// No description provided for @moodMatchPlanV2ActuallyKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Actually keep it'**
+  String get moodMatchPlanV2ActuallyKeep;
+
+  /// No description provided for @moodMatchPlanV2WaitingForOwnerEllipsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name}…'**
+  String moodMatchPlanV2WaitingForOwnerEllipsis(String name);
+
+  /// No description provided for @moodMatchPlanV2WaitingGuestApproveSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to OK your suggestion for this slot.'**
+  String moodMatchPlanV2WaitingGuestApproveSwap(String name);
+
+  /// No description provided for @moodMatchPlanV2OwnerSuggestedDifferentPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to swap this for {proposed}.'**
+  String moodMatchPlanV2OwnerSuggestedDifferentPlace(
+      String name, String proposed);
+
+  /// No description provided for @moodMatchPlanV2UseOwnersPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Use their pick'**
+  String get moodMatchPlanV2UseOwnersPick;
+
+  /// No description provided for @moodMatchPlanV2KeepCurrentPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this place'**
+  String get moodMatchPlanV2KeepCurrentPlace;
+
+  /// No description provided for @moodMatchPlanV2WithdrawSwap.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw suggestion'**
+  String get moodMatchPlanV2WithdrawSwap;
+
+  /// No description provided for @moodMatchPlanV2RespondSwapsOnCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond to swap suggestions on the cards'**
+  String get moodMatchPlanV2RespondSwapsOnCards;
+
+  /// No description provided for @moodMatchPlanV2SuggestDifferentPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest a change'**
+  String get moodMatchPlanV2SuggestDifferentPlace;
+
+  /// No description provided for @moodMatchPlanV2YourSwapPendingOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'You suggested {proposed}. Waiting for {name} to respond.'**
+  String moodMatchPlanV2YourSwapPendingOwner(String proposed, String name);
+
+  /// No description provided for @moodMatchToastPlanShared.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} shared the Mood Match plan with you.'**
+  String moodMatchToastPlanShared(String name);
+
+  /// No description provided for @moodMatchToastSwapRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} suggested a different place: {place}.'**
+  String moodMatchToastSwapRequested(String name, String place);
+
+  /// No description provided for @moodMatchToastSwapAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} accepted the swap.'**
+  String moodMatchToastSwapAccepted(String name);
+
+  /// No description provided for @moodMatchToastSwapDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} declined the swap for {slot}.'**
+  String moodMatchToastSwapDeclined(String name, String slot);
+
+  /// No description provided for @moodMatchToastPartnerConfirmedSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} confirmed a slot ({slot}).'**
+  String moodMatchToastPartnerConfirmedSlot(String name, String slot);
+
+  /// No description provided for @moodMatchToastGuestDeclinedOriginalDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is not available for the day you proposed.'**
+  String moodMatchToastGuestDeclinedOriginalDay(String name);
+
+  /// No description provided for @moodMatchToastGuestProposedNewDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} suggested a different date — open the Mood Match day step.'**
+  String moodMatchToastGuestProposedNewDay(String name);
+
+  /// No description provided for @moodMatchSaveMyDayFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to My Day: {details}'**
+  String moodMatchSaveMyDayFailed(String details);
+
+  /// No description provided for @moodMatchPlanV2BasedOnMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on moods: {moods}'**
+  String moodMatchPlanV2BasedOnMoods(String moods);
+
+  /// No description provided for @moodMatchPlanV2ActivityMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood: {mood}'**
+  String moodMatchPlanV2ActivityMood(String mood);
 }
 
 class _AppLocalizationsDelegate

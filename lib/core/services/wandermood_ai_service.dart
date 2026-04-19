@@ -121,6 +121,10 @@ class WanderMoodAIService {
     Map<String, dynamic>? preferences,
     String? conversationId,
     List<String>? conversationContext,
+    String? plannedDate,
+    String? timeSlot,
+    List<String>? participantNames,
+    bool groupMatch = false,
   }) async {
     debugPrint('🤖 Getting explore recommendations (moody/get_explore) for moods: $moods');
 
@@ -154,6 +158,20 @@ class WanderMoodAIService {
         'mood': primaryMood,
         'filters': _preferencesToExploreFilters(preferences),
       };
+      if (groupMatch) {
+        requestBody['group_match'] = true;
+        final pd = plannedDate?.trim();
+        if (pd != null && pd.isNotEmpty) {
+          requestBody['planned_date'] = pd;
+        }
+        final ts = timeSlot?.trim();
+        if (ts != null && ts.isNotEmpty) {
+          requestBody['time_slot'] = ts;
+        }
+        if (participantNames != null && participantNames.isNotEmpty) {
+          requestBody['participant_names'] = participantNames;
+        }
+      }
 
       debugPrint('📤 Invoking moody (get_explore): $requestBody');
 
@@ -221,18 +239,38 @@ class WanderMoodAIService {
     required int compatibilityScore,
     required String languageCode,
     required String communicationStyle,
+    String? plannedDate,
+    String? mood1,
+    String? mood2,
+    String? name1,
+    String? name2,
+    String? location,
   }) async {
     final lang = languageCode.toLowerCase().split(RegExp(r'[-_]')).first;
     try {
+      final body = <String, dynamic>{
+        'action': 'group_match_moody_message',
+        'moods': moods,
+        'compatibility_score': compatibilityScore,
+        'language': lang,
+        'communication_style': communicationStyle,
+      };
+      final pd = plannedDate?.trim();
+      if (pd != null && pd.isNotEmpty) body['planned_date'] = pd;
+      final m1 = mood1?.trim();
+      if (m1 != null && m1.isNotEmpty) body['mood1'] = m1;
+      final m2 = mood2?.trim();
+      if (m2 != null && m2.isNotEmpty) body['mood2'] = m2;
+      final n1 = name1?.trim();
+      if (n1 != null && n1.isNotEmpty) body['name1'] = n1;
+      final n2 = name2?.trim();
+      if (n2 != null && n2.isNotEmpty) body['name2'] = n2;
+      final loc = location?.trim();
+      if (loc != null && loc.isNotEmpty) body['location'] = loc;
+
       final response = await _supabase.functions.invoke(
         _moodyFunctionName,
-        body: {
-          'action': 'group_match_moody_message',
-          'moods': moods,
-          'compatibility_score': compatibilityScore,
-          'language': lang,
-          'communication_style': communicationStyle,
-        },
+        body: body,
       );
       if (response.status != 200) {
         debugPrint(

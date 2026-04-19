@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Sign In with Apple — required by sign_in_with_apple plugin -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+	<!-- Push Notifications — required by flutter_local_notifications for real devices -->
+	<key>aps-environment</key>
+	<string>production</string>
+	<!-- Associated Domains — required for universal links / deep linking -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:wandermood-landing.vercel.app</string>
+	</array>
+</dict>
+</plist>

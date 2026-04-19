@@ -333,12 +333,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     });
 
     try {
-      var merged = await _resolveUnifiedDetailPhotos(place);
-      // If enrichment failed but the tapped card / cache already had URLs, keep them
-      // (Explore list can show resolver-backed photos while unified merge returned []).
-      if (merged.isEmpty && place.photos.isNotEmpty) {
-        merged = place.photos.take(10).toList();
-      }
+      final merged = await _resolveUnifiedDetailPhotos(place);
       if (!mounted || _cachedPlace?.id != place.id) return;
       setState(() {
         _unifiedDetailPhotos = merged;

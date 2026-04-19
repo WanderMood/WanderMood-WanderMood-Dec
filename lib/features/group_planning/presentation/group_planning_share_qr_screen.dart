@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
+import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_invite_wanderer_panel.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_ui.dart';
 import 'package:wandermood/features/group_planning/presentation/share_sheet_origin.dart';
@@ -15,7 +16,13 @@ Future<void> showGroupPlanningShareSheet(
   BuildContext context, {
   required String sessionId,
   required String joinCode,
-}) {
+  String? sessionDisplayTitle,
+}) async {
+  final t = sessionDisplayTitle?.trim();
+  if (t != null && t.isNotEmpty) {
+    await MoodMatchSessionPrefs.saveSessionDisplayTitle(sessionId, t);
+  }
+  if (!context.mounted) return;
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,

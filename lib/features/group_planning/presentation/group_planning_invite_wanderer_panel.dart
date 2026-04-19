@@ -10,8 +10,6 @@ import 'package:wandermood/features/group_planning/domain/group_planning_deep_li
 import 'package:wandermood/features/group_planning/domain/mood_match_in_app_invite_result.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_ui.dart';
-import 'package:wandermood/features/profile/domain/models/current_user_profile.dart';
-import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Reusable username search panel for in-app invites.
@@ -78,22 +76,8 @@ class _GroupPlanningInviteWandererPanelState
     });
   }
 
-  String _inviterLabel(CurrentUserProfile? p) {
-    if (p == null) return 'WanderMood';
-    final u = p.username?.trim();
-    if (u != null && u.isNotEmpty) return '@$u';
-    final f = p.fullName?.trim();
-    if (f != null && f.isNotEmpty) return f;
-    return 'WanderMood';
-  }
-
   Future<void> _invite(ProfileInviteSearchRow row) async {
     final l10n = AppLocalizations.of(context)!;
-    final inviter = ref.read(currentUserProfileProvider).when(
-          data: _inviterLabel,
-          loading: () => 'WanderMood',
-          error: (_, __) => 'WanderMood',
-        );
     final code = widget.joinCode.trim().toUpperCase();
     setState(() => _invitingIds.add(row.id));
     final repo = ref.read(groupPlanningRepositoryProvider);
@@ -102,9 +86,6 @@ class _GroupPlanningInviteWandererPanelState
       sessionId: widget.sessionId,
       joinCode: code,
       joinLinkHttps: _joinLink,
-      notificationTitle: l10n.moodMatchInviteNotifTitle,
-      notificationMessage:
-          l10n.moodMatchInviteNotifMessage(inviter, code, _joinLink),
     );
     if (!mounted) return;
     setState(() => _invitingIds.remove(row.id));
@@ -144,7 +125,6 @@ class _GroupPlanningInviteWandererPanelState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    ref.watch(currentUserProfileProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wandermood/core/utils/place_type_formatter.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -296,7 +297,7 @@ class ExplorePlaceCardCopy {
       case 'hotel':
         return l10n.placeCardVenueHotel;
       default:
-        return l10n.placeCardVenuePlace;
+        return formatPlaceType(t, languageCode: l10n.localeName);
     }
   }
 

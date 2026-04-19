@@ -1,0 +1,21 @@
+---
+description: Do not change working user flows, auth, or navigation unless the user explicitly asks.
+alwaysApply: true
+---
+
+# Preserve existing flows (user-directed changes only)
+
+## Rule
+
+**Do not refactor, reorder, or “fix” onboarding, auth, magic link, splash, router redirects, or navigation** unless the user **explicitly** asked for that change in the current task (e.g. “fix magic link redirect”, “change splash timing”).
+
+- If a bug is suspected in those areas, **diagnose first** (logs, trace the route, reproduce). Only change code when the user confirms they want that behavior changed.
+- Prefer **minimal, targeted fixes** tied to a stated bug (one branch, one flag) over broad rewrites of “the whole flow”.
+- Do **not** “improve” or consolidate flows that already work in production or for the user, even if the code looks messy.
+
+## Examples
+
+- **Allowed**: User says “magic link sends me to intro again” → fix the specific stale `SharedPreferences` vs local variable mismatch they described.
+- **Not allowed**: User says “app is slow” → rewriting splash + bootstrap + router without being asked to touch those systems.
+
+When in doubt, **ask** before editing auth, splash, `GoRouter` redirect blocks, or `main()` startup order.

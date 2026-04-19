@@ -1,0 +1,60 @@
+---
+description: Notifications — single copy file, single send path, no logic in screens, shared card, schema limits, fire-and-forget push, line budgets.
+alwaysApply: true
+---
+
+# Notification system rules
+
+Use these whenever adding or changing **in-app** (`realtime_events`) or **remote push** behavior, copy, or UI. (Scheduled **local OS** reminders may keep using `NotificationService.show` / scheduler, but still pull copy from the same copy source and keep screens thin.)
+
+## Project paths (this repo)
+
+| Concept | Location |
+| -------- | -------- |
+| Copy (event → Moody string) | `lib/core/notifications/notification_copy.dart` |
+| Send / local plugin | `lib/core/services/notification_service.dart` |
+| In-app load / streams | `lib/features/realtime/application/realtime_service.dart` (and related) |
+
+If a dedicated **inbox list** or **`NotificationCard`** widget is introduced under another path, this rule still applies — consolidate there instead of duplicating.
+
+## Rules
+
+### 1. Single source of truth
+
+All notification **copy** lives in **`lib/core/notifications/notification_copy.dart`** (map / types keyed by event). **Never** hardcode the same strings in screens, repositories, or Edge code when the app should show that text — extend the Dart copy map (and wire from the single send path).
+
+### 2. Single send function
+
+All **Supabase `realtime_events` inserts** and **push-notify (or equivalent) Edge Function** calls must go through **one** API — canonical name: **`NotificationService.send()`** (implement on `NotificationService` or delegate internally if the name differs today).
+
+- Do **not** call `supabase.from('realtime_events').insert(...)` from a screen.
+- Do **not** invoke the push Edge Function from a screen.
+
+One call should drive **both** in-app and push where applicable.
+
+### 3. No notification logic in screens
+
+Screens call the send API (and navigation only). **No** realtime subscriptions, FCM token lookups, or push HTTP in screen widgets for new work.
+
+### 4. Reuse the card widget
+
+One widget — **`NotificationCard`** (or the single shared row used by the notification centre) — for every place a notification row is shown. **Extend** that widget for new layouts; do **not** build one-off cards in feature screens.
+
+### 5. No new tables or columns
+
+Only **`realtime_events`** and **`push_tokens`** for notification persistence. If something seems to need another table, **stop and ask** the product owner first.
+
+### 6. Fire and forget
+
+Remote push must be **`try` / `catch`**, **not** `await`ed on the critical user path. A failed push must **not** block UI or surface as a user-visible error in the main flow.
+
+### 7. Line budgets
+
+When editing these files, **stay within** the caps; if a file is already over, **refactor in the same change** before growing behavior.
+
+| File | Max lines |
+| ----- | -----: |
+| `notification_copy.dart` | 200 |
+| `notification_service.dart` | 150 |
+| Notification centre / inbox list screen (unified UI) | 300 |
+| `notification_card.dart` | 100 |

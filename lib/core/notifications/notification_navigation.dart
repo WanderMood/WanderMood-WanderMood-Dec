@@ -5,9 +5,113 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:wandermood/core/providers/notification_provider.dart';
+import 'package:wandermood/features/group_planning/data/mood_match_push_intent.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 
 import 'notification_category.dart';
+
+/// Deep link targets from FCM / in-app notification rows ([data] includes `event`, `session_id`, `post_id`, …).
+void applyWmFcmDataNavigation(
+  GoRouter router,
+  WidgetRef ref,
+  Map<String, dynamic> data,
+) {
+  final event = data['event']?.toString() ?? '';
+  final sessionId = data['session_id']?.toString();
+  final postId =
+      data['post_id']?.toString() ?? data['related_post_id']?.toString();
+
+  switch (event) {
+    case 'mood_match_invite':
+    case 'guest_joined':
+    case 'mood_locked':
+      if (sessionId != null && sessionId.isNotEmpty) {
+        unawaited(_goMoodMatchLobbyFromPrefs(router, sessionId));
+      }
+      break;
+    case 'plan_ready':
+    case 'swap_accepted':
+    case 'swap_declined':
+      if (sessionId != null && sessionId.isNotEmpty) {
+        router.go('/group-planning/result/$sessionId');
+      }
+      break;
+    case 'swap_requested':
+      if (sessionId != null && sessionId.isNotEmpty) {
+        final slot = data['slot']?.toString().trim();
+        MoodMatchPushIntent.setPendingSwapSlot(
+          slot != null && slot.isNotEmpty ? slot : null,
+        );
+        final q = (slot != null && slot.isNotEmpty)
+            ? '?wmSwapSlot=${Uri.encodeQueryComponent(slot)}'
+            : '';
+        router.go('/group-planning/result/$sessionId$q');
+      }
+      break;
+    case 'swap_counter_proposed':
+      if (sessionId != null && sessionId.isNotEmpty) {
+        final slot = data['slot']?.toString().trim();
+        MoodMatchPushIntent.setPendingSwapSlot(
+          slot != null && slot.isNotEmpty ? slot : null,
+        );
+        final q = (slot != null && slot.isNotEmpty)
+            ? '?wmSwapSlot=${Uri.encodeQueryComponent(slot)}'
+            : '';
+        router.go('/group-planning/result/$sessionId$q');
+      }
+      break;
+    case 'day_proposed':
+    case 'day_accepted':
+    case 'day_counter_proposed':
+    case 'day_guest_declined_original':
+      // Day-picker is the only screen that owns the accept/counter modals.
+      // Pre-fix this routed to /time-picker which silently skipped the modal
+      // and dumped the user on the personal start-time screen instead.
+      if (sessionId != null && sessionId.isNotEmpty) {
+        router.go('/group-planning/day-picker/$sessionId');
+      }
+      break;
+    case 'both_confirmed':
+      if (sessionId != null && sessionId.isNotEmpty) {
+        router.go('/group-planning/time-picker/$sessionId');
+      }
+      break;
+    case 'leaving_soon':
+      final lat = data['latitude'];
+      final lng = data['longitude'];
+      if (lat is num && lng is num) {
+        // Caller can extend with map_launcher; centre stores coords when present.
+      }
+      router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      break;
+    case 'rate_activity':
+      router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      break;
+    case 'post_reaction':
+    case 'post_comment':
+      if (postId != null && postId.isNotEmpty) {
+        router.push('/social/post/$postId');
+      }
+      break;
+    case 'new_follower':
+      router.go('/main?tab=4', extra: <String, dynamic>{'tab': 4});
+      break;
+    case 'weekend_nudge':
+    case 'morning_summary':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      break;
+    case 'milestone':
+      router.go('/main?tab=4', extra: <String, dynamic>{'tab': 4});
+      break;
+    default:
+      if (sessionId != null && sessionId.isNotEmpty) {
+        unawaited(_goMoodMatchLobbyFromPrefs(router, sessionId));
+      } else {
+        router.push('/notifications');
+      }
+  }
+}
 
 Future<void> _goMoodMatchLobbyFromPrefs(
     GoRouter router, String sessionId) async {

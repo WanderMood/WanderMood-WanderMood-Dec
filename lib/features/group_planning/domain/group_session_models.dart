@@ -11,6 +11,8 @@ class GroupSessionRow {
     required this.createdAt,
     required this.updatedAt,
     this.plannedDate,
+    this.proposedByUserId,
+    this.proposedSlot,
   });
 
   final String id;
@@ -23,6 +25,8 @@ class GroupSessionRow {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? plannedDate; // YYYY-MM-DD, written by owner in day picker
+  final String? proposedByUserId;
+  final String? proposedSlot;
 
   factory GroupSessionRow.fromMap(Map<String, dynamic> map) {
     return GroupSessionRow(
@@ -36,6 +40,8 @@ class GroupSessionRow {
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
       plannedDate: map['planned_date'] as String?,
+      proposedByUserId: map['proposed_by_user_id'] as String?,
+      proposedSlot: map['proposed_slot'] as String?,
     );
   }
 }
