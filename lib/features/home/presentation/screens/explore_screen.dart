@@ -471,8 +471,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
       final anyHit = hits.any((h) => h != null && h.places.isNotEmpty);
       if (anyHit) {
-        final needBackground =
-            hits.any((h) => h?.shouldRefreshInBackground == true);
         setState(() {
           _exploreVisiblePlaceCount = _kExplorePageSize;
           for (var i = 0; i < _sections.length; i++) {
@@ -486,19 +484,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             }
           }
         });
-        final allFilled = _sections.every((s) => !s.isLoading);
-        if (allFilled) {
-          if (needBackground) {
-            unawaited(_refreshExploreStaleInBackground());
-          }
-          return;
-        }
-        if (needBackground) {
-          unawaited(_refreshExploreStaleInBackground());
-        }
-        await Future.wait(
-          _sections.where((s) => s.isLoading).map((s) => _loadSection(s)),
-        );
+        // Stale-while-revalidate: paint `places_cache` immediately, then always
+        // refresh from moody (same as pull-to-refresh) so cards match live data.
+        unawaited(_refreshExploreStaleInBackground());
         return;
       }
     }
@@ -514,7 +502,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
     await Future.wait(
       _sections.map(
-        (s) => _loadSection(s, skipPlacesCache: forceNetwork),
+        (s) => _loadSection(s, skipPlacesCache: true),
       ),
     );
   }
@@ -1963,8 +1951,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       floating: true,
       pinned: true,
       snap: false,
-      // Title + search + chips + toggles — keep minimal dead space above the list.
-      expandedHeight: 348,
+      // Tight fit: extra height becomes empty parchment above the first card.
+      // Slightly taller when the inline filter row is visible.
+      expandedHeight: _activeFiltersCount > 0 ? 332 : 296,
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
