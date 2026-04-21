@@ -304,7 +304,6 @@ class ExplorePlaces extends _$ExplorePlaces {
   final Map<String, List<String>> _categoryToPlaceTypes = {
     'All': [], // Empty means show all
     'Popular': ['tourist_attraction', 'point_of_interest'],
-    'Accommodations': ['lodging', 'hotel', 'apartment_rental', 'rv_park'],
     'Nature': ['park', 'natural_feature', 'zoo', 'campground'],
     'Culture': ['museum', 'art_gallery', 'library', 'university', 'theater'],
     'Food': ['restaurant', 'cafe', 'bakery', 'food', 'meal_takeaway'],

@@ -6,6 +6,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:flutter/foundation.dart';
 import '../../../features/location/services/location_service.dart';
 import 'package:wandermood/core/utils/reverse_geocode_settlement.dart';
+import 'package:wandermood/core/config/explore_launch_config.dart';
 
 final locationNotifierProvider = AsyncNotifierProvider<LocationNotifier, String?>(() {
   return LocationNotifier();
@@ -14,6 +15,9 @@ final locationNotifierProvider = AsyncNotifierProvider<LocationNotifier, String?
 class LocationNotifier extends AsyncNotifier<String?> {
   @override
   Future<String?> build() async {
+    if (kLockExploreCityToRotterdam) {
+      return LocationService.defaultLocation['name'] as String;
+    }
     // No default city: UI should resolve GPS (see appInitializerProvider) or show
     // "locating…". Hard-coding Rotterdam made every user appear in Rotterdam until
     // reverse-geocode finished (or if init was skipped).
@@ -33,6 +37,11 @@ class LocationNotifier extends AsyncNotifier<String?> {
   }
 
   Future<String?> getCurrentLocation() async {
+    if (kLockExploreCityToRotterdam) {
+      final name = LocationService.defaultLocation['name'] as String;
+      state = AsyncValue.data(name);
+      return name;
+    }
     state = const AsyncValue.loading();
     debugPrint('⚠️ LOCATION: Starting location detection process');
     try {
@@ -123,6 +132,10 @@ class LocationNotifier extends AsyncNotifier<String?> {
 
   // Method to manually set a location
   void setLocation(String locationName) {
+    if (kLockExploreCityToRotterdam) {
+      state = AsyncValue.data(LocationService.defaultLocation['name'] as String);
+      return;
+    }
     state = AsyncValue.data(locationName);
   }
 

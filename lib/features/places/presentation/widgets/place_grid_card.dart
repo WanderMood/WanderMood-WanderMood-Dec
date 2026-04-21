@@ -250,8 +250,12 @@ class PlaceGridCard extends ConsumerWidget {
             ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(9)),
-              child: Stack(
-                children: [
+              child: SizedBox(
+                height: _kGridImageHeight,
+                width: double.infinity,
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
                   // Main image(s) — swipeable when the gallery has more than one photo
                   _buildPlaceImageArea(ref),
 
@@ -341,6 +345,7 @@ class PlaceGridCard extends ConsumerWidget {
                     ),
                   ),
                 ],
+                ),
               ),
             ),
 

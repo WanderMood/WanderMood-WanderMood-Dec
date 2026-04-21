@@ -155,4 +155,33 @@ class MoodMatchSessionPrefs {
     if (v == null || v.isEmpty) return null;
     return v;
   }
+
+  // ── Local "saved-to-my-day" cache ──────────────────────────────────────────
+  // Reliable third-layer fallback when the DB columns `group_session_id` in
+  // `scheduled_activities` and/or `completed_at` in `group_sessions` are absent
+  // (schema not yet migrated). Written immediately after a successful insert.
+
+  static String _kSavedToMyDay(String sessionId) =>
+      'mm_saved_to_my_day_v1_${sessionId.trim()}';
+
+  static Future<void> markSavedToMyDay(String sessionId) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kSavedToMyDay(sessionId), true);
+  }
+
+  static Future<bool> isSavedToMyDay(String sessionId) async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_kSavedToMyDay(sessionId)) ?? false;
+  }
+
+  /// Bulk read — returns the subset of [sessionIds] that are locally flagged.
+  static Future<Set<String>> savedToMyDayIds(List<String> sessionIds) async {
+    if (sessionIds.isEmpty) return const {};
+    final p = await SharedPreferences.getInstance();
+    final out = <String>{};
+    for (final id in sessionIds) {
+      if (p.getBool(_kSavedToMyDay(id)) ?? false) out.add(id);
+    }
+    return out;
+  }
 }

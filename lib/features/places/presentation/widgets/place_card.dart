@@ -720,8 +720,14 @@ class PlaceCard extends ConsumerWidget {
                     width: double.infinity,
                     color: _wmForest,
                   ),
-                  Stack(
-                    children: [
+                  // Bounded height: Column gives unbounded max height; Stack + sliver
+                  // list items then hit "layout failed" / child.hasSize cascades.
+                  SizedBox(
+                    height: _kCardImageHeight,
+                    width: double.infinity,
+                    child: Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: [
                       // Main image
                       FutureBuilder<List<String>>(
                         future: _resolvePhotos(ref),
@@ -852,6 +858,7 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ),
                     ],
+                    ),
                   ),
                 ],
               ),

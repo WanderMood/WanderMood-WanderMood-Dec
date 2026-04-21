@@ -1374,15 +1374,23 @@
   "moodyHubNudgePlanNext": "Als Nächstes: {title} um {time}. Ich halte den Flow für dich smooth.",
   "@moodyHubNudgePlanNext": {
     "placeholders": {
-      "title": { "type": "String" },
-      "time": { "type": "String" }
+      "title": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
     }
   },
   "moodyHubNudgePlanWrap": "{done}/{total} erledigt. Sag mir: lieber entspannter oder mutiger weiter?",
   "@moodyHubNudgePlanWrap": {
     "placeholders": {
-      "done": { "type": "String" },
-      "total": { "type": "String" }
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
     }
   },
   "dayPlanMoodyMessageFallback": "Das habe ich für deine Stimmung ausgewählt. Füge Lieblingsorte zu Mein Tag hinzu und tippe dann auf Meinen Tag anzeigen.",
@@ -1564,7 +1572,7 @@
   },
   "noPlanDayOpenAroundYou": "Dein Tag ist noch offen — mir platzt der Kopf vor Ideen. Soll ich den ganzen Tag ausplotten, oder erst eine Stimmung anziehen?",
   "noPlanDayOpenLocating": "Kurz Geduld… ich pinne deinen Ort, dann wählen wir den nächsten Schritt.",
-  "noPlanPlanMyWholeDay": "✨ Meinen ganzen Tag planen",
+  "noPlanPlanMyWholeDay": "Meinen ganzen Tag planen",
   "noPlanFindMeCoffee": "☕ Finde Kaffee für mich",
   "noPlanGetMeMoving": "🏃 Bring mich in Bewegung",
   "noPlanJustChat": "💬 Sag mir, was dich umtreibt",
@@ -2790,7 +2798,8 @@
   "moodyHubFallbackAiMessage": "Dein Tag steht — Moody ist für dich da 🌟",
   "moodyHubActivitySingular": "Aktivität",
   "moodyHubActivityPlural": "Aktivitäten",
-  "moodyHubPlanForWhen": "Für wann planst du?",
+  "moodHubMoodPickerBanner": "Wähle unten bis zu drei Stimmungen — ich passe die Ideen daran an.",
+  "moodyHubPlanForWhen": "Welcher Tag?",
   "moodyHubListComma": ", ",
   "moodyHubListAnd": " und ",
   "moodyReviewTitle": "Kurzes Feedback",
@@ -4019,6 +4028,19 @@
   "periodActivitiesSwipeDelete": "Löschen",
   "weatherFailedLoadCurrent": "Wetter konnte nicht geladen werden",
   "weatherFailedLoadForecast": "Vorhersage konnte nicht geladen werden",
+  "weatherDetailTitle": "Wetter",
+  "weatherDetailLoading": "Wird geladen…",
+  "weatherDetailLoadError": "Wetter konnte nicht geladen werden",
+  "weatherDetail24Hour": "24-Stunden-Ausblick",
+  "weatherDetail3Day": "Nächste Tage",
+  "weatherDetailFeelsLike": "Gefühlt {degrees}°",
+  "@weatherDetailFeelsLike": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
   "weatherNoDataAvailable": "Keine Wetterdaten verfügbar",
   "weatherShowMore": "Mehr anzeigen",
   "weatherShowLess": "Weniger anzeigen",
@@ -4718,12 +4740,17 @@
     }
   },
   "moodMatchLobbyBothLockedHold": "Beide Vibes da. Einen Moment… 🤔",
-
   "moodMatchLockInVibeTitle": "Deine Stimmung festlegen",
   "moodMatchLockInVibeBtn": "Meine Stimmung festlegen",
   "moodMatchChangeMind": "Doch nicht",
   "moodMatchPrivacyNoteLockIn": "Deine Stimmung wird nur geteilt, wenn {name} auch festlegt.",
-  "@moodMatchPrivacyNoteLockIn": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPrivacyNoteLockIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchMoodyReactionCurious": "Ooh, neugierige Energie! Ich mag das...",
   "moodMatchMoodyReactionRomantic": "Liebe liegt in der Luft...",
   "moodMatchMoodyReactionFoody": "Oh! Jemand hat Hunger. Ich finde etwas Leckeres.",
@@ -4741,11 +4768,29 @@
   "moodMatchStatusLockedIn": "Gesperrt",
   "moodMatchBadgeLocked": "Gesperrt",
   "moodMatchLiveUpdateOpened": "{name} hat die App geöffnet",
-  "@moodMatchLiveUpdateOpened": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchLiveUpdateOpened": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchLiveUpdatePicking": "{name} wählt ihre Stimmung...",
-  "@moodMatchLiveUpdatePicking": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchLiveUpdatePicking": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchLiveUpdateLocked": "{name} hat ihre Stimmung gesperrt!",
-  "@moodMatchLiveUpdateLocked": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchLiveUpdateLocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchWaitingBothBetter": "Beide Stimmungen da? Noch besser zusammen.",
   "moodMatchWaitingOnTitle": "Warten auf {name}",
   "moodMatchWaitingOnSub": "{name} wählt noch privat. Sobald festgelegt, geht ihr gemeinsam weiter.",
@@ -4756,7 +4801,13 @@
   "moodMatchMatchLoadingAppBar": "Moment",
   "moodMatchPlanBuildButton": "Plan wird erstellt…",
   "moodMatchWaitingPreviewHeadlineNamed": "{name} ist dran",
-  "@moodMatchWaitingPreviewHeadlineNamed": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchWaitingPreviewHeadlineNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchWaitingPreviewHeadlineGeneric": "Dein Match ist dran",
   "moodMatchWaitingQuietHint": "Gemeinsame Ideen erscheinen hier, sobald ihr einen Tag gewählt habt.",
   "moodMatchRemoveSessionTitle": "Dieses Mood Match entfernen?",
@@ -4777,9 +4828,21 @@
   "moodMatchOwnerCounterKeep": "Meine Wahl behalten",
   "moodMatchOwnerCounterSuggestAnother": "Anderen Zeitpunkt vorschlagen →",
   "moodMatchWaitingGuestReviewPlan": "Warten, bis {name} den Plan prüft …",
-  "@moodMatchWaitingGuestReviewPlan": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchWaitingGuestReviewPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanSentToGuestBanner": "Gesendet an {name}",
-  "@moodMatchPlanSentToGuestBanner": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanSentToGuestBanner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2SelectAllThreeToContinue": "Alle 3 auswählen, um fortzufahren",
   "moodMatchSaving": "Speichern …",
   "moodMatchStepAlmostTag": "Gleich soweit",
@@ -4787,40 +4850,112 @@
   "moodMatchDayPickerStepGuest": "Schritt 1 von 2 — euer Match wählt",
   "moodMatchDayPickerTitle": "Welcher Tag passt euch beiden?",
   "moodMatchDayPickerSubtitle": "Du wählst — {name} darf bestätigen.",
-  "@moodMatchDayPickerSubtitle": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchDayPickerSubtitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchDayPickerToday": "Heute",
   "moodMatchDayPickerNote": "{name} bekommt einen Hinweis zur Bestätigung.",
-  "@moodMatchDayPickerNote": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchDayPickerNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchDayPickerPreview": "{ownerName} hat {day} vorgeschlagen",
-  "@moodMatchDayPickerPreview": { "placeholders": { "ownerName": { "type": "String" }, "day": { "type": "String" } } },
+  "@moodMatchDayPickerPreview": {
+    "placeholders": {
+      "ownerName": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchDayPickerCta": "Weiter — euren Match ansehen →",
   "moodMatchDayPickerOpenSheetCta": "Tag & Uhrzeit wählen",
   "moodMatchDayPickerSheetChangeCta": "Tag oder Zeit ändern",
   "moodMatchDayPickerWholeDay": "Ganzer Tag",
   "moodMatchPlanResultMoodyV1": "Hier ist euer Tag mit {name} — drei Picks, die zu euren beiden Vibes passen.",
-  "@moodMatchPlanResultMoodyV1": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanResultMoodyV1": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanResultMoodyV2": "Gebaut rund um das, was ihr heute beide wolltet. Tippe einen Ort an, bevor du mit {name} bestätigst.",
-  "@moodMatchPlanResultMoodyV2": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanResultMoodyV2": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanResultMoodyV3": "Macht sie der Reihe nach oder gemischt — eure Wahl. {name} sieht denselben Plan auf der anderen Seite.",
-  "@moodMatchPlanResultMoodyV3": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanResultMoodyV3": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanResultMoodyV4": "Drei kleine Momente rund um eure Stimmungen. Passt was nicht? Tippe auf Tauschen — wir schlagen etwas anderes vor.",
-  "@moodMatchPlanResultMoodyV4": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanResultMoodyV4": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchDayPickerSheetTitle": "Wählt ein Datum für euch beide",
   "moodMatchDayPickerSheetMoodyLine": "Kein Stress — {name} bestätigt eure Wahl.",
-  "@moodMatchDayPickerSheetMoodyLine": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchDayPickerSheetMoodyLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchDayPickerSheetDone": "Festlegen →",
   "moodMatchDayPickerTimeHint": "Das nutzen wir, sobald der Plan fertig ist. Euer Match wählt trotzdem einen eigenen Start.",
   "moodMatchDayNotifyMaybeFailed": "Match wurde nicht rechtzeitig benachrichtigt — bitte App öffnen, um den Tag zu bestätigen.",
   "moodMatchGuestWaitingDay": "{name} wählt einen Tag für euch beide...",
-  "@moodMatchGuestWaitingDay": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchGuestWaitingDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchGuestConfirmDay": "Passt {day}?",
-  "@moodMatchGuestConfirmDay": { "placeholders": { "day": { "type": "String" } } },
+  "@moodMatchGuestConfirmDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchGuestConfirmYes": "Passt mir ✓",
   "moodMatchGuestConfirmNo": "Anderen Tag vorschlagen",
   "moodMatchTimePickerStep": "Schritt 2 von 2 — nur für dich",
   "moodMatchTimePickerTitle": "Wann möchtest DU beginnen?",
   "moodMatchTimePickerSubtitle": "{day} · {name} wählt auch ihr eigenes Slot",
-  "@moodMatchTimePickerSubtitle": { "placeholders": { "day": { "type": "String" }, "name": { "type": "String" } } },
+  "@moodMatchTimePickerSubtitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchTimePickerMorning": "Morgen",
   "moodMatchTimePickerAfternoon": "Nachmittag",
   "moodMatchTimePickerEvening": "Abend",
@@ -4828,10 +4963,22 @@
   "moodMatchTimePickerAfternoonNote": "Mittagsenergie — perfekt für die meisten Orte.",
   "moodMatchTimePickerEveningNote": "Golden-Hour-Vibes all the way.",
   "moodMatchTimePickerWithBadge": "Du und {name} plant das zusammen",
-  "@moodMatchTimePickerWithBadge": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchTimePickerWithBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchTimePickerCta": "Zu Mein Tag hinzufügen",
   "moodMatchTimePickerOtherNote": "{name} wählt ihr eigenes Slot separat",
-  "@moodMatchTimePickerOtherNote": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchTimePickerOtherNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchResultTag": "MATCH ERGEBNIS",
   "moodMatchResultCompatibility": "Kompatibilität",
   "moodMatchFriendYou": "Du",
@@ -4840,96 +4987,237 @@
   "moodMatchReactionSwap": "Tauschen",
   "moodMatchConflictBadge": "Konflikt",
   "moodMatchConflictBanner": "{name} hat stattdessen {place} vorgeschlagen",
-  "@moodMatchConflictBanner": { "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } } },
+  "@moodMatchConflictBanner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchConflictKeep": "Original behalten",
   "moodMatchConflictAccept": "Wahl von {name} akzeptieren",
-  "@moodMatchConflictAccept": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchConflictAccept": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanSortedCta": "Plan fertig → Startzeit wählen",
   "moodMatchPlanHeroLabel": "Starte hier in den Morgen",
   "moodMatchPlanMoreIdeas": "Mehr Ideen",
   "moodMatchPlanMoreIdeasCount": "{count, plural, =1{1 weitere Idee} other{{count} weitere Ideen}}",
-  "@moodMatchPlanMoreIdeasCount": { "placeholders": { "count": { "type": "int" } } },
+  "@moodMatchPlanMoreIdeasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "moodMatchPlanSwapHint": "Wechsel kommen aus den anderen Ideen eures Matches.",
   "moodMatchConfirmTitle": "Zu deinem Tag hinzugefügt",
   "moodMatchConfirmSubtitle": "{day} · {slot} Start",
-  "@moodMatchConfirmSubtitle": { "placeholders": { "day": { "type": "String" }, "slot": { "type": "String" } } },
+  "@moodMatchConfirmSubtitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchConfirmOtherNote": "{name} bekommt einen Hinweis, ihr Slot zu wählen.",
-  "@moodMatchConfirmOtherNote": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchConfirmOtherNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchConfirmOtherStatus": "{name} — Benachrichtigt, wählt Startzeit",
-  "@moodMatchConfirmOtherStatus": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchConfirmOtherStatus": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchConfirmViewMyDay": "Mein Tag anzeigen",
   "moodMatchInMyDaySuccess": "Dein Plan für {date} ist in Mein Tag.",
-  "@moodMatchInMyDaySuccess": { "placeholders": { "date": { "type": "String" } } },
+  "@moodMatchInMyDaySuccess": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchInMyDaySuccessShort": "Dein Plan ist in Mein Tag.",
   "moodMatchConfirmBackToPlan": "← Zurück zum Plan",
   "moodMatchWithBadge": "Mit {name}",
-  "@moodMatchWithBadge": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchWithBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2GuestMoody": "{name} hat diese für euch ausgewählt. Sag, was passt.",
-  "@moodMatchPlanV2GuestMoody": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2GuestMoody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ContextYouPickedDay": "📅 {day} · Du hast den Tag gewählt",
-  "@moodMatchPlanV2ContextYouPickedDay": { "placeholders": { "day": { "type": "String" } } },
+  "@moodMatchPlanV2ContextYouPickedDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ContextOwnerPickedDay": "📅 {day} · {name} hat den Tag gewählt",
-  "@moodMatchPlanV2ContextOwnerPickedDay": { "placeholders": { "day": { "type": "String" }, "name": { "type": "String" } } },
+  "@moodMatchPlanV2ContextOwnerPickedDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ContextPlannedDay": "📅 {day} · Geplanter Tag",
-  "@moodMatchPlanV2ContextPlannedDay": { "placeholders": { "day": { "type": "String" } } },
+  "@moodMatchPlanV2ContextPlannedDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ImIn": "Passt für mich ✓",
   "moodMatchPlanV2SwapThis": "Tauschen",
   "moodMatchPlanV2YouConfirmed": "Von dir bestätigt ✓",
   "moodMatchPlanV2WaitingForYou": "Wartet auf dich",
   "moodMatchPlanV2ConfirmBeforeSend": "Bestätige oder tausche vor dem Senden",
   "moodMatchPlanV2ConfirmedByYou": "Von dir bestätigt · {name} sieht es noch nicht",
-  "@moodMatchPlanV2ConfirmedByYou": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2ConfirmedByYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2SendToGuest": "An {name} senden →",
-  "@moodMatchPlanV2SendToGuest": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2SendToGuest": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ConfirmAllToSend": "{count, plural, =1{Bestätige deine Auswahl, um an {name} zu senden} other{Alle {count} bestätigen, um an {name} zu senden}}",
   "@moodMatchPlanV2ConfirmAllToSend": {
     "placeholders": {
-      "count": { "type": "int" },
-      "name": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "moodMatchPlanV2GuestWaitingShare": "Warte, bis {name} den Plan teilt",
-  "@moodMatchPlanV2GuestWaitingShare": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2GuestWaitingShare": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2WorksForMe": "Passt ✓",
   "moodMatchPlanV2NotForMe": "Nicht für mich",
   "moodMatchPlanV2BothIn": "Beide dabei ✓",
   "moodMatchPlanV2YourTurn": "Du bist dran",
   "moodMatchPlanV2SwapRequested": "Tausch angefragt",
   "moodMatchPlanV2OwnerInYourCall": "{name} ist dabei · du entscheidest",
-  "@moodMatchPlanV2OwnerInYourCall": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2OwnerInYourCall": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2YouBothIn": "Du und {name} seid dabei",
-  "@moodMatchPlanV2YouBothIn": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2YouBothIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2SlotNotInThisPlan": "{partLabel} ist nicht in diesem Mood Match — ihr habt nur einen Tagesabschnitt gemeinsam geplant.",
-  "@moodMatchPlanV2SlotNotInThisPlan": { "placeholders": { "partLabel": { "type": "String" } } },
+  "@moodMatchPlanV2SlotNotInThisPlan": {
+    "placeholders": {
+      "partLabel": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2YouBothInThisMoment": "Ihr seid für diesen Moment dabei ✓",
   "moodMatchPlanV2WaitingOwnerSwap": "Warte auf {name} beim Tausch…",
-  "@moodMatchPlanV2WaitingOwnerSwap": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2WaitingOwnerSwap": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2StopsReviewed": "{done} von {total}",
   "@moodMatchPlanV2StopsReviewed": {
     "placeholders": {
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "moodMatchPlanV2FooterGuestReviewNudge": "{done} von {total} bestätigt — bitte Morgen, Mittag & Abend oben freigeben",
   "@moodMatchPlanV2FooterGuestReviewNudge": {
     "placeholders": {
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "moodMatchPlanV2OwnerPickEachPart": "{done} von {total} gewählt — wähle den Rest oben",
   "@moodMatchPlanV2OwnerPickEachPart": {
     "placeholders": {
-      "done": { "type": "int" },
-      "total": { "type": "int" }
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "moodMatchPlanV2UndoMyChoice": "Antwort ändern",
   "moodMatchPlanV2ConfirmAllGuest": "{count, plural, =1{Bestätige deine Auswahl zum Abschluss} other{Alle {count} zum Abschluss bestätigen}}",
   "@moodMatchPlanV2ConfirmAllGuest": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "moodMatchPlanV2PlanConfirmedTime": "Plan fix — Startzeit wählen →",
@@ -4938,54 +5226,336 @@
   "moodMatchRevealMaeAfternoon": "MITTAG",
   "moodMatchRevealMaeEvening": "ABEND",
   "moodMatchPlanV2SwapSheetTitle": "Etwas anderes für {slot}",
-  "@moodMatchPlanV2SwapSheetTitle": { "placeholders": { "slot": { "type": "String" } } },
+  "@moodMatchPlanV2SwapSheetTitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2SwapSheetMoody": "Hier noch ein paar Optionen.",
   "moodMatchPlanV2PickThis": "Das nehmen",
   "moodMatchPlanV2YourPickSaved": "Deine Wahl",
   "moodMatchPlanV2SwapBannerTitle": "{name} möchte {slot} tauschen",
-  "@moodMatchPlanV2SwapBannerTitle": { "placeholders": { "name": { "type": "String" }, "slot": { "type": "String" } } },
+  "@moodMatchPlanV2SwapBannerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2SwapBannerSubtitle": "Vorschlag: {proposed} statt {original}",
-  "@moodMatchPlanV2SwapBannerSubtitle": { "placeholders": { "proposed": { "type": "String" }, "original": { "type": "String" } } },
+  "@moodMatchPlanV2SwapBannerSubtitle": {
+    "placeholders": {
+      "proposed": {
+        "type": "String"
+      },
+      "original": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2KeepOriginal": "{name} behalten",
-  "@moodMatchPlanV2KeepOriginal": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2KeepOriginal": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2AcceptSwap": "{name} annehmen",
-  "@moodMatchPlanV2AcceptSwap": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2AcceptSwap": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2SentToGuest": "Plan gesendet an {name}",
-  "@moodMatchPlanV2SentToGuest": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2SentToGuest": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2GuestSuggestedSwap": "{name} schlägt vor: {proposed}",
-  "@moodMatchPlanV2GuestSuggestedSwap": { "placeholders": { "name": { "type": "String" }, "proposed": { "type": "String" } } },
+  "@moodMatchPlanV2GuestSuggestedSwap": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "proposed": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ActuallyKeep": "Doch behalten",
   "moodMatchPlanV2WaitingForOwnerEllipsis": "Warte auf {name}…",
-  "@moodMatchPlanV2WaitingForOwnerEllipsis": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2WaitingForOwnerEllipsis": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2WaitingGuestApproveSwap": "{name} muss deinen Vorschlag für diesen Slot noch bestätigen.",
-  "@moodMatchPlanV2WaitingGuestApproveSwap": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchPlanV2WaitingGuestApproveSwap": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2OwnerSuggestedDifferentPlace": "{name} möchte das gegen {proposed} tauschen.",
-  "@moodMatchPlanV2OwnerSuggestedDifferentPlace": { "placeholders": { "name": { "type": "String" }, "proposed": { "type": "String" } } },
+  "@moodMatchPlanV2OwnerSuggestedDifferentPlace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "proposed": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2UseOwnersPick": "Ihre Wahl nehmen",
   "moodMatchPlanV2KeepCurrentPlace": "Diesen Ort behalten",
   "moodMatchPlanV2WithdrawSwap": "Vorschlag zurückziehen",
   "moodMatchPlanV2RespondSwapsOnCards": "Tauschvorschläge auf den Karten beantworten",
   "moodMatchPlanV2SuggestDifferentPlace": "Änderung vorschlagen",
   "moodMatchPlanV2YourSwapPendingOwner": "Du hast {proposed} vorgeschlagen. Warte auf {name}.",
-  "@moodMatchPlanV2YourSwapPendingOwner": { "placeholders": { "proposed": { "type": "String" }, "name": { "type": "String" } } },
+  "@moodMatchPlanV2YourSwapPendingOwner": {
+    "placeholders": {
+      "proposed": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastPlanShared": "{name} hat den Mood-Match-Plan mit dir geteilt.",
-  "@moodMatchToastPlanShared": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchToastPlanShared": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastSwapRequested": "{name} schlägt einen anderen Ort vor: {place}.",
-  "@moodMatchToastSwapRequested": { "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } } },
+  "@moodMatchToastSwapRequested": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastSwapAccepted": "{name} hat den Tausch akzeptiert.",
-  "@moodMatchToastSwapAccepted": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchToastSwapAccepted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastSwapDeclined": "{name} hat den Tausch für {slot} abgelehnt.",
-  "@moodMatchToastSwapDeclined": { "placeholders": { "name": { "type": "String" }, "slot": { "type": "String" } } },
+  "@moodMatchToastSwapDeclined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastPartnerConfirmedSlot": "{name} hat einen Slot bestätigt ({slot}).",
-  "@moodMatchToastPartnerConfirmedSlot": { "placeholders": { "name": { "type": "String" }, "slot": { "type": "String" } } },
+  "@moodMatchToastPartnerConfirmedSlot": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastGuestDeclinedOriginalDay": "{name} ist an dem vorgeschlagenen Tag nicht verfügbar.",
-  "@moodMatchToastGuestDeclinedOriginalDay": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchToastGuestDeclinedOriginalDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchToastGuestProposedNewDay": "{name} schlägt ein anderes Datum vor — öffne den Mood-Match-Tag-Schritt.",
-  "@moodMatchToastGuestProposedNewDay": { "placeholders": { "name": { "type": "String" } } },
+  "@moodMatchToastGuestProposedNewDay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchSaveMyDayFailed": "Konnte nicht zu „Meine Pläne“ hinzufügen: {details}",
-  "@moodMatchSaveMyDayFailed": { "placeholders": { "details": { "type": "String" } } },
+  "@moodMatchSaveMyDayFailed": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2BasedOnMoods": "Basierend auf Stimmungen: {moods}",
-  "@moodMatchPlanV2BasedOnMoods": { "placeholders": { "moods": { "type": "String" } } },
+  "@moodMatchPlanV2BasedOnMoods": {
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
   "moodMatchPlanV2ActivityMood": "Stimmung: {mood}",
-  "@moodMatchPlanV2ActivityMood": { "placeholders": { "mood": { "type": "String" } } }
+  "@moodMatchPlanV2ActivityMood": {
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubBrandTag": "Mood Match",
+  "moodMatchHubEmptySub": "Wähle eine Person. Zwei Stimmungen → ein gemeinsamer Tag.",
+  "moodMatchHubCtaStart": "Mood Match starten",
+  "moodMatchHubCtaResume": "Mood Match fortsetzen",
+  "moodMatchHubCtaOpenShared": "Gemeinsamen Plan öffnen",
+  "moodMatchHubCtaReviewShared": "Plan prüfen",
+  "moodMatchHubSubWaitingJoin": "Warten auf den Beitritt von {name}",
+  "@moodMatchHubSubWaitingJoin": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubSubWaitingJoinNoName": "Warten auf den Beitritt deines Freundes",
+  "moodMatchHubSubWaitingMood": "Warten auf {name}s Stimmung",
+  "@moodMatchHubSubWaitingMood": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubSubWaitingMoodNoName": "Warten auf ihre Stimmung",
+  "moodMatchHubSubDayProposed": "{name} hat einen Tag vorgeschlagen — prüfen",
+  "@moodMatchHubSubDayProposed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubSubDayProposedNoName": "Ein Tag wurde vorgeschlagen — prüfen",
+  "moodMatchHubSubBuildingWith": "Ich erstelle euren gemeinsamen Tag mit {name}…",
+  "@moodMatchHubSubBuildingWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubSubBuilding": "Ich erstelle euren gemeinsamen Tag…",
+  "moodMatchHubSubReadyWith": "Euer gemeinsamer Tag mit {name} ist bereit.",
+  "@moodMatchHubSubReadyWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubSubReady": "Euer gemeinsamer Tag ist bereit.",
+  "moodMatchHubMoreSessions": "{count, plural, =1{+1 weiterer Mood Match} other{+{count} weitere Mood Matches}}",
+  "@moodMatchHubMoreSessions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moodyHubActionFindCoffee": "Kaffee finden",
+  "moodyHubActionGetMeActive": "Bring mich in Bewegung",
+  "moodyHubActionContinueDay": "Tag fortsetzen",
+  "moodyHubActionReplaceActivity": "Aktivität tauschen",
+  "moodyHubMoodMatchViewMatches": "Matches ansehen",
+  "moodyHubIntroHeroEmpty": "Hey, dein Tag ist noch offen. Soll ich etwas planen, oder quatschen wir erst?",
+  "moodyHubIntroHeroActive": "Dein Tag läuft schon. Ich helfe dir gern beim Anpassen oder wir quatschen einfach.",
+  "moodyHubIntroHeroSharedReady": "Euer gemeinsamer Plan ist oben bereit. Öffnen oder erst weiter quatschen?",
+  "moodyHubHeroBodyEmptyFriendly": "Hey, your day is still open. What are you in the mood for? 🤔",
+  "moodyHubHeroBodyEmptyProfessional": "Your schedule is open. I can outline a clear, focused day plan—or we can keep this concise and practical. 📋",
+  "moodyHubHeroBodyEmptyEnergetic": "Okay let's GO! 🚀 Your day is wide open and anything is possible right now!",
+  "moodyHubHeroBodyEmptyDirect": "Your day is open. Plan something, or chat—your call. 📍",
+  "moodyHubHeroBodyActiveFriendly": "Your day is already rolling! I'm here if you want to add something or just talk. 🎈",
+  "moodyHubHeroBodyActiveProfessional": "Your day is underway. I can help refine timing or priorities—or keep this brief. ⏱️",
+  "moodyHubHeroBodyActiveEnergetic": "You're already moving — let's keep that momentum going! Anything to add? 🔥",
+  "moodyHubHeroBodyActiveDirect": "Day's in motion. Tweak something, or chat. 📍",
+  "moodyHubHeroBodySharedReadyFriendly": "Your shared plan is waiting — open it and let's make the day official! 🎉",
+  "moodyHubHeroBodySharedReadyProfessional": "Your shared plan is ready. Open it when you're ready, or continue our conversation here. 📋",
+  "moodyHubHeroBodySharedReadyEnergetic": "The collab plan is ready — open it right now because this one is going to be so good! 🔥",
+  "moodyHubHeroBodySharedReadyDirect": "Shared plan is ready. Open it, or stay here. 📍",
+  "moodyHubHeroBodySharedReadyDayEmptyFriendly": "You and your friend have a shared plan ready — open it to add everything to your day! ✨",
+  "moodyHubHeroBodySharedReadyDayEmptyProfessional": "A collaborative plan is ready in Mood Match. Open it to add activities to your day, or continue our conversation here. 🤝",
+  "moodyHubHeroBodySharedReadyDayEmptyEnergetic": "The Mood Match plan is ready and it's good — open it and load your day! 🚀",
+  "moodyHubHeroBodySharedReadyDayEmptyDirect": "Shared plan in Mood Match. Open it to add to your day, or stay here. 📍",
+  "moodyHubHeroBodyInviteFriendly": "Your last Mood Match is already on your plan. Ready to do it again with someone? 👯‍♀️",
+  "moodyHubHeroBodyInviteProfessional": "Your previous Mood Match is on your schedule. When you're ready, start a new match to plan another day together. 🤝",
+  "moodyHubHeroBodyInviteEnergetic": "That Mood Match is on your plan and I love it! Who's next? Let's match again! 🔥",
+  "moodyHubHeroBodyInviteDirect": "Last Mood Match is on your plan. Start a new one when you want. 📍",
+  "moodyHubMoodMatchInviteCta": "Start a Mood Match",
+  "moodyHubInviteCardBody": "Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️",
+  "moodMatchAlreadyOnYourPlan": "Already on your plan",
+  "moodyHubHeroBodyEmptyFriendly2": "Nothing planned yet — and that's exciting! What do you feel like doing today? ✨",
+  "moodyHubHeroBodyEmptyFriendly3": "Blank canvas today. We could go anywhere with this! What's calling you? 🎨",
+  "moodyHubHeroBodyEmptyFriendly4": "Your day is wide open. Want me to build something around your mood? 🪄",
+  "moodyHubHeroBodyEmptyProfessional2": "Nothing locked in yet. Tell me your priorities and I'll structure the day. 🎯",
+  "moodyHubHeroBodyEmptyProfessional3": "Open day ahead. Where do you want to focus your energy? ⚡",
+  "moodyHubHeroBodyEmptyProfessional4": "Your calendar is clear. Ready to put together a sharp plan when you are. 📅",
+  "moodyHubHeroBodyEmptyEnergetic2": "Nothing on the agenda yet — honestly? Perfect. Let's make it legendary! 🌟",
+  "moodyHubHeroBodyEmptyEnergetic3": "Fresh start, full energy, zero plans. That's literally my favourite combo! What are we doing? ⚡",
+  "moodyHubHeroBodyEmptyEnergetic4": "The day is yours and it's still untouched. Tell me what you're feeling and let's build something real! 🔥",
+  "moodyHubHeroBodyEmptyDirect2": "Nothing scheduled. What do you want to do? 🗺️",
+  "moodyHubHeroBodyEmptyDirect3": "Open day. I can plan it or you can — just say the word. ✌️",
+  "moodyHubHeroBodyEmptyDirect4": "No plans yet. Drop a mood or an idea and we move. 🚀",
+  "moodyHubHeroBodyActiveFriendly2": "You've got things lined up — love that for you. Need anything tweaked? 🛠️",
+  "moodyHubHeroBodyActiveFriendly3": "Day's in motion. Want to add a little something extra, or just check in? 💫",
+  "moodyHubHeroBodyActiveFriendly4": "Looking good on the plan front! Let me know if anything needs adjusting. ✨",
+  "moodyHubHeroBodyActiveProfessional2": "Schedule is set. Let me know if you want to optimise anything. 📈",
+  "moodyHubHeroBodyActiveProfessional3": "You have a plan in place. I'm available if adjustments come up. 🔄",
+  "moodyHubHeroBodyActiveProfessional4": "Day is structured. Ready to adapt if needed. 📋",
+  "moodyHubHeroBodyActiveEnergetic2": "Look at you with a plan! Want to level it up or just vibe with what you have? 🚀",
+  "moodyHubHeroBodyActiveEnergetic3": "Day is set and you're ready — I love the energy! Tweak anything or just crush it? 💥",
+  "moodyHubHeroBodyActiveEnergetic4": "You've got something going already! Want to stack on more or just ride the wave? 🌊",
+  "moodyHubHeroBodyActiveDirect2": "Plan's set. Need anything changed? 🔄",
+  "moodyHubHeroBodyActiveDirect3": "You've got a day. Add something or leave it. ✌️",
+  "moodyHubHeroBodyActiveDirect4": "Moving already. I'm here if it needs a change. ⚡",
+  "moodyHubHeroBodyInviteFriendly2": "That Mood Match was a moment! Who are you feeling like exploring with next? 🗺️",
+  "moodyHubHeroBodyInviteFriendly3": "Last plan is locked in. Want to set up a new Mood Match with a friend? ✌️",
+  "moodyHubHeroBodyInviteFriendly4": "Your shared day is on your plan. Another one? Tell me who you want to go out with. 💫",
+  "moodyHubHeroBodyInviteProfessional2": "Last collaborative plan is confirmed. Initiate a new Mood Match when it suits you. 📅",
+  "moodyHubHeroBodyInviteProfessional3": "Previous session is complete. Ready to schedule the next collaborative day? 🗓️",
+  "moodyHubHeroBodyInviteProfessional4": "Your shared plan is in the books. Start a new match to plan ahead. 📋",
+  "moodyHubHeroBodyInviteEnergetic2": "You did a Mood Match and it's on your plan — okay iconic! Who are we dragging into the next one? 🚀",
+  "moodyHubHeroBodyInviteEnergetic3": "Last match: done. Next match: waiting for you! Let's go again! ⚡",
+  "moodyHubHeroBodyInviteEnergetic4": "Your shared day is locked in — love that! Ready to plan another one? I'll make it even better. 🌟",
+  "moodyHubHeroBodyInviteDirect2": "Done with last match. Start the next one. ✌️",
+  "moodyHubHeroBodyInviteDirect3": "Plan saved. New Mood Match when you're ready. 🔄",
+  "moodyHubHeroBodyInviteDirect4": "Last one's on your plan. Match again? 🤝",
+  "moodyHubPlanYourDayCardTitle": "Plan your day",
+  "moodyHubPlanYourDayCardBody": "Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳",
+  "moodyHubContinueDayCardTitle": "Continue your day",
+  "moodyHubContinueDayCardBody": "You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄",
+  "moodyHubCollapsedActionsTitle": "Moody Hub",
+  "moodyHubCollapsedActionsSubtitle": "Plan your day, Mood Match, and more."
 }

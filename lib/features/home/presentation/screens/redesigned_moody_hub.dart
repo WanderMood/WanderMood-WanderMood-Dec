@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,9 +14,6 @@ import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.d
 import 'package:wandermood/features/home/presentation/widgets/moody_feedback_prompt_card.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
-import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart'
-    show PlanLoadingScreen, DayPlanQuickPick;
-import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/localization/localized_mood_labels.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -28,17 +26,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/services/moody_hub_message_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
-import 'package:wandermood/core/services/connectivity_service.dart';
-import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/features/group_planning/domain/group_session_models.dart'
+    show GroupSessionRow, GroupMemberView;
+import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
+import 'package:wandermood/features/home/presentation/widgets/mood_change_plan_bottom_sheet.dart';
 
 /// WanderMood v2 design tokens (Moody Hub — active plan)
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForest = Color(0xFF2A6049);
-const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
 const Color _wmDusk = Color(0xFF4A4640);
+const Color _wmSunset = Color(0xFFE8784A);
+const Color _wmSunsetTint = Color(0xFFFCEEE4);
+const double _moodyHubComposerBottomGap = 12;
 
 class RedesignedMoodyHub extends ConsumerStatefulWidget {
   const RedesignedMoodyHub({super.key});
@@ -48,63 +50,11 @@ class RedesignedMoodyHub extends ConsumerStatefulWidget {
 }
 
 class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
-  String _timeGreeting(AppLocalizations l10n) {
-    final hour = MoodyClock.now().hour;
-    if (hour < 12) return '${l10n.goodMorning}!';
-    if (hour < 17) return '${l10n.goodAfternoon}!';
-    return '${l10n.goodEvening}!';
-  }
-
-  String _getTimeEmoji() {
-    final hour = MoodyClock.now().hour;
-    if (hour < 12) return '☀️';
-    if (hour < 17) return '🌤️';
-    return '🌙';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final todayActivities = ref.watch(todayActivitiesProvider);
-    final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
-    final locationAsync = ref.watch(locationNotifierProvider);
-    final cityLabel = locationAsync.valueOrNull?.trim();
-    final cityLoading = locationAsync.isLoading;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F0E8), // wmCream — QA / design system
-      body: todayActivities.when(
-        data: (activities) {
-          final nonCancelled = activities
-              .where((a) => a.status != ActivityStatus.cancelled)
-              .toList();
-
-          if (nonCancelled.isNotEmpty) {
-            return _MoodyHubWithPlan(
-              activities: nonCancelled,
-              moodState: dailyMoodState,
-            );
-          }
-          return _MoodyHubNoPlan(
-            greeting: _timeGreeting(l10n),
-            emoji: _getTimeEmoji(),
-            cityLabel: cityLabel != null && cityLabel.isNotEmpty ? cityLabel : null,
-            cityLoading: cityLoading,
-          );
-        },
-        loading: () => _MoodyHubNoPlan(
-          greeting: _timeGreeting(l10n),
-          emoji: _getTimeEmoji(),
-          cityLabel: cityLabel != null && cityLabel.isNotEmpty ? cityLabel : null,
-          cityLoading: cityLoading,
-        ),
-        error: (_, __) => _MoodyHubNoPlan(
-          greeting: _timeGreeting(l10n),
-          emoji: _getTimeEmoji(),
-          cityLabel: cityLabel != null && cityLabel.isNotEmpty ? cityLabel : null,
-          cityLoading: false,
-        ),
-      ),
+      backgroundColor: const Color(0xFFF1E9DD), // aligned with Moody chat sheet cream
+      body: const MoodyChatTabView(),
     );
   }
 }
@@ -166,6 +116,10 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
     showMoodyChatSheet(context, ref);
   }
 
+  void _openChangeMoodSheet(BuildContext context) {
+    unawaited(showMoodChangePlanBottomSheet(context, ref));
+  }
+
   Color _moodColor(String mood) {
     switch (mood.toLowerCase()) {
       case 'foodie':
@@ -214,18 +168,12 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
     final activities = widget.activities;
     final moods = widget.moodState.selectedMoods;
 
-    final morningActivities =
-        activities.where((a) => a.startTime.hour < 12).toList();
-    final afternoonActivities = activities
-        .where((a) => a.startTime.hour >= 12 && a.startTime.hour < 18)
-        .toList();
-    final eveningActivities =
-        activities.where((a) => a.startTime.hour >= 18).toList();
-
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      child: Stack(
         children: [
+          ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 144),
+            children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -280,118 +228,81 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
           ),
           const SizedBox(height: 20),
           Center(
-            child: AnimatedBuilder(
-              animation: _breathScale,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _breathScale.value,
-                  child: child,
-                );
-              },
-              child: MoodyCharacter(
-                size: 110,
-                mood: 'idle',
-                mouthScaleFactor: 1.0,
+            child: GestureDetector(
+              onTap: () => _openMoodyChat(context),
+              child: AnimatedBuilder(
+                animation: _breathScale,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _breathScale.value,
+                    child: child,
+                  );
+                },
+                child: MoodyCharacter(
+                  size: 110,
+                  mood: 'idle',
+                  mouthScaleFactor: 1.0,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          _MoodyHubAiMessageLine(
-            moods: moods,
-            activitiesCount: activities.length,
-            timeOfDay: _apiTimeOfDay(),
-            languageCode: Localizations.localeOf(context).languageCode,
+          GestureDetector(
+            onTap: () => _openMoodyChat(context),
+            child: _MoodyHubAiMessageLine(
+              moods: moods,
+              activitiesCount: activities.length,
+              timeOfDay: _apiTimeOfDay(),
+              languageCode: Localizations.localeOf(context).languageCode,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          const MoodMatchHubCard(compact: true),
+          const SizedBox(height: 18),
           _MoodyHubMoodCard(
             moods: moods,
             moodColor: _moodColor,
             moodEmoji: _moodEmoji,
             moodLabel: (m) => localizedMoodDisplayLabel(l10n, m),
-            onChangeMood: () => context.pushNamed('moody-standalone'),
+            onChangeMood: () => _openChangeMoodSheet(context),
                 ),
-                const SizedBox(height: 16),
-          _JouwDagVandaagCard(
-            morningCount: morningActivities.length,
-            afternoonCount: afternoonActivities.length,
-            eveningCount: eveningActivities.length,
-            onViewMyDay: () {
-                      ref.read(mainTabProvider.notifier).state = 0;
-                    },
-                  ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
-            height: 54,
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: _wmForest,
-                foregroundColor: _wmWhite,
-                shape: const StadiumBorder(),
-                elevation: 0,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _wmForest,
+                backgroundColor: _wmWhite,
+                side: const BorderSide(color: _wmForest, width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
-              onPressed: () => _openMoodyChat(context),
+              onPressed: () => _openChangeMoodSheet(context),
               child: Text(
-                l10n.myDayChatWithMoodyTitle,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
+                l10n.moodyHubChangeMood,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _wmForest,
-                    backgroundColor: _wmWhite,
-                    side: const BorderSide(color: _wmForest, width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  onPressed: () => context.pushNamed('moody-standalone'),
-                  child: Text(
-                    l10n.moodyHubChangeMood,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _wmForest,
-                    backgroundColor: _wmWhite,
-                    side: const BorderSide(color: _wmForest, width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  onPressed: () {
-                    ref.read(mainTabProvider.notifier).state = 1;
-                  },
-                  child: Text(
-                    l10n.myDayQuickAddActivity,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
+          const SizedBox(height: 20),
+          const MoodyFeedbackPromptCard(),
             ],
           ),
-          const SizedBox(height: 24),
-          const MoodyFeedbackPromptCard(),
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: MediaQuery.of(context).viewPadding.bottom +
+                _moodyHubComposerBottomGap,
+            child: _MoodyChatComposer(
+              label: l10n.myDayChatWithMoodyTitle,
+              onTap: () => _openMoodyChat(context),
+            ),
+          ),
         ],
       ),
     );
@@ -498,6 +409,297 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
           color: _wmDusk,
         ),
       ),
+    );
+  }
+}
+
+class MoodMatchHubCard extends ConsumerStatefulWidget {
+  const MoodMatchHubCard({super.key, this.compact = false});
+
+  final bool compact;
+
+  @override
+  ConsumerState<MoodMatchHubCard> createState() => _MoodMatchHubCardState();
+}
+
+class _MoodMatchHubData {
+  const _MoodMatchHubData({
+    required this.session,
+    required this.hasPlan,
+    required this.savedToMyDay,
+    required this.friendFirstName,
+    required this.totalActive,
+  });
+
+  const _MoodMatchHubData.empty()
+      : session = null,
+        hasPlan = false,
+        savedToMyDay = false,
+        friendFirstName = null,
+        totalActive = 0;
+
+  final GroupSessionRow? session;
+  final bool hasPlan;
+  final bool savedToMyDay;
+  final String? friendFirstName;
+  final int totalActive;
+}
+
+class _MoodMatchHubCardState extends ConsumerState<MoodMatchHubCard> {
+  late Future<_MoodMatchHubData> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  Future<_MoodMatchHubData> _load() async {
+    final repo = ref.read(groupPlanningRepositoryProvider);
+    final rows = await repo.fetchActiveSessionsForUser();
+    if (rows.isEmpty) return const _MoodMatchHubData.empty();
+
+    // Surface the most actionable session first so a single CTA is honest.
+    final sorted = [...rows]..sort((a, b) {
+        final cmp = _priority(b).compareTo(_priority(a));
+        if (cmp != 0) return cmp;
+        return b.session.updatedAt.compareTo(a.session.updatedAt);
+      });
+    final top = sorted.first;
+
+    String? friendFirstName;
+    try {
+      final me = Supabase.instance.client.auth.currentUser?.id;
+      final members = await repo.fetchMembersWithProfiles(top.session.id);
+      if (members.isNotEmpty) {
+        final other = members.firstWhere(
+          (GroupMemberView m) => me == null || m.member.userId != me,
+          orElse: () => members.first,
+        );
+        friendFirstName = _firstName(other.displayName);
+      }
+    } catch (_) {
+      // Best-effort partner name; fall back to generic copy.
+    }
+
+    return _MoodMatchHubData(
+      session: top.session,
+      hasPlan: top.hasPlan,
+      savedToMyDay: top.savedToMyDay,
+      friendFirstName: friendFirstName,
+      totalActive: rows.length,
+    );
+  }
+
+  static int _priority(
+    ({
+      GroupSessionRow session,
+      bool hasPlan,
+      Map<String, dynamic>? planData,
+      bool savedToMyDay,
+    }) row,
+  ) {
+    final s = row.session.status;
+    // Waiting on user action → top.
+    if (s == 'day_proposed' || s == 'day_counter_proposed') return 5;
+    if (row.hasPlan && row.session.completedAt == null) return 4;
+    if (s == 'generating' || s == 'ready' || s == 'day_confirmed') return 3;
+    if (s == 'waiting') return 2;
+    return 1;
+  }
+
+  static String? _firstName(String displayName) {
+    final t = displayName.trim();
+    if (t.isEmpty) return null;
+    if (t.startsWith('@')) return t;
+    final parts = t.split(RegExp(r'\s+'));
+    return parts.isNotEmpty ? parts.first : t;
+  }
+
+  void _openMoodMatch({
+    required GroupSessionRow? session,
+    required bool hasPlan,
+  }) {
+    if (session == null) {
+      context.go('/group-planning');
+      return;
+    }
+    if (session.completedAt != null || hasPlan) {
+      context.go('/group-planning/result/${session.id}');
+      return;
+    }
+    if (session.status == 'day_proposed' ||
+        session.status == 'day_counter_proposed') {
+      context.go('/group-planning/day-picker/${session.id}');
+      return;
+    }
+    if (session.status == 'generating' ||
+        session.status == 'ready' ||
+        session.status == 'day_confirmed') {
+      context.go('/group-planning/match-loading/${session.id}');
+      return;
+    }
+    context.go('/group-planning/lobby/${session.id}');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return FutureBuilder<_MoodMatchHubData>(
+      future: _future,
+      builder: (context, snap) {
+        final loading = snap.connectionState == ConnectionState.waiting;
+        final data = snap.data ?? const _MoodMatchHubData.empty();
+        final session = data.session;
+        final hasActive = session != null;
+        final name = data.friendFirstName;
+
+        late final String subtitle;
+        late final String cta;
+        if (!hasActive) {
+          subtitle = l10n.moodMatchHubEmptySub;
+          cta = l10n.moodMatchHubCtaStart;
+        } else if (data.savedToMyDay ||
+            session.completedAt != null ||
+            data.hasPlan) {
+          subtitle = name == null
+              ? l10n.moodMatchHubSubReady
+              : l10n.moodMatchHubSubReadyWith(name);
+          cta = l10n.moodMatchHubCtaOpenShared;
+        } else if (session.status == 'day_proposed' ||
+            session.status == 'day_counter_proposed') {
+          subtitle = name == null
+              ? l10n.moodMatchHubSubDayProposedNoName
+              : l10n.moodMatchHubSubDayProposed(name);
+          cta = l10n.moodMatchHubCtaReviewShared;
+        } else if (session.status == 'waiting') {
+          subtitle = name == null
+              ? l10n.moodMatchHubSubWaitingJoinNoName
+              : l10n.moodMatchHubSubWaitingJoin(name);
+          cta = l10n.moodMatchHubCtaResume;
+        } else {
+          subtitle = name == null
+              ? l10n.moodMatchHubSubBuilding
+              : l10n.moodMatchHubSubBuildingWith(name);
+          cta = l10n.moodMatchHubCtaResume;
+        }
+
+        final extraCount =
+            data.totalActive > 1 ? data.totalActive - 1 : 0;
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(widget.compact ? 14 : 16),
+          decoration: BoxDecoration(
+            color: _wmWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _wmParchment, width: 0.6),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: _wmSunsetTint,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🤝', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.moodMatchHubBrandTag,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: _wmSunset,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                subtitle,
+                maxLines: widget.compact ? 2 : 3,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: widget.compact ? 14 : 15,
+                  fontWeight: FontWeight.w600,
+                  color: _wmCharcoal,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _wmSunset,
+                    foregroundColor: _wmWhite,
+                    shape: const StadiumBorder(),
+                    padding: EdgeInsets.symmetric(
+                      vertical: widget.compact ? 10 : 12,
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: loading
+                      ? null
+                      : () => _openMoodMatch(
+                            session: session,
+                            hasPlan: data.hasPlan,
+                          ),
+                  child: Text(
+                    cta,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              if (extraCount > 0) ...[
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () => context.go('/group-planning'),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          l10n.moodMatchHubMoreSessions(extraCount),
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _wmSunset,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 16,
+                          color: _wmSunset,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -666,90 +868,6 @@ class _MoodyHubMoodCard extends StatelessWidget {
   }
 }
 
-class _JouwDagVandaagCard extends StatelessWidget {
-  const _JouwDagVandaagCard({
-    required this.morningCount,
-    required this.afternoonCount,
-    required this.eveningCount,
-    required this.onViewMyDay,
-  });
-
-  final int morningCount;
-  final int afternoonCount;
-  final int eveningCount;
-  final VoidCallback onViewMyDay;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    String actWord(int n) =>
-        n == 1 ? l10n.moodyHubActivitySingular : l10n.moodyHubActivityPlural;
-    final meta = GoogleFonts.poppins(
-      fontSize: 13,
-      height: 1.35,
-      color: _wmStone,
-    );
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: _wmWhite,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _wmParchment, width: 0.5),
-        ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-            l10n.moodyHubYourDayToday,
-                    style: GoogleFonts.poppins(
-              fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: _wmCharcoal,
-                    ),
-                  ),
-          const SizedBox(height: 12),
-                  Text(
-            '🌅 ${l10n.timeLabelMorning} · $morningCount ${actWord(morningCount)}',
-            style: meta,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '☀️ ${l10n.timeLabelAfternoon} · $afternoonCount ${actWord(afternoonCount)}',
-            style: meta,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '🌙 ${l10n.timeLabelEvening} · $eveningCount ${actWord(eveningCount)}',
-            style: meta,
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: onViewMyDay,
-              style: TextButton.styleFrom(
-                foregroundColor: _wmForest,
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                '${l10n.dayPlanViewMyDay} →',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _wmForest,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ---------------------------------------------------------------------------
 // STATE B: User has NO active plan (Conversational AI Vibe)
 // ---------------------------------------------------------------------------
@@ -797,30 +915,12 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
     return l10n.noPlanDayOpenAroundYou;
   }
 
-  Future<void> _openPlanLoadingAfterMood({
-    required String mood,
-    required List<String> selectedMoods,
-    DayPlanQuickPick? quickPick,
-  }) async {
-    ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
-          mood: mood,
-          selectedMoods: selectedMoods,
-        );
-    final ok = await ref.read(connectivityServiceProvider).isConnected;
-    if (!mounted) return;
-    if (!ok) {
-      showOfflineSnackBar(context);
-      return;
-    }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PlanLoadingScreen(
-          selectedMoods: selectedMoods,
-          quickPick: quickPick,
-        ),
-      ),
-    );
+  void _openMoodyChat(BuildContext context) {
+    showMoodyChatSheet(context, ref);
+  }
+
+  void _openChangeMoodFromNoPlan(BuildContext context) {
+    unawaited(showMoodChangePlanBottomSheet(context, ref));
   }
 
   @override
@@ -845,38 +945,46 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
 
         // Main Content
         SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(flex: 2),
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 104),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+              const SizedBox(height: 16),
 
               // Moody Character Floating
               Center(
-                child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFA8C8DC),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFA8C8DC).withOpacity(
-                                0.35 + (_pulseController.value * 0.15)),
-                            blurRadius: 24 + (_pulseController.value * 14),
-                            spreadRadius: 6 + (_pulseController.value * 6),
-                          ),
-                        ],
+                child: GestureDetector(
+                  onTap: () => _openMoodyChat(context),
+                  child: AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFA8C8DC),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFA8C8DC).withOpacity(
+                                  0.35 + (_pulseController.value * 0.15)),
+                              blurRadius: 24 + (_pulseController.value * 14),
+                              spreadRadius: 6 + (_pulseController.value * 6),
+                            ),
+                          ],
+                        ),
+                        child: child,
+                      );
+                    },
+                    child: const SizedBox(
+                      width: 120,
+                      height: 120,
+                      child: MoodyCharacter(
+                        size: 120,
+                        mood: 'happy',
                       ),
-                      child: child,
-                    );
-                  },
-                  child: const SizedBox(
-                    width: 120,
-                    height: 120,
-                    child: MoodyCharacter(
-                      size: 120,
-                      mood: 'happy',
                     ),
                   ),
                 ),
@@ -890,46 +998,49 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
               // Chat Bubble
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.8),
-                        blurRadius: 0,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        widget.greeting,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1E293B),
+                child: GestureDetector(
+                  onTap: () => _openMoodyChat(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _noPlanBody(AppLocalizations.of(context)!),
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          height: 1.5,
-                          color: const Color(0xFF475569),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.8),
+                          blurRadius: 0,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 0),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          widget.greeting,
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _noPlanBody(AppLocalizations.of(context)!),
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            height: 1.5,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ).animate().fadeIn(delay: 400.ms, duration: 600.ms).scale(
                     begin: const Offset(0.9, 0.9),
@@ -959,89 +1070,19 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                         .animate()
                         .fadeIn(delay: 600.ms)
                         .slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
-                    
+                    const SizedBox(height: 10),
+                    const MoodMatchHubCard(compact: true),
                     const SizedBox(height: 12),
-                    
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildChatActionChip(
-                            icon: Icons.coffee,
-                            text: AppLocalizations.of(context)!
-                                .noPlanFindMeCoffee,
-                            gradient: const [
-                              Color(0xFF2A6049),
-                              Color(0xFF2A6049)
-                            ],
-                            onTap: () {
-                              unawaited(_openPlanLoadingAfterMood(
-                                mood: 'Foodie',
-                                selectedMoods: const ['Foodie'],
-                                quickPick: DayPlanQuickPick.coffee,
-                              ));
-                            },
-                          ).animate().fadeIn(delay: 700.ms).slideY(
-                              begin: 0.2, end: 0, curve: Curves.easeOut),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildChatActionChip(
-                            icon: Icons.directions_run,
-                            text:
-                                AppLocalizations.of(context)!.noPlanGetMeMoving,
-                            gradient: const [
-                              Color(0xFF2A6049),
-                              Color(0xFF2A6049)
-                            ],
-                            onTap: () {
-                              unawaited(_openPlanLoadingAfterMood(
-                                mood: 'Energetic',
-                                selectedMoods: const ['Energetic'],
-                              ));
-                            },
-                          ).animate().fadeIn(delay: 800.ms).slideY(
-                              begin: 0.2, end: 0, curve: Curves.easeOut),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Just chat button
-                    GestureDetector(
-                      onTap: () => showMoodyChatSheet(context, ref),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 28),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(50),
-                          border: Border.all(
-                              color: const Color(0xFFE8E2D8), width: 1.5),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.chat_bubble_outline_rounded,
-                                color: Color(0xFF1E1C18), size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              AppLocalizations.of(context)!.noPlanJustChat,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1E1C18),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    _buildChatActionChip(
+                      icon: Icons.tune_rounded,
+                      text: AppLocalizations.of(context)!.moodyHubChangeMood,
+                      gradient: const [Color(0xFF2A6049), Color(0xFF2A6049)],
+                      onTap: () => _openChangeMoodFromNoPlan(context),
                     )
                         .animate()
-                        .fadeIn(delay: 900.ms)
+                        .fadeIn(delay: 700.ms)
                         .slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
-
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 18),
 
                     // Plan later button — leave Moody for My Day. When already on
                     // `/main` (Moody tab), goNamed with extra alone often no-ops; set
@@ -1077,9 +1118,21 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
                   ],
                 ),
               ),
-              
-              const Spacer(flex: 3),
-            ],
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(context).viewPadding.bottom +
+              _moodyHubComposerBottomGap,
+          child: _MoodyChatComposer(
+            label: AppLocalizations.of(context)!.noPlanJustChat,
+            onTap: () => _openMoodyChat(context),
           ),
         ),
       ],
@@ -1113,6 +1166,69 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
             fontSize: 15,
             fontWeight: FontWeight.w700,
             color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MoodyChatComposer extends StatelessWidget {
+  const _MoodyChatComposer({
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: onTap,
+            child: Ink(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: _wmWhite.withValues(alpha: 0.82),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: _wmWhite.withValues(alpha: 0.72), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome_rounded, color: _wmForest, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _wmDusk,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: _wmForest,
+                    size: 18,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

@@ -1094,6 +1094,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           : null;
 
       // ONLY make API call when user explicitly sends a message
+      final planDay = ref.read(selectedMyDayDateProvider);
+      final planIso =
+          '${planDay.year.toString().padLeft(4, '0')}-${planDay.month.toString().padLeft(2, '0')}-${planDay.day.toString().padLeft(2, '0')}';
       final response = await WanderMoodAIService.chat(
         message: message.trim(),
         conversationId: _conversationId,
@@ -1101,6 +1104,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         latitude: latitude,
         longitude: longitude,
         city: city,
+        planningCalendarDateIso: planIso,
         clientTurns: priorTurns,
         languageCode: Localizations.localeOf(context).languageCode,
       );

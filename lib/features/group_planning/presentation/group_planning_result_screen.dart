@@ -73,6 +73,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   bool _ownerBatchSaving = false;
   int _slotCarouselIndex = 0;
   PageController? _slotPageController;
+  /// True once this session’s plan is already in [scheduled_activities] for the user.
+  bool _savedToMyDay = false;
 
   @override
   void initState() {
@@ -338,10 +340,12 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         repo.fetchPlan(widget.sessionId),
         repo.fetchMembersWithProfiles(widget.sessionId),
         repo.fetchSession(widget.sessionId),
+        repo.fetchMoodMatchSessionIdsSavedToMyDay([widget.sessionId]),
       ]).timeout(const Duration(seconds: 15));
       final plan = results[0] as GroupPlanRow?;
       final members = results[1] as List<GroupMemberView>;
       final session = results[2] as GroupSessionRow;
+      final savedIds = results[3] as Set<String>;
       if (!mounted) return;
       if (plan == null) {
         setState(() {
@@ -374,6 +378,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         _planData = planData;
         _members = members;
         _session = session;
+        _savedToMyDay = savedIds.contains(widget.sessionId);
         _loading = false;
         if (isInitialLoad) {
           _slotCarouselIndex =
@@ -695,7 +700,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   }
 
   Future<void> _openMyDayAfterPlanSent() async {
-    if (_saving) return;
+    if (_saving || _savedToMyDay) return;
     final l10n = AppLocalizations.of(context)!;
     final date = await _resolvePlannedDateString();
     if (!mounted) return;
@@ -732,12 +737,13 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     }
     if (!mounted) return;
     _syncHomeAfterPlanSave(date);
+    if (mounted) setState(() => _savedToMyDay = true);
     await _finishNavigateToMyDay(date);
   }
 
   /// Guest: both sides confirmed — add stops to My Day for everyone, then open My Day.
   Future<void> _finalizeGuestPlanToMyDay(AppLocalizations l10n) async {
-    if (_saving) return;
+    if (_saving || _savedToMyDay) return;
     final date = await _resolvePlannedDateString();
     if (!mounted) return;
     if (date == null) {
@@ -767,6 +773,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     }
     if (!mounted) return;
     _syncHomeAfterPlanSave(date);
+    if (mounted) setState(() => _savedToMyDay = true);
     await _finishNavigateToMyDay(date);
   }
 
@@ -3096,6 +3103,13 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             : l10n.moodMatchPlanV2SelectAllThreeToContinue;
         onCta = null;
       }
+    }
+
+    if (_savedToMyDay &&
+        onCta != null &&
+        ctaLabel == l10n.moodMatchPlanV2OpenMyDay) {
+      ctaLabel = l10n.moodMatchAlreadyOnYourPlan;
+      onCta = null;
     }
 
     return Container(

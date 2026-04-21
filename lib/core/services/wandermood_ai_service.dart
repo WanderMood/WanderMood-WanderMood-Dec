@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
@@ -465,6 +466,41 @@ class WanderMoodAIService {
     }
   }
 
+  /// Clock fields the `moody` `chat` action uses for greetings, time-of-day tone,
+  /// and "today" vs planner-day disambiguation. [at] defaults to [MoodyClock.now].
+  static Map<String, dynamic> moodyChatClientClockFields({
+    DateTime? at,
+    String? planningCalendarDateIso,
+  }) {
+    final local = (at ?? MoodyClock.now()).toLocal();
+    const weekdaysEn = <String>[
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    final y = local.year.toString().padLeft(4, '0');
+    final mo = local.month.toString().padLeft(2, '0');
+    final da = local.day.toString().padLeft(2, '0');
+    final hm =
+        '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+    final out = <String, dynamic>{
+      'client_local_date_iso': '$y-$mo-$da',
+      'client_local_time_hm': hm,
+      'client_weekday_en': weekdaysEn[local.weekday - 1],
+      'client_utc_offset_minutes': local.timeZoneOffset.inMinutes,
+      'client_time_zone_name': local.timeZoneName,
+    };
+    final p = planningCalendarDateIso?.trim();
+    if (p != null && p.isNotEmpty) {
+      out['planning_date_iso'] = p;
+    }
+    return out;
+  }
+
   /// Start or continue a chat conversation with the AI.
   /// Routes through the `moody` edge function (action: chat) so the
   /// OpenAI key stays server-side and never needs to be baked into the app.
@@ -475,6 +511,8 @@ class WanderMoodAIService {
     double? latitude,
     double? longitude,
     String? city,
+    DateTime? clientLocalSnapshot,
+    String? planningCalendarDateIso,
     /// Prior turns in the current UI session (excluding the message being sent).
     /// Used when [getConversationHistory] is empty (e.g. guest or failed saves).
     List<Map<String, String>>? clientTurns,
@@ -524,6 +562,18 @@ class WanderMoodAIService {
         : 'Rotterdam';
 
     try {
+      final clockFields = moodyChatClientClockFields(
+        at: clientLocalSnapshot,
+        planningCalendarDateIso: planningCalendarDateIso,
+      );
+      try {
+        final tz = await FlutterTimezone.getLocalTimezone();
+        final trimmed = tz.identifier.trim();
+        if (trimmed.isNotEmpty) {
+          clockFields['client_time_zone_id'] = trimmed;
+        }
+      } catch (_) {}
+
       final response = await _supabase.functions.invoke(
         _moodyFunctionName,
         body: {
@@ -537,6 +587,8 @@ class WanderMoodAIService {
             'lng': resolvedLng,
           },
           'language_code': languageCode,
+          'moods': moods ?? <String>[],
+          ...clockFields,
         },
       );
 

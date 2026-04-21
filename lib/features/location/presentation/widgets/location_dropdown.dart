@@ -4,9 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/explore_session_anchor_provider.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/config/explore_launch_config.dart';
 
 class LocationDropdown extends ConsumerStatefulWidget {
   const LocationDropdown({super.key});
@@ -255,6 +255,31 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
         error: (_, __) => {},
       );
     });
+
+    if (kLockExploreCityToRotterdam) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_on, size: 16, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              locationAsync.valueOrNull ?? 'Rotterdam',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return PopupMenuButton<String>(
       position: PopupMenuPosition.under,

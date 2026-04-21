@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/riverpod.dart' show ProviderSubscription;
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/location/presentation/widgets/location_dropdown.dart';
 import 'package:wandermood/features/places/models/place.dart';
@@ -41,6 +42,8 @@ import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/core/providers/explore_session_anchor_provider.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
+import 'package:wandermood/core/config/explore_launch_config.dart';
+import 'package:wandermood/features/location/services/location_service.dart';
 class _ExploreSectionData {
   _ExploreSectionData({required this.id, List<Place>? cards})
       : cards = cards ?? [];
@@ -73,9 +76,13 @@ class ExploreScreen extends ConsumerStatefulWidget {
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends ConsumerState<ExploreScreen> {
+class _ExploreScreenState extends ConsumerState<ExploreScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  ProviderSubscription<int>? _manualCityPickSubscription;
   String _selectedCategory = 'All';
   String _searchFilter = 'All';
   bool _isSearching = false;
@@ -117,12 +124,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // Advanced filter settings - New Structure
   int _activeFiltersCount = 0;
 
-  // Expandable sections state - ALL CLOSED BY DEFAULT
-  bool _advancedSuggestionsExpanded = false;
-  bool _dietaryExpanded = false;
-  bool _accessibilityExpanded = false;
-  bool _logisticsExpanded = false;
-  bool _photoExpanded = false;
+  // Expandable sections — open by default so every filter chip is visible.
+  bool _advancedSuggestionsExpanded = true;
+  bool _dietaryExpanded = true;
+  bool _accessibilityExpanded = true;
+  bool _logisticsExpanded = true;
+  bool _photoExpanded = true;
 
   // Moody Suggests filters
   String? _selectedMood; // Keep for backward compatibility
@@ -180,7 +187,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final List<String> _categories = [
     'All',
     'Popular',
-    'Accommodations',
     'Nature',
     'Culture',
     'Food',
@@ -191,7 +197,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final Map<String, String> _filterIcons = {
     'All': '🌟',
     'Popular': '🔥',
-    'Accommodations': '🏨',
     'Nature': '🌳',
     'Culture': '🎨',
     'Food': '🍽️',
@@ -202,18 +207,37 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   void initState() {
     super.initState();
+    if (_selectedCategory == 'Accommodations') {
+      _selectedCategory = 'All';
+      _searchFilter = 'All';
+    }
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScrollChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+      if (!kLockExploreCityToRotterdam) {
+        ref.read(locationNotifierProvider.notifier).getCurrentLocation();
+      }
       _scheduleLoadSectionsIfReady();
     });
     _explorePlacePhotoRefreshSeed = math.Random().nextInt(2000000000);
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _manualCityPickSubscription ??=
+        ref.listenManual<int>(exploreManualCityPickTickProvider, (prev, next) {
+      if (prev != null && prev != next) {
+        ref.read(exploreSessionAnchorProvider.notifier).state = null;
+        unawaited(_onManualCityChangedExplore());
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    _manualCityPickSubscription?.close();
     _searchDebounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
@@ -256,6 +280,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Future<void> _maybeLockSessionAnchor() async {
+    if (kLockExploreCityToRotterdam) {
+      final name = LocationService.defaultLocation['name'] as String;
+      final lat = LocationService.defaultLocation['latitude'] as double;
+      final lng = LocationService.defaultLocation['longitude'] as double;
+      final cur = ref.read(exploreSessionAnchorProvider);
+      if (cur == null ||
+          cur.city.trim().toLowerCase() != name.toLowerCase() ||
+          (cur.latitude - lat).abs() > 0.08 ||
+          (cur.longitude - lng).abs() > 0.08) {
+        ref.read(exploreSessionAnchorProvider.notifier).state =
+            ExploreSessionAnchor(city: name, latitude: lat, longitude: lng);
+      }
+      return;
+    }
     if (ref.read(exploreSessionAnchorProvider) != null) return;
     final city = ref.read(locationNotifierProvider).valueOrNull?.trim();
     final pos = ref.read(userLocationProvider).valueOrNull;
@@ -681,25 +719,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   void _onScrollChanged() {
+    if (!_scrollController.hasClients) return;
     final currentScrollOffset = _scrollController.offset;
     final scrollDelta = currentScrollOffset - _lastScrollOffset;
+    _lastScrollOffset = currentScrollOffset;
 
     final shouldShow = currentScrollOffset > 400;
+    var newShowScrollToTop = _showScrollToTop;
+    var newIsScrolling = _isScrolling;
+
     if (shouldShow != _showScrollToTop) {
-      setState(() => _showScrollToTop = shouldShow);
+      newShowScrollToTop = shouldShow;
     }
 
     if (scrollDelta > 10 && !_isScrolling) {
-      setState(() {
-        _isScrolling = true;
-      });
+      newIsScrolling = true;
     } else if (scrollDelta < -5 || scrollDelta.abs() < 1) {
-      setState(() {
-        _isScrolling = false;
-      });
+      // Only clear when we're actually in a "scrolling" state. The old branch
+      // called setState on almost every notification with delta near zero even
+      // when already false — that spammed rebuilds during NestedScrollView /
+      // pointer handling and contributed to semantics cascades.
+      if (_isScrolling) {
+        newIsScrolling = false;
+      }
     }
 
-    _lastScrollOffset = currentScrollOffset;
+    if (newShowScrollToTop != _showScrollToTop ||
+        newIsScrolling != _isScrolling) {
+      setState(() {
+        _showScrollToTop = newShowScrollToTop;
+        _isScrolling = newIsScrolling;
+      });
+    }
   }
 
   void _onConversationalSearchChanged(String query) {
@@ -1010,19 +1061,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       filters['excludeTypes'] = excludeTypes;
     }
 
-    // Dietary / inclusion / photo vibes go to moody `namedFilters` (see _buildMoodyNamedFilters).
-    // Remaining strings are applied server-side on cache hits as `filters.requiredKeywords`.
+    // Dietary / inclusion / logistics / vibe slugs go to moody `namedFilters`
+    // (see _buildMoodyNamedFilters). Only weather-safe still uses keyword text.
     final requiredKeywords = <String>[];
-    if (_pescatarian) requiredKeywords.add('pescatarian');
-    if (_noAlcohol) requiredKeywords.add('no alcohol');
-    if (_wheelchairAccessible) requiredKeywords.add('wheelchair');
-    if (_seniorFriendly) requiredKeywords.add('senior');
-    if (_sensoryFriendly) requiredKeywords.add('sensory');
-    if (_wifiAvailable) requiredKeywords.add('wifi');
-    if (_chargingPoints) requiredKeywords.add('charging');
-    if (_parkingAvailable) requiredKeywords.add('parking');
-    if (_creditCards) requiredKeywords.add('card payment');
-    if (_bestAtNight) requiredKeywords.add('night');
     if (_weatherSafe) requiredKeywords.add('indoor');
 
     if (requiredKeywords.isNotEmpty) {
@@ -1043,14 +1084,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_vegetarian) add('vegetarian');
     if (_halal) add('halal');
     if (_glutenFree) add('gluten_free');
+    if (_pescatarian) add('pescatarian');
     if (_instagrammable) add('instagrammable');
     if (_romanticVibe) add('romantic');
-    if (_aestheticSpaces || _artisticDesign) add('aesthetic_spaces');
+    if (_aestheticSpaces) add('aesthetic_spaces');
+    if (_artisticDesign) add('artistic_design');
     if (_scenicViews) add('scenic_views');
     if (_bestAtSunset) add('sunset');
+    if (_bestAtNight) add('best_at_night');
     if (_blackOwned) add('black_owned');
     if (_lgbtqFriendly) add('lgbtq_friendly');
     if (_babyFriendly) add('kids_friendly');
+    if (_wheelchairAccessible) add('wheelchair_accessible');
+    if (_sensoryFriendly) add('sensory_friendly');
+    if (_seniorFriendly) add('senior_friendly');
+    if (_wifiAvailable) add('wifi');
+    if (_parkingAvailable) add('parking');
+    if (_chargingPoints) add('charging');
+    if (_creditCards) add('credit_cards');
+    if (_crowdQuiet) add('quiet');
+    if (_crowdLively) add('lively');
+    if (_surpriseMe) add('surprise_me');
+    if (_transportIncluded) add('transit');
+    if (_noAlcohol) add('no_alcohol');
 
     return out;
   }
@@ -1149,7 +1205,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     switch (key) {
       case 'All': return l10n.exploreCategoryAll;
       case 'Popular': return l10n.exploreCategoryPopular;
-      case 'Accommodations': return l10n.exploreCategoryAccommodations;
       case 'Nature': return l10n.exploreCategoryNature;
       case 'Culture': return l10n.exploreCategoryCulture;
       case 'Food': return l10n.exploreCategoryFood;
@@ -1344,6 +1399,39 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return ref.read(moodyExploreBackendNamedFiltersProvider).contains(slug);
   }
 
+  /// When Explore did not use `namedFilters`, keep "no alcohol" from obvious bar-only venues.
+  bool _passesNoAlcoholLocalHeuristic(Place place) {
+    final types = place.types.map((e) => e.toLowerCase()).join(' ');
+    final n =
+        '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
+            .toLowerCase();
+    if ((types.contains('bar') || types.contains('night_club')) &&
+        !n.contains('mocktail') &&
+        !n.contains('non-alcoholic') &&
+        !n.contains('non alcoholic') &&
+        !n.contains('0%') &&
+        !n.contains('soft drink')) {
+      return false;
+    }
+    return true;
+  }
+
+  bool _passesSurpriseLocalTypes(Place place) {
+    const ok = <String>{
+      'restaurant',
+      'cafe',
+      'bar',
+      'museum',
+      'art_gallery',
+      'park',
+      'tourist_attraction',
+      'food_court',
+      'bakery',
+      'coffee_shop',
+    };
+    return place.types.map((e) => e.toLowerCase()).any(ok.contains);
+  }
+
   bool _checkAdvancedFilters(Place place) {
     // Mood filter
     if (_selectedMood != null && !_placeMatchesMood(place, _selectedMood!))
@@ -1372,17 +1460,37 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     if (_glutenFree &&
         !_backendNamedFilterActive('gluten_free') &&
         !_matchesFilter(place, 'gluten_free')) return false;
-    if (_pescatarian && !_placeSupportsVeganVegetarian(place))
-      return false; // Pescatarian matches vegetarian
+    if (_pescatarian &&
+        !_backendNamedFilterActive('pescatarian') &&
+        !_placeSupportsVeganVegetarian(place)) {
+      final blob =
+          '${place.name} ${place.description ?? ''}'.toLowerCase();
+      if (!RegExp(r'pescatar|seafood|fish|sushi|ceviche|poke|oyster')
+          .hasMatch(blob)) {
+        return false;
+      }
+    }
 
-    // Accessibility & Inclusion - using smart metadata matching
+    if (_romanticVibe &&
+        !_backendNamedFilterActive('romantic') &&
+        !_matchesFilter(place, 'romantic')) return false;
+
+    // Accessibility & Inclusion
     if (_wheelchairAccessible &&
+        !_backendNamedFilterActive('wheelchair_accessible') &&
+        !_backendNamedFilterActive('wheelchair') &&
         !_matchesFilter(place, 'wheelchair_accessible')) return false;
     if (_lgbtqFriendly &&
         (!_backendNamedFilterActive('lgbtq_friendly') &&
             !_matchesFilter(place, 'lgbtq_friendly'))) return false;
-    if (_seniorFriendly && !_matchesFilter(place, 'senior_friendly'))
-      return false;
+    if (_sensoryFriendly &&
+        !_backendNamedFilterActive('sensory_friendly') &&
+        !_backendNamedFilterActive('sensory') &&
+        !_matchesFilter(place, 'sensory_friendly')) return false;
+    if (_seniorFriendly &&
+        !_backendNamedFilterActive('senior_friendly') &&
+        !_backendNamedFilterActive('senior') &&
+        !_matchesFilter(place, 'senior_friendly')) return false;
     if (_babyFriendly &&
         (!_backendNamedFilterActive('kids_friendly') &&
             !_matchesFilter(place, 'baby_friendly'))) return false;
@@ -1390,28 +1498,57 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         (!_backendNamedFilterActive('black_owned') &&
             !_matchesFilter(place, 'black_owned'))) return false;
 
-    // Comfort & Convenience - using smart metadata matching
-    if (_wifiAvailable && !_matchesFilter(place, 'wifi_available'))
-      return false;
-    if (_chargingPoints && !_matchesFilter(place, 'charging_points'))
-      return false;
-    if (_parkingAvailable && !_matchesFilter(place, 'parking_available'))
-      return false;
-    if (_creditCards && !_matchesFilter(place, 'credit_cards')) return false;
+    // Comfort & Convenience
+    if (_wifiAvailable &&
+        !_backendNamedFilterActive('wifi') &&
+        !_matchesFilter(place, 'wifi_available')) return false;
+    if (_chargingPoints &&
+        !_backendNamedFilterActive('charging') &&
+        !_matchesFilter(place, 'charging_points')) return false;
+    if (_parkingAvailable &&
+        !_backendNamedFilterActive('parking') &&
+        !_matchesFilter(place, 'parking_available')) return false;
+    if (_creditCards &&
+        !_backendNamedFilterActive('credit_cards') &&
+        !_matchesFilter(place, 'credit_cards')) return false;
 
-    // Photo Options - using smart metadata matching
+    if (_crowdQuiet &&
+        !_backendNamedFilterActive('quiet') &&
+        !_matchesFilter(place, 'quiet')) return false;
+    if (_crowdLively &&
+        !_backendNamedFilterActive('lively') &&
+        !_matchesFilter(place, 'lively')) return false;
+    if (_surpriseMe &&
+        !_backendNamedFilterActive('surprise_me') &&
+        !_backendNamedFilterActive('surprise') &&
+        !_passesSurpriseLocalTypes(place)) return false;
+    if (_transportIncluded &&
+        !_backendNamedFilterActive('transit') &&
+        !_backendNamedFilterActive('transport') &&
+        !_matchesFilter(place, 'transit')) return false;
+    if (_noAlcohol &&
+        !_backendNamedFilterActive('no_alcohol') &&
+        !_passesNoAlcoholLocalHeuristic(place)) return false;
+
+    // Photo / vibe
     if (_instagrammable &&
         (!_backendNamedFilterActive('instagrammable') &&
             !_matchesFilter(place, 'instagrammable'))) return false;
-    if ((_aestheticSpaces || _artisticDesign) &&
+    if (_aestheticSpaces &&
         (!_backendNamedFilterActive('aesthetic_spaces') &&
             !_matchesFilter(place, 'aesthetic_spaces'))) return false;
+    if (_artisticDesign &&
+        (!_backendNamedFilterActive('artistic_design') &&
+            !_matchesFilter(place, 'artistic_design'))) return false;
     if (_scenicViews &&
         (!_backendNamedFilterActive('scenic_views') &&
             !_matchesFilter(place, 'scenic_views'))) return false;
     if (_bestAtSunset &&
         (!_backendNamedFilterActive('sunset') &&
             !_matchesFilter(place, 'best_at_sunset'))) return false;
+    if (_bestAtNight &&
+        !_backendNamedFilterActive('best_at_night') &&
+        !_matchesFilter(place, 'best_at_night')) return false;
 
     return true;
   }
@@ -1461,6 +1598,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ],
       'lgbtq_friendly': ['lgbtq', 'lgbt', 'gay', 'pride', 'inclusive'],
       'senior_friendly': ['senior', 'elderly', 'accessible', 'easy access'],
+      'sensory_friendly': [
+        'sensory',
+        'autism',
+        'neurodiverse',
+        'low stimulation',
+        'quiet room',
+        'calm',
+        'soft lighting',
+      ],
       'baby_friendly': [
         'baby',
         'child',
@@ -1490,6 +1636,66 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ],
       'scenic_views': ['view', 'scenic', 'panoramic', 'vista', 'overlook'],
       'best_at_sunset': ['sunset', 'evening', 'golden hour', 'dusk'],
+      'best_at_night': [
+        'late night',
+        'open late',
+        'midnight',
+        'night',
+        'evening',
+        'rooftop',
+        'cocktail',
+        'bar',
+        'nightlife',
+      ],
+      'romantic': [
+        'romantic',
+        'candle',
+        'wine',
+        'sunset',
+        'waterfront',
+        'date',
+        'intimate',
+        'valentine',
+      ],
+      'artistic_design': [
+        'design',
+        'architecture',
+        'gallery',
+        'concept',
+        'artistic',
+        'minimal',
+        'brutalist',
+      ],
+      'quiet': [
+        'quiet',
+        'peaceful',
+        'calm',
+        'cozy',
+        'reading',
+        'library',
+        'intimate',
+        'low noise',
+      ],
+      'lively': [
+        'lively',
+        'buzzing',
+        'busy',
+        'crowd',
+        'live music',
+        'dj ',
+        'party',
+        'vibrant',
+        'food hall',
+      ],
+      'transit': [
+        'station',
+        'metro',
+        'tram',
+        'train',
+        'bus',
+        'transit',
+        'centraal',
+      ],
     };
 
     final keywords = keywordMap[filterKey] ?? [];
@@ -1627,61 +1833,158 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return place.rating > 4.2;
   }
 
+  /// "Popular" on the chip row = high confidence picks (aligned with Moody
+  /// `social_signal` + rating/review bar), not "anything tourist_attraction".
+  bool _placeMatchesPopularCategory(Place place) {
+    final rating = place.rating;
+    final reviews = place.reviewCount;
+    final sig = (place.socialSignal ?? '').toLowerCase().trim();
+    final moodyBoost = sig == 'trending' ||
+        sig == 'popular' ||
+        sig == 'loved_by_locals';
+    if (moodyBoost && rating >= 4.0 && reviews >= 25) return true;
+    if (rating >= 4.35 && reviews >= 50) return true;
+    if (rating >= 4.2 && reviews >= 180) return true;
+    final types = place.types.map((e) => e.toLowerCase()).toSet();
+    if (types.contains('tourist_attraction') &&
+        rating >= 4.25 &&
+        reviews >= 120) {
+      return true;
+    }
+    return false;
+  }
+
   bool _checkCategoryMatch(Place place, String category) {
     switch (category.toLowerCase()) {
       case 'all':
         return true;
       case 'popular':
-        return place.rating >= 4.0 ||
-            place.types.contains('tourist_attraction');
-      case 'accommodations':
-        return place.types.any((type) => [
-              'lodging',
-              'hotel',
-              'apartment_rental'
-            ].contains(type.toLowerCase()));
+        return _placeMatchesPopularCategory(place);
       case 'nature':
-        return place.types.any((type) => [
-                  'park',
-                  'natural_feature',
-                  'zoo',
-                  'campground'
-                ].contains(type.toLowerCase())) ||
-            place.activities
-                .any((activity) => activity.toLowerCase().contains('nature'));
+        const natureTypes = <String>{
+          'park',
+          'natural_feature',
+          'zoo',
+          'campground',
+          'national_park',
+          'aquarium',
+          'botanical_garden',
+          'beach',
+          'marina',
+          'hiking_area',
+        };
+        return place.types.any((type) => natureTypes.contains(type.toLowerCase()));
       case 'culture':
-        return place.types.any((type) => [
-                  'museum',
-                  'art_gallery',
-                  'library',
-                  'tourist_attraction'
-                ].contains(type.toLowerCase())) ||
-            place.activities.any((activity) =>
-                ['culture', 'history', 'art'].contains(activity.toLowerCase()));
+        const cultureCore = <String>{
+          'museum',
+          'art_gallery',
+          'library',
+          'cultural_center',
+          'performing_arts_theater',
+          'art_studio',
+        };
+        final typesLo = place.types.map((e) => e.toLowerCase()).toSet();
+        if (typesLo.any(cultureCore.contains)) {
+          return true;
+        }
+        if (typesLo.contains('tourist_attraction')) {
+          final blob =
+              '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
+                  .toLowerCase();
+          return RegExp(
+            r'art|gallery|museum|culture|exhibit|theatre|theater|concert|performance|sculpture|opera',
+          ).hasMatch(blob);
+        }
+        return false;
       case 'food':
-        return place.types.any((type) => [
-                  'restaurant',
-                  'cafe',
-                  'bakery',
-                  'food',
-                  'meal_takeaway'
-                ].contains(type.toLowerCase())) ||
-            place.activities
-                .any((activity) => activity.toLowerCase().contains('dining'));
+        const foodTypes = <String>{
+          'restaurant',
+          'cafe',
+          'bakery',
+          'coffee_shop',
+          'bar',
+          'meal_takeaway',
+          'meal_delivery',
+          'food_court',
+          'ice_cream_shop',
+          'dessert_shop',
+        };
+        return place.types.any((type) => foodTypes.contains(type.toLowerCase()));
       case 'activities':
-        return place.activities.isNotEmpty;
+        const activityTypes = <String>{
+          'amusement_park',
+          'aquarium',
+          'bowling_alley',
+          'casino',
+          'movie_theater',
+          'night_club',
+          'spa',
+          'stadium',
+          'zoo',
+          'tourist_attraction',
+          'park',
+          'gym',
+          'fitness_center',
+          'sports_complex',
+          'marina',
+          'campground',
+          'hiking_area',
+          'golf_course',
+          'ski_resort',
+        };
+        if (place.types.any((type) => activityTypes.contains(type.toLowerCase()))) {
+          if (place.types.any((type) => {
+                'restaurant',
+                'cafe',
+                'bakery',
+                'meal_takeaway',
+              }.contains(type.toLowerCase())) &&
+              !place.types.any((type) => {
+                'amusement_park',
+                'aquarium',
+                'bowling_alley',
+                'casino',
+                'movie_theater',
+                'night_club',
+                'stadium',
+                'zoo',
+                'gym',
+                'fitness_center',
+                'sports_complex',
+                'golf_course',
+                'ski_resort',
+              }.contains(type.toLowerCase()))) {
+            return false;
+          }
+          return true;
+        }
+        return false;
       case 'history':
-        return place.types.any((type) => [
-                  'museum',
-                  'cemetery',
-                  'church',
-                  'mosque',
-                  'synagogue',
-                  'hindu_temple',
-                  'place_of_worship'
-                ].contains(type.toLowerCase())) ||
-            place.activities
-                .any((activity) => activity.toLowerCase().contains('history'));
+        const historyTypes = <String>{
+          'museum',
+          'cemetery',
+          'church',
+          'mosque',
+          'synagogue',
+          'hindu_temple',
+          'place_of_worship',
+          'historical_landmark',
+        };
+        final typesLo = place.types.map((e) => e.toLowerCase()).toSet();
+        if (typesLo.any(historyTypes.contains)) {
+          return true;
+        }
+        if (typesLo.contains('tourist_attraction')) {
+          final blob =
+              '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
+                  .toLowerCase();
+          return RegExp(
+            r'histor|heritage|monument|memorial|castle|fort|ancient|world war|wwii|ww2|ruins|archaeolog',
+          ).hasMatch(blob);
+        }
+        return place.activities.any(
+          (activity) => activity.toLowerCase().contains('history'),
+        );
       default:
         return place.types
                 .any((type) => type.toLowerCase() == category.toLowerCase()) ||
@@ -2320,7 +2623,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        child,
+        // Non-positioned Stack children get loose constraints; NestedScrollView
+        // needs bounded max height or layout can fail (infinite size / sliver errors).
+        Positioned.fill(child: child),
         if (_showScrollToTop && !_isMapView)
           Positioned(
             bottom: 24,
@@ -2346,13 +2651,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     ref.watch(preferencesProvider);
-    ref.listen<int>(exploreManualCityPickTickProvider, (prev, next) {
-      if (prev != null && prev != next) {
-        ref.read(exploreSessionAnchorProvider.notifier).state = null;
-        unawaited(_onManualCityChangedExplore());
-      }
-    });
 
     final city = ref.watch(locationNotifierProvider).value?.trim();
     final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
@@ -3932,11 +4232,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     // Avoid ClipRRect around the PlatformView — on iOS it can leave tiles blank while
     // markers/logo still render. City / radius is unchanged; LocationDropdown still shows it.
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
+    return SizedBox.expand(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
           Positioned.fill(
             child: GoogleMap(
             key: const ValueKey<String>('explore_google_map'),
@@ -3964,6 +4265,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     '📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
                 debugPrint('📍 Markers count: ${markers.length}');
               }
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (!mounted || _mapController != controller) return;
+                try {
+                  await controller.moveCamera(
+                    CameraUpdate.newLatLngZoom(initialPosition, 13),
+                  );
+                } catch (_) {}
+              });
             },
             onCameraMoveStarted: () {
               if (kDebugMode) {
@@ -4057,6 +4366,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ),
           ],
+        ),
         ),
     );
   }

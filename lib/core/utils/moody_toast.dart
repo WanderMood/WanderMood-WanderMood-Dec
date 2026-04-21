@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 const Color kWmCharcoalToast = Color(0xFF1E1C18);
 
 void showMoodyToast(BuildContext context, String message) {
+  final bottomClearance =
+      16.0 + MediaQuery.of(context).padding.bottom + 72.0;
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        margin: EdgeInsets.fromLTRB(16, 0, 16, bottomClearance),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: kWmCharcoalToast,

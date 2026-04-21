@@ -3687,6 +3687,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get moodHubBannerNight => 'Spätabend — lass uns was Passendes finden.';
 
   @override
+  String get moodHubMoodPickerBanner =>
+      'Wähle unten bis zu drei Stimmungen — ich passe die Ideen daran an.';
+
+  @override
   String get moodyIdleWakeOpenPlan => 'Lass uns deinen Plan für heute öffnen.';
 
   @override
@@ -4233,7 +4237,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Kurz Geduld… ich pinne deinen Ort, dann wählen wir den nächsten Schritt.';
 
   @override
-  String get noPlanPlanMyWholeDay => '✨ Meinen ganzen Tag planen';
+  String get noPlanPlanMyWholeDay => 'Meinen ganzen Tag planen';
 
   @override
   String get noPlanFindMeCoffee => '☕ Finde Kaffee für mich';
@@ -7881,7 +7885,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get moodyHubActivityPlural => 'Aktivitäten';
 
   @override
-  String get moodyHubPlanForWhen => 'Für wann planst du?';
+  String get moodyHubPlanForWhen => 'Welcher Tag?';
 
   @override
   String get moodyHubListComma => ', ';
@@ -10214,6 +10218,26 @@ class AppLocalizationsDe extends AppLocalizations {
       'Vorhersage konnte nicht geladen werden';
 
   @override
+  String get weatherDetailTitle => 'Wetter';
+
+  @override
+  String get weatherDetailLoading => 'Wird geladen…';
+
+  @override
+  String get weatherDetailLoadError => 'Wetter konnte nicht geladen werden';
+
+  @override
+  String get weatherDetail24Hour => '24-Stunden-Ausblick';
+
+  @override
+  String get weatherDetail3Day => 'Nächste Tage';
+
+  @override
+  String weatherDetailFeelsLike(int degrees) {
+    return 'Gefühlt $degrees°';
+  }
+
+  @override
   String get weatherNoDataAvailable => 'Keine Wetterdaten verfügbar';
 
   @override
@@ -12147,4 +12171,358 @@ class AppLocalizationsDe extends AppLocalizations {
   String moodMatchPlanV2ActivityMood(String mood) {
     return 'Stimmung: $mood';
   }
+
+  @override
+  String get moodMatchHubBrandTag => 'Mood Match';
+
+  @override
+  String get moodMatchHubEmptySub =>
+      'Wähle eine Person. Zwei Stimmungen → ein gemeinsamer Tag.';
+
+  @override
+  String get moodMatchHubCtaStart => 'Mood Match starten';
+
+  @override
+  String get moodMatchHubCtaResume => 'Mood Match fortsetzen';
+
+  @override
+  String get moodMatchHubCtaOpenShared => 'Gemeinsamen Plan öffnen';
+
+  @override
+  String get moodMatchHubCtaReviewShared => 'Plan prüfen';
+
+  @override
+  String moodMatchHubSubWaitingJoin(String name) {
+    return 'Warten auf den Beitritt von $name';
+  }
+
+  @override
+  String get moodMatchHubSubWaitingJoinNoName =>
+      'Warten auf den Beitritt deines Freundes';
+
+  @override
+  String moodMatchHubSubWaitingMood(String name) {
+    return 'Warten auf ${name}s Stimmung';
+  }
+
+  @override
+  String get moodMatchHubSubWaitingMoodNoName => 'Warten auf ihre Stimmung';
+
+  @override
+  String moodMatchHubSubDayProposed(String name) {
+    return '$name hat einen Tag vorgeschlagen — prüfen';
+  }
+
+  @override
+  String get moodMatchHubSubDayProposedNoName =>
+      'Ein Tag wurde vorgeschlagen — prüfen';
+
+  @override
+  String moodMatchHubSubBuildingWith(String name) {
+    return 'Ich erstelle euren gemeinsamen Tag mit $name…';
+  }
+
+  @override
+  String get moodMatchHubSubBuilding => 'Ich erstelle euren gemeinsamen Tag…';
+
+  @override
+  String moodMatchHubSubReadyWith(String name) {
+    return 'Euer gemeinsamer Tag mit $name ist bereit.';
+  }
+
+  @override
+  String get moodMatchHubSubReady => 'Euer gemeinsamer Tag ist bereit.';
+
+  @override
+  String moodMatchHubMoreSessions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '+$count weitere Mood Matches',
+      one: '+1 weiterer Mood Match',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moodyHubActionFindCoffee => 'Kaffee finden';
+
+  @override
+  String get moodyHubActionGetMeActive => 'Bring mich in Bewegung';
+
+  @override
+  String get moodyHubActionContinueDay => 'Tag fortsetzen';
+
+  @override
+  String get moodyHubActionReplaceActivity => 'Aktivität tauschen';
+
+  @override
+  String get moodyHubMoodMatchViewMatches => 'Matches ansehen';
+
+  @override
+  String get moodyHubIntroHeroEmpty =>
+      'Hey, dein Tag ist noch offen. Soll ich etwas planen, oder quatschen wir erst?';
+
+  @override
+  String get moodyHubIntroHeroActive =>
+      'Dein Tag läuft schon. Ich helfe dir gern beim Anpassen oder wir quatschen einfach.';
+
+  @override
+  String get moodyHubIntroHeroSharedReady =>
+      'Euer gemeinsamer Plan ist oben bereit. Öffnen oder erst weiter quatschen?';
+
+  @override
+  String get moodyHubHeroBodyEmptyFriendly =>
+      'Hey, your day is still open. What are you in the mood for? 🤔';
+
+  @override
+  String get moodyHubHeroBodyEmptyFriendly2 =>
+      'Nothing planned yet — and that\'s exciting! What do you feel like doing today? ✨';
+
+  @override
+  String get moodyHubHeroBodyEmptyFriendly3 =>
+      'Blank canvas today. We could go anywhere with this! What\'s calling you? 🎨';
+
+  @override
+  String get moodyHubHeroBodyEmptyFriendly4 =>
+      'Your day is wide open. Want me to build something around your mood? 🪄';
+
+  @override
+  String get moodyHubHeroBodyEmptyProfessional =>
+      'Your schedule is open. I can outline a clear, focused day plan—or we can keep this concise and practical. 📋';
+
+  @override
+  String get moodyHubHeroBodyEmptyProfessional2 =>
+      'Nothing locked in yet. Tell me your priorities and I\'ll structure the day. 🎯';
+
+  @override
+  String get moodyHubHeroBodyEmptyProfessional3 =>
+      'Open day ahead. Where do you want to focus your energy? ⚡';
+
+  @override
+  String get moodyHubHeroBodyEmptyProfessional4 =>
+      'Your calendar is clear. Ready to put together a sharp plan when you are. 📅';
+
+  @override
+  String get moodyHubHeroBodyEmptyEnergetic =>
+      'Okay let\'s GO! 🚀 Your day is wide open and anything is possible right now!';
+
+  @override
+  String get moodyHubHeroBodyEmptyEnergetic2 =>
+      'Nothing on the agenda yet — honestly? Perfect. Let\'s make it legendary! 🌟';
+
+  @override
+  String get moodyHubHeroBodyEmptyEnergetic3 =>
+      'Fresh start, full energy, zero plans. That\'s literally my favourite combo! What are we doing? ⚡';
+
+  @override
+  String get moodyHubHeroBodyEmptyEnergetic4 =>
+      'The day is yours and it\'s still untouched. Tell me what you\'re feeling and let\'s build something real! 🔥';
+
+  @override
+  String get moodyHubHeroBodyEmptyDirect =>
+      'Your day is open. Plan something, or chat—your call. 📍';
+
+  @override
+  String get moodyHubHeroBodyEmptyDirect2 =>
+      'Nothing scheduled. What do you want to do? 🗺️';
+
+  @override
+  String get moodyHubHeroBodyEmptyDirect3 =>
+      'Open day. I can plan it or you can — just say the word. ✌️';
+
+  @override
+  String get moodyHubHeroBodyEmptyDirect4 =>
+      'No plans yet. Drop a mood or an idea and we move. 🚀';
+
+  @override
+  String get moodyHubHeroBodyActiveFriendly =>
+      'Your day is already rolling! I\'m here if you want to add something or just talk. 🎈';
+
+  @override
+  String get moodyHubHeroBodyActiveFriendly2 =>
+      'You\'ve got things lined up — love that for you. Need anything tweaked? 🛠️';
+
+  @override
+  String get moodyHubHeroBodyActiveFriendly3 =>
+      'Day\'s in motion. Want to add a little something extra, or just check in? 💫';
+
+  @override
+  String get moodyHubHeroBodyActiveFriendly4 =>
+      'Looking good on the plan front! Let me know if anything needs adjusting. ✨';
+
+  @override
+  String get moodyHubHeroBodyActiveProfessional =>
+      'Your day is underway. I can help refine timing or priorities—or keep this brief. ⏱️';
+
+  @override
+  String get moodyHubHeroBodyActiveProfessional2 =>
+      'Schedule is set. Let me know if you want to optimise anything. 📈';
+
+  @override
+  String get moodyHubHeroBodyActiveProfessional3 =>
+      'You have a plan in place. I\'m available if adjustments come up. 🔄';
+
+  @override
+  String get moodyHubHeroBodyActiveProfessional4 =>
+      'Day is structured. Ready to adapt if needed. 📋';
+
+  @override
+  String get moodyHubHeroBodyActiveEnergetic =>
+      'You\'re already moving — let\'s keep that momentum going! Anything to add? 🔥';
+
+  @override
+  String get moodyHubHeroBodyActiveEnergetic2 =>
+      'Look at you with a plan! Want to level it up or just vibe with what you have? 🚀';
+
+  @override
+  String get moodyHubHeroBodyActiveEnergetic3 =>
+      'Day is set and you\'re ready — I love the energy! Tweak anything or just crush it? 💥';
+
+  @override
+  String get moodyHubHeroBodyActiveEnergetic4 =>
+      'You\'ve got something going already! Want to stack on more or just ride the wave? 🌊';
+
+  @override
+  String get moodyHubHeroBodyActiveDirect =>
+      'Day\'s in motion. Tweak something, or chat. 📍';
+
+  @override
+  String get moodyHubHeroBodyActiveDirect2 =>
+      'Plan\'s set. Need anything changed? 🔄';
+
+  @override
+  String get moodyHubHeroBodyActiveDirect3 =>
+      'You\'ve got a day. Add something or leave it. ✌️';
+
+  @override
+  String get moodyHubHeroBodyActiveDirect4 =>
+      'Moving already. I\'m here if it needs a change. ⚡';
+
+  @override
+  String get moodyHubHeroBodySharedReadyFriendly =>
+      'Your shared plan is waiting — open it and let\'s make the day official! 🎉';
+
+  @override
+  String get moodyHubHeroBodySharedReadyProfessional =>
+      'Your shared plan is ready. Open it when you\'re ready, or continue our conversation here. 📋';
+
+  @override
+  String get moodyHubHeroBodySharedReadyEnergetic =>
+      'The collab plan is ready — open it right now because this one is going to be so good! 🔥';
+
+  @override
+  String get moodyHubHeroBodySharedReadyDirect =>
+      'Shared plan is ready. Open it, or stay here. 📍';
+
+  @override
+  String get moodyHubHeroBodySharedReadyDayEmptyFriendly =>
+      'You and your friend have a shared plan ready — open it to add everything to your day! ✨';
+
+  @override
+  String get moodyHubHeroBodySharedReadyDayEmptyProfessional =>
+      'A collaborative plan is ready in Mood Match. Open it to add activities to your day, or continue our conversation here. 🤝';
+
+  @override
+  String get moodyHubHeroBodySharedReadyDayEmptyEnergetic =>
+      'The Mood Match plan is ready and it\'s good — open it and load your day! 🚀';
+
+  @override
+  String get moodyHubHeroBodySharedReadyDayEmptyDirect =>
+      'Shared plan in Mood Match. Open it to add to your day, or stay here. 📍';
+
+  @override
+  String get moodyHubHeroBodyInviteFriendly =>
+      'Your last Mood Match is already on your plan. Ready to do it again with someone? 👯‍♀️';
+
+  @override
+  String get moodyHubHeroBodyInviteFriendly2 =>
+      'That Mood Match was a moment! Who are you feeling like exploring with next? 🗺️';
+
+  @override
+  String get moodyHubHeroBodyInviteFriendly3 =>
+      'Last plan is locked in. Want to set up a new Mood Match with a friend? ✌️';
+
+  @override
+  String get moodyHubHeroBodyInviteFriendly4 =>
+      'Your shared day is on your plan. Another one? Tell me who you want to go out with. 💫';
+
+  @override
+  String get moodyHubHeroBodyInviteProfessional =>
+      'Your previous Mood Match is on your schedule. When you\'re ready, start a new match to plan another day together. 🤝';
+
+  @override
+  String get moodyHubHeroBodyInviteProfessional2 =>
+      'Last collaborative plan is confirmed. Initiate a new Mood Match when it suits you. 📅';
+
+  @override
+  String get moodyHubHeroBodyInviteProfessional3 =>
+      'Previous session is complete. Ready to schedule the next collaborative day? 🗓️';
+
+  @override
+  String get moodyHubHeroBodyInviteProfessional4 =>
+      'Your shared plan is in the books. Start a new match to plan ahead. 📋';
+
+  @override
+  String get moodyHubHeroBodyInviteEnergetic =>
+      'That Mood Match is on your plan and I love it! Who\'s next? Let\'s match again! 🔥';
+
+  @override
+  String get moodyHubHeroBodyInviteEnergetic2 =>
+      'You did a Mood Match and it\'s on your plan — okay iconic! Who are we dragging into the next one? 🚀';
+
+  @override
+  String get moodyHubHeroBodyInviteEnergetic3 =>
+      'Last match: done. Next match: waiting for you! Let\'s go again! ⚡';
+
+  @override
+  String get moodyHubHeroBodyInviteEnergetic4 =>
+      'Your shared day is locked in — love that! Ready to plan another one? I\'ll make it even better. 🌟';
+
+  @override
+  String get moodyHubHeroBodyInviteDirect =>
+      'Last Mood Match is on your plan. Start a new one when you want. 📍';
+
+  @override
+  String get moodyHubHeroBodyInviteDirect2 =>
+      'Done with last match. Start the next one. ✌️';
+
+  @override
+  String get moodyHubHeroBodyInviteDirect3 =>
+      'Plan saved. New Mood Match when you\'re ready. 🔄';
+
+  @override
+  String get moodyHubHeroBodyInviteDirect4 =>
+      'Last one\'s on your plan. Match again? 🤝';
+
+  @override
+  String get moodyHubMoodMatchInviteCta => 'Start a Mood Match';
+
+  @override
+  String get moodyHubInviteCardBody =>
+      'Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️';
+
+  @override
+  String get moodyHubPlanYourDayCardTitle => 'Plan your day';
+
+  @override
+  String get moodyHubPlanYourDayCardBody =>
+      'Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳';
+
+  @override
+  String get moodyHubContinueDayCardTitle => 'Continue your day';
+
+  @override
+  String get moodyHubContinueDayCardBody =>
+      'You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄';
+
+  @override
+  String get moodyHubCollapsedActionsTitle => 'Moody Hub';
+
+  @override
+  String get moodyHubCollapsedActionsSubtitle =>
+      'Plan your day, Mood Match, and more.';
+
+  @override
+  String get moodMatchAlreadyOnYourPlan => 'Already on your plan';
 }

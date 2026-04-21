@@ -49,6 +49,8 @@ const Color _mcForest = Color(0xFF2A6049);
 const Color _mcForestTint = Color(0xFFEBF3EE);
 const Color _mcParchment = Color(0xFFE8E2D8);
 const Color _mcCharcoal = Color(0xFF1E1C18);
+/// Readable secondary label on cream (date strip title, muted UI).
+const Color _mcInkMuted = Color(0xFF5C574E);
 
 class MoodHomeScreen extends ConsumerStatefulWidget {
   const MoodHomeScreen({super.key});
@@ -1164,6 +1166,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     }
   }
 
+  String _dateOnlyIso(DateTime d) {
+    final x = DateTime(d.year, d.month, d.day);
+    return '${x.year.toString().padLeft(4, '0')}-'
+        '${x.month.toString().padLeft(2, '0')}-'
+        '${x.day.toString().padLeft(2, '0')}';
+  }
+
   // Send chat message to Moody AI (for modal)
   Future<void> _sendChatMessageInModal(
       String message, StateSetter setModalState) async {
@@ -1208,6 +1217,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         latitude: loc.lat,
         longitude: loc.lng,
         city: loc.city,
+        planningCalendarDateIso: _dateOnlyIso(_selectedPlanningDate),
         clientTurns: priorTurns,
         languageCode: Localizations.localeOf(context).languageCode,
       );
@@ -1288,6 +1298,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
         latitude: loc.lat,
         longitude: loc.lng,
         city: loc.city,
+        planningCalendarDateIso: _dateOnlyIso(_selectedPlanningDate),
         clientTurns: priorTurns,
         languageCode: Localizations.localeOf(context).languageCode,
       );
@@ -1484,46 +1495,64 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       ),
                       InkWell(
                         onTap: () => _showWeatherDetails(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final weatherAsync = ref.watch(weatherProvider);
-                              return weatherAsync.when(
-                                data: (weather) {
-                                  if (weather == null)
-                                    return _buildDefaultWeather();
-                                  return Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      WmNetworkImage(
-                                        weather.iconUrl,
-                                        width: 20,
-                                        height: 20,
-                                        errorBuilder: (_, __, ___) => Icon(
-                                          _getWeatherIcon(weather.condition),
-                                          color: const Color(0xFFFFB300),
-                                          size: 18,
+                        borderRadius: BorderRadius.circular(14),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.94),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: _mcForest.withValues(alpha: 0.26),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 10),
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final weatherAsync = ref.watch(weatherProvider);
+                                return weatherAsync.when(
+                                  data: (weather) {
+                                    if (weather == null) {
+                                      return _buildDefaultWeather();
+                                    }
+                                    return Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        WmNetworkImage(
+                                          weather.iconUrl,
+                                          width: 22,
+                                          height: 22,
+                                          errorBuilder: (_, __, ___) => Icon(
+                                            _getWeatherIcon(weather.condition),
+                                            color: const Color(0xFFFFB300),
+                                            size: 20,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${weather.temperature.round()}°',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w500,
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '${weather.temperature.round()}°',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: _mcCharcoal,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                                loading: () => _buildDefaultWeather(),
-                                error: (_, __) => _buildDefaultWeather(),
-                              );
-                            },
+                                      ],
+                                    );
+                                  },
+                                  loading: () => _buildWeatherPillLoading(),
+                                  error: (_, __) => _buildDefaultWeather(),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),
@@ -1556,7 +1585,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                // Hero: "What's your mood" + time-based "this morning/afternoon/evening/tonight?" (green, italic)
+                // Hero + mood hint under the time phrase (same copy as former dark card).
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
@@ -1565,27 +1594,42 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              AppLocalizations.of(context)!
-                                  .moodHubWhatIsYourMood,
-                              style: GoogleFonts.poppins(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1A202C),
-                                height: 1.25,
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        '${AppLocalizations.of(context)!.moodHubWhatIsYourMood} ',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF1A202C),
+                                      height: 1.25,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: _getTimeOfDayPhrase(context),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                      fontStyle: FontStyle.italic,
+                                      color: const Color(0xFF2A6049),
+                                      height: 1.25,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                            const SizedBox(height: 8),
                             Text(
-                              _getTimeOfDayPhrase(context),
+                              AppLocalizations.of(context)!
+                                  .moodHubMoodPickerBanner,
                               style: GoogleFonts.poppins(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
-                                fontStyle: FontStyle.italic,
-                                color: const Color(
-                                    0xFF2A6049), // wmForest — v2 design system
-                                height: 1.25,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                height: 1.35,
+                                color: _mcInkMuted,
                               ),
                             ),
                           ],
@@ -1610,63 +1654,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Contextual banner - time-based localized message
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context)!;
-                    final hour = MoodyClock.now().hour;
-                    final message = hour >= 5 && hour < 12
-                        ? l10n.moodHubBannerMorning
-                        : hour >= 12 && hour < 17
-                            ? l10n.moodHubBannerAfternoon
-                            : hour >= 17 && hour < 21
-                                ? l10n.moodHubBannerEvening
-                                : l10n.moodHubBannerNight;
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF26273A)
-                            .withOpacity(0.9), // dark neutral, not green
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text(
-                            '😊',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              message,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color:
-                                    Colors.white, // white letters on dark card
-                                height: 1.3,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 if (!_hasPlanForSelectedDate(dailyMoodState))
                   _buildDateSelector(),
                 if (!_hasPlanForSelectedDate(dailyMoodState))
@@ -1690,7 +1678,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 20),
+                      padding: const EdgeInsets.only(bottom: 8),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1775,10 +1763,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 16),
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                  childAspectRatio: 0.92,
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  mainAxisSpacing: 8,
+                                  crossAxisSpacing: 8,
+                                  // Wider vs tall → shorter rows so CTA + Back fit without scroll.
+                                  childAspectRatio: 1.32,
                                   children: finalMoodOptions.map((mood) {
                                     final isSelected =
                                         _selectedMoods.contains(mood.label);
@@ -1791,6 +1782,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                       dimmed: _selectedMoods.isNotEmpty &&
                                           !isSelected,
                                       onTap: () => _toggleMood(mood),
+                                      emojiSize: 26,
+                                      titleSize: 10,
+                                      tileRadius: 16,
                                     );
                                   }).toList(),
                                 );
@@ -1808,7 +1802,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                           width: double.infinity,
                           height: 56,
                           margin: const EdgeInsets.only(
-                              left: 16, right: 16, bottom: 12, top: 8),
+                              left: 16, right: 16, bottom: 8, top: 4),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(28),
                             boxShadow: [
@@ -1875,7 +1869,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         // Back to Hub button - always show when on mood selection screen
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 16, right: 16, bottom: 30),
+                              left: 16, right: 16, bottom: 16),
                           child: TextButton(
                             onPressed: () async {
                               // MoodHomeScreen always shows this full-screen mood picker; updating
@@ -1948,9 +1942,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           child: Text(
             l10n.moodyHubPlanForWhen,
             style: GoogleFonts.poppins(
-              color: _mcParchment,
+              color: _mcInkMuted,
               fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -1996,8 +1990,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                         Text(
                           _localizedDayAndShortMonth(day),
                           style: GoogleFonts.poppins(
-                            color: isSelected ? Colors.white.withValues(alpha: 0.85) : _mcParchment,
+                            color: isSelected
+                                ? Colors.white.withValues(alpha: 0.92)
+                                : _mcCharcoal.withValues(alpha: 0.58),
                             fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                     ],
@@ -2288,10 +2285,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       crossAxisCount: 3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 0.92,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      childAspectRatio: 1.32,
       children: fallbackMoodOptions.map((mood) {
         final isSelected = _selectedMoods.contains(mood.label);
         return MoodHubStyleMoodTile(
@@ -2301,8 +2298,29 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           isSelected: isSelected,
           dimmed: _selectedMoods.isNotEmpty && !isSelected,
           onTap: () => _toggleMood(mood),
+          emojiSize: 26,
+          titleSize: 10,
+          tileRadius: 16,
         );
       }).toList(),
+    );
+  }
+
+  /// Compact spinner inside the header weather pill while forecast loads.
+  Widget _buildWeatherPillLoading() {
+    return const SizedBox(
+      width: 44,
+      height: 22,
+      child: Center(
+        child: SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: _mcForest,
+          ),
+        ),
+      ),
     );
   }
 
@@ -2315,13 +2333,13 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
           color: Color(0xFFFFB300),
           size: 20,
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 6),
         Text(
           '22°',
           style: GoogleFonts.poppins(
-            fontSize: 16,
-            color: Colors.black87,
-            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: _mcCharcoal,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

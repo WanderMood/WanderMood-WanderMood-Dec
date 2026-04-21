@@ -1847,6 +1847,11 @@ class GroupPlanningRepository {
 
     await MoodMatchSessionPrefs.clearPendingTimeSlot(sessionId);
 
+    // Persist locally so the hub state can detect "already on plan" even when
+    // `scheduled_activities.group_session_id` or `group_sessions.completed_at`
+    // columns are absent in older schema environments.
+    unawaited(MoodMatchSessionPrefs.markSavedToMyDay(sessionId));
+
     // First-commit wins: stamp `completed_at` once so downstream analytics /
     // filters can identify sessions that actually shipped into someone's day.
     // We coalesce to protect against re-entry — a second member adding the

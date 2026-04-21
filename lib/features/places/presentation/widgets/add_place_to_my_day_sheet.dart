@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -28,7 +29,7 @@ class AddPlaceToMyDaySheet extends ConsumerStatefulWidget {
 class _AddPlaceToMyDaySheetState extends ConsumerState<AddPlaceToMyDaySheet> {
   static const _slotKeys = ['morning', 'afternoon', 'evening'];
 
-  int _selectedSlotIndex = 1;
+  late int _selectedSlotIndex;
   late DateTime _selectedDate;
   Set<String> _occupiedSlots = {};
   bool _loadingSlots = true;
@@ -58,10 +59,40 @@ class _AddPlaceToMyDaySheetState extends ConsumerState<AddPlaceToMyDaySheet> {
   }
 
   int _firstFreeSlotIndex() {
+    final now = DateTime.now();
     for (var i = 0; i < 3; i++) {
+      if (!myDayQuickAddSlotOfferedForDay(
+          slotIndex: i, selectedDay: _selectedDate, now: now)) {
+        continue;
+      }
       if (!_occupiedSlots.contains(_slotKeys[i])) return i;
     }
-    return 0;
+    return myDayQuickAddFirstOfferedSlotIndex(
+            selectedDay: _selectedDate, now: now) ??
+        2;
+  }
+
+  bool _hasBookableSlot() {
+    final now = DateTime.now();
+    for (var i = 0; i < 3; i++) {
+      if (!myDayQuickAddSlotOfferedForDay(
+          slotIndex: i, selectedDay: _selectedDate, now: now)) {
+        continue;
+      }
+      if (!_occupiedSlots.contains(_slotKeys[i])) return true;
+    }
+    return false;
+  }
+
+  bool _selectedSlotIsBookable() {
+    final now = DateTime.now();
+    if (!myDayQuickAddSlotOfferedForDay(
+        slotIndex: _selectedSlotIndex,
+        selectedDay: _selectedDate,
+        now: now)) {
+      return false;
+    }
+    return !_occupiedSlots.contains(_slotKeys[_selectedSlotIndex]);
   }
 
   Future<void> _refreshOccupiedSlots() async {
@@ -102,6 +133,10 @@ class _AddPlaceToMyDaySheetState extends ConsumerState<AddPlaceToMyDaySheet> {
   void initState() {
     super.initState();
     _selectedDate = _dateOnly(widget.planningDate);
+    final now = DateTime.now();
+    _selectedSlotIndex =
+        myDayQuickAddFirstOfferedSlotIndex(selectedDay: _selectedDate, now: now) ??
+            2;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_refreshOccupiedSlots());
     });
@@ -116,7 +151,7 @@ class _AddPlaceToMyDaySheetState extends ConsumerState<AddPlaceToMyDaySheet> {
     final isTodaySelected = _isSameDay(_selectedDate, today);
     final isTomorrowSelected = _isSameDay(_selectedDate, tomorrow);
     final isCustomSelected = !isTodaySelected && !isTomorrowSelected;
-    final allTaken = _occupiedSlots.length >= 3 && !_loadingSlots;
+    final allTaken = !_loadingSlots && !_hasBookableSlot();
 
     Widget dayChip({
       required String label,
@@ -346,13 +381,32 @@ class _AddPlaceToMyDaySheetState extends ConsumerState<AddPlaceToMyDaySheet> {
             ),
             const SizedBox(height: 8),
             Row(
-              children: [
-                timeChip(label: l10n.timeLabelMorning, slotIndex: 0),
-                const SizedBox(width: 8),
-                timeChip(label: l10n.timeLabelAfternoon, slotIndex: 1),
-                const SizedBox(width: 8),
-                timeChip(label: l10n.timeLabelEvening, slotIndex: 2),
-              ],
+              children: () {
+                final chips = <Widget>[];
+                for (var j = 0; j < 3; j++) {
+                  if (!myDayQuickAddSlotOfferedForDay(
+                    slotIndex: j,
+                    selectedDay: _selectedDate,
+                    now: now,
+                  )) {
+                    continue;
+                  }
+                  if (chips.isNotEmpty) {
+                    chips.add(const SizedBox(width: 8));
+                  }
+                  final label = j == 0
+                      ? l10n.timeLabelMorning
+                      : (j == 1
+                          ? l10n.timeLabelAfternoon
+                          : l10n.timeLabelEvening);
+                  chips.add(
+                    Expanded(
+                      child: timeChip(label: label, slotIndex: j),
+                    ),
+                  );
+                }
+                return chips;
+              }(),
             ),
           ],
           const SizedBox(height: 16),
@@ -362,7 +416,7 @@ class _AddPlaceToMyDaySheetState extends ConsumerState<AddPlaceToMyDaySheet> {
             child: ElevatedButton(
               onPressed: (_loadingSlots ||
                       allTaken ||
-                      _occupiedSlots.contains(_slotKeys[_selectedSlotIndex]))
+                      !_selectedSlotIsBookable())
                   ? null
                   : () async {
                       final out = widget.onTimeSelected(_selectedStartTime);

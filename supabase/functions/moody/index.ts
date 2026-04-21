@@ -182,8 +182,50 @@ function getBroadExploreQueries(isLocalMode: boolean, interests: string[]): stri
 }
 
 function getFilterSearchQueries(filterName: string): string[] {
-  const map: Record<string, string[]> = { halal: ['halal restaurant','halal food','halal cafe','muslim friendly restaurant','turkish restaurant','kebab restaurant','middle eastern restaurant','moroccan restaurant'], lgbtq_friendly: ['lgbtq friendly bar','gay friendly cafe','inclusive restaurant queer'], black_owned: ['black owned restaurant','black owned cafe','afro restaurant'], family_friendly: ['family restaurant','family friendly cafe','family park attraction'], kids_friendly: ['kids friendly restaurant','children museum','playground family restaurant'], vegan: ['vegan restaurant','plant based restaurant','vegan cafe','fully vegan food','plant based cafe'], vegetarian: ['vegetarian restaurant','vegetarian cafe','veg restaurant','meat free restaurant'], gluten_free: ['gluten free restaurant','celiac friendly restaurant cafe','gluten free bakery'], instagrammable: ['aesthetic cafe','rooftop restaurant view','scenic viewpoint','beautiful interior restaurant','flower cafe','instagram worthy cafe'], romantic: ['candlelight dinner','rooftop dining','wine bar cozy','romantic restaurant water'], trendy: ['trendy restaurant','specialty coffee','craft beer bar','rooftop bar'], outdoor: ['city park','botanical garden','outdoor terrace','waterfront'], budget: ['free attraction','city park','affordable cafe','street market'], nightlife: ['cocktail bar','rooftop bar','live music venue','jazz bar'], wellness: ['spa','yoga studio','wellness center','bath house'], cultural: ['art museum','history museum','art gallery','cultural center'], foodie: ['food market','street food','artisan bakery','coffee roastery'] }
-  return map[filterName.toLowerCase().replace(/[^a-z_]/g, '')] || [filterName + ' place']
+  const k = filterName.toLowerCase().replace(/[^a-z_]/g, '')
+  const map: Record<string, string[]> = {
+    halal: ['halal restaurant','halal food','halal cafe','muslim friendly restaurant','turkish restaurant','kebab restaurant','middle eastern restaurant','moroccan restaurant','lebanese restaurant'],
+    lgbtq_friendly: ['lgbtq friendly bar','gay friendly cafe','inclusive restaurant queer','rainbow friendly cafe'],
+    black_owned: ['black owned restaurant','black owned cafe rotterdam','afro caribbean restaurant','soul food restaurant','ethiopian restaurant','surinamese restaurant'],
+    family_friendly: ['family restaurant','family friendly cafe','family park attraction'],
+    kids_friendly: ['kids friendly restaurant','children museum','playground family restaurant'],
+    vegan: ['vegan restaurant','plant based restaurant','vegan cafe','fully vegan food','plant based cafe'],
+    vegetarian: ['vegetarian restaurant','vegetarian cafe','veg restaurant','meat free restaurant'],
+    pescatarian: ['seafood restaurant','sushi restaurant','fish restaurant','poke bowl restaurant'],
+    gluten_free: ['gluten free restaurant','celiac friendly restaurant cafe','gluten free bakery'],
+    instagrammable: ['instagram worthy brunch cafe interior','rooftop cafe city view','flower cafe aesthetic','design coffee shop natural light','beautiful restaurant terrace view'],
+    aesthetic_spaces: ['aesthetic cafe natural light interior','concept brunch restaurant design','botanical cafe plants','gallery cafe quiet daylight','boutique hotel lobby cafe stylish','scenic terrace lunch restaurant'],
+    artistic_design: ['design hotel cafe lobby','concept store cafe design','architecture cafe gallery'],
+    romantic: ['candlelight dinner','rooftop dining','wine bar cozy','romantic restaurant water'],
+    scenic_views: ['scenic viewpoint city','rooftop view restaurant','waterfront terrace restaurant','panoramic restaurant'],
+    sunset: ['sunset rooftop bar','golden hour terrace restaurant','waterfront sunset dinner'],
+    best_at_night: ['late night restaurant','cocktail bar open late','rooftop bar night'],
+    wheelchair_accessible: ['wheelchair accessible restaurant','accessible cafe ramp','disabled friendly restaurant'],
+    wheelchair: ['wheelchair accessible restaurant','accessible cafe ramp','disabled friendly restaurant'],
+    sensory_friendly: ['quiet cafe low noise','sensory friendly museum','calm library cafe'],
+    sensory: ['quiet cafe low noise','sensory friendly museum','calm library cafe'],
+    senior_friendly: ['accessible restaurant elevator','quiet classic restaurant','senior friendly cafe'],
+    senior: ['accessible restaurant elevator','quiet classic restaurant','senior friendly cafe'],
+    wifi: ['cafe free wifi laptop','restaurant wifi work','coffee shop wifi'],
+    parking: ['restaurant parking nearby','cafe with parking','free parking restaurant'],
+    charging: ['cafe power outlets laptop','restaurant usb charging','coworking cafe charging'],
+    credit_cards: ['restaurant card payment','contactless payment cafe'],
+    quiet: ['quiet cafe reading','peaceful library cafe','low noise wine bar'],
+    lively: ['lively food hall','busy street food market','live music bar popular'],
+    surprise_me: ['hidden gem restaurant','unusual cafe experience','unique bar city'],
+    surprise: ['hidden gem restaurant','unusual cafe experience','unique bar city'],
+    transit: ['restaurant near train station','cafe near metro station','food near central station'],
+    transport: ['restaurant near train station','cafe near metro station','food near central station'],
+    no_alcohol: ['non alcoholic cocktail bar','mocktail cafe','halal family restaurant'],
+    trendy: ['trendy restaurant','specialty coffee','craft beer bar','rooftop bar'],
+    outdoor: ['city park','botanical garden','outdoor terrace','waterfront'],
+    budget: ['free attraction','city park','affordable cafe','street market'],
+    nightlife: ['cocktail bar','rooftop bar','live music venue','jazz bar'],
+    wellness: ['spa','yoga studio','wellness center','bath house'],
+    cultural: ['art museum','history museum','art gallery','cultural center'],
+    foodie: ['food market','street food','artisan bakery','coffee roastery'],
+  }
+  return map[k] || [`${filterName} restaurant cafe`]
 }
 
 type PlaceBucket = 'cafe_bakery' | 'food' | 'scenic_calm' | 'culture' | 'wellness' | 'fitness' | 'nightlife' | 'shopping' | 'tourist' | 'misc'
@@ -261,14 +303,163 @@ function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minRevi
 function placeCardSearchText(p: PlaceCard): string { return ((p.name || '') + ' ' + (p.editorial_summary || '') + ' ' + (p.address || '') + ' ' + (p.vicinity || '') + ' ' + (p.types || []).join(' ')).toLowerCase() }
 function placeMatchesRequiredKeyword(text: string, rawKey: string): boolean { const k = rawKey.toLowerCase().trim(); if (!k) return true; if (k === 'halal' || k.includes('halal')) return /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(text); if (k === 'vegan' || k.includes('vegan')) return /vegan|plant[- ]?based|plantbased/.test(text); if (k === 'vegetarian' || k.includes('vegetarian')) return /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(text); if (k.includes('gluten')) return /gluten[- ]?free|celiac|gf\b/.test(text); return text.includes(k) }
 
+function banConferenceHostelLodging(text: string, typesJoined: string): boolean {
+  if (/conference|meeting room|meeting space|cowork|co-working|hostel|motel|business center|expo hall|convention center|office tower|auditorium|event venue|function room/i.test(text)) return true
+  if (/(^|,)hostel(,|$)|(^|,)lodging(,|$)|(^|,)rv_park(,|$)/i.test(typesJoined)) return true
+  return false
+}
+
 function filterByNamedFilter(places: PlaceCard[], filterName: string): PlaceCard[] {
   const f = filterName.toLowerCase().replace(/[^a-z_]/g, '')
-  if (f === 'kids_friendly' || f === 'family_friendly') { const a = places.filter(p => p.good_for_children === true); return a.length > 0 ? a : places }
-  if (f === 'vegetarian') { const a = places.filter(p => p.serves_vegetarian_food === true || /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(placeCardSearchText(p))); return a.length > 0 ? a : places }
-  if (f === 'vegan') { const a = places.filter(p => /vegan|plant[- ]?based|plantbased/.test(placeCardSearchText(p))); return a.length > 0 ? a : places }
-  if (f === 'halal') { const a = places.filter(p => /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(placeCardSearchText(p))); return a.length > 0 ? a : places }
-  if (f === 'gluten_free') { const a = places.filter(p => /gluten[- ]?free|celiac|gf\b/.test(placeCardSearchText(p))); return a.length > 0 ? a : places }
-  if (f === 'outdoor') { const a = places.filter(p => p.outdoor_seating === true); return a.length > 0 ? a : places }
+  const textOf = (p: PlaceCard) => placeCardSearchText(p)
+  const typesOf = (p: PlaceCard) => (p.types || []).map((t: string) => t.toLowerCase())
+
+  if (f === 'kids_friendly' || f === 'family_friendly') {
+    return places.filter(p => p.good_for_children === true || /kids menu|children welcome|family|playground|stroller|child[- ]?friendly/i.test(textOf(p)))
+  }
+  if (f === 'vegetarian') {
+    return places.filter(p => p.serves_vegetarian_food === true || /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(textOf(p)))
+  }
+  if (f === 'vegan') {
+    return places.filter(p => /vegan|plant[- ]?based|plantbased/.test(textOf(p)))
+  }
+  if (f === 'pescatarian') {
+    return places.filter(p => /pescatar|seafood|fish|sushi|ceviche|poke|oyster/i.test(textOf(p)))
+  }
+  if (f === 'halal') {
+    return places.filter(p => /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(textOf(p)))
+  }
+  if (f === 'gluten_free') {
+    return places.filter(p => /gluten[- ]?free|celiac|gf\b/.test(textOf(p)))
+  }
+  if (f === 'outdoor') {
+    return places.filter(p => p.outdoor_seating === true || /outdoor terrace|beer garden|rooftop terrace|al fresco/i.test(textOf(p)))
+  }
+  if (f === 'budget') {
+    return places.filter(p => (p.price_level ?? 99) <= 1 || /affordable|cheap eats|budget/i.test(textOf(p)))
+  }
+  if (f === 'lgbtq_friendly') {
+    const re = /lgbtq|lgbt|gay|lesbian|queer|pride|rainbow|inclusive|drag|same[- ]?sex/i
+    return places.filter(p => re.test(textOf(p)))
+  }
+  if (f === 'wheelchair_accessible' || f === 'wheelchair') {
+    return places.filter(p => /wheelchair|accessible entrance|ramp|elevator|ada\b|disabled access|mobility/i.test(textOf(p)))
+  }
+  if (f === 'sensory_friendly' || f === 'sensory') {
+    return places.filter(p => /sensory|autism|neurodiverse|low stimulation|quiet room|calm environment|soft lighting|sensory[- ]?friendly/i.test(textOf(p)))
+  }
+  if (f === 'senior_friendly' || f === 'senior') {
+    return places.filter(p => /senior|elderly|accessible|easy access|elevator|classic|traditional/i.test(textOf(p)))
+  }
+  if (f === 'wifi') {
+    return places.filter(p => /wifi|wi-?fi|wlan|free internet|wireless internet/i.test(textOf(p)))
+  }
+  if (f === 'parking') {
+    return places.filter(p => /parking|car park|p\+r|park and ride|garage|parc?ing/i.test(textOf(p)))
+  }
+  if (f === 'charging') {
+    return places.filter(p => /charging|power outlet|usb[- ]?c|socket|plug/i.test(textOf(p)))
+  }
+  if (f === 'credit_cards') {
+    return places.filter(p => /card payment|credit card|debit|contactless|cashless|pin\b/i.test(textOf(p)))
+  }
+  if (f === 'quiet') {
+    return places.filter(p => {
+      const types = typesOf(p)
+      const text = textOf(p)
+      if (types.includes('night_club')) return false
+      if (types.includes('bar') && !/wine bar|quiet|speakeasy|cocktail lounge/i.test(text)) return false
+      return /quiet|peaceful|calm|cozy|intimate|reading|stud(y|ious)|low noise/i.test(text) ||
+        ['library','museum','park','cafe','book_store','art_gallery'].some(t => types.includes(t))
+    })
+  }
+  if (f === 'lively') {
+    return places.filter(p => {
+      const text = textOf(p)
+      const types = typesOf(p)
+      const typeHit = ['night_club','bar','food_court','meal_takeaway'].some(t => types.includes(t))
+      return p.live_music === true ||
+        /lively|buzzing|busy|crowd|energy|party|dance|dj\b|vibrant|food hall|street food|night market/i.test(text) ||
+        (typeHit && /popular|busy|lively|vibrant|crowd|buzz/i.test(text))
+    })
+  }
+  if (f === 'surprise_me' || f === 'surprise') {
+    return places.filter(p => {
+      const text = textOf(p)
+      const tj = typesOf(p).join(',')
+      return !banConferenceHostelLodging(text, tj)
+    })
+  }
+  if (f === 'transit' || f === 'transport') {
+    return places.filter(p => /station|metro|tram|bus stop|transit|ns station|centraal/i.test(textOf(p)) ||
+      ['subway_station','train_station','transit_station','bus_station'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'no_alcohol') {
+    return places.filter(p => {
+      const types = typesOf(p)
+      const text = textOf(p)
+      if (['bar','night_club','liquor_store'].some(t => types.includes(t)) && !/mocktail|non[- ]?alcoholic|soft drink|juice bar|0%|zero proof/i.test(text)) return false
+      return true
+    })
+  }
+  if (f === 'best_at_night') {
+    return places.filter(p => {
+      const types = typesOf(p)
+      const text = textOf(p)
+      if (p.best_time === 'evening') return true
+      return /open late|late night|midnight|nightlife|evening|rooftop bar|cocktail/i.test(text) &&
+        ['bar','night_club','restaurant','cafe'].some(t => types.includes(t))
+    })
+  }
+  if (f === 'scenic_views') {
+    return places.filter(p => /view|scenic|panoramic|vista|overlook|rooftop.*view|waterfront/i.test(textOf(p)) ||
+      ['park','natural_feature','tourist_attraction','bridge','point_of_interest'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'sunset' || f === 'best_at_sunset') {
+    return places.filter(p => /sunset|golden hour|dusk|evening sky|rooftop terrace/i.test(textOf(p)))
+  }
+  if (f === 'romantic') {
+    return places.filter(p => {
+      const types = typesOf(p)
+      const text = textOf(p)
+      if (!['restaurant','bar','cafe','bakery','meal_takeaway'].some(t => types.includes(t))) return false
+      return /romantic|candle|wine|sunset|waterfront|rooftop|date|intimate|valentine/i.test(text)
+    })
+  }
+  if (f === 'artistic_design') {
+    return places.filter(p => /design|architecture|gallery|concept|artistic|brutalist|minimal|sculptural/i.test(textOf(p)) ||
+      ['art_gallery','museum','design_agency'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'black_owned') {
+    const re = /black[- ]?owned|blackowned|afro|african diaspora|soul food|ethiopian|ghanaian|nigerian|jamaican|caribbean restaurant|surinamese|surinaams|melanin|diaspora/i
+    return places.filter(p => re.test(textOf(p)))
+  }
+  if (f === 'instagrammable') {
+    const allow = new Set(['cafe','bakery','coffee_shop','restaurant','bar','ice_cream_shop','dessert_shop','art_gallery','spa','meal_takeaway'])
+    return places.filter(p => {
+      const text = textOf(p)
+      const types = typesOf(p)
+      const tj = types.join(' ')
+      if (banConferenceHostelLodging(text, tj)) return false
+      if (types.includes('gym') || types.includes('fitness_center')) return false
+      const typeOk = types.some(t => allow.has(t))
+      const vibe = /instagram|aesthetic|rooftop|terrace|view|natural light|interior|beautiful|scenic|minimal|plant|flower|boutique|pink|design|courtyard/i.test(text)
+      return typeOk && vibe
+    })
+  }
+  if (f === 'aesthetic_spaces') {
+    const allow = new Set(['cafe','bakery','coffee_shop','restaurant','meal_takeaway','art_gallery','museum','park','botanical_garden','spa','library','tourist_attraction'])
+    return places.filter(p => {
+      const text = textOf(p)
+      const types = typesOf(p)
+      const tj = types.join(' ')
+      if (banConferenceHostelLodging(text, tj)) return false
+      if (types.includes('gym') || types.includes('fitness_center') || types.includes('lodging')) return false
+      const typeOk = types.some(t => allow.has(t))
+      const vibe = /aesthetic|instagram|natural light|plants|plant wall|terrace|rooftop|design|concept|boutique|scenic|bali|zen|earthy|minimal|daylight|studio|courtyard|interior/i.test(text)
+      return typeOk && vibe
+    })
+  }
   return places
 }
 
@@ -340,12 +531,12 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || []); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...base].slice(0, 16) }
     else { const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang); exploreQueries = aiQ ?? getMoodQueries(mood) }
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
-    if (places.length < 15) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
+    if (!hasNamedFilters && places.length < 15) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
     places = places.slice(0, 100)
     if (hasNamedFilters) { for (const f of namedFilters) places = filterByNamedFilter(places, f) }
-    const thresholds = hasNamedFilters ? { minRating: 3.5, minReviews: 5 } : { minRating: 4.0, minReviews: 8 }
+    const thresholds = hasNamedFilters ? { minRating: 4.0, minReviews: 12 } : { minRating: 4.0, minReviews: 8 }
     let qualified = await enrichAndFilter(places, thresholds)
-    if (qualified.length < 8) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 5 })
+    if (!hasNamedFilters && qualified.length < 8) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 5 })
     const ranked = rankPlaces(qualified, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
     if (!hasNamedFilters && !groupMatch) { await cacheExplore(supabase, cacheKey, ranked) }
     const enriched = enrichWithSignals(applyFilters(shuffleArray(ranked), filters), userContext.isLocalMode)
@@ -526,6 +717,59 @@ async function getMoodySearchQueries(moods: string[], location: string, userCont
   } catch { return null }
 }
 
+function formatUtcOffsetLabel(totalMinutes: number): string {
+  const sign = totalMinutes >= 0 ? '+' : '-'
+  const abs = Math.abs(totalMinutes)
+  const h = Math.floor(abs / 60)
+  const m = abs % 60
+  return `UTC${sign}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+/** Device-local clock from the Flutter app — preferred over server time for chat. */
+function resolveClientClockForChat(params: any): { clockBlock: string; timeSlot: 'morning' | 'afternoon' | 'evening'; moodTagsLine: string } {
+  const d = typeof params.client_local_date_iso === 'string' ? params.client_local_date_iso.trim() : ''
+  const t = typeof params.client_local_time_hm === 'string' ? params.client_local_time_hm.trim() : ''
+  const wd = typeof params.client_weekday_en === 'string' ? params.client_weekday_en.trim() : ''
+  const tz = typeof params.client_time_zone_name === 'string' ? params.client_time_zone_name.trim() : ''
+  const tzId = typeof params.client_time_zone_id === 'string' ? params.client_time_zone_id.trim() : ''
+  const offRaw = params.client_utc_offset_minutes
+  const off = typeof offRaw === 'number' && Number.isFinite(offRaw) ? Math.trunc(offRaw as number) : null
+  const planning = typeof params.planning_date_iso === 'string' ? params.planning_date_iso.trim() : ''
+
+  let hour: number | null = null
+  const hm = t.match(/^(\d{1,2}):(\d{2})$/)
+  if (hm) {
+    const h = parseInt(hm[1], 10)
+    if (!Number.isNaN(h) && h >= 0 && h <= 23) hour = h
+  }
+
+  const fallback = getTimeOfDayContext().timeSlot
+  let timeSlot: 'morning' | 'afternoon' | 'evening' = fallback
+  if (hour !== null) {
+    if (hour >= 5 && hour < 12) timeSlot = 'morning'
+    else if (hour >= 12 && hour < 17) timeSlot = 'afternoon'
+    else timeSlot = 'evening'
+  }
+
+  const lines: string[] = []
+  if (d && t) {
+    lines.push(`USER LOCAL NOW: ${wd ? `${wd} ` : ''}${d} ${t}${tz ? ` (${tz})` : ''}.`)
+  }
+  if (tzId) lines.push(`IANA time zone id (device): ${tzId}.`)
+  if (off != null) lines.push(`User device UTC offset: ${formatUtcOffsetLabel(off)}.`)
+  if (planning && planning !== d) {
+    lines.push(`Planner / calendar focus date (may differ from "today" above): ${planning}.`)
+  } else if (planning && !d) {
+    lines.push(`Planner / calendar focus date: ${planning}.`)
+  }
+  const clockBlock = lines.join('\n')
+
+  const moodsArr = Array.isArray(params.moods) ? (params.moods as unknown[]).filter((x): x is string => typeof x === 'string').slice(0, 6) : []
+  const moodTagsLine = moodsArr.length > 0 ? `App mood tag(s): ${moodsArr.map(m => normaliseMood(String(m))).join(', ')}.` : ''
+
+  return { clockBlock, timeSlot, moodTagsLine }
+}
+
 async function getMoodyPersonalityResponse(moods: string[], activities: Activity[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<{ moodyMessage: string; reasoning: string }> {
   const style = String(userContext?.communicationStyle || 'friendly'), n = activities.length, m = moods.join(' & ')
   const fb: Record<string, Record<string, any>> = { nl: { energetic: { moodyMessage: `YO ik heb je dag gepland 🔥 ${n} activiteiten`, reasoning: 'Energie-mix.' }, professional: { moodyMessage: `Ik heb ${n} activiteiten voor je klaarstaan in ${location}.`, reasoning: 'Geselecteerd.' }, direct: { moodyMessage: `${n} activiteiten. Klaar.`, reasoning: 'Match.' }, calm: { moodyMessage: `Ik heb iets rustig voor je gepland ☀️`, reasoning: 'Rustige mix.' }, friendly: { moodyMessage: `Hey! Ik heb je ${m} dag gepland in ${location} 😊`, reasoning: 'Mooie mix.' } }, en: { energetic: { moodyMessage: `YO I planned your whole day 🔥 ${n} things, ${m} mode activated`, reasoning: 'High-energy picks.' }, professional: { moodyMessage: `I've lined up ${n} activities for you in ${location}.`, reasoning: 'Chosen for fit.' }, direct: { moodyMessage: `${n} activities. You're welcome.`, reasoning: 'Mood match.' }, calm: { moodyMessage: `I found something easy and good for you today ☀️`, reasoning: 'Calm mix.' }, friendly: { moodyMessage: `Hey! I planned your ${m} day in ${location} 😊`, reasoning: 'Nice mix.' } } }
@@ -543,10 +787,15 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
   const message = (params.message || '').trim()
   if (!message) return new Response(JSON.stringify({ error: 'Message required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   const [userContext, chatHistory] = await Promise.all([fetchUserContext(supabase, userId), fetchChatHistory(supabase, userId, 20)])
-  const userCity = params.location?.trim() || null, coordinates = params.coordinates as { lat: number; lng: number } | undefined, timeCtx = getTimeOfDayContext(), style = userContext.communicationStyle || 'friendly', lang = clientOutputLang(params), placesLang = googlePlacesLanguageFromRequest(params)
+  const userCity = params.location?.trim() || null, coordinates = params.coordinates as { lat: number; lng: number } | undefined, style = userContext.communicationStyle || 'friendly', lang = clientOutputLang(params), placesLang = googlePlacesLanguageFromRequest(params)
+  const { clockBlock, timeSlot, moodTagsLine } = resolveClientClockForChat(params)
+  const serverFallbackSlot = getTimeOfDayContext().timeSlot
+  const timeBlock = clockBlock.length > 0
+    ? `${clockBlock}\nUse this for greetings, same-day vs late-night tone, and whether "morning coffee" still makes sense. Effective time-of-day bucket for suggestions: ${timeSlot}.`
+    : `Time of day (server fallback — app did not send device clock): ${serverFallbackSlot}.`
   let tasteContext = ''
   if (userContext.tasteProfile && userContext.tasteProfile.totalInteractions >= 3) { const topTypes = Object.entries(userContext.tasteProfile.savedPlaceTypes as Record<string,number>).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([type]) => type); if (topTypes.length > 0) tasteContext = `\nThis user tends to save/like: ${topTypes.join(', ')}.`; if (userContext.tasteProfile.topRatedPlaces?.length > 0) tasteContext += ` They've completed activities and rated them positively.` }
-  const systemPrompt = `${MOODY_CORE_IDENTITY}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\nTime of day: ${timeCtx.timeSlot}.\nUser interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have specific spots for that right now — tap Explore to find real options nearby."\nReply in the same language the user writes in.`
+  const systemPrompt = `${MOODY_CORE_IDENTITY}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have specific spots for that right now — tap Explore to find real options nearby."\nReply in the same language the user writes in.`
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey) return new Response(JSON.stringify({ reply: getFallbackChat(style, lang), conversationId: params.conversationId || `conv_${userId}_${Date.now()}`, suggested_places: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {

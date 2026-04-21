@@ -4,6 +4,42 @@ import 'package:wandermood/l10n/app_localizations.dart';
 bool myDayIsSameCalendarDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
+/// Whether the quick-add slot (0 = morning, 1 = afternoon, 2 = evening) should
+/// appear when planning **[selectedDay]** at local time **[now]**.
+///
+/// For **today** only, matches [myDayTimelineSectionTitle] cutoffs: morning is
+/// hidden from noon onward, afternoon from 18:00 onward. **Evening** stays
+/// available all day so users can still add something “tonight” late.
+bool myDayQuickAddSlotOfferedForDay({
+  required int slotIndex,
+  required DateTime selectedDay,
+  required DateTime now,
+}) {
+  assert(slotIndex >= 0 && slotIndex < 3);
+  if (!myDayIsSameCalendarDay(selectedDay, now)) return true;
+  final h = now.hour;
+  return switch (slotIndex) {
+    0 => h < 12,
+    1 => h < 18,
+    _ => true,
+  };
+}
+
+/// First offered slot index for that day, or `null` if none (should not happen
+/// for calendar days that are not “today”, or today while evening is offered).
+int? myDayQuickAddFirstOfferedSlotIndex({
+  required DateTime selectedDay,
+  required DateTime now,
+}) {
+  for (var i = 0; i < 3; i++) {
+    if (myDayQuickAddSlotOfferedForDay(
+        slotIndex: i, selectedDay: selectedDay, now: now)) {
+      return i;
+    }
+  }
+  return null;
+}
+
 /// Morning / afternoon / evening from scheduled hour (12–18 = afternoon, NL convention).
 String myDayPeriodFromStartHour(AppLocalizations l10n, int hour) {
   if (hour >= 6 && hour < 12) return l10n.myDayPeriodMorning;

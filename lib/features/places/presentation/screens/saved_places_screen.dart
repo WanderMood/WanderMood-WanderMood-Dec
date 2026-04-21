@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/services/trip_collections_service.dart';
@@ -1214,7 +1215,7 @@ class _PlanSavedPlaceSheet extends ConsumerStatefulWidget {
 
 class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
   late DateTime _selectedDate;
-  int _slotIndex = 1; // 0 morning, 1 afternoon, 2 evening
+  late int _slotIndex; // 0 morning, 1 afternoon, 2 evening
   bool _saving = false;
 
   @override
@@ -1222,6 +1223,27 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
     super.initState();
     final now = DateTime.now();
     _selectedDate = DateTime(now.year, now.month, now.day);
+    _slotIndex = myDayQuickAddFirstOfferedSlotIndex(
+          selectedDay: _selectedDate,
+          now: now,
+        ) ??
+        2;
+  }
+
+  void _clampSlotToOffered() {
+    final now = DateTime.now();
+    if (myDayQuickAddSlotOfferedForDay(
+      slotIndex: _slotIndex,
+      selectedDay: _selectedDate,
+      now: now,
+    )) {
+      return;
+    }
+    _slotIndex = myDayQuickAddFirstOfferedSlotIndex(
+          selectedDay: _selectedDate,
+          now: now,
+        ) ??
+        2;
   }
 
   DateTime get _selectedStartTime {
@@ -1251,6 +1273,7 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
     if (picked != null && mounted) {
       setState(() {
         _selectedDate = DateTime(picked.year, picked.month, picked.day);
+        _clampSlotToOffered();
       });
     }
   }
@@ -1435,13 +1458,19 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
               chip(
                 label: l10n.timeLabelToday,
                 selected: isToday,
-                onTap: () => setState(() => _selectedDate = todayDate),
+                onTap: () => setState(() {
+                  _selectedDate = todayDate;
+                  _clampSlotToOffered();
+                }),
               ),
               const SizedBox(width: 8),
               chip(
                 label: l10n.timeLabelTomorrow,
                 selected: isTomorrow,
-                onTap: () => setState(() => _selectedDate = tomorrowDate),
+                onTap: () => setState(() {
+                  _selectedDate = tomorrowDate;
+                  _clampSlotToOffered();
+                }),
               ),
               const SizedBox(width: 8),
               chip(
@@ -1463,13 +1492,31 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
           Text(AppLocalizations.of(context)!.socialTime, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
-            children: [
-              chip(label: l10n.timeLabelMorning, selected: _slotIndex == 0, onTap: () => setState(() => _slotIndex = 0)),
-              const SizedBox(width: 8),
-              chip(label: l10n.timeLabelAfternoon, selected: _slotIndex == 1, onTap: () => setState(() => _slotIndex = 1)),
-              const SizedBox(width: 8),
-              chip(label: l10n.timeLabelEvening, selected: _slotIndex == 2, onTap: () => setState(() => _slotIndex = 2)),
-            ],
+            children: () {
+              final chips = <Widget>[];
+              final clock = DateTime.now();
+              for (var j = 0; j < 3; j++) {
+                if (!myDayQuickAddSlotOfferedForDay(
+                  slotIndex: j,
+                  selectedDay: _selectedDate,
+                  now: clock,
+                )) {
+                  continue;
+                }
+                if (chips.isNotEmpty) chips.add(const SizedBox(width: 8));
+                final label = j == 0
+                    ? l10n.timeLabelMorning
+                    : (j == 1 ? l10n.timeLabelAfternoon : l10n.timeLabelEvening);
+                chips.add(
+                  chip(
+                    label: label,
+                    selected: _slotIndex == j,
+                    onTap: () => setState(() => _slotIndex = j),
+                  ),
+                );
+              }
+              return chips;
+            }(),
           ),
           const SizedBox(height: 18),
           SizedBox(

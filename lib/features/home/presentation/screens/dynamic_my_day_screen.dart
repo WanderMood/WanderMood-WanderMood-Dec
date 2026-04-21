@@ -311,15 +311,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         tile(
-          onTap: () => _navigateToTab(2),
+          onTap: () => unawaited(_openMoodSelectionForPlanning()),
           icon: Icons.auto_awesome_rounded,
           label: l10n.myDayPlanWithMoodyButton,
         ),
         const SizedBox(width: 12),
         tile(
-          onTap: () => _navigateToTab(1),
-          icon: Icons.explore_rounded,
-          label: l10n.myDayExploreActivitiesButton,
+          onTap: () => unawaited(_openMoodMatchHub()),
+          icon: Icons.favorite_rounded,
+          label: l10n.moodMatchTitle,
         ),
       ],
     );
@@ -576,7 +576,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 height: 54,
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => _navigateToTab(2),
+                  onPressed: () => unawaited(_openMoodSelectionForPlanning()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2A6049),
                     foregroundColor: Colors.white,
@@ -600,7 +600,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 height: 54,
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () => _navigateToTab(1),
+                  onPressed: () => unawaited(_openMoodMatchHub()),
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Colors.white,
                     side: const BorderSide(color: Color(0xFF2A6049), width: 1.5),
@@ -609,7 +609,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     ),
                   ),
                   child: Text(
-                    l10n.myDayExploreActivitiesButton,
+                    l10n.moodMatchTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -1194,8 +1194,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
-                          _navigateToTab(2);
+                          unawaited(_openMoodSelectionForPlanning());
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -1224,8 +1223,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       const SizedBox(height: 10),
                       OutlinedButton(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
-                          _navigateToTab(1);
+                          unawaited(_openMoodMatchHub());
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
@@ -1240,10 +1238,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.explore_rounded, size: 18),
+                            const Icon(Icons.favorite_rounded, size: 18),
                             const SizedBox(width: 8),
                             Text(
-                              l10n.myDayExploreActivitiesButton,
+                              l10n.moodMatchTitle,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -2018,7 +2016,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => context.goNamed('main', extra: {'tab': 2}),
+                      onPressed: () => unawaited(_openMoodSelectionForPlanning()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
@@ -2048,7 +2046,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () => context.goNamed('main', extra: {'tab': 1}),
+                      onPressed: () => unawaited(_openMoodMatchHub()),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         side: BorderSide(
@@ -2061,7 +2059,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         foregroundColor: const Color(0xFF334155),
                       ),
                       child: Text(
-                        l10n.myDayExploreActivitiesButton,
+                        l10n.moodMatchTitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 15,
@@ -2303,7 +2301,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         break;
       case 'ask_moody':
       case 'Ask Moody':
-        _navigateToTab(2);
+        unawaited(_openMoodSelectionForPlanning());
         break;
       case 'View Details':
         _showActivityDetails(status['activity']);
@@ -2465,6 +2463,33 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (mounted) {
       context.go('/main', extra: {'tab': tabIndex});
     }
+  }
+
+  /// Mood tile grid (`MoodHomeScreen`) — not the in-app Moody Hub tab.
+  Future<void> _openMoodSelectionForPlanning() async {
+    HapticFeedback.lightImpact();
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      return;
+    }
+    await Future.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    context.pushNamed('mood');
+  }
+
+  Future<void> _openMoodMatchHub() async {
+    HapticFeedback.lightImpact();
+    final connected = await ref.read(connectivityServiceProvider).isConnected;
+    if (!mounted) return;
+    if (!connected) {
+      showOfflineSnackBar(context);
+      return;
+    }
+    await Future.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    context.pushNamed('group-planning');
   }
   
 

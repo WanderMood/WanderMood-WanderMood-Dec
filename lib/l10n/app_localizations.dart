@@ -6674,6 +6674,12 @@ abstract class AppLocalizations {
   /// **'Late night energy — let\'s find something that fits.'**
   String get moodHubBannerNight;
 
+  /// No description provided for @moodHubMoodPickerBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up to three moods below — I\'ll shape ideas around them.'**
+  String get moodHubMoodPickerBanner;
+
   /// No description provided for @moodyIdleWakeOpenPlan.
   ///
   /// In en, this message translates to:
@@ -7625,7 +7631,7 @@ abstract class AppLocalizations {
   /// No description provided for @noPlanPlanMyWholeDay.
   ///
   /// In en, this message translates to:
-  /// **'✨ Plan my whole day'**
+  /// **'Plan my whole day'**
   String get noPlanPlanMyWholeDay;
 
   /// No description provided for @noPlanFindMeCoffee.
@@ -14075,7 +14081,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodyHubPlanForWhen.
   ///
   /// In en, this message translates to:
-  /// **'When are you planning for?'**
+  /// **'Which day?'**
   String get moodyHubPlanForWhen;
 
   /// No description provided for @moodyHubListComma.
@@ -17841,6 +17847,42 @@ abstract class AppLocalizations {
   /// **'Failed to load forecast'**
   String get weatherFailedLoadForecast;
 
+  /// No description provided for @weatherDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get weatherDetailTitle;
+
+  /// No description provided for @weatherDetailLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get weatherDetailLoading;
+
+  /// No description provided for @weatherDetailLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load weather'**
+  String get weatherDetailLoadError;
+
+  /// No description provided for @weatherDetail24Hour.
+  ///
+  /// In en, this message translates to:
+  /// **'24-hour outlook'**
+  String get weatherDetail24Hour;
+
+  /// No description provided for @weatherDetail3Day.
+  ///
+  /// In en, this message translates to:
+  /// **'Next few days'**
+  String get weatherDetail3Day;
+
+  /// No description provided for @weatherDetailFeelsLike.
+  ///
+  /// In en, this message translates to:
+  /// **'Feels like {degrees}°'**
+  String weatherDetailFeelsLike(int degrees);
+
   /// No description provided for @weatherNoDataAvailable.
   ///
   /// In en, this message translates to:
@@ -20931,6 +20973,546 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mood: {mood}'**
   String moodMatchPlanV2ActivityMood(String mood);
+
+  /// No description provided for @moodMatchHubBrandTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match'**
+  String get moodMatchHubBrandTag;
+
+  /// No description provided for @moodMatchHubEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a friend. Two moods → one shared day.'**
+  String get moodMatchHubEmptySub;
+
+  /// No description provided for @moodMatchHubCtaStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Mood Match'**
+  String get moodMatchHubCtaStart;
+
+  /// No description provided for @moodMatchHubCtaResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Mood Match'**
+  String get moodMatchHubCtaResume;
+
+  /// No description provided for @moodMatchHubCtaOpenShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Open shared plan'**
+  String get moodMatchHubCtaOpenShared;
+
+  /// No description provided for @moodMatchHubCtaReviewShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Review plan'**
+  String get moodMatchHubCtaReviewShared;
+
+  /// No description provided for @moodMatchHubSubWaitingJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on {name} to join'**
+  String moodMatchHubSubWaitingJoin(String name);
+
+  /// No description provided for @moodMatchHubSubWaitingJoinNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on your friend to join'**
+  String get moodMatchHubSubWaitingJoinNoName;
+
+  /// No description provided for @moodMatchHubSubWaitingMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on {name}\'s mood'**
+  String moodMatchHubSubWaitingMood(String name);
+
+  /// No description provided for @moodMatchHubSubWaitingMoodNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on their mood'**
+  String get moodMatchHubSubWaitingMoodNoName;
+
+  /// No description provided for @moodMatchHubSubDayProposed.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} suggested a day — review'**
+  String moodMatchHubSubDayProposed(String name);
+
+  /// No description provided for @moodMatchHubSubDayProposedNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'A day was suggested — review'**
+  String get moodMatchHubSubDayProposedNoName;
+
+  /// No description provided for @moodMatchHubSubBuildingWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Building your shared day with {name}…'**
+  String moodMatchHubSubBuildingWith(String name);
+
+  /// No description provided for @moodMatchHubSubBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'Building your shared day…'**
+  String get moodMatchHubSubBuilding;
+
+  /// No description provided for @moodMatchHubSubReadyWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared day with {name} is ready.'**
+  String moodMatchHubSubReadyWith(String name);
+
+  /// No description provided for @moodMatchHubSubReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared day is ready.'**
+  String get moodMatchHubSubReady;
+
+  /// No description provided for @moodMatchHubMoreSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 more Mood Match} other{+{count} more Mood Matches}}'**
+  String moodMatchHubMoreSessions(int count);
+
+  /// No description provided for @moodyHubActionFindCoffee.
+  ///
+  /// In en, this message translates to:
+  /// **'Find coffee'**
+  String get moodyHubActionFindCoffee;
+
+  /// No description provided for @moodyHubActionGetMeActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Get me active'**
+  String get moodyHubActionGetMeActive;
+
+  /// No description provided for @moodyHubActionContinueDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue day'**
+  String get moodyHubActionContinueDay;
+
+  /// No description provided for @moodyHubActionReplaceActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace activity'**
+  String get moodyHubActionReplaceActivity;
+
+  /// No description provided for @moodyHubMoodMatchViewMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'View matches'**
+  String get moodyHubMoodMatchViewMatches;
+
+  /// No description provided for @moodyHubIntroHeroEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey, your day is still open. Want me to plan something, or just chat for a bit?'**
+  String get moodyHubIntroHeroEmpty;
+
+  /// No description provided for @moodyHubIntroHeroActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day\'s already rolling. I\'m here if you want to tweak it or just chat.'**
+  String get moodyHubIntroHeroActive;
+
+  /// No description provided for @moodyHubIntroHeroSharedReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared plan is ready at the top. Want to open it, or keep chatting?'**
+  String get moodyHubIntroHeroSharedReady;
+
+  /// No description provided for @moodyHubHeroBodyEmptyFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey, your day is still open. What are you in the mood for? 🤔'**
+  String get moodyHubHeroBodyEmptyFriendly;
+
+  /// No description provided for @moodyHubHeroBodyEmptyFriendly2.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing planned yet — and that\'s exciting! What do you feel like doing today? ✨'**
+  String get moodyHubHeroBodyEmptyFriendly2;
+
+  /// No description provided for @moodyHubHeroBodyEmptyFriendly3.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank canvas today. We could go anywhere with this! What\'s calling you? 🎨'**
+  String get moodyHubHeroBodyEmptyFriendly3;
+
+  /// No description provided for @moodyHubHeroBodyEmptyFriendly4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is wide open. Want me to build something around your mood? 🪄'**
+  String get moodyHubHeroBodyEmptyFriendly4;
+
+  /// No description provided for @moodyHubHeroBodyEmptyProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule is open. I can outline a clear, focused day plan—or we can keep this concise and practical. 📋'**
+  String get moodyHubHeroBodyEmptyProfessional;
+
+  /// No description provided for @moodyHubHeroBodyEmptyProfessional2.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing locked in yet. Tell me your priorities and I\'ll structure the day. 🎯'**
+  String get moodyHubHeroBodyEmptyProfessional2;
+
+  /// No description provided for @moodyHubHeroBodyEmptyProfessional3.
+  ///
+  /// In en, this message translates to:
+  /// **'Open day ahead. Where do you want to focus your energy? ⚡'**
+  String get moodyHubHeroBodyEmptyProfessional3;
+
+  /// No description provided for @moodyHubHeroBodyEmptyProfessional4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your calendar is clear. Ready to put together a sharp plan when you are. 📅'**
+  String get moodyHubHeroBodyEmptyProfessional4;
+
+  /// No description provided for @moodyHubHeroBodyEmptyEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay let\'s GO! 🚀 Your day is wide open and anything is possible right now!'**
+  String get moodyHubHeroBodyEmptyEnergetic;
+
+  /// No description provided for @moodyHubHeroBodyEmptyEnergetic2.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on the agenda yet — honestly? Perfect. Let\'s make it legendary! 🌟'**
+  String get moodyHubHeroBodyEmptyEnergetic2;
+
+  /// No description provided for @moodyHubHeroBodyEmptyEnergetic3.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh start, full energy, zero plans. That\'s literally my favourite combo! What are we doing? ⚡'**
+  String get moodyHubHeroBodyEmptyEnergetic3;
+
+  /// No description provided for @moodyHubHeroBodyEmptyEnergetic4.
+  ///
+  /// In en, this message translates to:
+  /// **'The day is yours and it\'s still untouched. Tell me what you\'re feeling and let\'s build something real! 🔥'**
+  String get moodyHubHeroBodyEmptyEnergetic4;
+
+  /// No description provided for @moodyHubHeroBodyEmptyDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is open. Plan something, or chat—your call. 📍'**
+  String get moodyHubHeroBodyEmptyDirect;
+
+  /// No description provided for @moodyHubHeroBodyEmptyDirect2.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing scheduled. What do you want to do? 🗺️'**
+  String get moodyHubHeroBodyEmptyDirect2;
+
+  /// No description provided for @moodyHubHeroBodyEmptyDirect3.
+  ///
+  /// In en, this message translates to:
+  /// **'Open day. I can plan it or you can — just say the word. ✌️'**
+  String get moodyHubHeroBodyEmptyDirect3;
+
+  /// No description provided for @moodyHubHeroBodyEmptyDirect4.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet. Drop a mood or an idea and we move. 🚀'**
+  String get moodyHubHeroBodyEmptyDirect4;
+
+  /// No description provided for @moodyHubHeroBodyActiveFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is already rolling! I\'m here if you want to add something or just talk. 🎈'**
+  String get moodyHubHeroBodyActiveFriendly;
+
+  /// No description provided for @moodyHubHeroBodyActiveFriendly2.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve got things lined up — love that for you. Need anything tweaked? 🛠️'**
+  String get moodyHubHeroBodyActiveFriendly2;
+
+  /// No description provided for @moodyHubHeroBodyActiveFriendly3.
+  ///
+  /// In en, this message translates to:
+  /// **'Day\'s in motion. Want to add a little something extra, or just check in? 💫'**
+  String get moodyHubHeroBodyActiveFriendly3;
+
+  /// No description provided for @moodyHubHeroBodyActiveFriendly4.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking good on the plan front! Let me know if anything needs adjusting. ✨'**
+  String get moodyHubHeroBodyActiveFriendly4;
+
+  /// No description provided for @moodyHubHeroBodyActiveProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is underway. I can help refine timing or priorities—or keep this brief. ⏱️'**
+  String get moodyHubHeroBodyActiveProfessional;
+
+  /// No description provided for @moodyHubHeroBodyActiveProfessional2.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule is set. Let me know if you want to optimise anything. 📈'**
+  String get moodyHubHeroBodyActiveProfessional2;
+
+  /// No description provided for @moodyHubHeroBodyActiveProfessional3.
+  ///
+  /// In en, this message translates to:
+  /// **'You have a plan in place. I\'m available if adjustments come up. 🔄'**
+  String get moodyHubHeroBodyActiveProfessional3;
+
+  /// No description provided for @moodyHubHeroBodyActiveProfessional4.
+  ///
+  /// In en, this message translates to:
+  /// **'Day is structured. Ready to adapt if needed. 📋'**
+  String get moodyHubHeroBodyActiveProfessional4;
+
+  /// No description provided for @moodyHubHeroBodyActiveEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re already moving — let\'s keep that momentum going! Anything to add? 🔥'**
+  String get moodyHubHeroBodyActiveEnergetic;
+
+  /// No description provided for @moodyHubHeroBodyActiveEnergetic2.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at you with a plan! Want to level it up or just vibe with what you have? 🚀'**
+  String get moodyHubHeroBodyActiveEnergetic2;
+
+  /// No description provided for @moodyHubHeroBodyActiveEnergetic3.
+  ///
+  /// In en, this message translates to:
+  /// **'Day is set and you\'re ready — I love the energy! Tweak anything or just crush it? 💥'**
+  String get moodyHubHeroBodyActiveEnergetic3;
+
+  /// No description provided for @moodyHubHeroBodyActiveEnergetic4.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve got something going already! Want to stack on more or just ride the wave? 🌊'**
+  String get moodyHubHeroBodyActiveEnergetic4;
+
+  /// No description provided for @moodyHubHeroBodyActiveDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Day\'s in motion. Tweak something, or chat. 📍'**
+  String get moodyHubHeroBodyActiveDirect;
+
+  /// No description provided for @moodyHubHeroBodyActiveDirect2.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan\'s set. Need anything changed? 🔄'**
+  String get moodyHubHeroBodyActiveDirect2;
+
+  /// No description provided for @moodyHubHeroBodyActiveDirect3.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve got a day. Add something or leave it. ✌️'**
+  String get moodyHubHeroBodyActiveDirect3;
+
+  /// No description provided for @moodyHubHeroBodyActiveDirect4.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving already. I\'m here if it needs a change. ⚡'**
+  String get moodyHubHeroBodyActiveDirect4;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared plan is waiting — open it and let\'s make the day official! 🎉'**
+  String get moodyHubHeroBodySharedReadyFriendly;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared plan is ready. Open it when you\'re ready, or continue our conversation here. 📋'**
+  String get moodyHubHeroBodySharedReadyProfessional;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'The collab plan is ready — open it right now because this one is going to be so good! 🔥'**
+  String get moodyHubHeroBodySharedReadyEnergetic;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared plan is ready. Open it, or stay here. 📍'**
+  String get moodyHubHeroBodySharedReadyDirect;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyDayEmptyFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'You and your friend have a shared plan ready — open it to add everything to your day! ✨'**
+  String get moodyHubHeroBodySharedReadyDayEmptyFriendly;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyDayEmptyProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'A collaborative plan is ready in Mood Match. Open it to add activities to your day, or continue our conversation here. 🤝'**
+  String get moodyHubHeroBodySharedReadyDayEmptyProfessional;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyDayEmptyEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'The Mood Match plan is ready and it\'s good — open it and load your day! 🚀'**
+  String get moodyHubHeroBodySharedReadyDayEmptyEnergetic;
+
+  /// No description provided for @moodyHubHeroBodySharedReadyDayEmptyDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared plan in Mood Match. Open it to add to your day, or stay here. 📍'**
+  String get moodyHubHeroBodySharedReadyDayEmptyDirect;
+
+  /// No description provided for @moodyHubHeroBodyInviteFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last Mood Match is already on your plan. Ready to do it again with someone? 👯‍♀️'**
+  String get moodyHubHeroBodyInviteFriendly;
+
+  /// No description provided for @moodyHubHeroBodyInviteFriendly2.
+  ///
+  /// In en, this message translates to:
+  /// **'That Mood Match was a moment! Who are you feeling like exploring with next? 🗺️'**
+  String get moodyHubHeroBodyInviteFriendly2;
+
+  /// No description provided for @moodyHubHeroBodyInviteFriendly3.
+  ///
+  /// In en, this message translates to:
+  /// **'Last plan is locked in. Want to set up a new Mood Match with a friend? ✌️'**
+  String get moodyHubHeroBodyInviteFriendly3;
+
+  /// No description provided for @moodyHubHeroBodyInviteFriendly4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared day is on your plan. Another one? Tell me who you want to go out with. 💫'**
+  String get moodyHubHeroBodyInviteFriendly4;
+
+  /// No description provided for @moodyHubHeroBodyInviteProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your previous Mood Match is on your schedule. When you\'re ready, start a new match to plan another day together. 🤝'**
+  String get moodyHubHeroBodyInviteProfessional;
+
+  /// No description provided for @moodyHubHeroBodyInviteProfessional2.
+  ///
+  /// In en, this message translates to:
+  /// **'Last collaborative plan is confirmed. Initiate a new Mood Match when it suits you. 📅'**
+  String get moodyHubHeroBodyInviteProfessional2;
+
+  /// No description provided for @moodyHubHeroBodyInviteProfessional3.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous session is complete. Ready to schedule the next collaborative day? 🗓️'**
+  String get moodyHubHeroBodyInviteProfessional3;
+
+  /// No description provided for @moodyHubHeroBodyInviteProfessional4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared plan is in the books. Start a new match to plan ahead. 📋'**
+  String get moodyHubHeroBodyInviteProfessional4;
+
+  /// No description provided for @moodyHubHeroBodyInviteEnergetic.
+  ///
+  /// In en, this message translates to:
+  /// **'That Mood Match is on your plan and I love it! Who\'s next? Let\'s match again! 🔥'**
+  String get moodyHubHeroBodyInviteEnergetic;
+
+  /// No description provided for @moodyHubHeroBodyInviteEnergetic2.
+  ///
+  /// In en, this message translates to:
+  /// **'You did a Mood Match and it\'s on your plan — okay iconic! Who are we dragging into the next one? 🚀'**
+  String get moodyHubHeroBodyInviteEnergetic2;
+
+  /// No description provided for @moodyHubHeroBodyInviteEnergetic3.
+  ///
+  /// In en, this message translates to:
+  /// **'Last match: done. Next match: waiting for you! Let\'s go again! ⚡'**
+  String get moodyHubHeroBodyInviteEnergetic3;
+
+  /// No description provided for @moodyHubHeroBodyInviteEnergetic4.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared day is locked in — love that! Ready to plan another one? I\'ll make it even better. 🌟'**
+  String get moodyHubHeroBodyInviteEnergetic4;
+
+  /// No description provided for @moodyHubHeroBodyInviteDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Mood Match is on your plan. Start a new one when you want. 📍'**
+  String get moodyHubHeroBodyInviteDirect;
+
+  /// No description provided for @moodyHubHeroBodyInviteDirect2.
+  ///
+  /// In en, this message translates to:
+  /// **'Done with last match. Start the next one. ✌️'**
+  String get moodyHubHeroBodyInviteDirect2;
+
+  /// No description provided for @moodyHubHeroBodyInviteDirect3.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan saved. New Mood Match when you\'re ready. 🔄'**
+  String get moodyHubHeroBodyInviteDirect3;
+
+  /// No description provided for @moodyHubHeroBodyInviteDirect4.
+  ///
+  /// In en, this message translates to:
+  /// **'Last one\'s on your plan. Match again? 🤝'**
+  String get moodyHubHeroBodyInviteDirect4;
+
+  /// No description provided for @moodyHubMoodMatchInviteCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a Mood Match'**
+  String get moodyHubMoodMatchInviteCta;
+
+  /// No description provided for @moodyHubInviteCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️'**
+  String get moodyHubInviteCardBody;
+
+  /// No description provided for @moodyHubPlanYourDayCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your day'**
+  String get moodyHubPlanYourDayCardTitle;
+
+  /// No description provided for @moodyHubPlanYourDayCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳'**
+  String get moodyHubPlanYourDayCardBody;
+
+  /// No description provided for @moodyHubContinueDayCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue your day'**
+  String get moodyHubContinueDayCardTitle;
+
+  /// No description provided for @moodyHubContinueDayCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄'**
+  String get moodyHubContinueDayCardBody;
+
+  /// No description provided for @moodyHubCollapsedActionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody Hub'**
+  String get moodyHubCollapsedActionsTitle;
+
+  /// No description provided for @moodyHubCollapsedActionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your day, Mood Match, and more.'**
+  String get moodyHubCollapsedActionsSubtitle;
+
+  /// No description provided for @moodMatchAlreadyOnYourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Already on your plan'**
+  String get moodMatchAlreadyOnYourPlan;
 }
 
 class _AppLocalizationsDelegate

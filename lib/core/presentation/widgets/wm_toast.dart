@@ -33,10 +33,14 @@ void showWanderMoodToast(
       actionLabel.isNotEmpty &&
       onAction != null;
 
+  final mq = MediaQuery.of(context);
+  final bottomClearance =
+      16.0 + mq.padding.bottom + 72.0;
+
   messenger.showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      margin: EdgeInsets.fromLTRB(16, 0, 16, bottomClearance),
       padding: EdgeInsets.symmetric(
         horizontal: hasAction || leading != null ? 16 : 20,
         vertical: 14,
