@@ -311,11 +311,9 @@ class _SavedPlaceCardState extends ConsumerState<_SavedPlaceCard> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.transparent,
-                              _wmWarmBronze.withValues(alpha: 0.45),
-                              _wmWarmBronzeDeep.withValues(alpha: 0.9),
+                              Colors.black.withValues(alpha: 0.5),
                             ],
-                            stops: const [0.0, 0.38, 0.68, 1.0],
+                            stops: const [0.42, 1.0],
                           ),
                         ),
                       ),

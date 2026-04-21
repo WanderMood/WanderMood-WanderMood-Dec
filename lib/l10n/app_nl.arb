@@ -2057,6 +2057,8 @@
   "agendaFarFutureSubtitle": "Plan alvast activiteiten voor deze dag",
   "agendaPlanWithMoody": "Plan met Moody",
   "agendaAddActivity": "Activiteit toevoegen",
+  "agendaEmptyPlansTitle": "Nog geen activiteiten gepland",
+  "agendaEmptyPlansSubtitle": "De dag is van jou. Zal Moody het perfecte plan voor je maken?",
   "agendaMoodyOverviewEmpty": "Vandaag is nog open, we maken er iets moois van ✨",
   "agendaMoodyOverviewOne": "Dit is wat ik voor je heb vandaag 👀",
   "agendaMoodyOverviewTwo": "Ziet er goed uit vandaag",
@@ -5600,7 +5602,7 @@
   "moodyHubHeroBodyInviteEnergetic": "That Mood Match is on your plan and I love it! Who's next? Let's match again! 🔥",
   "moodyHubHeroBodyInviteDirect": "Last Mood Match is on your plan. Start a new one when you want. 📍",
   "moodyHubMoodMatchInviteCta": "Start a Mood Match",
-  "moodyHubInviteCardBody": "Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️",
+  "moodyHubInviteCardBody": "Match met een vriend en plan samen een dag—koffie, een wandeling, een date, wat jullie maar past. 👯‍♀️🗺️",
   "moodMatchAlreadyOnYourPlan": "Already on your plan",
   "moodyHubHeroBodyEmptyFriendly2": "Nothing planned yet — and that's exciting! What do you feel like doing today? ✨",
   "moodyHubHeroBodyEmptyFriendly3": "Blank canvas today. We could go anywhere with this! What's calling you? 🎨",
@@ -5642,6 +5644,8 @@
   "moodyHubPlanYourDayCardBody": "Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳",
   "moodyHubContinueDayCardTitle": "Continue your day",
   "moodyHubContinueDayCardBody": "You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄",
+  "moodyHubChangeMoodCardTitle": "Stemming wijzigen",
+  "moodyHubChangeMoodCardBody": "Kies een nieuwe vibe en ik pas je dag aan—plekken, tempo en energie die bij je passen. ✨🎨",
   "moodyHubCollapsedActionsTitle": "Moody Hub",
   "moodyHubCollapsedActionsSubtitle": "Plan your day, Mood Match, and more."
 }

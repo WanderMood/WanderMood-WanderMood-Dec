@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/features/mood/application/mood_service.dart';
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
+import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
@@ -49,7 +51,7 @@ class MoodHistoryWidget extends ConsumerWidget {
         }
 
         final moodsAsyncValue = ref.watch(userMoodsProvider(user.id));
-        return _buildMoodHistory(context, l10n, moodsAsyncValue);
+        return _buildMoodHistory(context, ref, l10n, moodsAsyncValue);
       },
       loading: () => const Center(
         child: SizedBox(
@@ -79,6 +81,7 @@ class MoodHistoryWidget extends ConsumerWidget {
 
   Widget _buildMoodHistory(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
     AsyncValue<List<MoodData>> moodsAsyncValue,
   ) {
@@ -92,7 +95,7 @@ class MoodHistoryWidget extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildIntro(context, l10n),
-              Expanded(child: _buildV2EmptyState(l10n)),
+              Expanded(child: _buildV2EmptyState(context, ref, l10n)),
             ],
           );
         }
@@ -176,7 +179,12 @@ class MoodHistoryWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildV2EmptyState(AppLocalizations l10n) {
+  Widget _buildV2EmptyState(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    final streakAsync = ref.watch(effectiveMoodStreakProvider);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
@@ -200,10 +208,36 @@ class MoodHistoryWidget extends ConsumerWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.auto_awesome_rounded,
+                  Icons.local_fire_department_rounded,
                   color: _wmForest,
                   size: 28,
                 ),
+              ),
+              const SizedBox(height: 12),
+              streakAsync.when(
+                data: (streak) => Text(
+                  '🔥 ${l10n.drawerDayStreak('$streak')}',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _wmCharcoal,
+                  ),
+                ),
+                loading: () => const SizedBox(
+                  height: 20,
+                  child: Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _wmForest,
+                      ),
+                    ),
+                  ),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
               ),
               const SizedBox(height: 18),
               Text(
@@ -223,6 +257,51 @@ class MoodHistoryWidget extends ConsumerWidget {
                   fontSize: 14,
                   height: 1.5,
                   color: _wmStone,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => context.push('/moody'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _wmForest,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    l10n.myDayPlanWithMoodyButton,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => context.goNamed('main', extra: {'tab': 1}),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _wmForest,
+                    side: const BorderSide(color: _wmForest, width: 1.2),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.navExplore,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

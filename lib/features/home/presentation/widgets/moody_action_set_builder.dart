@@ -15,7 +15,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 ///
 /// Rules (source of truth — do not special-case in widgets):
 ///   * `empty_day`  → Plan / Find coffee / Get me active  + Mood Match*
-///   * `active_day` → Continue / Change mood / Replace    + Mood Match*
+///   * `active_day` → Change mood (primary card) / Mood Match / Find coffee /
+///     Get me active (no duplicate Change mood chip; Replace removed here)
 ///   * Mood Match is suppressed when [MoodyMatchState.sharedReady] or
 ///     [MoodyMatchState.invite] — the pinned card owns that CTA.
 ///   * Mood Match label adapts to match state (none/available/sharedReady).
@@ -30,11 +31,6 @@ List<MoodyAction> buildMoodyActions({
   required AppLocalizations l10n,
   void Function(String)? onChat,
 }) {
-  void goMyDay() {
-    ref.read(mainTabProvider.notifier).state = 0;
-    context.go('/main?tab=0');
-  }
-
   void goExplore() {
     ref.read(mainTabProvider.notifier).state = 1;
     context.go('/main?tab=1');
@@ -105,30 +101,38 @@ List<MoodyAction> buildMoodyActions({
     case MoodyDayState.active:
       return [
         MoodyAction(
-          id: MoodyActionId.continueDay,
-          emoji: '▶',
-          label: l10n.moodyHubActionContinueDay,
-          tone: MoodyActionTone.primary,
-          onTap: goMyDay,
-        ),
-        MoodyAction(
           id: MoodyActionId.changeMood,
           emoji: '🎨',
           label: l10n.moodyHubChangeMood,
-          tone: MoodyActionTone.neutral,
+          tone: MoodyActionTone.primary,
           onTap: openChangeMoodBottomSheet,
         ),
         if (!moodMatchSuppressed) matchAction,
         MoodyAction(
-          id: MoodyActionId.replaceActivity,
-          emoji: '🔄',
-          label: l10n.moodyHubActionReplaceActivity,
+          id: MoodyActionId.findCoffee,
+          emoji: '☕',
+          label: l10n.moodyHubActionFindCoffee,
           tone: MoodyActionTone.neutral,
-          // v1: route to My Day where users can swap activities via the
-          // existing per-card actions. A context-aware target-picker is a
-          // follow-up improvement once design chooses which activity to
-          // preselect (upcoming? active-now?).
-          onTap: goMyDay,
+          onTap: () {
+            if (onChat != null) {
+              onChat(l10n.moodyHubActionFindCoffee);
+            } else {
+              goExplore();
+            }
+          },
+        ),
+        MoodyAction(
+          id: MoodyActionId.getMeActive,
+          emoji: '🏃',
+          label: l10n.moodyHubActionGetMeActive,
+          tone: MoodyActionTone.neutral,
+          onTap: () {
+            if (onChat != null) {
+              onChat(l10n.moodyHubActionGetMeActive);
+            } else {
+              goExplore();
+            }
+          },
         ),
       ];
   }

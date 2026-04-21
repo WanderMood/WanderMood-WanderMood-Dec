@@ -125,6 +125,19 @@ class WmPlacePhotoNetworkImage extends StatelessWidget {
               child: const SizedBox.expand(),
             );
           }
+          if (snapshot.hasError) {
+            return WmNetworkImage(
+              accessible,
+              fit: fit,
+              width: width,
+              height: height,
+              alignment: alignment,
+              filterQuality: filterQuality,
+              errorBuilder: errorBuilder,
+              scale: scale,
+              progressIndicatorBuilder: progressIndicatorBuilder,
+            );
+          }
           final resolved = (snapshot.data ?? accessible).trim();
           return WmNetworkImage(
             resolved.isEmpty ? accessible : resolved,

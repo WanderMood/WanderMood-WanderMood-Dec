@@ -44,7 +44,11 @@ import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
+import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
 import 'package:share_plus/share_plus.dart';
+
+/// Accent for Mood Match CTAs (matches profile sunset token).
+const Color _myDayMoodMatchOrange = Color(0xFFE8784A);
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
   const DynamicMyDayScreen({super.key});
@@ -186,6 +190,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     });
     if (mounted) {
       unawaited(ref.read(currentUserProfileProvider.notifier).refresh());
+      ref.invalidate(effectiveMoodStreakProvider);
     }
   }
 
@@ -599,21 +604,21 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               SizedBox(
                 height: 54,
                 width: double.infinity,
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: () => unawaited(_openMoodMatchHub()),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFF2A6049), width: 1.5),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _myDayMoodMatchOrange,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(999),
                     ),
+                    elevation: 0,
                   ),
                   child: Text(
-                    l10n.moodMatchTitle,
+                    '${l10n.moodMatchTitle} 🫶',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2A6049),
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -1221,19 +1226,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      OutlinedButton(
+                      FilledButton(
                         onPressed: () {
                           unawaited(_openMoodMatchHub());
                         },
-                        style: OutlinedButton.styleFrom(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _myDayMoodMatchOrange,
                           foregroundColor: Colors.white,
-                          side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.75),
-                          ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 0,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1241,7 +1245,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             const Icon(Icons.favorite_rounded, size: 18),
                             const SizedBox(width: 8),
                             Text(
-                              l10n.moodMatchTitle,
+                              '${l10n.moodMatchTitle} 🫶',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -2045,21 +2049,19 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(
+                    child: FilledButton(
                       onPressed: () => unawaited(_openMoodMatchHub()),
-                      style: OutlinedButton.styleFrom(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _myDayMoodMatchOrange,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(
-                          color: Colors.grey.shade300,
-                          width: 2,
-                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                         ),
-                        foregroundColor: const Color(0xFF334155),
+                        elevation: 0,
                       ),
                       child: Text(
-                        l10n.moodMatchTitle,
+                        '${l10n.moodMatchTitle} 🫶',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 15,

@@ -338,6 +338,47 @@ class _CollapsedHandle extends StatelessWidget {
   }
 }
 
+Widget _moodyHubPrimaryPlanBubble({
+  required MoodyAction primary,
+  required AppLocalizations l10n,
+  required HubBubbleEmphasis emphasis,
+}) {
+  if (primary.id == MoodyActionId.planWholeDay) {
+    return _HubBubbleFrame(
+      emphasis: emphasis,
+      child: _MoodyHubPrimaryPlanCard(
+        emphasis: emphasis,
+        emoji: primary.emoji,
+        title: l10n.moodyHubPlanYourDayCardTitle,
+        body: l10n.moodyHubPlanYourDayCardBody,
+        ctaLabel: primary.label,
+        onCta: primary.onTap,
+      ),
+    );
+  }
+  if (primary.id == MoodyActionId.changeMood &&
+      primary.tone == MoodyActionTone.primary) {
+    return _HubBubbleFrame(
+      emphasis: emphasis,
+      child: _MoodyHubPrimaryPlanCard(
+        emphasis: emphasis,
+        emoji: primary.emoji,
+        title: l10n.moodyHubChangeMoodCardTitle,
+        body: l10n.moodyHubChangeMoodCardBody,
+        ctaLabel: primary.label,
+        onCta: primary.onTap,
+      ),
+    );
+  }
+  return _HubBubbleFrame(
+    emphasis: emphasis,
+    child: _PrimaryHubButton(
+      action: primary,
+      emphasis: emphasis,
+    ),
+  );
+}
+
 class _MoodyHubExpandedBody extends ConsumerWidget {
   const _MoodyHubExpandedBody({
     required this.state,
@@ -387,10 +428,6 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
           : HubBubbleEmphasis.secondary;
     }
 
-    HubBubbleEmphasis accentEmphasis() => hubLeadBubbleCount >= 1
-        ? HubBubbleEmphasis.secondary
-        : HubBubbleEmphasis.primary;
-
     // Use ListView (not SingleChildScrollView) so the viewport gets a bounded
     // height from the parent AnimatedContainer — avoids _RenderSingleChildViewport
     // "not laid out" + semantics.parentDataDirty cascades during tab/keyboard churn.
@@ -436,9 +473,10 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
               final e = nextLeadEmphasis();
               return _HubBubbleFrame(
                 emphasis: e,
-                child: _MoodMatchInviteCard(
+                child: _MoodMatchPromoCard(
                   l10n: l10n,
                   emphasis: e,
+                  ctaLabel: l10n.moodyHubMoodMatchInviteCta,
                   onCta: () => routeMoodMatch(context, state.match),
                 ),
               );
@@ -446,75 +484,74 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
         ],
-        if (primary != null) ...[
-          if (primary.id == MoodyActionId.planWholeDay)
-            Builder(
-              builder: (context) {
-                final e = nextLeadEmphasis();
-                final p = primary!;
-                return _HubBubbleFrame(
-                  emphasis: e,
-                  child: _MoodyHubPrimaryPlanCard(
-                    emphasis: e,
-                    emoji: p.emoji,
-                    title: l10n.moodyHubPlanYourDayCardTitle,
-                    body: l10n.moodyHubPlanYourDayCardBody,
-                    ctaLabel: p.label,
-                    onCta: p.onTap,
-                  ),
-                );
-              },
-            )
-          else if (primary.id == MoodyActionId.continueDay)
-            Builder(
-              builder: (context) {
-                final e = nextLeadEmphasis();
-                final p = primary!;
-                return _HubBubbleFrame(
-                  emphasis: e,
-                  child: _MoodyHubPrimaryPlanCard(
-                    emphasis: e,
-                    emoji: p.emoji,
-                    title: l10n.moodyHubContinueDayCardTitle,
-                    body: l10n.moodyHubContinueDayCardBody,
-                    ctaLabel: p.label,
-                    onCta: p.onTap,
-                  ),
-                );
-              },
-            )
-          else
-            Builder(
-              builder: (context) {
-                final e = nextLeadEmphasis();
-                final p = primary!;
-                return _HubBubbleFrame(
-                  emphasis: e,
-                  child: _PrimaryHubButton(
-                    action: p,
-                    emphasis: e,
-                  ),
-                );
-              },
-            ),
-          const SizedBox(height: 10),
-        ],
-        if (state.match.state != MoodyMatchState.sharedReady &&
-            state.match.state != MoodyMatchState.invite &&
-            matchAction != null) ...[
+        if (state.day == MoodyDayState.active &&
+            primary != null &&
+            matchAction != null &&
+            state.match.state != MoodyMatchState.sharedReady &&
+            state.match.state != MoodyMatchState.invite) ...[
           Builder(
             builder: (context) {
-              final e = accentEmphasis();
+              final e = nextLeadEmphasis();
+              final m = matchAction!;
               return _HubBubbleFrame(
                 emphasis: e,
-                child: _AccentMatchCard(
-                  action: matchAction!,
+                child: _MoodMatchPromoCard(
+                  l10n: l10n,
                   emphasis: e,
+                  ctaLabel: m.label,
+                  onCta: () => _deferMoodyHubActionTap(m.onTap),
                 ),
               );
             },
           ),
           const SizedBox(height: 10),
+          Builder(
+            builder: (context) {
+              final e = nextLeadEmphasis();
+              return _moodyHubPrimaryPlanBubble(
+                primary: primary!,
+                l10n: l10n,
+                emphasis: e,
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+        ] else ...[
+          // Empty day: full Mood Match card (body + CTA) leads, then Plan / Change mood —
+          // same stack as the shipped hub reference, not the thin accent row.
+          if (state.match.state != MoodyMatchState.sharedReady &&
+              state.match.state != MoodyMatchState.invite &&
+              matchAction != null) ...[
+            Builder(
+              builder: (context) {
+                final e = nextLeadEmphasis();
+                final m = matchAction!;
+                return _HubBubbleFrame(
+                  emphasis: e,
+                  child: _MoodMatchPromoCard(
+                    l10n: l10n,
+                    emphasis: e,
+                    ctaLabel: m.label,
+                    onCta: () => _deferMoodyHubActionTap(m.onTap),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (primary != null) ...[
+            Builder(
+              builder: (context) {
+                final e = nextLeadEmphasis();
+                return _moodyHubPrimaryPlanBubble(
+                  primary: primary!,
+                  l10n: l10n,
+                  emphasis: e,
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
         ],
         ..._secondaryPairs(secondary),
       ],
@@ -548,7 +585,7 @@ String? _firstNameFromDisplay(String? displayName) {
 class _MoodyHubHeroMascot extends StatelessWidget {
   const _MoodyHubHeroMascot();
 
-  static const double _charSize = 58;
+  static const double _charSize = 68;
 
   @override
   Widget build(BuildContext context) {
@@ -757,68 +794,6 @@ class _PrimaryHubButton extends StatelessWidget {
   }
 }
 
-class _AccentMatchCard extends StatelessWidget {
-  const _AccentMatchCard({
-    required this.action,
-    required this.emphasis,
-  });
-
-  final MoodyAction action;
-  final HubBubbleEmphasis emphasis;
-
-  @override
-  Widget build(BuildContext context) {
-    const accent = Color(0xFFE8784A);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: _hubBubbleRadius,
-        boxShadow: _hubBubbleShadowsFor(emphasis),
-        border: Border.all(
-          color: const Color(0xFF1E1C18).withValues(alpha: _hubBorderOpacity(emphasis)),
-        ),
-      ),
-      child: Material(
-        color: const Color(0xFFFCEEE4),
-        borderRadius: _hubBubbleRadius,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => _deferMoodyHubActionTap(action.onTap),
-          borderRadius: _hubBubbleRadius,
-          child: Padding(
-            padding: _hubCardPadding(emphasis),
-            child: Row(
-              children: [
-                Text(
-                  action.emoji,
-                  style: TextStyle(
-                    fontSize: emphasis == HubBubbleEmphasis.primary ? 20.0 : 19.0,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    action.label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: accent,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 22,
-                  color: accent.withValues(alpha: 0.55),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _SharedPlanCard extends ConsumerWidget {
   const _SharedPlanCard({
     required this.state,
@@ -917,16 +892,18 @@ class _SharedPlanCard extends ConsumerWidget {
   }
 }
 
-/// After a Mood Match is on My Day — invite the next one (no “open old plan”).
-class _MoodMatchInviteCard extends StatelessWidget {
-  const _MoodMatchInviteCard({
+/// Full-width Mood Match bubble: [moodyHubInviteCardBody] + orange CTA (Start / View matches / …).
+class _MoodMatchPromoCard extends StatelessWidget {
+  const _MoodMatchPromoCard({
     required this.l10n,
     required this.emphasis,
+    required this.ctaLabel,
     required this.onCta,
   });
 
   final AppLocalizations l10n;
   final HubBubbleEmphasis emphasis;
+  final String ctaLabel;
   final VoidCallback onCta;
 
   @override
@@ -997,7 +974,7 @@ class _MoodMatchInviteCard extends StatelessWidget {
                   ),
                   onPressed: onCta,
                   child: Text(
-                    l10n.moodyHubMoodMatchInviteCta,
+                    ctaLabel,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

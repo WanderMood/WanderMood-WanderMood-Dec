@@ -33,7 +33,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 import 'package:wandermood/core/utils/place_gallery_merge.dart';
+import 'package:wandermood/core/utils/places_new_photo_resolver.dart';
 import 'package:wandermood/core/utils/place_type_formatter.dart';
+
+/// Set `--dart-define=WM_PLACE_DETAIL_HERO_DEBUG=true` on IPA/TestFlight builds to
+/// overlay the first hero URL + resolver flags (remove when finished debugging).
+const bool kWmPlaceDetailHeroPhotoDebug = bool.fromEnvironment(
+  'WM_PLACE_DETAIL_HERO_DEBUG',
+  defaultValue: false,
+);
+
+String _wmHeroDebugClipUrl(String u) {
+  final t = u.trim();
+  if (t.length <= 200) return t;
+  return '${t.substring(0, 200)}…';
+}
 
 /// WanderMood v2 — Place detail (SCREEN 8)
 const Color _pdWmWhite = Color(0xFFFFFFFF);
@@ -296,11 +310,17 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       // Collapse exact + semantic dupes; strip repeats of the hero frame (v1 vs legacy).
       var merged = PlacesService.mergeUniquePhotoUrls(photos, [], maxPhotos: 10);
       merged = dedupeRepeatedHeroIdentity(merged);
+      // Resolve Places API (New) `/media` → direct `photoUri` once so hero / Foto's /
+      // CachedNetworkImage never follow redirects (iOS release hang on `/media`).
+      merged = await resolvePlacesNewPhotoUrlList(merged);
+      merged = dedupeRepeatedHeroIdentity(merged);
       return PlacesService.mergeUniquePhotoUrls(merged, [], maxPhotos: 10);
     } catch (e) {
       debugPrint('📷 place_detail: error resolving unified detail photos: $e');
       final fb = PlacesService.mergeUniquePhotoUrls(place.photos, [], maxPhotos: 10);
-      return dedupeRepeatedHeroIdentity(fb);
+      final deduped = dedupeRepeatedHeroIdentity(fb);
+      final direct = await resolvePlacesNewPhotoUrlList(deduped);
+      return dedupeRepeatedHeroIdentity(direct);
     }
   }
 
@@ -348,10 +368,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           _currentPhotoIndex = 0;
         }
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_photoController.hasClients) return;
+        final n = merged.length;
+        if (n == 0) return;
+        final target = _currentPhotoIndex.clamp(0, n - 1);
+        _photoController.jumpToPage(target);
+      });
       // Warm the disk cache for the whole resolved gallery so swiping the hero
       // carousel (and opening Foto's / fullscreen) is instant. Fire-and-forget,
       // deduped, no UI side effects — the rendering path is unchanged.
       prefetchPlacePhotos(merged);
+      if (kWmPlaceDetailHeroPhotoDebug && merged.isNotEmpty) {
+        // ignore: avoid_print
+        print(
+          'WM_PLACE_DETAIL_HERO_DEBUG firstUrl=${merged.first} len=${merged.length} '
+          'placeId=${place.id}',
+        );
+      }
       if (kDebugMode) {
         debugPrint(
           '📷 place_detail[${place.id}]: unified photos DONE '
@@ -362,23 +396,28 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     } catch (e) {
       if (!mounted || _cachedPlace?.id != place.id) return;
       final fallback = place.photos.take(10).toList();
+      List<String> resolvedFb = fallback;
+      try {
+        resolvedFb = await resolvePlacesNewPhotoUrlList(fallback);
+      } catch (_) {}
       setState(() {
-        _unifiedDetailPhotos = fallback;
+        _unifiedDetailPhotos = resolvedFb;
         _unifiedDetailPhotosResolutionComplete = true;
         _unifiedDetailPhotosLoading = false;
         _unifiedPhotosResolvedPlaceId = place.id;
-        _cachedPlace = _cachedPlace!.copyWith(photos: fallback);
+        _cachedPlace = _cachedPlace!.copyWith(photos: resolvedFb);
         _currentPlace = _cachedPlace;
-        if (fallback.isEmpty) {
+        if (resolvedFb.isEmpty) {
           _currentPhotoIndex = 0;
-        } else if (_currentPhotoIndex >= fallback.length) {
+        } else if (_currentPhotoIndex >= resolvedFb.length) {
           _currentPhotoIndex = 0;
         }
       });
+      prefetchPlacePhotos(resolvedFb);
       if (kDebugMode) {
         debugPrint(
           '📷 place_detail[${place.id}]: unified photos ERROR -> fallback '
-          'len=${fallback.length} $e',
+          'len=${resolvedFb.length} $e',
         );
       }
     } finally {
@@ -674,23 +713,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     photoUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _buildImageFallback(),
-                    progressIndicatorBuilder: (context, url, progress) {
-                      return Container(
-                        color: const Color(0xFFE0E4E8),
-                        alignment: Alignment.center,
-                        child: SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            value: progress.progress,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFF2A6049),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
                   );
           },
         ),
@@ -834,6 +856,36 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ),
           ),
         ],
+        if (kWmPlaceDetailHeroPhotoDebug && photos.isNotEmpty)
+          Positioned(
+            left: 8,
+            right: 8,
+            top: 52,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Text(
+                    'hero[${_currentPhotoIndex.clamp(0, photos.length - 1)}/${photos.length}]\n'
+                    'unified=$_unifiedDetailPhotosResolutionComplete '
+                    'load=$_unifiedDetailPhotosLoading\n'
+                    '${_wmHeroDebugClipUrl(photos[_currentPhotoIndex.clamp(0, photos.length - 1)])}',
+                    maxLines: 8,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     ),
     );

@@ -2001,6 +2001,8 @@
   "agendaFarFutureSubtitle": "Planifica actividades para este día",
   "agendaPlanWithMoody": "Planificar con Moody",
   "agendaAddActivity": "Agregar actividad",
+  "agendaEmptyPlansTitle": "Aún no hay actividades planificadas",
+  "agendaEmptyPlansSubtitle": "El día es tuyo. ¿Quieres que Moody arme el plan perfecto para ti?",
   "agendaMoodyOverviewEmpty": "Tu día sigue abierto — lo vamos a dejar genial ✨",
   "agendaMoodyOverviewOne": "Esto es lo que dejé listo para ti hoy 👀",
   "agendaMoodyOverviewTwo": "Se ve muy bien hoy",
@@ -5513,7 +5515,7 @@
   "moodyHubHeroBodyInviteEnergetic": "That Mood Match is on your plan and I love it! Who's next? Let's match again! 🔥",
   "moodyHubHeroBodyInviteDirect": "Last Mood Match is on your plan. Start a new one when you want. 📍",
   "moodyHubMoodMatchInviteCta": "Start a Mood Match",
-  "moodyHubInviteCardBody": "Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️",
+  "moodyHubInviteCardBody": "Haz match con un amigo y planead un día juntos—café, un paseo, una cita, lo que encaje con ustedes. 👯‍♀️🗺️",
   "moodMatchAlreadyOnYourPlan": "Already on your plan",
   "moodyHubHeroBodyEmptyFriendly2": "Nothing planned yet — and that's exciting! What do you feel like doing today? ✨",
   "moodyHubHeroBodyEmptyFriendly3": "Blank canvas today. We could go anywhere with this! What's calling you? 🎨",
@@ -5555,6 +5557,8 @@
   "moodyHubPlanYourDayCardBody": "Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳",
   "moodyHubContinueDayCardTitle": "Continue your day",
   "moodyHubContinueDayCardBody": "You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄",
+  "moodyHubChangeMoodCardTitle": "Cambiar el mood",
+  "moodyHubChangeMoodCardBody": "Elige una nueva vibra y ajustaré cómo se siente tu día—lugares, ritmo y energía que te encajen. ✨🎨",
   "moodyHubCollapsedActionsTitle": "Moody Hub",
   "moodyHubCollapsedActionsSubtitle": "Plan your day, Mood Match, and more."
 }

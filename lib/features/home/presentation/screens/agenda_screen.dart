@@ -30,6 +30,10 @@ const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmForestTint = Color(0xFFEBF3EE);
 /// Timeline / agenda status chip (UPCOMING) — matches My Day timeline.
 const Color _wmSkyDeep = Color(0xFF5B7F92);
+const Color _wmTimelineLine = Color(0xFFD5CFC6);
+/// Fixed row height avoids [IntrinsicHeight] inside [SliverList], which can
+/// trigger semantics / parentDataDirty assertion cascades on My Plans.
+const double _kAgendaTimelineRowHeight = 232;
 
 class _AgendaCardStatus {
   final Color color;
@@ -360,10 +364,104 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           String subtitle;
 
           if (diff == 0) {
-            emoji = '🌅';
-            title = l10n.agendaTodayEmpty;
-            subtitle = l10n.agendaTodaySubtitle;
-          } else if (diff == 1) {
+            return SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+                  decoration: BoxDecoration(
+                    color: _wmWhite,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _wmParchment,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const MoodyCharacter(
+                        size: 88,
+                        mood: 'happy',
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.agendaEmptyPlansTitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: _wmForest,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        l10n.agendaEmptyPlansSubtitle,
+                        style: _wmBodyAgendaTextStyle(),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      GestureDetector(
+                        onTap: () => _openMoodyPlannerForDate(selectedDate),
+                        child: Container(
+                          height: 54,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: _wmForest,
+                            borderRadius: BorderRadius.circular(27),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('✨', style: TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.agendaPlanWithMoody,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => _openManualAddForDate(selectedDate),
+                        child: Container(
+                          height: 44,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: _wmWhite,
+                            border: Border.all(color: _wmParchment),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.add, color: _wmForest, size: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                l10n.agendaAddActivity,
+                                style: GoogleFonts.poppins(
+                                  color: _wmForest,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
+              ),
+            );
+          }
+
+          if (diff == 1) {
             emoji = '🌙';
             title = l10n.agendaTomorrowEmpty;
             subtitle = l10n.agendaTomorrowSubtitle;
@@ -475,21 +573,22 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           );
         }
         
+        final sorted = List<Map<String, dynamic>>.from(events)
+          ..sort((a, b) => _agendaActivitySortKey(a).compareTo(_agendaActivitySortKey(b)));
+        final nextUp = _agendaNextUpIndex(sorted, selectedDate);
+
         return SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              final activity = events[index];
-              return Padding(
-                padding: EdgeInsets.fromLTRB(
-                  24, 
-                  index == 0 ? 24 : 8, 
-                  24, 
-                  index == events.length - 1 ? 24 : 8
-                ),
-                child: _buildAgendaActivityCard(activity),
+              final activity = sorted[index];
+              return _buildAgendaTimelineRow(
+                index: index,
+                total: sorted.length,
+                activity: activity,
+                showNextUp: nextUp == index,
               );
             },
-            childCount: events.length,
+            childCount: sorted.length,
           ),
         );
       },
@@ -953,7 +1052,182 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     }
   }
 
-  Widget _buildAgendaActivityCard(Map<String, dynamic> activity) {
+  int? _agendaNextUpIndex(List<Map<String, dynamic>> sorted, DateTime selectedDay) {
+    if (sorted.isEmpty) return null;
+    final now = DateTime.now();
+    final sel = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+    final t0 = DateTime(now.year, now.month, now.day);
+    if (sel.isBefore(t0)) return null;
+    if (sel.isAfter(t0)) return 0;
+    for (var i = 0; i < sorted.length; i++) {
+      final s = sorted[i]['status']?.toString() ?? '';
+      if (s == 'upcoming' || s == 'active') return i;
+    }
+    return null;
+  }
+
+  DateTime _agendaActivitySortKey(Map<String, dynamic> a) {
+    final s = a['startTime'] as String?;
+    if (s != null) {
+      return DateTime.tryParse(s) ?? DateTime.tryParse(a['date'] as String? ?? '') ?? DateTime.now();
+    }
+    return DateTime.tryParse(a['date'] as String? ?? '') ?? DateTime.now();
+  }
+
+  Widget _buildAgendaTimelineLeading(int index, int total, bool highlight) {
+    const line = _wmTimelineLine;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final h = constraints.maxHeight;
+        final mid = h * 0.5;
+        const nodeR = 10.0;
+        return SizedBox(
+          width: 26,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              if (index > 0)
+                Positioned(
+                  left: 11,
+                  top: 0,
+                  width: 2,
+                  height: (mid - nodeR).clamp(0.0, 999.0),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: line,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              if (index < total - 1)
+                Positioned(
+                  left: 11,
+                  top: mid + nodeR,
+                  width: 2,
+                  height: (h - mid - nodeR).clamp(0.0, 999.0),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: line,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              Align(
+                alignment: Alignment.center,
+                child: Container(
+                  width: nodeR * 2,
+                  height: nodeR * 2,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: highlight ? _wmForest : Colors.white,
+                    border: Border.all(
+                      color: highlight ? _wmForest : line,
+                      width: highlight ? 1 : 2,
+                    ),
+                  ),
+                  child: highlight
+                      ? Center(
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAgendaTimelineRow({
+    required int index,
+    required int total,
+    required Map<String, dynamic> activity,
+    required bool showNextUp,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final durationM = activity['duration'] as int? ?? 60;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12, index == 0 ? 20 : 0, 12, index == total - 1 ? 24 : 14),
+      child: SizedBox(
+        height: _kAgendaTimelineRowHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildAgendaTimelineLeading(index, total, showNextUp),
+            const SizedBox(width: 6),
+            SizedBox(
+              width: 78,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      activity['time']?.toString() ?? '',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: _wmCharcoal,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.agendaDurationShort('$durationM'),
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: _wmStone,
+                      ),
+                    ),
+                    if (showNextUp) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _wmForestTint,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: _wmForest.withValues(alpha: 0.35)),
+                        ),
+                        child: Text(
+                          l10n.myDayStatusTitleUpNext,
+                          style: GoogleFonts.poppins(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: _wmForest,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _buildAgendaActivityCard(activity, timelineMode: true),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAgendaActivityCard(Map<String, dynamic> activity, {bool timelineMode = false}) {
     final l10n = AppLocalizations.of(context)!;
     final statusStr = (activity['status'] ?? 'upcoming').toString();
     final paymentStatus = activity['paymentStatus'] ?? 'free';
@@ -963,13 +1237,16 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final timeLabel = activity['time'] ?? '10:00 AM';
     final groupSessionId = activity['groupSessionId']?.toString();
 
-    final footerBits = <String>[l10n.agendaDurationShort('$durationM')];
+    final footerBits = <String>[];
+    if (!timelineMode) {
+      footerBits.add(l10n.agendaDurationShort('$durationM'));
+    }
     if (paymentStatus != 'free' && price > 0) {
       footerBits.add('€${price.toStringAsFixed(2)}');
     } else if (paymentStatus != 'free') {
       footerBits.add(paymentStatus.toUpperCase());
     }
-    final footerSubtitle = footerBits.join(' · ');
+    final footerSubtitle = footerBits.isEmpty ? '' : footerBits.join(' · ');
     final heroUrlRaw = activity['imageUrl']?.toString().trim() ?? '';
     final placeIdForPhoto =
         (activity['placeId'] ?? activity['place_id'])?.toString();
@@ -1053,28 +1330,30 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.55),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.schedule, color: Colors.white, size: 14),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '$timeLabel • ${durationM}m',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
+                                if (!timelineMode)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.55),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.schedule, color: Colors.white, size: 14),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '$timeLabel • ${durationM}m',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 11,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
+                                if (timelineMode) const Spacer(),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -1112,23 +1391,24 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               ],
                             ),
                             const Spacer(),
-                            Text(
-                              activity['title'] ?? 'Activity',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                shadows: const [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+                            if (!timelineMode)
+                              Text(
+                                activity['title'] ?? 'Activity',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  shadows: const [
+                                    Shadow(
+                                      color: Colors.black87,
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
                           ],
                         ),
                       ),
@@ -1147,6 +1427,19 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (timelineMode) ...[
+                              Text(
+                                activity['title']?.toString() ?? l10n.agendaUntitledActivity,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: _wmForest,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                            ],
                             Text(
                               _agendaCategoryLabel(activity),
                               style: GoogleFonts.poppins(
@@ -1155,15 +1448,16 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                                 color: _wmCharcoal,
                               ),
                             ),
-                            Text(
-                              footerSubtitle,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: _wmStone,
+                            if (footerSubtitle.isNotEmpty)
+                              Text(
+                                footerSubtitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: _wmStone,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
                             if (groupSessionId != null &&
                                 groupSessionId.trim().isNotEmpty) ...[
                               const SizedBox(height: 4),

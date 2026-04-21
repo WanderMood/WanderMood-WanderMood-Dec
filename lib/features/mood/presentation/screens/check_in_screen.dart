@@ -14,6 +14,7 @@ import '../../providers/daily_mood_state_provider.dart';
 import '../../models/check_in.dart';
 import '../../models/activity_rating.dart';
 import '../../services/check_in_service.dart';
+import '../../domain/providers/effective_mood_streak_provider.dart';
 import '../../services/moody_ai_service.dart';
 import '../../services/activity_rating_service.dart';
 import '../widgets/activity_rating_sheet.dart';
@@ -309,6 +310,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         );
 
         await ref.read(currentUserProfileProvider.notifier).refresh();
+        ref.invalidate(effectiveMoodStreakProvider);
 
         // Force refresh the globe data
         ref.invalidate(visitedPlacesProvider);

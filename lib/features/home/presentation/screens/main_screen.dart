@@ -11,7 +11,6 @@ import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/agenda_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart' show scheduledActivitiesForTodayProvider, todayActivitiesProvider, cachedActivitySuggestionsProvider, selectedMyDayDateProvider;
-import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
@@ -350,25 +349,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final rawTabIndex = ref.watch(mainTabProvider);
     final selectedIndex = normalizeMainTabIndex(rawTabIndex);
     _mountedTabIndices.add(selectedIndex);
-    final dailyMoodState = ref.watch(dailyMoodStateNotifierProvider);
-    final hasSeenIntroAsync = ref.watch(hasSeenIntroProvider);
-    
-    // Get hasSeenIntro value from AsyncValue (default to false if loading/error)
-    final hasSeenIntro = hasSeenIntroAsync.when(
-      data: (value) => value,
-      loading: () => false,
-      error: (_, __) => false,
-    );
-    
-    // Hide bottom nav ONLY when:
-    // 1. On Moody tab (index 2)
-    // 2. User hasn't selected a mood yet
-    // 3. AND user hasn't seen the intro overlay yet (so they focus on intro)
-    // Once intro is skipped/dismissed, show nav bar so user can navigate
-    final shouldHideBottomNav = selectedIndex == 2 && 
-                                 !dailyMoodState.hasSelectedMoodToday && 
-                                 !hasSeenIntro;
-
     final connectivityAsync = ref.watch(isConnectedProvider);
     final isConnected = connectivityAsync.valueOrNull ?? true;
 
@@ -421,9 +401,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               ),
             ],
           ),
-          bottomNavigationBar: shouldHideBottomNav
-              ? null
-              : Padding(
+          bottomNavigationBar: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), // Reduced bottom padding to 8
                   child: SafeArea(
                     top: false,
@@ -444,7 +422,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           Expanded(
                             child: _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
                           ),
-                          _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
+                          Expanded(
+                            child: _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
+                          ),
                           Expanded(
                             child: _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navAgenda, Icons.calendar_month_outlined, Icons.calendar_month, _navWmForest, _navWmForestTint),
                           ),
@@ -641,30 +621,30 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     String moodyLabel,
   ) {
     final isSelected = selectedIndex == 2;
-    return SizedBox(
-      width: 56,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => ref.read(mainTabProvider.notifier).state = 2,
-          customBorder: const CircleBorder(),
-          child: Transform.translate(
-            offset: const Offset(0, -6),
+    // Match [_buildRegularNavItem] structure — never use [SizedBox.expand] here:
+    // the bar is a [Row] with intrinsic height; expand breaks layout (nav drifts,
+    // body goes blank). Full tab width via [SizedBox(width: double.infinity)] inside
+    // [Expanded]; icon slot ≥44×44 (iOS minimum touch target); character slightly
+    // larger than Material icons so the center tab reads as the hero control.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => ref.read(mainTabProvider.notifier).state = 2,
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: SizedBox(
+            width: double.infinity,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSelected ? _navWmForestTint : Colors.grey.shade100,
-                    border: isSelected ? Border.all(color: _navWmForest.withOpacity(0.4), width: 1.5) : null,
-                    boxShadow: const [],
-                  ),
+                SizedBox(
+                  width: 46,
+                  height: 46,
                   child: Center(
                     child: MoodyCharacter(
-                      size: 28,
+                      size: 36,
                       mood: isSelected ? 'happy' : 'default',
                     ),
                   ),
@@ -677,6 +657,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     fontSize: 9,
+                    height: 1.05,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected ? _navWmForest : Colors.grey.shade500,
                   ),

@@ -10652,6 +10652,18 @@ abstract class AppLocalizations {
   /// **'Add activity'**
   String get agendaAddActivity;
 
+  /// No description provided for @agendaEmptyPlansTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities planned yet'**
+  String get agendaEmptyPlansTitle;
+
+  /// No description provided for @agendaEmptyPlansSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is all yours. Want Moody to build the perfect plan for you?'**
+  String get agendaEmptyPlansSubtitle;
+
   /// No description provided for @agendaMoodyOverviewEmpty.
   ///
   /// In en, this message translates to:
@@ -21469,7 +21481,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodyHubInviteCardBody.
   ///
   /// In en, this message translates to:
-  /// **'Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️'**
+  /// **'Match with a friend and plan a day together—coffee, a walk, date, whatever fits you both. 👯‍♀️🗺️'**
   String get moodyHubInviteCardBody;
 
   /// No description provided for @moodyHubPlanYourDayCardTitle.
@@ -21495,6 +21507,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄'**
   String get moodyHubContinueDayCardBody;
+
+  /// No description provided for @moodyHubChangeMoodCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change mood'**
+  String get moodyHubChangeMoodCardTitle;
+
+  /// No description provided for @moodyHubChangeMoodCardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a new vibe and I’ll tweak how your day feels—places, pace, and energy that match you. ✨🎨'**
+  String get moodyHubChangeMoodCardBody;
 
   /// No description provided for @moodyHubCollapsedActionsTitle.
   ///

@@ -34,10 +34,23 @@ List<String> dedupeRepeatedHeroIdentity(List<String> urls) {
 }
 
 /// Warm disk cache for a resolved gallery (fire-and-forget).
+///
+/// Never prefetch raw Places API (New) `/media` URLs: `flutter_cache_manager` follows
+/// redirects like [CachedNetworkImage] and can hang on signed iOS release. Resolve to
+/// `photoUri` first (same as [WmPlacePhotoNetworkImage]).
 void prefetchPlacePhotos(Iterable<String> urls) {
   for (final raw in urls) {
-    final url = deviceAccessibleGooglePlacePhotoUrl(raw).trim();
-    if (url.isEmpty) continue;
-    unawaited(WanderMoodImageCacheManager.instance.downloadFile(url));
+    final accessible = deviceAccessibleGooglePlacePhotoUrl(raw).trim();
+    if (accessible.isEmpty) continue;
+    if (isPlacesApiNewPhotoUrl(accessible)) {
+      unawaited(
+        resolvePlacesNewPhotoUri(accessible).then((resolved) {
+          final u = resolved.trim().isEmpty ? accessible : resolved.trim();
+          return WanderMoodImageCacheManager.instance.downloadFile(u);
+        }),
+      );
+    } else {
+      unawaited(WanderMoodImageCacheManager.instance.downloadFile(accessible));
+    }
   }
 }

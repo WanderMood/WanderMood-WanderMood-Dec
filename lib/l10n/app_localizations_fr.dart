@@ -6007,6 +6007,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get agendaAddActivity => 'Ajouter une activité';
 
   @override
+  String get agendaEmptyPlansTitle =>
+      'Aucune activité planifiée pour l’instant';
+
+  @override
+  String get agendaEmptyPlansSubtitle =>
+      'Ta journée t’appartient. Tu veux que Moody te prépare le plan parfait ?';
+
+  @override
   String get agendaMoodyOverviewEmpty =>
       'Ta journée est encore ouverte — on va la rendre belle ✨';
 
@@ -12560,7 +12568,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get moodyHubInviteCardBody =>
-      'Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️';
+      'Fais un Mood Match avec un ami et planifiez une journée ensemble—café, une balade, un date, ce qui vous convient. 👯‍♀️🗺️';
 
   @override
   String get moodyHubPlanYourDayCardTitle => 'Plan your day';
@@ -12575,6 +12583,13 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get moodyHubContinueDayCardBody =>
       'You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄';
+
+  @override
+  String get moodyHubChangeMoodCardTitle => 'Changer d’humeur';
+
+  @override
+  String get moodyHubChangeMoodCardBody =>
+      'Choisis une nouvelle vibe et j’ajuste ton journée—lieux, rythme et énergie qui te correspondent. ✨🎨';
 
   @override
   String get moodyHubCollapsedActionsTitle => 'Moody Hub';

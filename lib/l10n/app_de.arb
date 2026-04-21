@@ -2001,6 +2001,8 @@
   "agendaFarFutureSubtitle": "Plane schon Aktivitäten für diesen Tag",
   "agendaPlanWithMoody": "Mit Moody planen",
   "agendaAddActivity": "Aktivität hinzufügen",
+  "agendaEmptyPlansTitle": "Noch keine Aktivitäten geplant",
+  "agendaEmptyPlansSubtitle": "Der Tag gehört dir. Soll Moody den perfekten Plan für dich erstellen?",
   "agendaMoodyOverviewEmpty": "Heute ist noch luftig — wir machen was Schönes draus ✨",
   "agendaMoodyOverviewOne": "Das habe ich für dich vorbereitet 👀",
   "agendaMoodyOverviewTwo": "Sieht heute richtig gut aus",
@@ -5514,7 +5516,7 @@
   "moodyHubHeroBodyInviteEnergetic": "That Mood Match is on your plan and I love it! Who's next? Let's match again! 🔥",
   "moodyHubHeroBodyInviteDirect": "Last Mood Match is on your plan. Start a new one when you want. 📍",
   "moodyHubMoodMatchInviteCta": "Start a Mood Match",
-  "moodyHubInviteCardBody": "Match with a friend and plan a day together—coffee, a walk, whatever fits you both. 👯‍♀️🗺️",
+  "moodyHubInviteCardBody": "Match mit einer Person und plant gemeinsam einen Tag—Kaffee, ein Spaziergang, ein Date, was auch immer zu euch passt. 👯‍♀️🗺️",
   "moodMatchAlreadyOnYourPlan": "Already on your plan",
   "moodyHubHeroBodyEmptyFriendly2": "Nothing planned yet — and that's exciting! What do you feel like doing today? ✨",
   "moodyHubHeroBodyEmptyFriendly3": "Blank canvas today. We could go anywhere with this! What's calling you? 🎨",
@@ -5556,6 +5558,8 @@
   "moodyHubPlanYourDayCardBody": "Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳",
   "moodyHubContinueDayCardTitle": "Continue your day",
   "moodyHubContinueDayCardBody": "You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄",
+  "moodyHubChangeMoodCardTitle": "Stimmung ändern",
+  "moodyHubChangeMoodCardBody": "Wähl eine neue Vibe und ich passe deinen Tag an—Orte, Tempo und Energie, die zu dir passen. ✨🎨",
   "moodyHubCollapsedActionsTitle": "Moody Hub",
   "moodyHubCollapsedActionsSubtitle": "Plan your day, Mood Match, and more."
 }

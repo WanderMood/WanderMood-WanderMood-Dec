@@ -129,6 +129,10 @@ String? _editorialLineFromPlaceOrGoogle(
 final moodyPlaceCardUiDescriptionProvider =
     FutureProvider.autoDispose.family<PlaceCardUiDescription, Place>(
         (ref, place) async {
+  await Future.wait([
+    MoodyPlaceCardUiCache.ensureHydrated(),
+    MoodyPlaceBlurbCache.ensureHydrated(),
+  ]);
   final appLocale = ref.watch(localeProvider);
   final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
   final l10n = _l10nFor(locale);
@@ -270,6 +274,7 @@ final moodyPlaceCardBlurbProvider =
 /// Longer Moody blurb for place detail (separate cache from [moodyPlaceCardBlurbProvider]).
 final moodyPlaceDetailBlurbProvider =
     FutureProvider.autoDispose.family<String, Place>((ref, place) async {
+  await MoodyPlaceBlurbCache.ensureHydrated();
   final appLocale = ref.watch(localeProvider);
   final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
   final ctx = await _loadPlaceBlurbContext(ref, place, locale);

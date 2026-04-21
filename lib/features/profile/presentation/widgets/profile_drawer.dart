@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -43,23 +44,61 @@ class ProfileDrawer extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           profileData.when(
-            data: (currentProfile) => _DrawerForestHeader(
-              fullName: currentProfile?.fullName ??
-                  currentProfile?.username ??
-                  l10n.profileFallbackUser,
-              email: email.isNotEmpty
-                  ? email
-                  : (currentProfile?.username != null
-                      ? '@${currentProfile!.username}'
-                      : ''),
-              avatarUrl: currentProfile?.avatarUrl,
-              travellerLevel: _getTravellerLevel(context, currentProfile?.moodStreak),
-              streakLabel: l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}'),
-              onAvatarTap: () {
-                Navigator.pop(context);
-                context.push('/profile');
-              },
-            ),
+            data: (currentProfile) => ref.watch(effectiveMoodStreakProvider).when(
+                  data: (streak) => _DrawerForestHeader(
+                    fullName: currentProfile?.fullName ??
+                        currentProfile?.username ??
+                        l10n.profileFallbackUser,
+                    email: email.isNotEmpty
+                        ? email
+                        : (currentProfile?.username != null
+                            ? '@${currentProfile!.username}'
+                            : ''),
+                    avatarUrl: currentProfile?.avatarUrl,
+                    travellerLevel: _getTravellerLevel(context, streak),
+                    streakLabel: '🔥 ${l10n.drawerDayStreak('$streak')}',
+                    onAvatarTap: () {
+                      Navigator.pop(context);
+                      context.push('/profile');
+                    },
+                  ),
+                  loading: () => _DrawerForestHeader(
+                    fullName: currentProfile?.fullName ??
+                        currentProfile?.username ??
+                        l10n.profileFallbackUser,
+                    email: email.isNotEmpty
+                        ? email
+                        : (currentProfile?.username != null
+                            ? '@${currentProfile!.username}'
+                            : ''),
+                    avatarUrl: currentProfile?.avatarUrl,
+                    travellerLevel:
+                        _getTravellerLevel(context, currentProfile?.moodStreak),
+                    streakLabel: '🔥 ${l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}')}',
+                    onAvatarTap: () {
+                      Navigator.pop(context);
+                      context.push('/profile');
+                    },
+                  ),
+                  error: (_, __) => _DrawerForestHeader(
+                    fullName: currentProfile?.fullName ??
+                        currentProfile?.username ??
+                        l10n.profileFallbackUser,
+                    email: email.isNotEmpty
+                        ? email
+                        : (currentProfile?.username != null
+                            ? '@${currentProfile!.username}'
+                            : ''),
+                    avatarUrl: currentProfile?.avatarUrl,
+                    travellerLevel:
+                        _getTravellerLevel(context, currentProfile?.moodStreak),
+                    streakLabel: '🔥 ${l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}')}',
+                    onAvatarTap: () {
+                      Navigator.pop(context);
+                      context.push('/profile');
+                    },
+                  ),
+                ),
             loading: () => ColoredBox(
               color: _wmForest,
               child: SafeArea(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -36,7 +37,11 @@ class ProfileStatsCards extends ConsumerWidget {
     final profileAsync = ref.watch(currentUserProfileProvider);
 
     return profileAsync.when(
-      data: (profile) => _statsBody(context, l10n, profile?.moodStreak ?? 0),
+      data: (profile) => ref.watch(effectiveMoodStreakProvider).when(
+            data: (streak) => _statsBody(context, l10n, streak),
+            loading: () => _statsBody(context, l10n, profile?.moodStreak ?? 0),
+            error: (_, __) => _statsBody(context, l10n, profile?.moodStreak ?? 0),
+          ),
       loading: () => const SizedBox(
         height: 88,
         child: Center(

@@ -128,9 +128,10 @@ class _TravelModeToggleState extends ConsumerState<TravelModeToggle> {
     });
   }
 
-  void _showExplanationModal() {
-    _markExplainerSeen();
-    showModalBottomSheet(
+  Future<void> _showExplanationModal() async {
+    await _markExplainerSeen();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

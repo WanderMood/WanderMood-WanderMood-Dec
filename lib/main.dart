@@ -26,6 +26,8 @@ import 'package:wandermood/core/notifications/notification_navigation.dart';
 import 'package:wandermood/core/services/notification_service.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
+import 'package:wandermood/features/places/data/moody_place_blurb_cache.dart';
+import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
 
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
@@ -273,6 +275,10 @@ class _WanderMoodBootstrapState extends State<_WanderMoodBootstrap> {
         } else if (event == AuthChangeEvent.signedOut) {
           await magicLinkEmailCache.clear();
           await AiChatQuotaService.clearPremiumCache();
+          await Future.wait([
+            MoodyPlaceCardUiCache.clearPersistent(),
+            MoodyPlaceBlurbCache.clearPersistent(),
+          ]);
         }
       });
 

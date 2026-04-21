@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:wandermood/core/constants/api_keys.dart';
+import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 
 /// True for **Places API (New)** photo media URLs, e.g.
 ///   https://places.googleapis.com/v1/places/{ID}/photos/{REF}/media?maxWidthPx=800&key=...
@@ -70,4 +71,27 @@ Future<String> _resolve(String src) async {
     // Fall through and return original; CachedNetworkImage will surface the failure.
   }
   return src;
+}
+
+/// Rewrites every Places API (New) `/media` entry to a direct `photoUri` (e.g. `lh3…`)
+/// so [CachedNetworkImage] / disk prefetch never follows the `/media` redirect chain
+/// (known to hang on signed iOS release builds).
+Future<List<String>> resolvePlacesNewPhotoUrlList(List<String> urls) async {
+  return Future.wait(
+    urls.map((raw) async {
+      final trimmed = raw.trim();
+      if (trimmed.isEmpty) return trimmed;
+      try {
+        final accessible = deviceAccessibleGooglePlacePhotoUrl(trimmed).trim();
+        if (accessible.isEmpty) return trimmed;
+        if (isPlacesApiNewPhotoUrl(accessible)) {
+          final resolved = (await resolvePlacesNewPhotoUri(accessible)).trim();
+          return resolved.isNotEmpty ? resolved : accessible;
+        }
+        return accessible;
+      } catch (_) {
+        return trimmed;
+      }
+    }),
+  );
 }
