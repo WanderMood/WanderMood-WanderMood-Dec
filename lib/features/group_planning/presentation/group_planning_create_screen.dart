@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_ui.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Start a 2-person group mood session; share link then lobby.
@@ -29,26 +32,18 @@ class _GroupPlanningCreateScreenState
 
   Future<void> _create() async {
     final l10n = AppLocalizations.of(context)!;
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.groupPlanSessionNamePlaceholder)),
+      );
+      return;
+    }
     setState(() => _busy = true);
     try {
       final repo = ref.read(groupPlanningRepositoryProvider);
-      final existing = await repo.findMyActiveWaitingSession();
-      if (existing != null) {
-        await MoodMatchSessionPrefs.save(
-          sessionId: existing.id,
-          joinCode: existing.joinCode,
-        );
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.moodMatchCreateAlreadyWaiting)),
-        );
-        context.go('/group-planning');
-        return;
-      }
       final r = await repo.createSession(
-        title: _titleController.text.trim().isEmpty
-            ? null
-            : _titleController.text.trim(),
+        title: title,
       );
       // Do not persist until the host taps "Continue to lobby" on the share
       // screen — otherwise backing out of invite/share still shows "Sessie
@@ -60,8 +55,11 @@ class _GroupPlanningCreateScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.groupPlanCreateError('$e'))),
+      GroupPlanningUi.showErrorSnack(
+        context,
+        l10n,
+        e,
+        fallback: l10n.groupPlanCreateError(''),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -71,97 +69,142 @@ class _GroupPlanningCreateScreenState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final topInset = MediaQuery.paddingOf(context).top;
+    final meAvatarUrl =
+        ref.watch(currentUserProfileProvider).valueOrNull?.avatarUrl;
     return Scaffold(
-      backgroundColor: GroupPlanningUi.cream,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: GroupPlanningUi.moodMatchDeep,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Stack(
             children: [
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 68, 16, 32),
-                    decoration: const BoxDecoration(
-                      color: GroupPlanningUi.forest,
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(28),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(16, topInset + 26, 16, 40),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      GroupPlanningUi.moodMatchDeepSurface,
+                      GroupPlanningUi.moodMatchDeep,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(28),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 70,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _AvatarCircle(
+                            label: l10n.groupPlanYouShort,
+                            bg: GroupPlanningUi.forestTint,
+                            fg: GroupPlanningUi.forest,
+                            avatarUrl: meAvatarUrl,
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 58,
+                            height: 58,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFFBFD8FF).withValues(alpha: 0.5),
+                                  blurRadius: 20,
+                                ),
+                              ],
+                            ),
+                            child: const MoodyCharacter(size: 42, mood: 'happy'),
+                          ),
+                          const SizedBox(width: 8),
+                          _AvatarCircle(
+                            label: '?',
+                            bg: const Color(0xFFFFE4D6),
+                            fg: GroupPlanningUi.charcoal,
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 56,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Transform.translate(
-                                offset: const Offset(14, 0),
-                                child: _AvatarCircle(
-                                  label: l10n.groupPlanYouShort,
-                                  bg: GroupPlanningUi.forestTint,
-                                  fg: GroupPlanningUi.forest,
-                                ),
-                              ),
-                              _AvatarCircle(
-                                label: '?',
-                                bg: const Color(0xFFFFE4D6),
-                                fg: GroupPlanningUi.charcoal,
-                              ),
-                              Transform.translate(
-                                offset: const Offset(-14, 0),
-                                child: _DashedPlusCircle(),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.groupPlanCreateHeaderSubtitle,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.groupPlanCreateHeaderCaption,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.65),
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.groupPlanCreateHeaderSubtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    top: 44,
-                    left: 8,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white, size: 20),
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/group-planning');
-                        }
-                      },
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.groupPlanCreateHeaderCaption,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.65),
+                        height: 1.35,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+              Positioned(
+                top: topInset + 4,
+                left: 8,
+                child: IconButton(
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/group-planning');
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Material(
+              color: GroupPlanningUi.cream,
+              elevation: 8,
+              shadowColor: GroupPlanningUi.moodMatchShadow(0.35),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: GroupPlanningUi.stone.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      l10n.groupPlanSessionNameLabel.toUpperCase(),
+                      l10n.groupPlanSessionNameLabel
+                          .replaceAll('(optional)', '')
+                          .replaceAll('(OPTIONAL)', '')
+                          .trim()
+                          .toUpperCase(),
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -199,8 +242,11 @@ class _GroupPlanningCreateScreenState
                       label: l10n.groupPlanCreateCta,
                       busy: _busy,
                       onPressed: _busy ? null : _create,
-                      leading: const Icon(Icons.ios_share_rounded,
-                          color: Colors.white, size: 20),
+                      leading: const Icon(
+                        Icons.ios_share_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(height: 14),
                     Text(
@@ -216,9 +262,9 @@ class _GroupPlanningCreateScreenState
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -229,11 +275,13 @@ class _AvatarCircle extends StatelessWidget {
     required this.label,
     required this.bg,
     required this.fg,
+    this.avatarUrl,
   });
 
   final String label;
   final Color bg;
   final Color fg;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -252,39 +300,26 @@ class _AvatarCircle extends StatelessWidget {
           ),
         ],
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontWeight: FontWeight.w700,
-          fontSize: label.length <= 4 ? 11 : 18,
-          color: fg,
-        ),
-      ),
+      clipBehavior: Clip.antiAlias,
+      child: (avatarUrl != null && avatarUrl!.trim().isNotEmpty)
+          ? WmNetworkImage(
+              avatarUrl!.trim(),
+              width: 52,
+              height: 52,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _labelText(),
+            )
+          : _labelText(),
     );
   }
-}
 
-class _DashedPlusCircle extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.88),
-          width: 1.6,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: const Text(
-        '+',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.w300,
-        ),
+  Widget _labelText() {
+    return Text(
+      label,
+      style: GoogleFonts.poppins(
+        fontWeight: FontWeight.w700,
+        fontSize: label.length <= 4 ? 11 : 18,
+        color: fg,
       ),
     );
   }

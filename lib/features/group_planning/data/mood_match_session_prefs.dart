@@ -76,6 +76,29 @@ class MoodMatchSessionPrefs {
     await p.remove(_kInvited(sessionId));
   }
 
+  static Future<void> upsertInvitedProfile({
+    required String sessionId,
+    required MoodMatchInvitedProfile profile,
+  }) async {
+    final p = await SharedPreferences.getInstance();
+    final existing = await readInvitedProfiles(sessionId);
+    final next = <MoodMatchInvitedProfile>[];
+    var replaced = false;
+    for (final item in existing) {
+      if (item.id == profile.id) {
+        next.add(profile);
+        replaced = true;
+      } else {
+        next.add(item);
+      }
+    }
+    if (!replaced) {
+      next.add(profile);
+    }
+    final payload = jsonEncode(next.map((e) => e.toJson()).toList());
+    await p.setString(_kInvited(sessionId), payload);
+  }
+
   static Future<bool> readRevealCompleted(String sessionId) async {
     final p = await SharedPreferences.getInstance();
     return p.getBool(_kRevealDone(sessionId)) ?? false;

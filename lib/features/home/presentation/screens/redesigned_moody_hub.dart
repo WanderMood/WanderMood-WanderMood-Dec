@@ -1043,24 +1043,34 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
 
                     const SizedBox(height: 12),
 
-                    // Plan later button
+                    // Plan later button — leave Moody for My Day. When already on
+                    // `/main` (Moody tab), goNamed with extra alone often no-ops; set
+                    // [mainTabProvider] and use a path with ?tab= so GoRouter rebuilds.
                     GestureDetector(
+                      behavior: HitTestBehavior.translucent,
                       onTap: () {
                         if (Navigator.of(context).canPop()) {
                           Navigator.of(context).maybePop();
                           return;
                         }
-                        // Fallback for root route: send user back to main home tab.
-                        context.goNamed('main', extra: {'tab': 0});
+                        ref.read(mainTabProvider.notifier).state = 0;
+                        if (!context.mounted) return;
+                        context.go('/main?tab=0');
                       },
-                      child: Text(
-                        AppLocalizations.of(context)!.noPlanPlanLater,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF94A3B8),
-                          decoration: TextDecoration.underline,
-                          decorationColor: const Color(0xFF94A3B8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.noPlanPlanLater,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF94A3B8),
+                            decoration: TextDecoration.underline,
+                            decorationColor: const Color(0xFF94A3B8),
+                          ),
                         ),
                       ),
                     ).animate().fadeIn(delay: 1000.ms),

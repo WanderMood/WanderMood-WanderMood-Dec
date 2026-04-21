@@ -168,5 +168,19 @@
       "sectionRetainBody": "We kunnen bepaalde informatie beperkt bewaren als de wet dat vereist, voor beveiliging of fraudepreventie, of in versleutelde back-ups tot ze verlopen. We gebruiken bewaarde gegevens na verwijdering niet om je te benaderen voor marketing.",
       "backToPrivacy": "Privacybeleid"
     }
+  },
+  "moodMatchJoin": {
+    "metaTitle": "Mood Match · WanderMood",
+    "title": "Doe mee met Mood Match",
+    "invalidCode": "Deze uitnodigingslink bevat geen geldige code.",
+    "openingBody": "WanderMood wordt nu geopend. Als dat niet lukt, gebruik de knop hieronder of installeer eerst de app.",
+    "inviteCodeLabel": "Uitnodigingscode",
+    "openInWanderMood": "Open in WanderMood",
+    "afterInstall": "Indien nodig: installeer WanderMood en voer deze code in onder",
+    "afterInstallTarget": "Plannen met een vriend",
+    "storeAndroid": "Android — Google Play",
+    "storeIos": "iPhone — zoeken in App Store",
+    "backHome": "Terug naar WanderMood",
+    "loading": "Laden…"
   }
 }

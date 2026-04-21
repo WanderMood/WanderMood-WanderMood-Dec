@@ -5102,8 +5102,33 @@
   "groupPlanMoodCozy": "Cozy",
   "groupPlanMoodSurprise": "Surprise",
   "moodMatchTitle": "Mood Match",
+  "moodMatchNotificationTapAlreadySaved": "This plan is already saved — here’s your summary.",
+  "moodMatchNotificationTapSessionEnded": "This Mood Match is no longer available.",
+  "moodMatchNotificationTapOpenFailed": "We couldn’t open that plan.",
+  "moodMatchNotificationTapStaleUpdate": "Nothing new to do here — that plan may have changed.",
   "moodMatchTagline": "Two moods. One perfect day.",
   "moodMatchTaglineHub": "Two moods. One perfect day. Built for both of you.",
+  "moodMatchHubMoodyHeroLine1": "Two private mood picks, one shared day—built for both of you.",
+  "moodMatchHubMoodyHeroLine2": "Tap Start or Join when you’re ready.",
+  "moodMatchHubCardBodyPickYourMood": "I still need your mood — I’ll keep it hush-hush until you’re both locked.",
+  "moodMatchHubCardBodyDayTheirPick": "{name} floated a day — pop in and say yes or nudge a tweak.",
+  "@moodMatchHubCardBodyDayTheirPick": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubCardBodyDayWaitingOnThem": "I sent a day their way — waiting on {name} to tap yes or counter.",
+  "@moodMatchHubCardBodyDayWaitingOnThem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubCardCtaReviewDay": "Review day",
+  "moodMatchHubCardCtaCheckProgress": "Check progress",
   "moodMatchStartBtn": "Start a Mood Match",
   "moodMatchStartBtnSub": "Invite someone, pick moods, get a shared plan",
   "moodMatchJoinBtn": "Join a Mood Match",
@@ -5117,7 +5142,7 @@
   "moodMatchHubMoodyIntroWaitingEnergetic": "We’re this close—your friend still has to hop in! Open the plan to keep the vibe going, or nudge them (they’ll love it).",
   "moodMatchHubMoodyIntroWaitingDirect": "Session in progress; friend not in yet. Open plan to continue or nudge.",
   "moodMatchHubPendingTitle": "Continue your plan 👀",
-  "moodMatchHubPendingStory": "We just need your friend.",
+  "moodMatchHubPendingStory": "Your friend still has to hop in.",
   "moodMatchHubPendingCodeSmall": "Code {code}",
   "@moodMatchHubPendingCodeSmall": {
     "placeholders": {
@@ -5141,7 +5166,7 @@
   "moodMatchHubContinueSession": "Continue",
   "moodMatchHubCancelSession": "Cancel",
   "moodMatchHubReadyTitle": "Your Mood Match is ready!",
-  "moodMatchHubReadySubtitle": "I've built your shared plan",
+  "moodMatchHubReadySubtitle": "Your shared day’s ready — peek whenever you like.",
   "moodMatchHubSeePlanCta": "See the plan",
   "moodMatchHubCardBadgeReady": "Your plan is ready",
   "moodMatchHubCardBadgeUpcoming": "Upcoming plan",
@@ -5378,7 +5403,7 @@
     }
   },
   "moodMatchInviteInboxTag": "New Mood Match invite",
-  "moodMatchInviteInboxBody": "{name} wants to plan a day together. Lock in your mood and see where you match.",
+  "moodMatchInviteInboxBody": "{name} sent you a Mood Match. Pick your vibe (it stays yours until you’re both in), then we’ll line things up.",
   "@moodMatchInviteInboxBody": {
     "placeholders": {
       "name": {
@@ -5408,6 +5433,59 @@
   "moodMatchHubOpenPlan": "Open plan",
   "moodMatchHubNudgeFriend": "Nudge friend",
   "moodMatchHubOngoingTitle": "Ongoing matches",
+  "moodMatchHubActiveMatchesTitle": "Active matches",
+  "moodMatchHubCompletedMatchesTitle": "Added to My Day",
+  "moodMatchHubPlanDraftingBadge": "Finishing your picks",
+  "moodMatchHubPlanDraftingBody": "Lock the stops you want, then send them to {name} to review.",
+  "@moodMatchHubPlanDraftingBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubOwnerWaitingGuestReviewBody": "You shared the plan — waiting on {name} to review and confirm their picks.",
+  "@moodMatchHubOwnerWaitingGuestReviewBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubGuestReviewBadge": "Your turn",
+  "moodMatchHubGuestReviewBody": "{name} sent the shared plan — tap in to review your picks.",
+  "@moodMatchHubGuestReviewBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubCtaReviewPlan": "Review plan",
+  "moodMatchHubCompletedBadge": "On your day",
+  "moodMatchHubCompletedBody": "This blend is already on your calendar.",
+  "moodMatchHubCompletedCta": "Open My Day",
+  "moodMatchHubTabActive": "Active",
+  "moodMatchHubTabCompleted": "Completed",
+  "moodMatchHubTabActiveHint": "Mood matches still being processed.",
+  "moodMatchHubTabCompletedHint": "Plans you’ve added to My Day.",
+  "moodMatchHubTabActiveEmpty": "No active matches here — start one or join a friend’s code.",
+  "moodMatchHubTabCompletedEmpty": "Nothing saved yet — when you tap Add to My Day on a finished plan, it shows up here.",
+  "moodMatchHubInvitesTitle": "PENDING INVITES",
+  "moodMatchHubInvitesCollapsedHint": "{count, plural, one{1 invite waiting — tap to open} other{{count} invites waiting — tap to open}}",
+  "@moodMatchHubInvitesCollapsedHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moodMatchHubConfirmDismissInviteTitle": "Remove this invite?",
+  "moodMatchHubConfirmDismissInviteBody": "You can still join later with the join code if your friend shares it again.",
+  "moodMatchHubConfirmLeaveSessionTitle": "Remove this Mood Match?",
+  "moodMatchHubConfirmLeaveSessionBodyGuest": "You will leave the session. Your friend can continue until they leave too.",
+  "moodMatchHubConfirmLeaveSessionBodyHost": "This cancels the Mood Match for both of you.",
+  "moodMatchHubConfirmRemoveAction": "Remove",
   "moodMatchLobbyWaitTease0": "Waiting on {name}… no pressure 👀",
   "@moodMatchLobbyWaitTease0": {
     "placeholders": {
@@ -5530,13 +5608,13 @@
   "moodMatchDayPickerOpenSheetCta": "Choose day & time",
   "moodMatchDayPickerSheetChangeCta": "Change day or time",
   "moodMatchDayPickerWholeDay": "Whole day",
-  "moodMatchPlanResultMoodyV1": "Here's your day with {name} — three picks Moody thinks fit both your vibes.",
+  "moodMatchPlanResultMoodyV1": "Here's your day with {name} — three picks we think fit both your vibes.",
   "@moodMatchPlanResultMoodyV1": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanResultMoodyV2": "Built around what you both wanted today. Tap any spot to peek inside before you confirm with {name}.",
   "@moodMatchPlanResultMoodyV2": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanResultMoodyV3": "Try them in order, or shuffle — your call. {name} sees the same plan from their side.",
   "@moodMatchPlanResultMoodyV3": { "placeholders": { "name": { "type": "String" } } },
-  "moodMatchPlanResultMoodyV4": "Three small moments shaped around your moods. Anything off? Hit Swap and Moody finds an alternative.",
+  "moodMatchPlanResultMoodyV4": "Three small moments shaped around your moods. Anything off? Hit Swap and we'll find another option.",
   "@moodMatchPlanResultMoodyV4": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchDayPickerSheetTitle": "Pick a date for both of you",
   "moodMatchDayPickerSheetMoodyLine": "No rush — {name} will confirm your pick.",
@@ -5632,6 +5710,9 @@
   "@moodMatchPlanV2OwnerInYourCall": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanV2YouBothIn": "You and {name} are both in",
   "@moodMatchPlanV2YouBothIn": { "placeholders": { "name": { "type": "String" } } },
+  "moodMatchPlanV2SlotNotInThisPlan": "{partLabel} isn't in this Mood Match — you only planned one part of the day together.",
+  "@moodMatchPlanV2SlotNotInThisPlan": { "placeholders": { "partLabel": { "type": "String" } } },
+  "moodMatchPlanV2YouBothInThisMoment": "You're both in for this moment ✓",
   "moodMatchPlanV2WaitingOwnerSwap": "Waiting for {name} on the swap…",
   "@moodMatchPlanV2WaitingOwnerSwap": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanV2ConfirmAllGuest": "{count, plural, =1{Confirm your pick to finish} other{Confirm all {count} picks to finish}}",
@@ -5640,8 +5721,30 @@
       "count": { "type": "int" }
     }
   },
+  "moodMatchPlanV2StopsReviewed": "{done} of {total}",
+  "@moodMatchPlanV2StopsReviewed": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moodMatchPlanV2FooterGuestReviewNudge": "{done} of {total} reviewed — confirm Morning, Afternoon & Evening above",
+  "@moodMatchPlanV2FooterGuestReviewNudge": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moodMatchPlanV2OwnerPickEachPart": "{done} of {total} selected — pick the rest above",
+  "@moodMatchPlanV2OwnerPickEachPart": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moodMatchPlanV2UndoMyChoice": "Change my answer",
   "moodMatchPlanV2PlanConfirmedTime": "Plan confirmed — pick your start time →",
-  "moodMatchPlanV2OpenMyDay": "Add to My Day ✓",
+  "moodMatchPlanV2OpenMyDay": "Add to My Plans ✓",
   "moodMatchRevealMaeMorning": "MORNING",
   "moodMatchRevealMaeAfternoon": "AFTERNOON",
   "moodMatchRevealMaeEvening": "EVENING",
@@ -5649,6 +5752,7 @@
   "@moodMatchPlanV2SwapSheetTitle": { "placeholders": { "slot": { "type": "String" } } },
   "moodMatchPlanV2SwapSheetMoody": "Here are some other options to try.",
   "moodMatchPlanV2PickThis": "Pick this",
+  "moodMatchPlanV2YourPickSaved": "Your pick",
   "moodMatchPlanV2SwapBannerTitle": "{name} wants to swap the {slot}",
   "@moodMatchPlanV2SwapBannerTitle": { "placeholders": { "name": { "type": "String" }, "slot": { "type": "String" } } },
   "moodMatchPlanV2SwapBannerSubtitle": "They suggested {proposed} instead of {original}",
@@ -5689,7 +5793,7 @@
   "@moodMatchToastGuestDeclinedOriginalDay": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchToastGuestProposedNewDay": "{name} suggested a different date — open the Mood Match day step.",
   "@moodMatchToastGuestProposedNewDay": { "placeholders": { "name": { "type": "String" } } },
-  "moodMatchSaveMyDayFailed": "Could not add to My Day: {details}",
+  "moodMatchSaveMyDayFailed": "Could not add to My Plans: {details}",
   "@moodMatchSaveMyDayFailed": { "placeholders": { "details": { "type": "String" } } },
   "moodMatchPlanV2BasedOnMoods": "Based on moods: {moods}",
   "@moodMatchPlanV2BasedOnMoods": { "placeholders": { "moods": { "type": "String" } } },

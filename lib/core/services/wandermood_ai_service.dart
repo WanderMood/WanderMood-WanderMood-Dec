@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/services/ai_chat_quota_service.dart';
+import 'package:wandermood/core/services/moody_edge_function_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/places/models/place.dart';
 
@@ -107,6 +108,121 @@ class WanderMoodAIService {
       default:
         return '€€€€';
     }
+  }
+
+  static String _activityCostLabel(Map<String, dynamic> act) {
+    final pl = act['priceLevel'] ?? act['price_level'];
+    if (pl is String && pl.contains('€')) return pl;
+    return _priceLevelToCostLabel(pl);
+  }
+
+  static String _activityDurationLabel(Map<String, dynamic> act) {
+    final dur = act['duration'];
+    if (dur is num) return '${dur.toInt()} min';
+    final s = dur?.toString().trim() ?? '';
+    if (s.isEmpty) return '60 min';
+    if (s.contains('min')) return s;
+    final n = int.tryParse(s);
+    return n != null ? '$n min' : '60 min';
+  }
+
+  /// Maps a moody `create_day_plan` activity JSON into [AIRecommendation].
+  static AIRecommendation _createDayPlanActivityToRecommendation(
+    Map<String, dynamic> act,
+    List<String> moods,
+  ) {
+    Map<String, dynamic>? location;
+    final loc = act['location'];
+    if (loc is Map) {
+      final m = Map<String, dynamic>.from(loc);
+      final lat = (m['latitude'] as num?)?.toDouble();
+      final lng = (m['longitude'] as num?)?.toDouble();
+      if (lat != null && lng != null) {
+        location = {
+          'latitude': lat,
+          'longitude': lng,
+        };
+        final pid = act['placeId']?.toString() ?? act['place_id']?.toString();
+        if (pid != null && pid.trim().isNotEmpty) {
+          location['placeId'] = pid.trim();
+        }
+      }
+    }
+    final tags = act['tags'];
+    final type = tags is List && tags.isNotEmpty
+        ? tags.first.toString()
+        : (act['paymentType']?.toString() ?? 'place');
+    final rawSlot = act['timeSlot'] ?? act['time_slot'];
+    final slot = rawSlot?.toString().trim().toLowerCase() ?? '';
+    final timeSlot = (slot == 'morning' || slot == 'afternoon' || slot == 'evening')
+        ? slot
+        : 'flexible';
+    final moodMatch = moods.isNotEmpty ? moods.join(', ') : '';
+
+    return AIRecommendation(
+      name: act['name']?.toString() ?? 'Place',
+      type: type,
+      rating: (act['rating'] as num?)?.toDouble() ?? 0.0,
+      description: act['description']?.toString() ?? '',
+      duration: _activityDurationLabel(act),
+      cost: _activityCostLabel(act),
+      moodMatch: moodMatch,
+      timeSlot: timeSlot,
+      imageUrl: act['imageUrl']?.toString() ?? act['image_url']?.toString(),
+      location: location,
+    );
+  }
+
+  /// Mood Match shared plan: same pipeline as hub **Plan my day** (`create_day_plan`).
+  static Future<AIRecommendationResponse> getGroupMatchCreateDayPlan({
+    required List<String> moods,
+    required String location,
+    required double latitude,
+    required double longitude,
+    String? languageCode,
+    DateTime? plannedDay,
+  }) async {
+    debugPrint(
+      '🤖 Mood Match: moody create_day_plan for moods: $moods @ $location',
+    );
+    final svc = MoodyEdgeFunctionService(_supabase);
+    final data = await svc.createDayPlan(
+      moods: moods,
+      location: location,
+      latitude: latitude,
+      longitude: longitude,
+      filters: const <String, dynamic>{},
+      languageCode: languageCode,
+      targetDate: plannedDay,
+    );
+
+    final activities = data['activities'] as List<dynamic>? ?? [];
+    final recommendations = <AIRecommendation>[];
+    for (final raw in activities) {
+      if (raw is Map<String, dynamic>) {
+        recommendations
+            .add(_createDayPlanActivityToRecommendation(raw, moods));
+      } else if (raw is Map) {
+        recommendations.add(
+          _createDayPlanActivityToRecommendation(
+            Map<String, dynamic>.from(raw),
+            moods,
+          ),
+        );
+      }
+    }
+
+    final summary = data['moodyMessage']?.toString() ??
+        'Plan for ${moods.join(' & ')} in $location';
+
+    return AIRecommendationResponse(
+      success: recommendations.isNotEmpty,
+      action: 'create_day_plan',
+      timestamp: MoodyClock.now().toIso8601String(),
+      summary: summary,
+      availablePlaces: recommendations.length,
+      recommendations: recommendations,
+    );
   }
 
   /// Place recommendations from the **`moody`** Edge Function (`get_explore`).
@@ -285,6 +401,67 @@ class WanderMoodAIService {
     } catch (e) {
       debugPrint('❌ getGroupMatchMoodyMessage: $e');
       return '';
+    }
+  }
+
+  /// One Moody call that returns a short line per time slot for Mood Match
+  /// plan cards (`group_match_activity_notes` on the `moody` edge function).
+  static Future<Map<String, String>> getGroupMatchActivityMoodyNotes({
+    required List<AIRecommendation> recommendations,
+    required String languageCode,
+    required String communicationStyle,
+  }) async {
+    final lang = languageCode.toLowerCase().split(RegExp(r'[-_]')).first;
+    final activities = <Map<String, dynamic>>[];
+    for (final r in recommendations) {
+      final slot = r.timeSlot.toLowerCase().trim();
+      if (slot != 'morning' &&
+          slot != 'afternoon' &&
+          slot != 'evening') {
+        continue;
+      }
+      activities.add({
+        'slot': slot,
+        'name': r.name,
+        'type': r.type,
+        'description': r.description,
+        'mood_match': r.moodMatch,
+      });
+    }
+    if (activities.isEmpty) return const {};
+    try {
+      final response = await _supabase.functions.invoke(
+        _moodyFunctionName,
+        body: {
+          'action': 'group_match_activity_notes',
+          'language_code': lang,
+          'communication_style': communicationStyle,
+          'activities': activities,
+        },
+      );
+      if (response.status != 200) {
+        debugPrint(
+          'Moody group_match_activity_notes: HTTP ${response.status} ${response.data}',
+        );
+        return const {};
+      }
+      final raw = response.data;
+      if (raw is! Map) return const {};
+      final notesRaw = raw['notes'];
+      if (notesRaw is! Map) return const {};
+      final out = <String, String>{};
+      for (final e in notesRaw.entries) {
+        final k = e.key.toString().toLowerCase().trim();
+        final v = e.value?.toString().trim() ?? '';
+        if ((k == 'morning' || k == 'afternoon' || k == 'evening') &&
+            v.isNotEmpty) {
+          out[k] = v;
+        }
+      }
+      return out;
+    } catch (e) {
+      debugPrint('❌ getGroupMatchActivityMoodyNotes: $e');
+      return const {};
     }
   }
 

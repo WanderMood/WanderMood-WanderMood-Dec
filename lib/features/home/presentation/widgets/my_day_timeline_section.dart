@@ -11,6 +11,7 @@ import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../screens/dynamic_my_day_provider.dart';
+import '../utils/activity_image_fallback.dart';
 import '../utils/my_day_activity_id.dart';
 import '../utils/my_day_display_title.dart';
 import '../utils/my_day_slot_period.dart';
@@ -188,6 +189,26 @@ class MyDayTimelineSection extends StatelessWidget {
   }
 }
 
+/// Gradient placeholder used when both the direct photo and the category
+/// fallback fail (rare). Keeps the card from showing a gray broken-image box.
+Widget _imageGradientPlaceholder(Color tint) {
+  return Container(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          tint.withValues(alpha: 0.85),
+          tint.withValues(alpha: 0.55),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+    child: const Center(
+      child: Icon(Icons.image, color: Colors.white, size: 40),
+    ),
+  );
+}
+
 class MyDayTimelineActivityCard extends ConsumerWidget {
   final EnhancedActivityData activity;
   final AppLocalizations l10n;
@@ -294,34 +315,40 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: WmPlaceOrHttpsNetworkImage(
-                        activity.rawData['imageUrl']?.toString() ?? '',
-                        fit: BoxFit.cover,
-                        progressIndicatorBuilder: (context, url, progress) => Container(
-                          color: Colors.grey[300],
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              value: progress.progress,
+                      child: Builder(builder: (context) {
+                        final raw = activity.rawData;
+                        final direct = (raw['imageUrl'] ??
+                                    raw['image_url'] ??
+                                    raw['photoUrl'] ??
+                                    raw['photo_url'])
+                                ?.toString()
+                                .trim() ??
+                            '';
+                        final pid = (raw['placeId'] ?? raw['place_id'])
+                            ?.toString();
+                        return ActivityPhoto(
+                          directUrl: direct,
+                          placeId: pid,
+                          category: raw['category']?.toString(),
+                          title: (raw['title'] ??
+                                  raw['name'] ??
+                                  raw['place_name'])
+                              ?.toString(),
+                          mood: raw['mood']?.toString(),
+                          progressIndicatorBuilder:
+                              (context, url, progress) => Container(
+                            color: Colors.grey[300],
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                value: progress.progress,
+                              ),
                             ),
                           ),
-                        ),
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                cardStatus.color.withValues(alpha: 0.85),
-                                cardStatus.color.withValues(alpha: 0.55),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.image, color: Colors.white, size: 40),
-                          ),
-                        ),
-                      ),
+                          placeholderBuilder: (context) =>
+                              _imageGradientPlaceholder(cardStatus.color),
+                        );
+                      }),
                     ),
                     Positioned.fill(
                       child: Container(

@@ -168,5 +168,19 @@
       "sectionRetainBody": "Certaines informations peuvent être conservées brièvement si la loi l’exige, pour la sécurité ou la prévention de la fraude, ou dans des sauvegardes chiffrées jusqu’à expiration. Après suppression, nous ne les utilisons pas à des fins marketing.",
       "backToPrivacy": "Politique de confidentialité"
     }
+  },
+  "moodMatchJoin": {
+    "metaTitle": "Mood Match · WanderMood",
+    "title": "Rejoindre Mood Match",
+    "invalidCode": "Ce lien d'invitation ne contient pas de code valide.",
+    "openingBody": "Ouverture de WanderMood en cours. Si cela ne fonctionne pas, utilise le bouton ci-dessous ou installe d'abord l'application.",
+    "inviteCodeLabel": "Code d'invitation",
+    "openInWanderMood": "Ouvrir dans WanderMood",
+    "afterInstall": "Si nécessaire : installe WanderMood et saisis ce code dans",
+    "afterInstallTarget": "Planifier avec un ami",
+    "storeAndroid": "Android — Google Play",
+    "storeIos": "iPhone — rechercher dans l'App Store",
+    "backHome": "Retour à WanderMood",
+    "loading": "Chargement…"
   }
 }

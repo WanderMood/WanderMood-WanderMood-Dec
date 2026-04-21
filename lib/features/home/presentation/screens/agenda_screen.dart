@@ -5,10 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import '../utils/activity_image_fallback.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_launcher/map_launcher.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
+import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
@@ -66,12 +70,21 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   DateTime? _selectedDay;
   String _viewMode = 'calendar'; // 'calendar' or 'list'
   bool _hasInitialized = false; // ✅ Prevent infinite loop
+  final Map<String, Future<List<GroupMemberView>>> _sessionMembersCache = {};
   
   @override
   void initState() {
     super.initState();
-    _selectedDay = DateTime.now();
-    
+    // Pick up a targetDate passed via MainScreen extra (e.g. from Mood Match
+    // "Add to My Plans") so the calendar opens on the scheduled day, not today.
+    final selectedFromProvider = ref.read(selectedMyDayDateProvider);
+    _selectedDay = DateTime(
+      selectedFromProvider.year,
+      selectedFromProvider.month,
+      selectedFromProvider.day,
+    );
+    _focusedDay = _selectedDay!;
+
     // ✅ FIXED: Only refresh once, not on every hot reload
     if (!_hasInitialized) {
       _hasInitialized = true;
@@ -89,6 +102,18 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   Widget build(BuildContext context) {
     // ✅ FIXED: Watch provider ONCE at top level of build
     final activitiesAsyncValue = ref.watch(cachedActivitySuggestionsProvider);
+    // Re-sync the calendar when the shared date provider changes — e.g. the
+    // user just added a Mood Match plan to a future date and landed here.
+    ref.listen<DateTime>(selectedMyDayDateProvider, (prev, next) {
+      if (!mounted) return;
+      final nextDay = DateTime(next.year, next.month, next.day);
+      if (_selectedDay != nextDay) {
+        setState(() {
+          _selectedDay = nextDay;
+          _focusedDay = nextDay;
+        });
+      }
+    });
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8), // wmCream — no gradient (redesign QA)
       body: CustomScrollView(
@@ -745,6 +770,84 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return '${raw[0].toUpperCase()}${raw.length > 1 ? raw.substring(1) : ''}';
   }
 
+  Future<List<GroupMemberView>> _membersForSession(String sessionId) {
+    return _sessionMembersCache.putIfAbsent(sessionId, () {
+      final repo = ref.read(groupPlanningRepositoryProvider);
+      return repo.fetchMembersWithProfiles(sessionId);
+    });
+  }
+
+  Widget _agendaMiniAvatar(String? url, String fallback) {
+    final u = url?.trim();
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 1.5),
+      ),
+      child: CircleAvatar(
+        radius: 11,
+        backgroundColor: _wmForest,
+        backgroundImage: u != null && u.isNotEmpty ? NetworkImage(u) : null,
+        child: u == null || u.isEmpty
+            ? Text(
+                fallback,
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Widget _agendaSessionAvatarPill(String sessionId) {
+    return FutureBuilder<List<GroupMemberView>>(
+      future: _membersForSession(sessionId),
+      builder: (context, snap) {
+        final members = snap.data ?? const <GroupMemberView>[];
+        final me = Supabase.instance.client.auth.currentUser?.id;
+        GroupMemberView? first;
+        GroupMemberView? second;
+        if (members.isNotEmpty) {
+          first = members.firstWhere(
+            (m) => m.member.userId == me,
+            orElse: () => members.first,
+          );
+          second = members.firstWhere(
+            (m) => m.member.userId != first?.member.userId,
+            orElse: () => members.length > 1 ? members[1] : members.first,
+          );
+        }
+        final firstInitial = first?.displayName.trim().isNotEmpty == true
+            ? first!.displayName.trim()[0].toUpperCase()
+            : 'Y';
+        final secondInitial = second?.displayName.trim().isNotEmpty == true
+            ? second!.displayName.trim()[0].toUpperCase()
+            : '?';
+        return Container(
+          padding: const EdgeInsets.fromLTRB(6, 4, 8, 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: _wmParchment, width: 0.8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _agendaMiniAvatar(first?.avatarUrl, firstInitial),
+              Transform.translate(
+                offset: const Offset(-6, 0),
+                child: _agendaMiniAvatar(second?.avatarUrl, secondInitial),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildAgendaPaymentBadge(String paymentStatus) {
     switch (paymentStatus) {
       case 'free':
@@ -858,6 +961,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final cardStatus = _agendaCardStatusFor(statusStr, l10n);
     final durationM = activity['duration'] as int? ?? 60;
     final timeLabel = activity['time'] ?? '10:00 AM';
+    final groupSessionId = activity['groupSessionId']?.toString();
 
     final footerBits = <String>[l10n.agendaDurationShort('$durationM')];
     if (paymentStatus != 'free' && price > 0) {
@@ -866,6 +970,9 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       footerBits.add(paymentStatus.toUpperCase());
     }
     final footerSubtitle = footerBits.join(' · ');
+    final heroUrlRaw = activity['imageUrl']?.toString().trim() ?? '';
+    final placeIdForPhoto =
+        (activity['placeId'] ?? activity['place_id'])?.toString();
 
     return GestureDetector(
       onTap: () {
@@ -873,7 +980,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         _showActivityDetails(activity);
       },
       child: Container(
-        height: 160,
+        height: 216,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: _wmParchment, width: 0.5),
@@ -888,10 +995,15 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: WmPlaceOrHttpsNetworkImage(
-                        activity['imageUrl']?.toString() ?? _getDefaultImageUrl(activity),
-                        fit: BoxFit.cover,
-                        progressIndicatorBuilder: (context, url, progress) => Container(
+                      child: ActivityPhoto(
+                        directUrl: heroUrlRaw,
+                        placeId: placeIdForPhoto,
+                        category: activity['category']?.toString(),
+                        title: (activity['title'] ?? activity['name'])
+                            ?.toString(),
+                        mood: activity['mood']?.toString(),
+                        progressIndicatorBuilder: (context, url, progress) =>
+                            Container(
                           color: Colors.grey[300],
                           child: Center(
                             child: CircularProgressIndicator(
@@ -900,7 +1012,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                             ),
                           ),
                         ),
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        placeholderBuilder: (context) => Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -912,7 +1024,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                             ),
                           ),
                           child: const Center(
-                            child: Icon(Icons.image, color: Colors.white, size: 40),
+                            child:
+                                Icon(Icons.image, color: Colors.white, size: 40),
                           ),
                         ),
                       ),
@@ -1051,6 +1164,41 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            if (groupSessionId != null &&
+                                groupSessionId.trim().isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF0F5),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: const Color(0xFFE8B4C4),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      l10n.moodMatchWithBadge(
+                                        l10n.moodMatchFriendThey,
+                                      ),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFFB5375E),
+                                      ),
+                                    ),
+                                  ),
+                                  _agendaSessionAvatarPill(groupSessionId),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -1238,7 +1386,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'duration': activity['duration'] ?? 60,
       'status': _getActivityStatus(activity, activityManager),
       'location': activity['location'] ?? l10n.agendaLocationTBD,
-      'imageUrl': activity['imageUrl'] ?? _getDefaultImageUrl(activity),
+      'imageUrl': () {
+        final u = activity['imageUrl']?.toString().trim() ?? '';
+        return u.isNotEmpty ? u : _getDefaultImageUrl(activity);
+      }(),
       'paymentStatus': _getPaymentStatus(activity),
       'price': activity['price'] ?? 0.0,
       'category': activity['category'] ?? 'general',
@@ -1247,6 +1398,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'rating': activity['rating'] ?? 0.0,
       'timeOfDay': activity['timeOfDay'] ?? 'any',
       'startTime': activity['startTime'],
+      'groupSessionId': activity['groupSessionId'] ?? activity['group_session_id'],
     };
     
     return transformed;

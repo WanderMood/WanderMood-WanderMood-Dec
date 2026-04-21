@@ -24,6 +24,7 @@ import '../widgets/day_execution_hero_card.dart';
 import '../widgets/my_day_free_time_carousel.dart';
 import '../widgets/my_day_get_ready_sheet.dart';
 import '../widgets/my_day_timeline_section.dart';
+import '../widgets/my_day_updates_bell.dart';
 import '../widgets/my_day_weather_dialog.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
@@ -909,6 +910,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 );
               },
             ).animate().fadeIn(delay: 300.ms, duration: 600.ms),
+            MyDayUpdatesBell(isImmersive: isImmersive),
           ],
         ),
       ],

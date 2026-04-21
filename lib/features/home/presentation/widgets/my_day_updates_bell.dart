@@ -65,6 +65,7 @@ class _MyDayUpdatesBellState extends ConsumerState<MyDayUpdatesBell> {
   }
 
   Future<void> _refresh() async {
+    if (!mounted) return;
     final client = ref.read(supabaseClientProvider);
     final uid = client.auth.currentUser?.id;
     if (uid == null) return;

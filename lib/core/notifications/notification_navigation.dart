@@ -1,21 +1,122 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_push_intent.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
+import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
+import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 import 'notification_category.dart';
 
+enum _MmNotifIntent { lobbyish, dayPicker, result }
+
+void _moodMatchNotifToast(
+  BuildContext ctx,
+  String Function(AppLocalizations l10n) pick,
+) {
+  final l10n = AppLocalizations.of(ctx);
+  if (l10n == null) return;
+  showWanderMoodToast(ctx, message: pick(l10n));
+}
+
+bool _sessionExpiredLike(GroupSessionRow s) {
+  return s.status == 'expired' ||
+      s.status == 'error' ||
+      !s.expiresAt.isAfter(DateTime.now());
+}
+
+/// Resolves lobby / day-picker / result / hub from live session + plan so stale
+/// inbox rows do not send users through an outdated Mood Match step.
+Future<void> _navigateMoodMatchFromNotificationData({
+  required GoRouter router,
+  required WidgetRef ref,
+  required String sessionId,
+  BuildContext? snackContext,
+  required _MmNotifIntent intent,
+  String resultExtraQuery = '',
+}) async {
+  final repo = ref.read(groupPlanningRepositoryProvider);
+  late final GroupSessionRow session;
+  try {
+    session = await repo.fetchSession(sessionId);
+  } catch (e, st) {
+    if (kDebugMode) {
+      debugPrint('[notifications] mood match fetch session: $e\n$st');
+    }
+    final c = snackContext;
+    if (c != null && c.mounted) {
+      _moodMatchNotifToast(c, (l) => l.moodMatchNotificationTapOpenFailed);
+    }
+    return;
+  }
+
+  if (_sessionExpiredLike(session)) {
+    final c = snackContext;
+    if (c != null && c.mounted) {
+      _moodMatchNotifToast(c, (l) => l.moodMatchNotificationTapSessionEnded);
+    }
+    router.go('/group-planning');
+    return;
+  }
+
+  final plan = await repo.fetchPlan(sessionId);
+  final hasPlan = plan != null;
+  final doneSaved = session.completedAt != null;
+
+  if (doneSaved || hasPlan) {
+    if (doneSaved) {
+      final c = snackContext;
+      if (c != null && c.mounted) {
+        _moodMatchNotifToast(c, (l) => l.moodMatchNotificationTapAlreadySaved);
+      }
+    }
+    final q = intent == _MmNotifIntent.result &&
+            !doneSaved &&
+            resultExtraQuery.isNotEmpty
+        ? resultExtraQuery
+        : '';
+    router.go('/group-planning/result/$sessionId$q');
+    return;
+  }
+
+  switch (intent) {
+    case _MmNotifIntent.result:
+      final c = snackContext;
+      if (c != null && c.mounted) {
+        _moodMatchNotifToast(c, (l) => l.moodMatchNotificationTapStaleUpdate);
+      }
+      router.go('/group-planning');
+      return;
+    case _MmNotifIntent.dayPicker:
+    case _MmNotifIntent.lobbyish:
+      if (session.status == 'day_proposed' ||
+          session.status == 'day_counter_proposed') {
+        router.go('/group-planning/day-picker/$sessionId');
+      } else if (session.status == 'generating' ||
+          session.status == 'ready' ||
+          session.status == 'day_confirmed') {
+        router.go('/group-planning/match-loading/$sessionId');
+      } else {
+        await _goMoodMatchLobbyFromPrefs(router, sessionId);
+      }
+      return;
+  }
+}
+
 /// Deep link targets from FCM / in-app notification rows ([data] includes `event`, `session_id`, `post_id`, …).
-void applyWmFcmDataNavigation(
+Future<void> applyWmFcmDataNavigation(
   GoRouter router,
   WidgetRef ref,
-  Map<String, dynamic> data,
-) {
+  Map<String, dynamic> data, {
+  BuildContext? snackContext,
+}) async {
   final event = data['event']?.toString() ?? '';
   final sessionId = data['session_id']?.toString();
   final postId =
@@ -26,14 +127,26 @@ void applyWmFcmDataNavigation(
     case 'guest_joined':
     case 'mood_locked':
       if (sessionId != null && sessionId.isNotEmpty) {
-        unawaited(_goMoodMatchLobbyFromPrefs(router, sessionId));
+        await _navigateMoodMatchFromNotificationData(
+          router: router,
+          ref: ref,
+          sessionId: sessionId,
+          snackContext: snackContext,
+          intent: _MmNotifIntent.lobbyish,
+        );
       }
       break;
     case 'plan_ready':
     case 'swap_accepted':
     case 'swap_declined':
       if (sessionId != null && sessionId.isNotEmpty) {
-        router.go('/group-planning/result/$sessionId');
+        await _navigateMoodMatchFromNotificationData(
+          router: router,
+          ref: ref,
+          sessionId: sessionId,
+          snackContext: snackContext,
+          intent: _MmNotifIntent.result,
+        );
       }
       break;
     case 'swap_requested':
@@ -45,7 +158,14 @@ void applyWmFcmDataNavigation(
         final q = (slot != null && slot.isNotEmpty)
             ? '?wmSwapSlot=${Uri.encodeQueryComponent(slot)}'
             : '';
-        router.go('/group-planning/result/$sessionId$q');
+        await _navigateMoodMatchFromNotificationData(
+          router: router,
+          ref: ref,
+          sessionId: sessionId,
+          snackContext: snackContext,
+          intent: _MmNotifIntent.result,
+          resultExtraQuery: q,
+        );
       }
       break;
     case 'swap_counter_proposed':
@@ -57,23 +177,39 @@ void applyWmFcmDataNavigation(
         final q = (slot != null && slot.isNotEmpty)
             ? '?wmSwapSlot=${Uri.encodeQueryComponent(slot)}'
             : '';
-        router.go('/group-planning/result/$sessionId$q');
+        await _navigateMoodMatchFromNotificationData(
+          router: router,
+          ref: ref,
+          sessionId: sessionId,
+          snackContext: snackContext,
+          intent: _MmNotifIntent.result,
+          resultExtraQuery: q,
+        );
       }
       break;
     case 'day_proposed':
     case 'day_accepted':
     case 'day_counter_proposed':
     case 'day_guest_declined_original':
-      // Day-picker is the only screen that owns the accept/counter modals.
-      // Pre-fix this routed to /time-picker which silently skipped the modal
-      // and dumped the user on the personal start-time screen instead.
       if (sessionId != null && sessionId.isNotEmpty) {
-        router.go('/group-planning/day-picker/$sessionId');
+        await _navigateMoodMatchFromNotificationData(
+          router: router,
+          ref: ref,
+          sessionId: sessionId,
+          snackContext: snackContext,
+          intent: _MmNotifIntent.dayPicker,
+        );
       }
       break;
     case 'both_confirmed':
       if (sessionId != null && sessionId.isNotEmpty) {
-        router.go('/group-planning/time-picker/$sessionId');
+        await _navigateMoodMatchFromNotificationData(
+          router: router,
+          ref: ref,
+          sessionId: sessionId,
+          snackContext: snackContext,
+          intent: _MmNotifIntent.result,
+        );
       }
       break;
     case 'leaving_soon':
@@ -105,11 +241,20 @@ void applyWmFcmDataNavigation(
       router.go('/main?tab=4', extra: <String, dynamic>{'tab': 4});
       break;
     default:
-      if (sessionId != null && sessionId.isNotEmpty) {
-        unawaited(_goMoodMatchLobbyFromPrefs(router, sessionId));
-      } else {
-        router.push('/notifications');
+      // SECURITY: do not treat arbitrary/unknown events as Mood Match just
+      // because they carry a `session_id`. Previously any unrecognised event
+      // with a session id silently routed the user into /group-planning/lobby,
+      // which makes the routing layer a juicy injection target (push payloads
+      // are server-signed but misconfigured callers could still create drift
+      // between the notification copy and the destination). Whitelist only —
+      // unknown events land on the inbox so the user picks intent explicitly.
+      if (kDebugMode) {
+        debugPrint(
+          '[notifications] Unhandled FCM event="$event" '
+          'session_id=${sessionId ?? "(none)"}',
+        );
       }
+      router.push('/notifications');
   }
 }
 
@@ -231,7 +376,16 @@ void applyNotificationNavigation(
       if (payload.startsWith('wm_nav_mm_lobby:')) {
         final sessionId = payload.substring('wm_nav_mm_lobby:'.length).trim();
         if (sessionId.isNotEmpty) {
-          unawaited(_goMoodMatchLobbyFromPrefs(router, sessionId));
+          // Same resume rules as Updates taps (no [BuildContext] for OS toast).
+          unawaited(
+            _navigateMoodMatchFromNotificationData(
+              router: router,
+              ref: ref,
+              sessionId: sessionId,
+              snackContext: null,
+              intent: _MmNotifIntent.lobbyish,
+            ),
+          );
         }
         break;
       }

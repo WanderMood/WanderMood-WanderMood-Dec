@@ -64,9 +64,19 @@ class _GroupPlanningTimePickerScreenState
   String _firstName(String displayName) {
     final s = displayName.trim();
     if (s.isEmpty) return '?';
+    // `GroupMemberView.displayName` returns `@username` when the profile only
+    // has a handle. `split('@').first` on that returns an empty string, so
+    // strip the leading `@` first to avoid empty-subject copy downstream.
+    if (s.startsWith('@')) {
+      final u = s.substring(1).trim();
+      if (u.isNotEmpty) {
+        final parts = u.split(RegExp(r'\s+'));
+        if (parts.isNotEmpty && parts.first.isNotEmpty) return parts.first;
+      }
+    }
     final beforeAt = s.split('@').first.trim();
     final parts = beforeAt.split(RegExp(r'\s+'));
-    return parts.isNotEmpty ? parts.first : '?';
+    return parts.isNotEmpty && parts.first.isNotEmpty ? parts.first : '?';
   }
 
   GroupMemberView? _otherMember() {

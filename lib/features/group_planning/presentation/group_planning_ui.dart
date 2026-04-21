@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:wandermood/l10n/app_localizations.dart';
+
 /// Shared visual tokens for group planning (matches WanderMood design system).
 abstract final class GroupPlanningUi {
   static const Color forest = Color(0xFF2A6049);
@@ -18,11 +20,33 @@ abstract final class GroupPlanningUi {
   static const Color moodMatchDeepSurface = Color(0xFF362B23);
   static const Color moodMatchDeepMuted = Color(0xFF4A3F36);
 
+  /// Hub + match cards: primary pill CTAs (warm brown, NL “Verder” reference).
+  static const Color moodMatchCtaBrown = Color(0xFF6B4A3A);
+
+  /// Hub Active tab selected fill (segmented control).
+  static const Color moodMatchTabActiveOrange = Color(0xFFE07A3F);
+
   /// Shadow / scrim tint from the mood-match palette (avoids pure black).
   static Color moodMatchShadow(double alpha) =>
       moodMatchDeep.withValues(alpha: alpha);
 
   static Color get cardBorder => const Color.fromRGBO(30, 28, 24, 0.07);
+
+  /// White card on cream: single diffuse shadow (reads “floating”, no sharp corners).
+  static BoxDecoration moodMatchFloatingCard({double radius = 28}) {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(radius),
+      boxShadow: [
+        BoxShadow(
+          color: moodMatchShadow(0.09),
+          blurRadius: 32,
+          offset: const Offset(0, 12),
+          spreadRadius: 0,
+        ),
+      ],
+    );
+  }
 
   static BoxDecoration cardDecoration({Color? color}) {
     return BoxDecoration(
@@ -196,6 +220,87 @@ abstract final class GroupPlanningUi {
     );
   }
 
+  /// Classify a thrown error into a localized, user-safe message.
+  ///
+  /// Prefers specific messages (network, service) and falls back to a generic
+  /// copy. The raw error is never shown to the user — it's only logged for
+  /// developers via [debugPrint]. Pass a custom [fallback] to override the
+  /// generic message (e.g. "Could not join session.").
+  static String classifyError(
+    AppLocalizations l10n,
+    Object? error, {
+    String? fallback,
+  }) {
+    // Some legacy copy uses "Could not join: {error}" style. When we pass an
+    // empty {error}, we end up with trailing ": " — strip it so the sentence
+    // still reads cleanly.
+    String cleanFallback(String? v) {
+      if (v == null) return l10n.planLoadingErrorGeneric;
+      var s = v.trim();
+      while (s.endsWith(':') || s.endsWith(',') || s.endsWith('-')) {
+        s = s.substring(0, s.length - 1).trimRight();
+      }
+      if (s.isEmpty) return l10n.planLoadingErrorGeneric;
+      return s.endsWith('.') || s.endsWith('!') || s.endsWith('?')
+          ? s
+          : '$s.';
+    }
+
+    if (error == null) return cleanFallback(fallback);
+    final s = error.toString().toLowerCase();
+    if (s.contains('socketexception') ||
+        s.contains('timeoutexception') ||
+        s.contains('network') ||
+        s.contains('connection') ||
+        s.contains('timeout') ||
+        s.contains('failed host lookup') ||
+        s.contains('no internet')) {
+      return l10n.planLoadingErrorNetwork;
+    }
+    if (s.contains('rate limit') ||
+        s.contains('quota') ||
+        s.contains('503') ||
+        s.contains('502') ||
+        s.contains('504')) {
+      return l10n.planLoadingErrorService;
+    }
+    return cleanFallback(fallback);
+  }
+
+  /// Show a clean error SnackBar with a localized message + optional Retry.
+  ///
+  /// The raw [error] is logged via [debugPrint] only — never shown to the user.
+  /// If [onRetry] is provided, a single-tap Retry action is added.
+  static void showErrorSnack(
+    BuildContext context,
+    AppLocalizations l10n,
+    Object? error, {
+    String? fallback,
+    VoidCallback? onRetry,
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    if (error != null) {
+      debugPrint('[GroupPlanningUi] error: $error');
+    }
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(classifyError(l10n, error, fallback: fallback)),
+        behavior: SnackBarBehavior.floating,
+        duration: duration,
+        action: onRetry != null
+            ? SnackBarAction(
+                label: l10n.planLoadingTryAgain,
+                onPressed: onRetry,
+              )
+            : null,
+      ),
+    );
+  }
+
   static PreferredSizeWidget buildAppBar({
     required BuildContext context,
     required String title,
@@ -208,6 +313,7 @@ abstract final class GroupPlanningUi {
       backgroundColor: cream,
       foregroundColor: charcoal,
       leading: IconButton(
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         onPressed: onBack ??
             () {

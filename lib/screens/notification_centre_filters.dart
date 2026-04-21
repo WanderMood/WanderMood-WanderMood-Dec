@@ -3,6 +3,32 @@ import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
 
 enum NotificationCentreFilter { all, moodMatch, activities, social, moody }
 
+/// Sub-keys from Mood Match / plan pings — also used when `event_type` was
+/// stored in snake_case or fell through to [RealtimeEventType.systemUpdate]
+/// but payload is clearly a shared-plan update.
+const _moodMatchPayloadEventKeys = {
+  'mood_match_invite',
+  'plan_ready',
+  'both_confirmed',
+  'guest_joined',
+  'mood_locked',
+  'slot_confirmed',
+  'swap_requested',
+  'swap_accepted',
+  'swap_declined',
+  'day_proposed',
+  'day_accepted',
+  'day_counter_proposed',
+  'day_guest_declined_original',
+};
+
+bool _isMoodMatchByPayload(RealtimeEvent e) {
+  final sub = (e.data['event'] ?? e.data['kind'] ?? '').toString().trim();
+  if (sub.isEmpty) return false;
+  if (_moodMatchPayloadEventKeys.contains(sub)) return true;
+  return false;
+}
+
 bool notificationCentrePasses(NotificationCentreFilter filter, RealtimeEvent e) {
   final t = e.type.name;
   final d = e.data;
@@ -11,7 +37,13 @@ bool notificationCentrePasses(NotificationCentreFilter filter, RealtimeEvent e) 
     case NotificationCentreFilter.all:
       return true;
     case NotificationCentreFilter.moodMatch:
-      return t == 'groupTravelUpdate' || t == 'planUpdate' || sub == 'mood_match_invite';
+      if (t == 'groupTravelUpdate' || t == 'planUpdate') return true;
+      if (sub == 'mood_match_invite') return true;
+      if (_isMoodMatchByPayload(e)) return true;
+      // Snake_case or legacy DB values that did not map to enum names.
+      final raw = (t).replaceAll('_', '').toLowerCase();
+      if (raw == 'grouptravelupdate' || raw == 'planupdate') return true;
+      return false;
     case NotificationCentreFilter.activities:
       return t == 'activityReminder' || t == 'activityReview';
     case NotificationCentreFilter.social:

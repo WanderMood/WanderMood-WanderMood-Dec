@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'legal_urls.dart';
-
 /// Public **https** origin used for Mood Match join links shared in messages.
 ///
 /// Override at build time: `--dart-define=WANDERMOOD_UNIVERSAL_LINK_BASE=https://wandermood.com`
@@ -11,11 +9,11 @@ class AppLinkConfig {
 
   static const String _defineKey = 'WANDERMOOD_UNIVERSAL_LINK_BASE';
 
-  /// Same default host as [LegalUrls.publicLegalBase] so join links work without extra setup.
+  /// Only use an https bridge when explicitly provided via dart-define.
+  /// This avoids shipping broken fallback hosts in development builds.
   static String get universalLinkOrigin {
     const fromEnv = String.fromEnvironment(_defineKey, defaultValue: '');
-    final raw =
-        fromEnv.trim().isNotEmpty ? fromEnv.trim() : LegalUrls.publicLegalBase;
+    final raw = fromEnv.trim();
     return raw.replaceAll(RegExp(r'/$'), '');
   }
 

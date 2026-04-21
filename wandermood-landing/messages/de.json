@@ -168,5 +168,19 @@
       "sectionRetainBody": "Bestimmte Informationen können wir gesetzlich vorgeschrieben, zu Sicherheit oder Betrugsprävention oder in verschlüsselten Backups begrenzt aufbewahren, bis sie auslaufen. Nach der Löschung nutzen wir sie nicht für Marketing.",
       "backToPrivacy": "Datenschutz"
     }
+  },
+  "moodMatchJoin": {
+    "metaTitle": "Mood Match · WanderMood",
+    "title": "Mood Match beitreten",
+    "invalidCode": "Dieser Einladungslink enthält keinen gültigen Code.",
+    "openingBody": "WanderMood wird jetzt geöffnet. Falls nicht, nutze die Schaltfläche unten oder installiere zuerst die App.",
+    "inviteCodeLabel": "Einladungscode",
+    "openInWanderMood": "In WanderMood öffnen",
+    "afterInstall": "Falls nötig: Installiere WanderMood und gib diesen Code ein unter",
+    "afterInstallTarget": "Mit einem Freund planen",
+    "storeAndroid": "Android — Google Play",
+    "storeIos": "iPhone — App Store Suche",
+    "backHome": "Zurück zu WanderMood",
+    "loading": "Laden…"
   }
 }

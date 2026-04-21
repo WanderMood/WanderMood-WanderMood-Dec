@@ -236,6 +236,10 @@ class MoodyEdgeFunctionService {
     required double longitude,
     Map<String, dynamic>? filters,
     String? languageCode,
+    /// Calendar day the user picked in the hub / Mood Match (moody may use later).
+    DateTime? targetDate,
+    /// When set, moody returns a single coffee-focused activity.
+    String? quickPick,
   }) async {
     await AuthHelper.ensureValidSession();
     await _waitForSessionReady();
@@ -266,6 +270,14 @@ class MoodyEdgeFunctionService {
         'filters': filters ?? <String, dynamic>{},
         if (languageCode != null && languageCode.isNotEmpty)
           'language_code': languageCode,
+        if (targetDate != null)
+          'target_date': DateTime(
+            targetDate.year,
+            targetDate.month,
+            targetDate.day,
+          ).toIso8601String(),
+        if (quickPick != null && quickPick.trim().isNotEmpty)
+          'quick_pick': quickPick.trim().toLowerCase(),
       },
       options: Options(
         headers: {

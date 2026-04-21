@@ -10772,11 +10772,55 @@ class AppLocalizationsFr extends AppLocalizations {
   String get moodMatchTitle => 'Mood Match';
 
   @override
+  String get moodMatchNotificationTapAlreadySaved =>
+      'Ce plan est déjà enregistré — voici le récapitulatif.';
+
+  @override
+  String get moodMatchNotificationTapSessionEnded =>
+      'Ce Mood Match n\'est plus disponible.';
+
+  @override
+  String get moodMatchNotificationTapOpenFailed =>
+      'Impossible d\'ouvrir ce plan.';
+
+  @override
+  String get moodMatchNotificationTapStaleUpdate =>
+      'Rien de nouveau ici — ce plan a peut-être évolué.';
+
+  @override
   String get moodMatchTagline => 'Deux humeurs. Une journée parfaite.';
 
   @override
   String get moodMatchTaglineHub =>
       'Deux humeurs. Une journée parfaite. Pensée pour vous deux.';
+
+  @override
+  String get moodMatchHubMoodyHeroLine1 =>
+      'Deux humeurs en secret, une journée partagée—faite pour vous deux.';
+
+  @override
+  String get moodMatchHubMoodyHeroLine2 =>
+      'Touche Démarrer ou Rejoindre quand tu veux.';
+
+  @override
+  String get moodMatchHubCardBodyPickYourMood =>
+      'Il me manque encore ton humeur — je la garde secrète jusqu’à ce que vous ayez fini tous les deux.';
+
+  @override
+  String moodMatchHubCardBodyDayTheirPick(String name) {
+    return '$name a proposé un jour — ouvre et dis oui ou propose un ajustement.';
+  }
+
+  @override
+  String moodMatchHubCardBodyDayWaitingOnThem(String name) {
+    return 'J’ai envoyé un jour vers $name — j’attends un oui ou une contre-proposition.';
+  }
+
+  @override
+  String get moodMatchHubCardCtaReviewDay => 'Voir le jour';
+
+  @override
+  String get moodMatchHubCardCtaCheckProgress => 'Voir l’avancement';
 
   @override
   String get moodMatchStartBtn => 'Lancer un Mood Match';
@@ -10827,7 +10871,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get moodMatchHubPendingTitle => 'Session in progress';
 
   @override
-  String get moodMatchHubPendingStory => 'Nous attendons encore ton ami.';
+  String get moodMatchHubPendingStory => 'Ton ami doit encore te rejoindre.';
 
   @override
   String moodMatchHubPendingCodeSmall(String code) {
@@ -10863,7 +10907,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get moodMatchHubReadyTitle => 'Your Mood Match is ready!';
 
   @override
-  String get moodMatchHubReadySubtitle => 'J’ai fini votre plan partagé';
+  String get moodMatchHubReadySubtitle =>
+      'Votre journée partagée est prête — jetez un œil quand vous voulez.';
 
   @override
   String get moodMatchHubSeePlanCta => 'See the plan';
@@ -11249,7 +11294,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String moodMatchInviteInboxBody(String name) {
-    return '$name veut planifier une journée avec toi. Choisis ton humeur et vois où vous matchez.';
+    return '$name t’a envoyé un Mood Match. Choisis ton vibe (il reste secret jusqu’à ce que vous soyez tous les deux dedans), et après on aligne le reste.';
   }
 
   @override
@@ -11299,6 +11344,102 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get moodMatchHubOngoingTitle => 'Matches en cours';
+
+  @override
+  String get moodMatchHubActiveMatchesTitle => 'Matchs actifs';
+
+  @override
+  String get moodMatchHubCompletedMatchesTitle => 'Ajouté à Ma journée';
+
+  @override
+  String get moodMatchHubPlanDraftingBadge => 'Finaliser tes choix';
+
+  @override
+  String moodMatchHubPlanDraftingBody(String name) {
+    return 'Choisis les arrêts, puis envoie-les à $name pour validation.';
+  }
+
+  @override
+  String moodMatchHubOwnerWaitingGuestReviewBody(String name) {
+    return 'Tu as partagé le plan — en attente que $name examine et confirme ses choix.';
+  }
+
+  @override
+  String get moodMatchHubGuestReviewBadge => 'À toi';
+
+  @override
+  String moodMatchHubGuestReviewBody(String name) {
+    return '$name a envoyé le plan partagé — ouvre pour revoir tes choix.';
+  }
+
+  @override
+  String get moodMatchHubCtaReviewPlan => 'Revoir le plan';
+
+  @override
+  String get moodMatchHubCompletedBadge => 'Dans ta journée';
+
+  @override
+  String get moodMatchHubCompletedBody =>
+      'Ce mix est déjà dans ton calendrier.';
+
+  @override
+  String get moodMatchHubCompletedCta => 'Ouvrir Ma journée';
+
+  @override
+  String get moodMatchHubTabActive => 'Actifs';
+
+  @override
+  String get moodMatchHubTabCompleted => 'Terminés';
+
+  @override
+  String get moodMatchHubTabActiveHint => 'Mood Match encore en cours.';
+
+  @override
+  String get moodMatchHubTabCompletedHint => 'Plans déjà ajoutés à Ma journée.';
+
+  @override
+  String get moodMatchHubTabActiveEmpty =>
+      'Aucun match actif — lance-en un ou rejoins avec le code d’un ami.';
+
+  @override
+  String get moodMatchHubTabCompletedEmpty =>
+      'Rien d’enregistré pour l’instant — après « Ajouter à Ma journée », le plan apparaît ici.';
+
+  @override
+  String get moodMatchHubInvitesTitle => 'INVITATIONS EN ATTENTE';
+
+  @override
+  String moodMatchHubInvitesCollapsedHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations en attente — touchez pour ouvrir',
+      one: '1 invitation en attente — touchez pour ouvrir',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moodMatchHubConfirmDismissInviteTitle =>
+      'Retirer cette invitation ?';
+
+  @override
+  String get moodMatchHubConfirmDismissInviteBody =>
+      'Tu pourras toujours rejoindre plus tard avec le code si ton ami le partage à nouveau.';
+
+  @override
+  String get moodMatchHubConfirmLeaveSessionTitle => 'Retirer ce Mood Match ?';
+
+  @override
+  String get moodMatchHubConfirmLeaveSessionBodyGuest =>
+      'Tu quitteras la session. Ton ami peut continuer jusqu\'à ce qu\'il parte aussi.';
+
+  @override
+  String get moodMatchHubConfirmLeaveSessionBodyHost =>
+      'Cela annule le Mood Match pour vous deux.';
+
+  @override
+  String get moodMatchHubConfirmRemoveAction => 'Retirer';
 
   @override
   String moodMatchLobbyWaitTease0(String name) {
@@ -11592,7 +11733,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String moodMatchPlanResultMoodyV1(String name) {
-    return 'Voici votre journée avec $name — trois choix qui collent à vos deux vibes selon Moody.';
+    return 'Voici votre journée avec $name — trois choix qui collent à vos deux vibes.';
   }
 
   @override
@@ -11607,7 +11748,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String moodMatchPlanResultMoodyV4(String name) {
-    return 'Trois petits moments façonnés autour de vos humeurs. Quelque chose ne va pas ? Touchez Échanger, Moody trouve une alternative.';
+    return 'Trois petits moments façonnés autour de vos humeurs. Quelque chose ne va pas ? Touchez Échanger — on vous proposera autre chose.';
   }
 
   @override
@@ -11875,6 +12016,15 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String moodMatchPlanV2SlotNotInThisPlan(String partLabel) {
+    return '$partLabel ne fait pas partie de ce Mood Match — vous n\'avez planifié qu\'une partie de la journée ensemble.';
+  }
+
+  @override
+  String get moodMatchPlanV2YouBothInThisMoment =>
+      'Vous êtes toutes les deux OK pour ce moment ✓';
+
+  @override
   String moodMatchPlanV2WaitingOwnerSwap(String name) {
     return 'En attente de $name pour l\'échange…';
   }
@@ -11891,11 +12041,29 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String moodMatchPlanV2StopsReviewed(int done, int total) {
+    return '$done sur $total';
+  }
+
+  @override
+  String moodMatchPlanV2FooterGuestReviewNudge(int done, int total) {
+    return '$done sur $total validés — confirme Matin, Après-midi et Soir ci-dessus';
+  }
+
+  @override
+  String moodMatchPlanV2OwnerPickEachPart(int done, int total) {
+    return '$done sur $total choisis — complète le reste ci-dessus';
+  }
+
+  @override
+  String get moodMatchPlanV2UndoMyChoice => 'Modifier ma réponse';
+
+  @override
   String get moodMatchPlanV2PlanConfirmedTime =>
       'Plan validé — choisis ton heure de départ →';
 
   @override
-  String get moodMatchPlanV2OpenMyDay => 'Ajouter à Ma journée ✓';
+  String get moodMatchPlanV2OpenMyDay => 'Ajouter à Mes Plans ✓';
 
   @override
   String get moodMatchRevealMaeMorning => 'MATIN';
@@ -11916,6 +12084,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get moodMatchPlanV2PickThis => 'Choisir celle-ci';
+
+  @override
+  String get moodMatchPlanV2YourPickSaved => 'Ton choix';
 
   @override
   String moodMatchPlanV2SwapBannerTitle(String name, String slot) {
@@ -12024,7 +12195,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String moodMatchSaveMyDayFailed(String details) {
-    return 'Impossible d’ajouter à Ma journée : $details';
+    return 'Impossible d’ajouter à Mes Plans : $details';
   }
 
   @override

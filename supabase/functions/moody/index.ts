@@ -318,6 +318,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     if (!params.location?.trim()) return new Response(JSON.stringify({ error: 'Location is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     if (!params.coordinates?.lat || !params.coordinates?.lng) return new Response(JSON.stringify({ error: 'Coordinates are required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const location = params.location.trim(), coordinates = params.coordinates, filters = params.filters || {}
+    const groupMatch = params.group_match === true
     const namedFilters: string[] = Array.isArray(params.namedFilters) ? params.namedFilters.filter((f: any) => typeof f === 'string') : []
     const hasNamedFilters = namedFilters.length > 0
     const section: string | undefined = params.section
@@ -328,7 +329,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const timeCtx = getTimeOfDayContext()
     const lang = googlePlacesLanguageFromRequest(params)
     const cacheKey = lang === 'en' ? `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
-    if (!hasNamedFilters) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const enriched = enrichWithSignals(applyFilters(reranked, filters), userContext.isLocalMode); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
+    if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const enriched = enrichWithSignals(applyFilters(reranked, filters), userContext.isLocalMode); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
     if (hasNamedFilters) exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 16)
@@ -346,7 +347,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     let qualified = await enrichAndFilter(places, thresholds)
     if (qualified.length < 8) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 5 })
     const ranked = rankPlaces(qualified, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
-    if (!hasNamedFilters) { await cacheExplore(supabase, cacheKey, ranked) }
+    if (!hasNamedFilters && !groupMatch) { await cacheExplore(supabase, cacheKey, ranked) }
     const enriched = enrichWithSignals(applyFilters(shuffleArray(ranked), filters), userContext.isLocalMode)
     return new Response(JSON.stringify({ cards: enriched, cached: false, total_found: enriched.length, unfiltered_total: ranked.length, named_filters_applied: namedFilters, section: section || 'all', time_slot: timeCtx.timeSlot }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) { console.error('❌ handleGetExplore:', error); return new Response(JSON.stringify({ cards: [], cached: false, total_found: 0, error: 'explore_fetch_failed' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
@@ -404,6 +405,63 @@ async function handleGroupMatchMoodyMessage(supabase: any, userId: string, param
     const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
     return new Response(JSON.stringify({ success: true, score, scoreLabel, moodyMessage: parsed.moodyMessage || getFallback().moodyMessage, vibeLabel: parsed.vibeLabel || getFallback().vibeLabel, summary: parsed.summary || getFallback().summary }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (e) { console.error('❌ handleGroupMatchMoodyMessage:', e); const fb = getFallback(); return new Response(JSON.stringify({ success: true, score, scoreLabel, ...fb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+}
+
+async function handleGroupMatchActivityNotes(_supabase: any, _userId: string, params: any): Promise<Response> {
+  const lang = clientOutputLang(params)
+  const style = String(params.communication_style || 'friendly').toLowerCase()
+  const rawActs = params.activities
+  if (!Array.isArray(rawActs) || rawActs.length === 0) {
+    return new Response(JSON.stringify({ notes: {} }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+  const langName = placeCardBlurbOutputLanguageName(String(params.language_code || 'en'))
+  const styleHint = style === 'energetic' ? 'High energy, punchy.' : style === 'calm' ? 'Soft, understated.' : style === 'professional' ? 'Clean, direct.' : style === 'direct' ? 'One short clause per slot.' : 'Warm and friendly.'
+  const bySlot: Record<string, any> = {}
+  for (const a of rawActs) {
+    const s = String((a as any)?.slot ?? '').toLowerCase().trim()
+    if (s !== 'morning' && s !== 'afternoon' && s !== 'evening') continue
+    if (!bySlot[s]) bySlot[s] = a
+  }
+  const getFallback = (): Record<string, string> => {
+    const out: Record<string, string> = {}
+    for (const s of ['morning', 'afternoon', 'evening'] as const) {
+      const a = bySlot[s]
+      const name = a ? String((a as any).name || '').trim() : ''
+      if (!name) continue
+      if (lang === 'nl') {
+        out[s] = s === 'morning' ? `Ochtend bij ${name} — daar begin je goed ☀️` : s === 'afternoon' ? `Middag: ${name} — precies wat je zoekt.` : `Avond bij ${name} — relaxed.`
+      } else {
+        out[s] = s === 'morning' ? `Morning at ${name} — easy start ☀️` : s === 'afternoon' ? `${name} for the afternoon.` : `Evening at ${name}.`
+      }
+    }
+    return out
+  }
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey?.trim()) {
+    return new Response(JSON.stringify({ notes: getFallback() }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+  try {
+    const payload = JSON.stringify(bySlot)
+    const prompt = `You are Moody (WanderMood). Write ONE ultra-short line per time slot for shared Mood Match plan cards.\n\nRules:\n- Return ONLY valid JSON: {"notes":{"morning":"<max 90 chars>","afternoon":"<max 90 chars>","evening":"<max 90 chars>"}}\n- Include a key ONLY for slots present in the input (morning / afternoon / evening).\n- Use "I" voice. Communication style: ${styleHint}\n- Entirely in ${langName}.\n- Never invent place names — use only names from the data.\n- No addresses, no star ratings.\n\nActivities (first pick per slot): ${payload}`
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: MOODY_CORE_IDENTITY }, { role: 'user', content: prompt }], max_tokens: 220, temperature: 0.75, response_format: { type: 'json_object' } }) })
+    if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
+    const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
+    const notesRaw = parsed.notes && typeof parsed.notes === 'object' ? parsed.notes : parsed
+    const notes: Record<string, string> = {}
+    if (notesRaw && typeof notesRaw === 'object') {
+      for (const [k, v] of Object.entries(notesRaw as Record<string, unknown>)) {
+        const key = k.toLowerCase().trim()
+        const val = String(v ?? '').trim()
+        if ((key === 'morning' || key === 'afternoon' || key === 'evening') && val) notes[key] = val.slice(0, 120)
+      }
+    }
+    const fb = getFallback()
+    for (const s of Object.keys(fb)) { if (!notes[s]) notes[s] = fb[s]! }
+    return new Response(JSON.stringify({ notes }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch (e) {
+    console.error('❌ handleGroupMatchActivityNotes:', e)
+    return new Response(JSON.stringify({ notes: getFallback() }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
 }
 
 async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Response> {
@@ -577,7 +635,7 @@ Deno.serve(async (req) => {
     const admin = getServiceSupabase(), rateKey = userRateKey(authUser.id), rateStarted = performance.now(), maxPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
     if (admin) { const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxPerMin); if (!allowed) { logApiInvocationFireAndForget(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action, http_status: 429, duration_ms: Math.round(performance.now() - rateStarted), error_snippet: `rate_limit count=${currentCount}` }); return new Response(JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }) } }
     const traceStarted = performance.now()
-    console.log(`🎯 Moody v88: action=${action}, userId=${authUser.id}`)
+    console.log(`🎯 Moody v95: action=${action}, userId=${authUser.id}`)
     return traceEdgeResponse(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action }, traceStarted,
       (async (): Promise<Response> => {
         switch (action) {
@@ -586,6 +644,7 @@ Deno.serve(async (req) => {
           case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
           case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)
           case 'group_match_moody_message': return await handleGroupMatchMoodyMessage(supabaseWithAuth, authUser.id, params)
+          case 'group_match_activity_notes': return await handleGroupMatchActivityNotes(supabaseWithAuth, authUser.id, params)
           case 'search': return await handleSearch(supabaseWithAuth, authUser.id, params)
           case 'place_card_blurb': return await handlePlaceCardBlurb(params)
           case 'place_detail_blurb': return await handlePlaceDetailBlurb(params)

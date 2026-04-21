@@ -238,20 +238,6 @@ class _GroupPlanningShareSheetState extends State<GroupPlanningShareSheet> {
                               onPressed: _shareLink,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Center(
-                            child: TextButton(
-                              onPressed: _copyLink,
-                              child: Text(
-                                l10n.moodMatchShareCopyLink,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: GroupPlanningUi.forest,
-                                ),
-                              ),
-                            ),
-                          ),
                           const SizedBox(height: 10),
                           Theme(
                             data: Theme.of(context).copyWith(

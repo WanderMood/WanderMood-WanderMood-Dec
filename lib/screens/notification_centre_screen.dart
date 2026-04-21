@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +14,7 @@ import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event_from_supabase.dart';
 import 'notification_centre_filters.dart';
 import 'notification_centre_list_body.dart';
+import 'notification_centre_mood_match.dart';
 import 'notification_centre_pills.dart';
 
 class NotificationCentreScreen extends ConsumerStatefulWidget {
@@ -23,6 +27,7 @@ class NotificationCentreScreen extends ConsumerStatefulWidget {
 class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScreen> {
   NotificationCentreFilter _filter = NotificationCentreFilter.all;
   final List<RealtimeEvent> _all = [];
+  final Set<String> _dismissedIds = {};
   int _offset = 0;
   bool _loading = true;
   bool _more = true;
@@ -34,11 +39,50 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
   static const _bg = Color(0xFF0F0E0C);
   static const _sunset = Color(0xFFE8784A);
   static const _cream = Color(0xFFF5F0E8);
+  static const _prefsDismissedKey = 'wm_notification_centre_dismissed_ids_v1';
+  static const _maxDismissedIdsStored = 500;
 
   @override
   void initState() {
     super.initState();
-    _load(reset: true);
+    unawaited(_bootstrap());
+  }
+
+  Future<void> _bootstrap() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList(_prefsDismissedKey);
+      if (raw != null && raw.isNotEmpty && mounted) {
+        setState(() => _dismissedIds.addAll(raw));
+      }
+    } catch (_) {}
+    if (mounted) await _load(reset: true);
+  }
+
+  Future<void> _persistDismissedIds() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var list = _dismissedIds.toList();
+      if (list.length > _maxDismissedIdsStored) {
+        list = list.sublist(list.length - _maxDismissedIdsStored);
+        _dismissedIds
+          ..clear()
+          ..addAll(list);
+      }
+      await prefs.setStringList(_prefsDismissedKey, list);
+    } catch (_) {}
+  }
+
+  /// Hide from this list (persisted locally). Marks read so the header bell stays accurate.
+  Future<bool> _removeNotification(RealtimeEvent e) async {
+    unawaited(_markRead(e));
+    if (!_dismissedIds.contains(e.id)) {
+      _dismissedIds.add(e.id);
+      await _persistDismissedIds();
+    }
+    if (!mounted) return false;
+    setState(() {});
+    return true;
   }
 
   @override
@@ -151,42 +195,99 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
     });
   }
 
-  Widget _tile(RealtimeEvent e) {
+  WmNotificationPresentation? _moodMatchPresentation(RealtimeEvent e) {
+    if (!notificationCentrePasses(NotificationCentreFilter.moodMatch, e)) {
+      return null;
+    }
+    final tier = moodMatchTierFor(e);
+    final u = !e.isRead;
+    switch (tier) {
+      case MoodMatchNotificationTier.highlight:
+        return WmNotificationPresentation.moodMatchHighlight(u);
+      case MoodMatchNotificationTier.action:
+        return WmNotificationPresentation.moodMatchAction(u);
+      case MoodMatchNotificationTier.status:
+        return WmNotificationPresentation.moodMatchStatus(u);
+    }
+  }
+
+  Widget _moodMatchTimelineHeader(bool nl) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            nl ? 'Samen plannen' : 'Planning together',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _cream.withValues(alpha: 0.9),
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            nl
+                ? 'Chronologisch overzicht van jullie Mood Match.'
+                : 'A calm timeline of your Mood Match.',
+            style: GoogleFonts.poppins(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w400,
+              height: 1.35,
+              color: _cream.withValues(alpha: 0.42),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tileWithContext(RealtimeEvent e, NotificationCentreRowContext ctx) {
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
+    final deleteHint = nl ? 'Verwijderen' : 'Remove';
     final router = GoRouter.of(context);
     Future<void> onOpen() async {
       await _markRead(e);
       if (!mounted) return;
-      applyWmFcmDataNavigation(router, ref, {
-        ...e.data,
-        'event': (e.data['event'] ?? e.data['kind'] ?? e.type.name).toString(),
-        if (e.relatedPostId != null) 'post_id': e.relatedPostId,
-      });
+      await applyWmFcmDataNavigation(
+        router,
+        ref,
+        {
+          ...e.data,
+          'event': (e.data['event'] ?? e.data['kind'] ?? e.type.name).toString(),
+          if (e.relatedPostId != null) 'post_id': e.relatedPostId,
+        },
+        snackContext: context,
+      );
       if (mounted) setState(() {});
     }
 
     final sid = notificationSenderUserId(e);
     final payloadImg = e.imageUrl?.trim();
+    void onDelete() => unawaited(_removeNotification(e));
+    final presentation = _moodMatchPresentation(e);
+
+    Widget card;
     if (sid == null && (payloadImg == null || payloadImg.isEmpty)) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: WmNotificationCard(
-          event: e,
-          body: e.message,
-          meta: e.timeAgo,
-          categoryLabel: notificationCentreCategoryLabel(e.type),
-          unread: !e.isRead,
-          iconBg: notificationCentreIconBg(e.type, sunset: _sunset, cream: _cream),
-          onTap: onOpen,
-        ),
+      card = WmNotificationCard(
+        event: e,
+        body: e.message,
+        meta: e.timeAgo,
+        categoryLabel: notificationCentreCategoryLabel(e.type),
+        unread: !e.isRead,
+        iconBg: notificationCentreIconBg(e.type, sunset: _sunset, cream: _cream),
+        onTap: onOpen,
+        onDelete: onDelete,
+        deleteTooltip: deleteHint,
+        presentation: presentation,
       );
-    }
-    final cached = sid != null ? _senderAvatarByUserId[sid] : null;
-    final photo = (cached != null && cached.isNotEmpty)
-        ? cached
-        : (payloadImg != null && payloadImg.isNotEmpty ? payloadImg : null);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: WmNotificationCard(
+    } else {
+      final cached = sid != null ? _senderAvatarByUserId[sid] : null;
+      final photo = (cached != null && cached.isNotEmpty)
+          ? cached
+          : (payloadImg != null && payloadImg.isNotEmpty ? payloadImg : null);
+      card = WmNotificationCard(
         event: e,
         body: e.message,
         meta: e.timeAgo,
@@ -196,6 +297,33 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
         showSenderAvatar: true,
         senderAvatarUrl: photo,
         onTap: onOpen,
+        onDelete: onDelete,
+        deleteTooltip: deleteHint,
+        presentation: presentation,
+      );
+    }
+
+    final bottom = ctx.tightenTop ? 4.0 : 10.0;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottom),
+      child: Dismissible(
+        key: ValueKey<String>('nc_dismiss_${e.id}'),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 22),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6B2E20),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            Icons.delete_outline_rounded,
+            color: Colors.white.withValues(alpha: 0.92),
+            size: 28,
+          ),
+        ),
+        confirmDismiss: (_) => _removeNotification(e),
+        child: card,
       ),
     );
   }
@@ -208,9 +336,17 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
         ? 'Alles bijgewerkt — ik laat je weten als er iets is.'
         : 'Nothing new — you\'re all caught up. I\'ll let you know when something happens.';
 
-    final vis = _all.where((e) => notificationCentrePasses(_filter, e)).toList();
+    final vis = _all
+        .where((e) => !_dismissedIds.contains(e.id))
+        .where((e) => notificationCentrePasses(_filter, e))
+        .toList();
     final unread = vis.where((e) => !e.isRead).toList();
     final read = vis.where((e) => e.isRead).toList();
+    final moodMatchTimeline = _filter == NotificationCentreFilter.moodMatch;
+    final moodMatchOrdered = moodMatchTimeline
+        ? (List<RealtimeEvent>.of(vis)
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp)))
+        : null;
 
     final listChild = NotificationCentreListBody(
       nl: nl,
@@ -222,8 +358,12 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
       loadingMore: _loading,
       hasMore: _more,
       onNearEnd: () => _load(),
-      itemBuilder: _tile,
+      itemBuilder: _tileWithContext,
       cream: _cream,
+      moodMatchMergedTimeline: moodMatchTimeline,
+      moodMatchOrderedItems: moodMatchOrdered,
+      moodMatchHeader: moodMatchTimeline ? _moodMatchTimelineHeader(nl) : null,
+      enableMoodMatchSpacingHints: moodMatchTimeline,
     );
 
     return Scaffold(

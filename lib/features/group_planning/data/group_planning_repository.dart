@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/notifications/in_app_notification_copy.dart';
@@ -45,15 +47,103 @@ class GroupPlanningRepository {
   final SupabaseClient _client;
 
   /// `scheduled_activities.scheduled_date` expects `YYYY-MM-DD`.
+  /// Uses the **local** calendar day of the parsed instant so ISO strings with
+  /// a `Z` offset (e.g. end-of-day UTC) do not shift the saved date vs. what
+  /// the user picked in the Mood Match day picker.
   String _normalizeMoodMatchScheduledDate(String raw) {
     final t = raw.trim();
     if (t.isEmpty) return '';
     final d = DateTime.tryParse(t);
     if (d != null) {
-      return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      final l = d.toLocal();
+      return '${l.year}-${l.month.toString().padLeft(2, '0')}-${l.day.toString().padLeft(2, '0')}';
     }
     if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(t)) return t;
     return '';
+  }
+
+  /// Resolves `YYYY-MM-DD` for Mood Match saves: param first, then plan_data,
+  /// then `group_sessions.planned_date`, then prefs — so we never silently
+  /// fall back to "today" when one source still has the real day.
+  Future<String> _resolveMoodMatchScheduledDateForSave({
+    required String sessionId,
+    required String plannedDateParam,
+    required Map<String, dynamic> normalizedPlan,
+  }) async {
+    var dateOnly = _normalizeMoodMatchScheduledDate(plannedDateParam);
+    if (dateOnly.isNotEmpty) return dateOnly;
+    // Session + prefs beat plan_data: the plan snapshot may still carry an old
+    // `planned_date` from generation time, while the day picker updates
+    // `group_sessions.planned_date` (and prefs) as the source of truth.
+    try {
+      final session = await fetchSession(sessionId);
+      final fromSession = session.plannedDate?.trim() ?? '';
+      dateOnly = _normalizeMoodMatchScheduledDate(fromSession);
+      if (dateOnly.isNotEmpty) return dateOnly;
+    } catch (_) {}
+    final fromPrefs = await MoodMatchSessionPrefs.readPlannedDate(sessionId);
+    dateOnly = _normalizeMoodMatchScheduledDate(fromPrefs ?? '');
+    if (dateOnly.isNotEmpty) return dateOnly;
+    final fromPlan = normalizedPlan['planned_date']?.toString().trim() ?? '';
+    return _normalizeMoodMatchScheduledDate(fromPlan);
+  }
+
+  /// Recomputes `guestReviewState` from guest slot confirmations (same rules as
+  /// [setGuestSlotConfirmed]) so swap flows cannot leave it stuck on
+  /// `swap_pending` after a decline or withdraw.
+  void _syncGuestReviewStateFromGuestConfirmed(Map<String, dynamic> d) {
+    if (d['sentToGuest'] != true) return;
+    final normalized = GroupPlanV2.normalizePlanData(
+      Map<String, dynamic>.from(d),
+    );
+    final gc = Map<String, dynamic>.from(
+      d['guestConfirmed'] is Map ? d['guestConfirmed'] as Map : {},
+    );
+    for (final s in GroupPlanV2.slots) {
+      gc.putIfAbsent(s, () => false);
+    }
+    final required = GroupPlanV2.slotsRequiringConfirmation(normalized);
+    final allGuest =
+        required.isNotEmpty && required.every((s) => gc[s] == true);
+    if (allGuest) {
+      d['guestReviewState'] = 'confirmed';
+    } else {
+      final any = required.any((s) => gc[s] == true);
+      d['guestReviewState'] = any ? 'reviewing' : 'pending';
+    }
+  }
+
+  /// After a swap is cancelled or declined, restore per-slot confirmations from
+  /// the snapshot saved when the swap was opened (see [setSwapRequest]).
+  void _restoreSlotConfirmationAfterSwapCancelled(
+    Map<String, dynamic> d,
+    String slot,
+    Map<String, dynamic>? proposalSnapshot,
+  ) {
+    final oc = Map<String, dynamic>.from(
+      d['ownerConfirmed'] is Map ? d['ownerConfirmed'] as Map : {},
+    );
+    final gc = Map<String, dynamic>.from(
+      d['guestConfirmed'] is Map ? d['guestConfirmed'] as Map : {},
+    );
+    for (final s in GroupPlanV2.slots) {
+      oc.putIfAbsent(s, () => false);
+      gc.putIfAbsent(s, () => false);
+    }
+    if (proposalSnapshot != null &&
+        proposalSnapshot.containsKey('priorOwnerConfirmed')) {
+      oc[slot] = proposalSnapshot['priorOwnerConfirmed'] == true;
+      gc[slot] = proposalSnapshot['priorGuestConfirmed'] == true;
+    } else {
+      // Legacy proposals without a snapshot: "keep current" puts the slot back
+      // in a confirmable state so the guest row (`ownerOk && !guestOk`) shows
+      // again instead of dead-ending with both flags false.
+      oc[slot] = true;
+      gc[slot] = true;
+    }
+    d['ownerConfirmed'] = oc;
+    d['guestConfirmed'] = gc;
+    _syncGuestReviewStateFromGuestConfirmed(d);
   }
 
   Future<({String sessionId, String joinCode})> createSession({
@@ -97,11 +187,46 @@ class GroupPlanningRepository {
   }
 
   Future<GroupSessionRow> fetchSession(String sessionId) async {
-    final map = await _client
-        .from('group_sessions')
-        .select()
-        .eq('id', sessionId)
-        .single();
+    final id = sessionId.trim();
+    if (id.isEmpty) {
+      throw Exception(
+        'Mood Match session not found or you no longer have access.',
+      );
+    }
+    // Avoid `.single()`: PostgREST PGRST116 when 0 rows (RLS, stale id, or
+    // rare replication lag right after `create_group_session`).
+    Map<String, dynamic>? map;
+    for (var attempt = 0; attempt < 5; attempt++) {
+      map = await _client
+          .from('group_sessions')
+          .select()
+          .eq('id', id)
+          .maybeSingle();
+      if (map != null) break;
+      if (attempt < 4) {
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      }
+    }
+    if (map == null) {
+      // Same access rules as RLS, but bypasses PostgREST table policies if the
+      // remote DB is missing the creator SELECT branch (older deploy).
+      try {
+        final raw = await _client.rpc(
+          'fetch_group_session_for_client',
+          params: {'p_session_id': id},
+        );
+        if (raw is Map) {
+          map = Map<String, dynamic>.from(raw);
+        }
+      } catch (e, st) {
+        debugPrint('fetch_group_session_for_client: $e\n$st');
+      }
+    }
+    if (map == null) {
+      throw Exception(
+        'Mood Match session not found or you no longer have access.',
+      );
+    }
     return GroupSessionRow.fromMap(Map<String, dynamic>.from(map));
   }
 
@@ -133,11 +258,44 @@ class GroupPlanningRepository {
     }
   }
 
+  /// Session ids where the current user already saved Mood Match rows into
+  /// [scheduled_activities] (tapped Add to My Day). Used to split hub
+  /// "active" vs "added to My Day" without a separate session status.
+  Future<Set<String>> fetchMoodMatchSessionIdsSavedToMyDay(
+    List<String> sessionIds,
+  ) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null || sessionIds.isEmpty) return const {};
+    try {
+      final rows = await _client
+          .from('scheduled_activities')
+          .select('group_session_id')
+          .eq('user_id', uid)
+          .inFilter('group_session_id', sessionIds);
+      final out = <String>{};
+      for (final r in (rows as List<dynamic>)) {
+        final m = Map<String, dynamic>.from(r as Map);
+        final sid = (m['group_session_id'] ?? '').toString();
+        if (sid.isNotEmpty) out.add(sid);
+      }
+      return out;
+    } catch (e, st) {
+      debugPrint('fetchMoodMatchSessionIdsSavedToMyDay: $e\n$st');
+      return const {};
+    }
+  }
+
   /// Every non-expired session the current user is a member of, ready for the
   /// Mood Match hub multi-card list. Each entry also reports whether a shared
   /// plan has already been generated so the card can render the right CTA.
-  Future<List<({GroupSessionRow session, bool hasPlan})>>
-      fetchActiveSessionsForUser() async {
+  Future<
+      List<
+          ({
+            GroupSessionRow session,
+            bool hasPlan,
+            Map<String, dynamic>? planData,
+            bool savedToMyDay,
+          })>> fetchActiveSessionsForUser() async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) return const [];
     try {
@@ -160,12 +318,12 @@ class GroupPlanningRepository {
           .inFilter('id', ids.toList())
           .gt('expires_at', nowIso)
           .inFilter('status', const [
-            'waiting',
-            'generating',
-            'ready',
-            'day_proposed',
-            'day_confirmed',
-          ]).order('updated_at', ascending: false);
+        'waiting',
+        'generating',
+        'ready',
+        'day_proposed',
+        'day_confirmed',
+      ]).order('updated_at', ascending: false);
 
       final sessions = <GroupSessionRow>[];
       for (final r in (sessionRows as List<dynamic>)) {
@@ -177,23 +335,39 @@ class GroupPlanningRepository {
 
       final sessionIds = sessions.map((s) => s.id).toList();
       final planIds = <String>{};
+      final planDataBySession = <String, Map<String, dynamic>>{};
       try {
         final planRows = await _client
             .from('group_plans')
-            .select('session_id')
+            .select('session_id, plan_data')
             .inFilter('session_id', sessionIds);
         for (final r in (planRows as List<dynamic>)) {
           final m = Map<String, dynamic>.from(r as Map);
           final sid = (m['session_id'] ?? '').toString();
-          if (sid.isNotEmpty) planIds.add(sid);
+          if (sid.isEmpty) continue;
+          planIds.add(sid);
+          final raw = m['plan_data'];
+          if (raw is Map) {
+            planDataBySession[sid] = GroupPlanV2.normalizePlanData(
+              Map<String, dynamic>.from(raw),
+            );
+          }
         }
       } catch (e, st) {
         debugPrint('fetchActiveSessionsForUser plan lookup: $e\n$st');
       }
 
+      final savedToMyDay =
+          await fetchMoodMatchSessionIdsSavedToMyDay(sessionIds);
+
       return [
         for (final s in sessions)
-          (session: s, hasPlan: planIds.contains(s.id)),
+          (
+            session: s,
+            hasPlan: planIds.contains(s.id),
+            planData: planDataBySession[s.id],
+            savedToMyDay: savedToMyDay.contains(s.id),
+          ),
       ];
     } on PostgrestException catch (e, st) {
       debugPrint(
@@ -371,14 +545,27 @@ class GroupPlanningRepository {
     final session = await fetchSession(sessionId);
     final plannedDate = session.plannedDate ?? plannedDateFallback;
     // Date+slot ⇒ single-slot plan; date-only ⇒ full-day plan.
-    final normalizedSlot =
-        (timeSlot == 'morning' || timeSlot == 'afternoon' || timeSlot == 'evening')
-            ? timeSlot
-            : null;
+    final normalizedSlot = (timeSlot == 'morning' ||
+            timeSlot == 'afternoon' ||
+            timeSlot == 'evening')
+        ? timeSlot
+        : null;
     final participantNames = members.map((m) => m.displayName).toList();
-    final locationName = (city ?? '').trim();
+    final rawCity = (city ?? '').trim();
+    final locationForPlan =
+        rawCity.isNotEmpty ? rawCity : 'Rotterdam';
     final mood1 = moods.isNotEmpty ? moods.first : '';
     final mood2 = moods.length > 1 ? moods[1] : mood1;
+
+    DateTime? plannedDayLocal;
+    final pd = plannedDate?.trim();
+    if (pd != null && pd.isNotEmpty) {
+      final parsed = DateTime.tryParse(pd);
+      if (parsed != null) {
+        final l = parsed.toLocal();
+        plannedDayLocal = DateTime(l.year, l.month, l.day);
+      }
+    }
 
     try {
       await _client.from('group_sessions').update({
@@ -390,16 +577,17 @@ class GroupPlanningRepository {
     }
 
     try {
-      final ai = await WanderMoodAIService.getRecommendations(
+      final ai = await WanderMoodAIService.getGroupMatchCreateDayPlan(
         moods: moods,
+        location: locationForPlan,
         latitude: latitude,
         longitude: longitude,
-        city: city,
-        plannedDate: plannedDate,
-        timeSlot: normalizedSlot,
-        participantNames: participantNames,
-        groupMatch: true,
+        languageCode: languageCode,
+        plannedDay: plannedDayLocal,
       );
+      if (ai.recommendations.isEmpty) {
+        throw Exception('Moody create_day_plan returned no activities');
+      }
 
       final score = compatibilityScoreForMoodTags(moods);
       var moodyMessage = '';
@@ -414,7 +602,7 @@ class GroupPlanningRepository {
           mood2: mood2,
           name1: participantNames.isNotEmpty ? participantNames[0] : null,
           name2: participantNames.length > 1 ? participantNames[1] : null,
-          location: locationName.isNotEmpty ? locationName : null,
+          location: locationForPlan,
         );
       } catch (e) {
         debugPrint('group moodyMessage skipped: $e');
@@ -424,6 +612,35 @@ class GroupPlanningRepository {
         ai.recommendations,
         singleSlot: normalizedSlot,
       );
+      final activitiesForPlan =
+          List<dynamic>.from(v2['activities'] as List? ?? const <dynamic>[]);
+      if (activitiesForPlan.isNotEmpty) {
+        try {
+          final slotNotes =
+              await WanderMoodAIService.getGroupMatchActivityMoodyNotes(
+            recommendations: ai.recommendations,
+            languageCode: languageCode,
+            communicationStyle: communicationStyle,
+          );
+          for (var i = 0; i < activitiesForPlan.length; i++) {
+            final row = Map<String, dynamic>.from(
+              activitiesForPlan[i] as Map<dynamic, dynamic>,
+            );
+            final slot = (row['slot'] ?? row['timeSlot'] ?? '')
+                .toString()
+                .toLowerCase()
+                .trim();
+            final note = slotNotes[slot];
+            if (note != null && note.trim().isNotEmpty) {
+              row['moodyNote'] = note.trim();
+            }
+            activitiesForPlan[i] = row;
+          }
+          v2['activities'] = activitiesForPlan;
+        } catch (e, st) {
+          debugPrint('group_match_activity_notes skipped: $e\n$st');
+        }
+      }
       final planData = <String, dynamic>{
         'planVersion': 2,
         'version': 2,
@@ -435,7 +652,7 @@ class GroupPlanningRepository {
           'planned_date': plannedDate,
         if (normalizedSlot != null) 'time_slot': normalizedSlot,
         if (participantNames.isNotEmpty) 'participants': participantNames,
-        if (locationName.isNotEmpty) 'location': locationName,
+        'location': locationForPlan,
         'recommendations': ai.recommendations.map((r) => r.toJson()).toList(),
         if (moodyMessage.isNotEmpty) 'moodyMessage': moodyMessage,
         'activities': v2['activities'],
@@ -618,7 +835,8 @@ class GroupPlanningRepository {
             if (merged['place'] != null) 'place': merged['place'].toString(),
             if (merged['previous_day'] != null)
               'previous_day': merged['previous_day'].toString(),
-            if (merged['new_day'] != null) 'new_day': merged['new_day'].toString(),
+            if (merged['new_day'] != null)
+              'new_day': merged['new_day'].toString(),
             if (merged['proposed_date'] != null)
               'proposed_date': merged['proposed_date'].toString(),
             if (merged['proposed_slot'] != null)
@@ -797,16 +1015,79 @@ class GroupPlanningRepository {
     }
   }
 
+  /// Read-modify-write with an optimistic concurrency guard.
+  ///
+  /// Mood Match writes plan_data from both peers, so naive
+  /// read-then-update lets a second writer clobber the first one's merge.
+  /// We now:
+  ///   1. Read `plan_data` + `plan_data_version`.
+  ///   2. Run [updater] on a normalized copy.
+  ///   3. Conditional UPDATE where `plan_data_version = <snapshot>`; bump the
+  ///      version by 1 in the same statement.
+  ///   4. If 0 rows were affected, someone else wrote in between — reload and
+  ///      retry up to [maxRetries] times (exponential-ish backoff between
+  ///      tries so the loser doesn't immediately refire into the same race).
+  ///
+  /// Throws [StateError] after exhausting retries so the caller can decide
+  /// whether to surface an error to the user.
   Future<void> mergePlanData(
     String sessionId,
-    Map<String, dynamic> Function(Map<String, dynamic> planData) updater,
-  ) async {
-    final plan = await fetchPlan(sessionId);
-    if (plan == null) return;
-    var data = Map<String, dynamic>.from(plan.planData);
-    data = GroupPlanV2.normalizePlanData(data);
-    data = updater(data);
-    await updatePlanDataReplace(sessionId, data);
+    Map<String, dynamic> Function(Map<String, dynamic> planData) updater, {
+    int maxRetries = 4,
+  }) async {
+    for (var attempt = 0; attempt <= maxRetries; attempt++) {
+      final plan = await fetchPlan(sessionId);
+      if (plan == null) return;
+
+      var data = Map<String, dynamic>.from(plan.planData);
+      data = GroupPlanV2.normalizePlanData(data);
+      data = updater(data);
+
+      try {
+        final result = await _client
+            .from('group_plans')
+            .update({
+              'plan_data': data,
+              'plan_data_version': plan.planDataVersion + 1,
+            })
+            .eq('session_id', sessionId)
+            .eq('plan_data_version', plan.planDataVersion)
+            .select('plan_data_version');
+
+        final rows = (result as List<dynamic>?) ?? const [];
+        if (rows.isNotEmpty) return;
+      } on PostgrestException catch (e, st) {
+        // If the server doesn't know about plan_data_version yet (e.g.
+        // migration not applied in a local env), fall back to the legacy
+        // replace so the client still works. Log loudly so we notice.
+        final msg = e.message.toLowerCase();
+        final legacyColumn = msg.contains('plan_data_version') &&
+            (msg.contains('does not exist') ||
+                msg.contains('unknown') ||
+                msg.contains('column'));
+        if (legacyColumn) {
+          debugPrint(
+            '[mergePlanData] plan_data_version column missing — '
+            'falling back to legacy replace. Apply migration '
+            '20260420210000_group_plans_plan_data_version.sql.',
+          );
+          await updatePlanDataReplace(sessionId, data);
+          return;
+        }
+        debugPrint('mergePlanData PostgREST ${e.code}: ${e.message}\n$st');
+        rethrow;
+      }
+
+      // Lost the race — back off and retry.
+      if (attempt < maxRetries) {
+        final waitMs = 40 * (1 << attempt); // 40, 80, 160, 320
+        await Future<void>.delayed(Duration(milliseconds: waitMs));
+      }
+    }
+    throw StateError(
+      'mergePlanData: failed to apply update after $maxRetries retries '
+      '(session=$sessionId). Too much contention on plan_data.',
+    );
   }
 
   /// Owner reviewed all slots and shares the plan with the guest.
@@ -897,13 +1178,22 @@ class GroupPlanningRepository {
       }
       m[slot] = value;
       d['guestConfirmed'] = m;
-      if (d['sentToGuest'] == true && value) {
-        final allGuest = GroupPlanV2.slots.every((s) => m[s] == true);
+      // Keep guestReviewState in sync whenever guest toggles a slot (including
+      // undo) — previously only `value == true` updated state, so undoing one
+      // slot could leave guestReviewState stuck on "confirmed".
+      if (d['sentToGuest'] == true) {
+        final normalized = GroupPlanV2.normalizePlanData(
+          Map<String, dynamic>.from(d),
+        );
+        final required =
+            GroupPlanV2.slotsRequiringConfirmation(normalized);
+        final allGuest = required.isNotEmpty &&
+            required.every((s) => m[s] == true);
         if (allGuest) {
           d['guestReviewState'] = 'confirmed';
         } else {
-          final cur = (d['guestReviewState'] ?? 'pending').toString();
-          if (cur == 'pending') d['guestReviewState'] = 'reviewing';
+          final any = required.any((s) => m[s] == true);
+          d['guestReviewState'] = any ? 'reviewing' : 'pending';
         }
       }
       return d;
@@ -962,17 +1252,6 @@ class GroupPlanningRepository {
       final sp = Map<String, dynamic>.from(
         d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
       );
-      sp[slot] = {
-        'status': 'pending',
-        'proposedBy': uid,
-        'addressedTo': addressedTo,
-        'currentActivity': currentAct != null
-            ? Map<String, dynamic>.from(currentAct)
-            : <String, dynamic>{},
-        'proposedActivity': Map<String, dynamic>.from(copy),
-        'proposedAt': MoodyClock.now().toUtc().toIso8601String(),
-      };
-      d['swapProposals'] = sp;
       // Until the other person accepts or declines, this slot is not
       // "locked in" for either side.
       final oc = Map<String, dynamic>.from(
@@ -985,6 +1264,21 @@ class GroupPlanningRepository {
         oc.putIfAbsent(s, () => false);
         gc.putIfAbsent(s, () => false);
       }
+      final priorOwnerConfirmed = oc[slot] == true;
+      final priorGuestConfirmed = gc[slot] == true;
+      sp[slot] = {
+        'status': 'pending',
+        'proposedBy': uid,
+        'addressedTo': addressedTo,
+        'currentActivity': currentAct != null
+            ? Map<String, dynamic>.from(currentAct)
+            : <String, dynamic>{},
+        'proposedActivity': Map<String, dynamic>.from(copy),
+        'proposedAt': MoodyClock.now().toUtc().toIso8601String(),
+        'priorOwnerConfirmed': priorOwnerConfirmed,
+        'priorGuestConfirmed': priorGuestConfirmed,
+      };
+      d['swapProposals'] = sp;
       oc[slot] = false;
       gc[slot] = false;
       d['ownerConfirmed'] = oc;
@@ -996,8 +1290,45 @@ class GroupPlanningRepository {
     });
   }
 
-  Future<void> clearSwapRequest(String sessionId, String slot) async {
+  /// Owner-side draft edit before plan is shared:
+  /// directly replace the slot activity instead of creating a swap request.
+  Future<void> replaceActivityForSlot({
+    required String sessionId,
+    required String slot,
+    required Map<String, dynamic> activity,
+  }) async {
     await mergePlanData(sessionId, (d) {
+      final sentToGuest = d['sentToGuest'] == true;
+      if (sentToGuest) return d;
+
+      final merged = Map<String, dynamic>.from(activity);
+      merged['slot'] = slot;
+
+      final activities = (d['activities'] as List<dynamic>?) ?? [];
+      final next = <dynamic>[];
+      for (final a in activities) {
+        if (a is Map) {
+          final am = Map<String, dynamic>.from(a);
+          if (GroupPlanV2.slotFromActivity(am) == slot) {
+            next.add(merged);
+          } else {
+            next.add(am);
+          }
+        }
+      }
+      d['activities'] = next;
+
+      // Treat owner replacement as selecting this slot in the draft.
+      final oc = Map<String, dynamic>.from(
+        d['ownerConfirmed'] is Map ? d['ownerConfirmed'] as Map : {},
+      );
+      for (final s in GroupPlanV2.slots) {
+        oc.putIfAbsent(s, () => false);
+      }
+      oc[slot] = true;
+      d['ownerConfirmed'] = oc;
+
+      // Clear any stale swap state for this slot while still in draft phase.
       final reqs = Map<String, dynamic>.from(
         d['swapRequests'] is Map ? d['swapRequests'] as Map : {},
       );
@@ -1008,6 +1339,26 @@ class GroupPlanningRepository {
       );
       sp.remove(slot);
       d['swapProposals'] = sp;
+      return d;
+    });
+  }
+
+  Future<void> clearSwapRequest(String sessionId, String slot) async {
+    await mergePlanData(sessionId, (d) {
+      final sp = Map<String, dynamic>.from(
+        d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
+      );
+      final proposalSnap = sp[slot] is Map
+          ? Map<String, dynamic>.from(sp[slot] as Map)
+          : null;
+      final reqs = Map<String, dynamic>.from(
+        d['swapRequests'] is Map ? d['swapRequests'] as Map : {},
+      );
+      reqs.remove(slot);
+      d['swapRequests'] = reqs;
+      sp.remove(slot);
+      d['swapProposals'] = sp;
+      _restoreSlotConfirmationAfterSwapCancelled(d, slot, proposalSnap);
       return d;
     });
   }
@@ -1033,8 +1384,7 @@ class GroupPlanningRepository {
       final req = reqs[slot] is Map ? reqs[slot] as Map : null;
       final p = req?['proposedActivity'];
       if (p is Map) {
-        proposedPlaceName =
-            (p['name'] ?? p['title'] ?? '').toString().trim();
+        proposedPlaceName = (p['name'] ?? p['title'] ?? '').toString().trim();
         if (proposedPlaceName.isEmpty) proposedPlaceName = null;
       }
     }
@@ -1053,6 +1403,13 @@ class GroupPlanningRepository {
       if (by != null && by == ownerId) {
         return d;
       }
+
+      final sp = Map<String, dynamic>.from(
+        d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
+      );
+      final proposalSnap = sp[slot] is Map
+          ? Map<String, dynamic>.from(sp[slot] as Map)
+          : null;
 
       if (accept) {
         final proposed = req['proposedActivity'];
@@ -1089,14 +1446,16 @@ class GroupPlanningRepository {
           gc[slot] = true;
           d['guestConfirmed'] = gc;
         }
+      } else {
+        _restoreSlotConfirmationAfterSwapCancelled(d, slot, proposalSnap);
       }
       reqs.remove(slot);
       d['swapRequests'] = reqs;
-      final sp = Map<String, dynamic>.from(
-        d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
-      );
       sp.remove(slot);
       d['swapProposals'] = sp;
+      if (d['sentToGuest'] == true) {
+        _syncGuestReviewStateFromGuestConfirmed(d);
+      }
       return d;
     });
     await sendPlanUpdateEvent(
@@ -1133,8 +1492,7 @@ class GroupPlanningRepository {
       final req = reqs[slot] is Map ? reqs[slot] as Map : null;
       final p = req?['proposedActivity'];
       if (p is Map) {
-        proposedPlaceName =
-            (p['name'] ?? p['title'] ?? '').toString().trim();
+        proposedPlaceName = (p['name'] ?? p['title'] ?? '').toString().trim();
         if (proposedPlaceName.isEmpty) proposedPlaceName = null;
       }
     }
@@ -1152,6 +1510,13 @@ class GroupPlanningRepository {
       if (by == null || by != ownerId) {
         return d;
       }
+
+      final sp2 = Map<String, dynamic>.from(
+        d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
+      );
+      final proposalSnap = sp2[slot] is Map
+          ? Map<String, dynamic>.from(sp2[slot] as Map)
+          : null;
 
       if (accept) {
         final proposed = req['proposedActivity'];
@@ -1186,14 +1551,16 @@ class GroupPlanningRepository {
           d['ownerConfirmed'] = oc;
           d['guestConfirmed'] = gc;
         }
+      } else {
+        _restoreSlotConfirmationAfterSwapCancelled(d, slot, proposalSnap);
       }
       reqs.remove(slot);
       d['swapRequests'] = reqs;
-      final sp2 = Map<String, dynamic>.from(
-        d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
-      );
       sp2.remove(slot);
       d['swapProposals'] = sp2;
+      if (d['sentToGuest'] == true) {
+        _syncGuestReviewStateFromGuestConfirmed(d);
+      }
       return d;
     });
     await sendPlanUpdateEvent(
@@ -1259,18 +1626,42 @@ class GroupPlanningRepository {
     };
 
     var currentMinute = slotHour * 60;
+    final dateParts = scheduledDate.split('-');
+    if (dateParts.length != 3) {
+      throw StateError('scheduledDate must be YYYY-MM-DD, got: $scheduledDate');
+    }
+    final schedYear = int.parse(dateParts[0]);
+    final schedMonth = int.parse(dateParts[1]);
+    final schedDay = int.parse(dateParts[2]);
+
     final template = <Map<String, dynamic>>[];
-    for (final a in activities) {
+    for (var idx = 0; idx < activities.length; idx++) {
+      final a = activities[idx];
       final durationMin = (a['duration_minutes'] as num?)?.toInt() ?? 60;
       final h = currentMinute ~/ 60;
       final m = currentMinute % 60;
-      final startTime =
-          '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:00';
+      // Build wall-clock time on the **scheduled calendar day in local time**,
+      // then convert to UTC ISO for `timestamptz`. Naive "YYYY-MM-DDTHH:mm:ss"
+      // strings were interpreted as UTC on some stacks, which pushed rows onto
+      // the wrong calendar day in My Day / My Plans.
+      final localStart = DateTime(schedYear, schedMonth, schedDay, h, m);
+      final startTimestamp = localStart.toUtc().toIso8601String();
+      // `scheduled_activities.activity_id` is NOT NULL; synthesize a stable id
+      // for Mood Match rows so the insert satisfies the constraint without
+      // clashing with Explore-driven rows.
+      final activityId =
+          'groupplan_${sessionId}_${timeSlot}_${idx}_${a['place_id'] ?? a['name'] ?? idx}';
       template.add({
+        'activity_id': activityId,
         'place_id': a['place_id']?.toString() ?? '',
         'place_name': a['name']?.toString() ?? '',
+        'name': a['name']?.toString() ?? '',
+        'image_url': GroupPlanV2.resolveActivityImageUrl(
+          Map<String, dynamic>.from(a),
+        ),
         'scheduled_date': scheduledDate,
-        'start_time': startTime,
+        'start_time': startTimestamp,
+        'duration': durationMin,
         'duration_minutes': durationMin,
         'group_session_id': sessionId,
         'time_slot': timeSlot,
@@ -1287,10 +1678,77 @@ class GroupPlanningRepository {
       }
     }
 
-    try {
-      await _client.from('scheduled_activities').insert(allRows);
-    } on PostgrestException catch (e) {
-      if (e.code != '23505') rethrow;
+    Future<void> tryInsert(List<Map<String, dynamic>> rows) async {
+      await _client.from('scheduled_activities').insert(rows);
+    }
+
+    // If this deployment has `start_time` as plain `time` (not `timestamptz`),
+    // strip the date prefix so "HH:MM:SS" is sent instead of an ISO timestamp.
+    List<Map<String, dynamic>> rowsWithBareTime(
+      List<Map<String, dynamic>> rows,
+    ) {
+      return rows.map((r) {
+        final copy = Map<String, dynamic>.from(r);
+        final st = copy['start_time']?.toString() ?? '';
+        final idx = st.indexOf('T');
+        if (idx >= 0 && idx + 1 < st.length) {
+          copy['start_time'] = st.substring(idx + 1);
+        }
+        return copy;
+      }).toList();
+    }
+
+    // Retry strategy: some deployed schemas are missing newer optional columns.
+    // When Postgrest reports a specific missing column (PGRST204), we drop that
+    // key across all rows and retry so "Add to My Day" keeps working.
+    const droppableColumns = <String>[
+      'duration_minutes',
+      'place_name',
+      'name',
+      'image_url',
+      'group_session_id',
+      'time_slot',
+    ];
+
+    final dropped = <String>{};
+    var rows = allRows;
+    var bareTimeRetryUsed = false;
+    while (true) {
+      try {
+        await tryInsert(rows);
+        return;
+      } on PostgrestException catch (e) {
+        if (e.code == '23505') return;
+        final message = '${e.message} ${e.details ?? ''}'.toLowerCase();
+
+        // Some schemas type `start_time` as plain `time` — retry with bare
+        // "HH:MM:SS" once when Postgres rejects the ISO timestamp.
+        final timestampMismatch = !bareTimeRetryUsed &&
+            (e.code == '22007' || message.contains('22007')) &&
+            message.contains('timestamp');
+        if (timestampMismatch) {
+          bareTimeRetryUsed = true;
+          rows = rowsWithBareTime(rows);
+          continue;
+        }
+
+        String? missing;
+        if (e.code == 'PGRST204') {
+          for (final col in droppableColumns) {
+            if (!dropped.contains(col) && message.contains(col)) {
+              missing = col;
+              break;
+            }
+          }
+        }
+        if (missing == null) rethrow;
+        dropped.add(missing);
+        rows = rows.map((r) {
+          final copy = Map<String, dynamic>.from(r);
+          copy.remove(missing);
+          return copy;
+        }).toList();
+      }
     }
   }
 
@@ -1303,10 +1761,6 @@ class GroupPlanningRepository {
     required String plannedDate,
     String? overrideDefaultSlot,
   }) async {
-    final dateOnly = _normalizeMoodMatchScheduledDate(plannedDate);
-    if (dateOnly.isEmpty) {
-      throw StateError('Invalid planned date');
-    }
     final plan = await fetchPlan(sessionId);
     if (plan == null) {
       throw StateError('No group plan');
@@ -1314,13 +1768,22 @@ class GroupPlanningRepository {
     final normalized = GroupPlanV2.normalizePlanData(
       Map<String, dynamic>.from(plan.planData),
     );
+    final dateOnly = await _resolveMoodMatchScheduledDateForSave(
+      sessionId: sessionId,
+      plannedDateParam: plannedDate,
+      normalizedPlan: normalized,
+    );
+    if (dateOnly.isEmpty) {
+      throw StateError('Invalid planned date');
+    }
+    // We still schedule rows whose `place_id` is missing (AI-only recs) so
+    // Mood Match never dead-ends; My Day just shows the name without a
+    // linkable place. A row must at least have a name.
     final rows = GroupPlanV2.schedulingActivityRows(normalized)
-        .where((r) =>
-            (r['place_id']?.toString().trim().isNotEmpty ?? false) &&
-            (r['name']?.toString().trim().isNotEmpty ?? false))
+        .where((r) => (r['name']?.toString().trim().isNotEmpty ?? false))
         .toList();
     if (rows.isEmpty) {
-      throw StateError('No activities with a place to save');
+      throw StateError('No activities to save');
     }
 
     var defaultSlot = 'afternoon';
@@ -1345,19 +1808,32 @@ class GroupPlanningRepository {
 
     final usePerSlot =
         rows.isNotEmpty && rows.any((a) => a['time_slot'] != null);
+    // Forward image_url (and photos) so the timeline in My Day / My Plans
+    // renders the real place photo instead of a gray placeholder. Previously
+    // we stripped these keys and `resolveActivityImageUrl` returned empty.
+    Map<String, dynamic> toScheduledActivity(Map<String, dynamic> row) {
+      final out = <String, dynamic>{
+        'name': row['name'],
+        'place_id': row['place_id'],
+        'duration_minutes': row['duration_minutes'],
+      };
+      final img = (row['image_url'] ?? row['imageUrl'] ?? row['photo_url'])
+          ?.toString()
+          .trim();
+      if (img != null && img.isNotEmpty) out['image_url'] = img;
+      final photos = row['photos'];
+      if (photos is List && photos.isNotEmpty) out['photos'] = photos;
+      return out;
+    }
+
     if (usePerSlot) {
       for (final row in rows) {
         final slot = (row['time_slot'] as String?) ?? defaultSlot;
-        final one = <String, dynamic>{
-          'name': row['name'],
-          'place_id': row['place_id'],
-          'duration_minutes': row['duration_minutes'],
-        };
         await saveGroupScheduledActivities(
           sessionId: sessionId,
           scheduledDate: dateOnly,
           timeSlot: slot,
-          activities: [one],
+          activities: [toScheduledActivity(row)],
         );
       }
     } else {
@@ -1365,19 +1841,46 @@ class GroupPlanningRepository {
         sessionId: sessionId,
         scheduledDate: dateOnly,
         timeSlot: defaultSlot,
-        activities: rows
-            .map(
-              (e) => <String, dynamic>{
-                'name': e['name'],
-                'place_id': e['place_id'],
-                'duration_minutes': e['duration_minutes'],
-              },
-            )
-            .toList(),
+        activities: rows.map(toScheduledActivity).toList(),
       );
     }
 
     await MoodMatchSessionPrefs.clearPendingTimeSlot(sessionId);
+
+    // First-commit wins: stamp `completed_at` once so downstream analytics /
+    // filters can identify sessions that actually shipped into someone's day.
+    // We coalesce to protect against re-entry — a second member adding the
+    // same plan should not overwrite the first-committed timestamp.
+    unawaited(_stampSessionCompletedAtIfNull(sessionId));
+  }
+
+  /// One-shot update: sets `completed_at = now()` only if it's currently null.
+  /// Swallows errors (including "column does not exist" for envs that haven't
+  /// applied migration 20260420220000) so the Add-to-My-Day path never fails
+  /// because of an analytics stamp.
+  Future<void> _stampSessionCompletedAtIfNull(String sessionId) async {
+    try {
+      await _client
+          .from('group_sessions')
+          .update({'completed_at': DateTime.now().toUtc().toIso8601String()})
+          .eq('id', sessionId)
+          .isFilter('completed_at', null);
+    } on PostgrestException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('completed_at') &&
+          (msg.contains('does not exist') ||
+              msg.contains('column') ||
+              msg.contains('unknown'))) {
+        debugPrint(
+          '[completed_at] column missing — skipping. '
+          'Apply migration 20260420220000_group_sessions_completed_at.sql.',
+        );
+        return;
+      }
+      debugPrint('[completed_at] PostgREST ${e.code}: ${e.message}');
+    } catch (e, st) {
+      debugPrint('[completed_at] unexpected: $e\n$st');
+    }
   }
 
   /// Optimistically save a single reaction into group_plans.plan_data['reactions'][uid][index].
@@ -1451,12 +1954,14 @@ class GroupPlanningRepository {
       planData['proposals'] is Map ? planData['proposals'] as Map : {},
     );
     final key = '$activityIndex';
-    final proposal =
-        proposals[key] is Map ? Map<String, dynamic>.from(proposals[key] as Map) : null;
+    final proposal = proposals[key] is Map
+        ? Map<String, dynamic>.from(proposals[key] as Map)
+        : null;
     if (proposal == null) return;
 
     if (acceptProposal) {
-      final recs = (planData['recommendations'] as List<dynamic>?) ?? <dynamic>[];
+      final recs =
+          (planData['recommendations'] as List<dynamic>?) ?? <dynamic>[];
       if (activityIndex >= 0 && activityIndex < recs.length) {
         final placeCard = proposal['placeCard'];
         if (placeCard is Map) {
@@ -1615,8 +2120,7 @@ class GroupPlanningRepository {
 
   /// Fetches unread `mood_match_invite` events for the current user plus the
   /// sender's public profile so the hub can render a pending-invite card.
-  Future<List<MoodMatchInviteInboxEntry>>
-      fetchPendingMoodMatchInvites() async {
+  Future<List<MoodMatchInviteInboxEntry>> fetchPendingMoodMatchInvites() async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) return const [];
     try {
@@ -1667,8 +2171,7 @@ class GroupPlanningRepository {
           joinCode: joinCode,
           joinLink: joinLink,
           createdAt: createdAt,
-          sessionTitle:
-              sessionTitleRaw.isEmpty ? null : sessionTitleRaw,
+          sessionTitle: sessionTitleRaw.isEmpty ? null : sessionTitleRaw,
         ));
       }
 
@@ -1691,24 +2194,22 @@ class GroupPlanningRepository {
         }
       }
 
-      return entries
-          .map((e) {
-            final p = profileById[e.senderId];
-            if (p == null) return e;
-            return MoodMatchInviteInboxEntry(
-              eventId: e.eventId,
-              senderId: e.senderId,
-              sessionId: e.sessionId,
-              joinCode: e.joinCode,
-              joinLink: e.joinLink,
-              createdAt: e.createdAt,
-              sessionTitle: e.sessionTitle,
-              senderUsername: p['username'] as String?,
-              senderFullName: p['full_name'] as String?,
-              senderImageUrl: p['image_url'] as String?,
-            );
-          })
-          .toList(growable: false);
+      return entries.map((e) {
+        final p = profileById[e.senderId];
+        if (p == null) return e;
+        return MoodMatchInviteInboxEntry(
+          eventId: e.eventId,
+          senderId: e.senderId,
+          sessionId: e.sessionId,
+          joinCode: e.joinCode,
+          joinLink: e.joinLink,
+          createdAt: e.createdAt,
+          sessionTitle: e.sessionTitle,
+          senderUsername: p['username'] as String?,
+          senderFullName: p['full_name'] as String?,
+          senderImageUrl: p['image_url'] as String?,
+        );
+      }).toList(growable: false);
     } on PostgrestException catch (e, st) {
       debugPrint(
         'fetchPendingMoodMatchInvites PostgREST ${e.code}: ${e.message}\n$st',
@@ -1751,25 +2252,24 @@ class GroupPlanningRepository {
     required void Function() onInsert,
   }) {
     final uid = _client.auth.currentUser?.id ?? '';
-    final channel = _client
-        .channel('mood_match_invite_inbox_$uid')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.insert,
-          schema: 'public',
-          table: 'realtime_events',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'user_id',
-            value: uid,
-          ),
-          callback: (_) {
-            try {
-              onInsert();
-            } catch (e, st) {
-              debugPrint('subscribeToIncomingRealtimeEvents cb: $e\n$st');
-            }
-          },
-        );
+    final channel =
+        _client.channel('mood_match_invite_inbox_$uid').onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: 'realtime_events',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'recipient_id',
+                value: uid,
+              ),
+              callback: (_) {
+                try {
+                  onInsert();
+                } catch (e, st) {
+                  debugPrint('subscribeToIncomingRealtimeEvents cb: $e\n$st');
+                }
+              },
+            );
     channel.subscribe();
     return channel;
   }

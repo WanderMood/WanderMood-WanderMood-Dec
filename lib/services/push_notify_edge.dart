@@ -50,22 +50,55 @@ void schedulePushNotify({
       final client = Supabase.instance.client;
       if (client.auth.currentSession == null) return;
       final langCode = lang ?? await wandermoodNotificationLangCode();
-      final res = await client.functions.invoke(
-        'push-notify',
-        body: {
-          'recipient_id': recipientId,
-          'event': event,
-          'lang': langCode,
-          'data': data,
-        },
-      );
+      final payload = {
+        'recipient_id': recipientId,
+        'event': event,
+        'lang': langCode,
+        'data': data,
+        // App-side Mood Match flows already persist to realtime_events before
+        // calling push. Prevent duplicate bell entries from the edge fallback.
+        'persist_in_app': false,
+      };
+      final res = await _invokePushNotifyWithRetry(client, payload);
       if (kDebugMode) {
         debugPrint('push-notify response: ${res.data}');
       }
+    } on FunctionException catch (e) {
+      // Push is secondary for Mood Match. Invite/session UX must continue even
+      // when push edge is temporarily unavailable (e.g. 5xx).
+      final status = e.status ?? 0;
+      if (kDebugMode) {
+        if (status >= 500) {
+          debugPrint(
+            'push-notify temporarily unavailable (HTTP $status), continuing without push.',
+          );
+        } else {
+          debugPrint('push-notify FunctionException(HTTP $status): ${e.reasonPhrase}');
+        }
+      }
     } catch (e) {
-      if (kDebugMode) debugPrint('push-notify: $e');
+      if (kDebugMode) {
+        debugPrint('push-notify unexpected error (non-blocking): $e');
+      }
     }
   }());
+}
+
+Future<FunctionResponse> _invokePushNotifyWithRetry(
+  SupabaseClient client,
+  Map<String, dynamic> payload,
+) async {
+  try {
+    return await client.functions.invoke('push-notify', body: payload);
+  } on FunctionException catch (e) {
+    final status = e.status ?? 0;
+    if (status >= 500) {
+      // One short retry for transient gateway/cold-start edge failures.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      return await client.functions.invoke('push-notify', body: payload);
+    }
+    rethrow;
+  }
 }
 
 String? pushEventForPlanSideEffect(String event) {

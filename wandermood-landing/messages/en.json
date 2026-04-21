@@ -168,5 +168,19 @@
       "sectionRetainBody": "We may retain certain information for a limited time where required by law, for security or fraud prevention, or in encrypted backups until they expire. We do not use retained data to market to you after deletion.",
       "backToPrivacy": "Privacy policy"
     }
+  },
+  "moodMatchJoin": {
+    "metaTitle": "Mood Match · WanderMood",
+    "title": "Join Mood Match",
+    "invalidCode": "This invite link does not include a valid join code.",
+    "openingBody": "Opening WanderMood now. If it doesn't open, use the button below or install the app first.",
+    "inviteCodeLabel": "Invite Code",
+    "openInWanderMood": "Open in WanderMood",
+    "afterInstall": "If needed: install WanderMood and enter this code under",
+    "afterInstallTarget": "Plan with a friend",
+    "storeAndroid": "Android — Google Play",
+    "storeIos": "iPhone — App Store search",
+    "backHome": "Back to WanderMood",
+    "loading": "Loading…"
   }
 }

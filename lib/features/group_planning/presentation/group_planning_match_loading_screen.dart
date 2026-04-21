@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
+import 'package:wandermood/features/location/services/location_service.dart'
+    as wm_location;
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/domain/mood_match_copy.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
@@ -77,8 +80,15 @@ class _GroupPlanningMatchLoadingScreenState
       }
 
       final pos = await ref.read(userLocationProvider.future);
-      final lat = pos?.latitude ?? 52.3676;
-      final lng = pos?.longitude ?? 4.9041;
+      final lat = pos?.latitude ??
+          (wm_location.LocationService.defaultLocation['latitude'] as double);
+      final lng = pos?.longitude ??
+          (wm_location.LocationService.defaultLocation['longitude'] as double);
+      final locationAsync = ref.read(locationNotifierProvider);
+      final rawCity = locationAsync.value?.trim();
+      final city = (rawCity != null && rawCity.isNotEmpty)
+          ? rawCity
+          : (wm_location.LocationService.defaultLocation['name'] as String);
       final prefs = ref.read(preferencesProvider);
       // Owner picked a part of the day in the day picker → restrict the
       // plan to that single slot. When null, Moody plans the whole day.
@@ -91,6 +101,7 @@ class _GroupPlanningMatchLoadingScreenState
         sessionId: widget.sessionId,
         latitude: lat,
         longitude: lng,
+        city: city,
         communicationStyle: prefs.communicationStyle,
         languageCode: prefs.languagePreference,
         plannedDateFallback: plannedDateFallback,
@@ -172,6 +183,7 @@ class _GroupPlanningMatchLoadingScreenState
         elevation: 0,
         foregroundColor: GroupPlanningUi.charcoal,
         leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () =>
               context.go('/group-planning/reveal/${widget.sessionId}'),

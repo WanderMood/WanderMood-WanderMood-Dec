@@ -154,18 +154,31 @@ class _GroupPlanningLobbyScreenState
           .from('group_session_members')
           .stream(primaryKey: ['id'])
           .eq('session_id', widget.sessionId)
-          .listen((_) async {
-            await _refresh();
-          }, onError: (_) => _startPollingFallback());
+          .listen(
+            (_) async {
+              await _refresh();
+            },
+            onError: (Object e, StackTrace st) {
+              debugPrint('[Lobby] members stream error: $e\n$st');
+              _startPollingFallback();
+            },
+          );
 
       _sessionSub = supabase
           .from('group_sessions')
           .stream(primaryKey: ['id'])
           .eq('id', widget.sessionId)
-          .listen((_) async {
-            await _refresh();
-          }, onError: (_) => _startPollingFallback());
-    } catch (_) {
+          .listen(
+            (_) async {
+              await _refresh();
+            },
+            onError: (Object e, StackTrace st) {
+              debugPrint('[Lobby] session stream error: $e\n$st');
+              _startPollingFallback();
+            },
+          );
+    } catch (e, st) {
+      debugPrint('[Lobby] realtime subscribe failed: $e\n$st');
       _startPollingFallback();
     }
   }
@@ -290,7 +303,15 @@ class _GroupPlanningLobbyScreenState
         }
       }
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) {
+        final raw = e.toString();
+        final cleaned = raw.startsWith('Exception: ')
+            ? raw.substring('Exception: '.length)
+            : raw.startsWith('Bad state: ')
+                ? raw.substring('Bad state: '.length)
+                : raw;
+        setState(() => _error = cleaned);
+      }
       _startPollingFallback();
     }
   }
@@ -372,9 +393,16 @@ class _GroupPlanningLobbyScreenState
   String _firstName(String displayName) {
     final s = displayName.trim();
     if (s.isEmpty) return '?';
+    if (s.startsWith('@')) {
+      final u = s.substring(1).trim();
+      if (u.isNotEmpty) {
+        final parts = u.split(RegExp(r'\s+'));
+        if (parts.isNotEmpty && parts.first.isNotEmpty) return parts.first;
+      }
+    }
     final beforeAt = s.split('@').first.trim();
     final parts = beforeAt.split(RegExp(r'\s+'));
-    return parts.isNotEmpty ? parts.first : '?';
+    return parts.isNotEmpty && parts.first.isNotEmpty ? parts.first : '?';
   }
 
   String _friendThey(AppLocalizations l10n) {
@@ -732,8 +760,11 @@ class _GroupPlanningLobbyScreenState
       await _refresh();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.groupPlanLobbySubmitError('$e'))),
+        GroupPlanningUi.showErrorSnack(
+          context,
+          l10n,
+          e,
+          fallback: l10n.groupPlanLobbySubmitError(''),
         );
       }
     } finally {
@@ -808,6 +839,8 @@ class _GroupPlanningLobbyScreenState
                 Row(
                   children: [
                     IconButton(
+                      tooltip:
+                          MaterialLocalizations.of(context).backButtonTooltip,
                       icon: const Icon(
                         Icons.arrow_back_ios_new_rounded,
                         size: 18,
@@ -840,10 +873,12 @@ class _GroupPlanningLobbyScreenState
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 _TeamHeroStrip(
                   me: _meMember(),
                   friend: _friendMember(_members),
+                  invitedFallback:
+                      _invitedProfiles.isNotEmpty ? _invitedProfiles.last : null,
                   pulse: _pulse,
                 ),
                 if (_shouldShowInvitedPill())
@@ -855,7 +890,7 @@ class _GroupPlanningLobbyScreenState
                       onNudge: _shareLink,
                     ),
                   ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 // Moody's tip used to live in a separate green card inside the
                 // cream body, adding scroll height. Pulling it into the hero
                 // frees up the body so all 12 mood tiles fit above the fold.
@@ -867,7 +902,7 @@ class _GroupPlanningLobbyScreenState
                   _TeamHeroStatusLine(
                     text: _liveStatusText(l10n),
                   ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
@@ -914,7 +949,7 @@ class _GroupPlanningLobbyScreenState
                 color: GroupPlanningUi.forest,
                 onRefresh: _refresh,
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(26, 10, 26, bottomInset + 24),
+                  padding: EdgeInsets.fromLTRB(22, 8, 22, bottomInset + 20),
                   children: [
                     Center(
                       child: Container(
@@ -926,7 +961,7 @@ class _GroupPlanningLobbyScreenState
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -952,30 +987,26 @@ class _GroupPlanningLobbyScreenState
                           color: GroupPlanningUi.forest,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         moodMatchFeelQuestionForNow(l10n),
                         style: GoogleFonts.poppins(
-                          fontSize: 19,
+                          fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: GroupPlanningUi.charcoal,
                           height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
-                        l10n.moodMatchPrivateHint(_friendThey(l10n)),
+                        l10n.moodMatchPrivateHint(l10n.moodMatchFriendThey),
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
+                          fontSize: 12,
                           color: GroupPlanningUi.stone,
                           height: 1.2,
                         ),
-                        textHeightBehavior: const TextHeightBehavior(
-                          applyHeightToFirstAscent: false,
-                          applyHeightToLastDescent: false,
-                        ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 7),
                       GroupPlanningMoodMatchGrid(
                         selectedTag: _selectedMood,
                         onSelect: (tag) async {
@@ -1586,11 +1617,13 @@ class _TeamHeroStrip extends StatelessWidget {
   const _TeamHeroStrip({
     required this.me,
     required this.friend,
+    required this.invitedFallback,
     required this.pulse,
   });
 
   final GroupMemberView? me;
   final GroupMemberView? friend;
+  final MoodMatchInvitedProfile? invitedFallback;
   final AnimationController pulse;
 
   @override
@@ -1634,7 +1667,12 @@ class _TeamHeroStrip extends StatelessWidget {
           ],
         ),
         const _HeroConnector(),
-        _HeroAvatar(member: friend, isMe: false, pulse: pulse),
+        _HeroAvatar(
+          member: friend,
+          invitedFallback: invitedFallback,
+          isMe: false,
+          pulse: pulse,
+        ),
       ],
     );
   }
@@ -1657,17 +1695,19 @@ class _HeroConnector extends StatelessWidget {
 class _HeroAvatar extends StatelessWidget {
   const _HeroAvatar({
     required this.member,
+    this.invitedFallback,
     required this.isMe,
     required this.pulse,
   });
 
   final GroupMemberView? member;
+  final MoodMatchInvitedProfile? invitedFallback;
   final bool isMe;
   final AnimationController pulse;
 
   @override
   Widget build(BuildContext context) {
-    if (member == null) {
+    if (member == null && invitedFallback == null) {
       // Friend not yet joined → dashed outline + ? inside, pulsing.
       return AnimatedBuilder(
         animation: pulse,
@@ -1701,13 +1741,18 @@ class _HeroAvatar extends StatelessWidget {
       );
     }
 
-    final m = member!;
-    final avatar = m.avatarUrl;
-    final locked = m.member.hasSubmittedMood;
-    final emoji =
-        locked ? (kMoodMatchMoodEmoji[m.member.moodTag ?? ''] ?? '✨') : null;
-    final initial =
-        m.displayName.isNotEmpty ? m.displayName[0].toUpperCase() : '?';
+    final m = member;
+    final invite = invitedFallback;
+    final avatar = m?.avatarUrl ?? invite?.imageUrl;
+    final locked = m?.member.hasSubmittedMood == true;
+    final emoji = locked
+        ? (kMoodMatchMoodEmoji[m?.member.moodTag ?? ''] ?? '✨')
+        : null;
+    final initial = m != null
+        ? (m.displayName.isNotEmpty ? m.displayName[0].toUpperCase() : '?')
+        : ((invite?.firstName.trim().isNotEmpty ?? false)
+            ? invite!.firstName.trim()[0].toUpperCase()
+            : '?');
 
     return SizedBox(
       width: 64,
@@ -1901,10 +1946,10 @@ class _InvitedWaitingPill extends StatelessWidget {
                   Text(
                     l10n.moodMatchInvitedWaitingTag,
                     style: GoogleFonts.poppins(
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: Colors.white.withValues(alpha: 0.7),
-                      letterSpacing: 0.6,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 1),

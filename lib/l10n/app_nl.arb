@@ -4386,8 +4386,33 @@
   "groupPlanMoodCozy": "Gezellig",
   "groupPlanMoodSurprise": "Verrassing",
   "moodMatchTitle": "Mood Match",
+  "moodMatchNotificationTapAlreadySaved": "Dit plan staat al opgeslagen — hier is je overzicht.",
+  "moodMatchNotificationTapSessionEnded": "Deze Mood Match is niet meer beschikbaar.",
+  "moodMatchNotificationTapOpenFailed": "We konden dat plan niet openen.",
+  "moodMatchNotificationTapStaleUpdate": "Er is hier niets nieuws te doen — dat plan is misschien al verder.",
   "moodMatchTagline": "Twee stemmingen. Één perfecte dag.",
   "moodMatchTaglineHub": "Twee stemmingen. Één perfecte dag. Voor jullie samen.",
+  "moodMatchHubMoodyHeroLine1": "Twee stille moodkeuzes, één gedeelde dag—voor jullie twee.",
+  "moodMatchHubMoodyHeroLine2": "Tik Start of Join wanneer je wil.",
+  "moodMatchHubCardBodyPickYourMood": "Ik heb jouw stemming nog nodig — die blijft stil tot jullie allebei klaar zijn.",
+  "moodMatchHubCardBodyDayTheirPick": "{name} stelde een dag voor — kijk even en zeg ja of stuur een tegenbod.",
+  "@moodMatchHubCardBodyDayTheirPick": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubCardBodyDayWaitingOnThem": "Ik stuurde een dag richting {name} — wachten op ja of een tegenbod.",
+  "@moodMatchHubCardBodyDayWaitingOnThem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubCardCtaReviewDay": "Bekijk dag",
+  "moodMatchHubCardCtaCheckProgress": "Bekijk voortgang",
   "moodMatchStartBtn": "Start een Mood Match",
   "moodMatchStartBtnSub": "Nodig iemand uit, kies stemmingen, krijg één gedeeld plan",
   "moodMatchJoinBtn": "Doe mee met Mood Match",
@@ -4401,7 +4426,7 @@
   "moodMatchHubMoodyIntroWaitingEnergetic": "We zijn er bijna—je match moet nog instappen! Open het plan om door te gaan, of geef ze een nudge.",
   "moodMatchHubMoodyIntroWaitingDirect": "Sessie actief; je match nog niet binnen. Open plan of nudge.",
   "moodMatchHubPendingTitle": "Sessie bezig",
-  "moodMatchHubPendingStory": "We wachten nog tot je match meedoet.",
+  "moodMatchHubPendingStory": "Je match moet nog even meedoen.",
   "moodMatchHubPendingCodeSmall": "Code {code}",
   "@moodMatchHubPendingCodeSmall": {
     "placeholders": {
@@ -4425,7 +4450,7 @@
   "moodMatchHubContinueSession": "Verder",
   "moodMatchHubCancelSession": "Annuleren",
   "moodMatchHubReadyTitle": "Je Mood Match is klaar!",
-  "moodMatchHubReadySubtitle": "Ik heb jullie gedeelde dag klaar",
+  "moodMatchHubReadySubtitle": "Jullie gedeelde dag staat klaar — kijk wanneer je zin hebt.",
   "moodMatchHubSeePlanCta": "Bekijk het plan",
   "moodMatchHubCardBadgeReady": "Je plan is klaar",
   "moodMatchHubCardBadgeUpcoming": "Aankomend plan",
@@ -4662,7 +4687,7 @@
     }
   },
   "moodMatchInviteInboxTag": "Nieuwe Mood Match-uitnodiging",
-  "moodMatchInviteInboxBody": "{name} wil samen een dag plannen. Kies jouw stemming en kijk waar jullie matchen.",
+  "moodMatchInviteInboxBody": "{name} stuurde je een Mood Match. Kies je vibe (die blijft van jou tot jullie allebei klaar zijn), dan zet ik het voor jullie neer.",
   "@moodMatchInviteInboxBody": {
     "placeholders": {
       "name": {
@@ -4692,6 +4717,59 @@
   "moodMatchHubOpenPlan": "Open plan",
   "moodMatchHubNudgeFriend": "Herinner je match",
   "moodMatchHubOngoingTitle": "Lopende matches",
+  "moodMatchHubActiveMatchesTitle": "Actieve matches",
+  "moodMatchHubCompletedMatchesTitle": "Toegevoegd aan Mijn dag",
+  "moodMatchHubPlanDraftingBadge": "Je keuzes afronden",
+  "moodMatchHubPlanDraftingBody": "Kies je stops en stuur ze daarna naar {name} om te bekijken.",
+  "@moodMatchHubPlanDraftingBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubOwnerWaitingGuestReviewBody": "Je hebt het plan gedeeld — wachten tot {name} het bekijkt en hun keuzes bevestigt.",
+  "@moodMatchHubOwnerWaitingGuestReviewBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubGuestReviewBadge": "Jij bent aan de beurt",
+  "moodMatchHubGuestReviewBody": "{name} stuurde het gedeelde plan — tik om jouw stops te bevestigen.",
+  "@moodMatchHubGuestReviewBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moodMatchHubCtaReviewPlan": "Plan bekijken",
+  "moodMatchHubCompletedBadge": "Op je dag",
+  "moodMatchHubCompletedBody": "Deze mix staat al in je agenda.",
+  "moodMatchHubCompletedCta": "Mijn dag openen",
+  "moodMatchHubTabActive": "Actief",
+  "moodMatchHubTabCompleted": "Klaar",
+  "moodMatchHubTabActiveHint": "Mood matches die nog bezig zijn.",
+  "moodMatchHubTabCompletedHint": "Plannen die je al aan Mijn dag hebt toegevoegd.",
+  "moodMatchHubTabActiveEmpty": "Geen actieve matches — start er een of doe mee met de code van je match.",
+  "moodMatchHubTabCompletedEmpty": "Nog niets opgeslagen — na Toevoegen aan Mijn dag verschijnt het plan hier.",
+  "moodMatchHubInvitesTitle": "OPENSTAANDE UITNODIGINGEN",
+  "moodMatchHubInvitesCollapsedHint": "{count, plural, one{1 uitnodiging wacht — tik om te openen} other{{count} uitnodigingen wachten — tik om te openen}}",
+  "@moodMatchHubInvitesCollapsedHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moodMatchHubConfirmDismissInviteTitle": "Deze uitnodiging verwijderen?",
+  "moodMatchHubConfirmDismissInviteBody": "Je kunt later nog meedoen met de joincode als je vriend die opnieuw deelt.",
+  "moodMatchHubConfirmLeaveSessionTitle": "Deze Mood Match verwijderen?",
+  "moodMatchHubConfirmLeaveSessionBodyGuest": "Je verlaat de sessie. Je vriend kan doorgaan tot die ook stopt.",
+  "moodMatchHubConfirmLeaveSessionBodyHost": "Hiermee wordt de Mood Match voor jullie beiden geannuleerd.",
+  "moodMatchHubConfirmRemoveAction": "Verwijderen",
   "moodMatchLobbyWaitTease0": "Wachten op {name}… geen haast 👀",
   "@moodMatchLobbyWaitTease0": {
     "placeholders": {
@@ -4805,13 +4883,13 @@
   "moodMatchDayPickerOpenSheetCta": "Kies dag & tijd",
   "moodMatchDayPickerSheetChangeCta": "Andere dag of tijd",
   "moodMatchDayPickerWholeDay": "Hele dag",
-  "moodMatchPlanResultMoodyV1": "Hier is jullie dag met {name} — drie spots die volgens Moody bij allebei jullie vibes passen.",
+  "moodMatchPlanResultMoodyV1": "Hier is jullie dag met {name} — drie spots die bij allebei jullie vibes passen.",
   "@moodMatchPlanResultMoodyV1": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanResultMoodyV2": "Gebouwd rond wat jullie vandaag allebei wilden. Tik op een plek om te kijken voordat je het bevestigt met {name}.",
   "@moodMatchPlanResultMoodyV2": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanResultMoodyV3": "Doe ze op volgorde of door elkaar — jullie keuze. {name} ziet hetzelfde plan aan hun kant.",
   "@moodMatchPlanResultMoodyV3": { "placeholders": { "name": { "type": "String" } } },
-  "moodMatchPlanResultMoodyV4": "Drie kleine momenten rondom jullie moods. Iets niks? Tik op Wissel, dan zoekt Moody iets anders.",
+  "moodMatchPlanResultMoodyV4": "Drie kleine momenten rondom jullie moods. Iets niks? Tik op Wissel — dan stellen we iets anders voor.",
   "@moodMatchPlanResultMoodyV4": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchDayPickerSheetTitle": "Kies een datum voor jullie samen",
   "moodMatchDayPickerSheetMoodyLine": "Rustig aan — {name} bevestigt jullie keuze.",
@@ -4907,8 +4985,33 @@
   "@moodMatchPlanV2OwnerInYourCall": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchPlanV2YouBothIn": "Jij en {name} zijn er allebei",
   "@moodMatchPlanV2YouBothIn": { "placeholders": { "name": { "type": "String" } } },
+  "moodMatchPlanV2SlotNotInThisPlan": "{partLabel} zit niet in deze Mood Match — jullie hebben samen maar één deel van de dag gepland.",
+  "@moodMatchPlanV2SlotNotInThisPlan": { "placeholders": { "partLabel": { "type": "String" } } },
+  "moodMatchPlanV2YouBothInThisMoment": "Jullie zijn het allebei eens over dit moment ✓",
   "moodMatchPlanV2WaitingOwnerSwap": "Wacht op {name} voor de ruil…",
   "@moodMatchPlanV2WaitingOwnerSwap": { "placeholders": { "name": { "type": "String" } } },
+  "moodMatchPlanV2StopsReviewed": "{done} van {total}",
+  "@moodMatchPlanV2StopsReviewed": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moodMatchPlanV2FooterGuestReviewNudge": "{done} van {total} bevestigd — rond Ochtend, Middag & Avond hierboven af",
+  "@moodMatchPlanV2FooterGuestReviewNudge": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moodMatchPlanV2OwnerPickEachPart": "{done} van {total} gekozen — kies de rest hierboven",
+  "@moodMatchPlanV2OwnerPickEachPart": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "moodMatchPlanV2UndoMyChoice": "Antwoord wijzigen",
   "moodMatchPlanV2ConfirmAllGuest": "{count, plural, =1{Bevestig je keuze om af te ronden} other{Bevestig alle {count} om af te ronden}}",
   "@moodMatchPlanV2ConfirmAllGuest": {
     "placeholders": {
@@ -4916,7 +5019,7 @@
     }
   },
   "moodMatchPlanV2PlanConfirmedTime": "Plan rond — kies je starttijd →",
-  "moodMatchPlanV2OpenMyDay": "Toevoegen aan Mijn Dag ✓",
+  "moodMatchPlanV2OpenMyDay": "Toevoegen aan Mijn Plannen ✓",
   "moodMatchRevealMaeMorning": "OCHTEND",
   "moodMatchRevealMaeAfternoon": "MIDDAG",
   "moodMatchRevealMaeEvening": "AVOND",
@@ -4924,6 +5027,7 @@
   "@moodMatchPlanV2SwapSheetTitle": { "placeholders": { "slot": { "type": "String" } } },
   "moodMatchPlanV2SwapSheetMoody": "Hier zijn nog een paar opties.",
   "moodMatchPlanV2PickThis": "Kies deze",
+  "moodMatchPlanV2YourPickSaved": "Jouw keuze",
   "moodMatchPlanV2SwapBannerTitle": "{name} wil {slot} ruilen",
   "@moodMatchPlanV2SwapBannerTitle": { "placeholders": { "name": { "type": "String" }, "slot": { "type": "String" } } },
   "moodMatchPlanV2SwapBannerSubtitle": "Voorstel: {proposed} i.p.v. {original}",
@@ -4964,7 +5068,7 @@
   "@moodMatchToastGuestDeclinedOriginalDay": { "placeholders": { "name": { "type": "String" } } },
   "moodMatchToastGuestProposedNewDay": "{name} stelt een andere datum voor — open de Mood Match dag-stap.",
   "@moodMatchToastGuestProposedNewDay": { "placeholders": { "name": { "type": "String" } } },
-  "moodMatchSaveMyDayFailed": "Kon niet toevoegen aan Mijn dag: {details}",
+  "moodMatchSaveMyDayFailed": "Kon niet toevoegen aan Mijn Plannen: {details}",
   "@moodMatchSaveMyDayFailed": { "placeholders": { "details": { "type": "String" } } },
   "moodMatchPlanV2BasedOnMoods": "Gebaseerd op stemmingen: {moods}",
   "@moodMatchPlanV2BasedOnMoods": { "placeholders": { "moods": { "type": "String" } } },

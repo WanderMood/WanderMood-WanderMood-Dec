@@ -18,6 +18,33 @@ const corsHeaders = {
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+/// Mood Match events that require BOTH sender and recipient to be members of
+/// the same group_sessions row. Any caller without a valid membership link
+/// gets a 403 — previously anyone who could get an access token could spam
+/// arbitrary Mood Match copy to any user.
+const MOOD_MATCH_SESSION_EVENTS = new Set<string>([
+  'guest_joined',
+  'mood_locked',
+  'plan_ready',
+  'day_proposed',
+  'day_accepted',
+  'day_counter_proposed',
+  'day_guest_declined_original',
+  'swap_requested',
+  'swap_accepted',
+  'swap_declined',
+  'swap_counter_proposed',
+  'both_confirmed',
+])
+
+/// Events where the recipient is not yet a member, but the sender must be
+/// (typically because they just created the session and are about to invite).
+const MOOD_MATCH_SENDER_ONLY_SESSION_EVENTS = new Set<string>([
+  'mood_match_invite',
+])
+
+const DEDUPE_WINDOW_SECONDS = 20
+
 type ServiceAccount = {
   project_id: string
   client_email: string
@@ -242,6 +269,71 @@ async function sendFcmV1(
   return { ok: res.ok, status: res.status, text: text.slice(0, 500) }
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object' && !Array.isArray(v)
+}
+
+async function hasRecentDuplicateRealtimeEvent(
+  admin: any,
+  recipientId: string,
+  event: string,
+  dataObj: Record<string, unknown>,
+): Promise<boolean> {
+  const sessionId = String(dataObj.session_id ?? '').trim()
+  const sinceIso = new Date(Date.now() - DEDUPE_WINDOW_SECONDS * 1000).toISOString()
+
+  try {
+    // Newer schema (recipient_id / event_type / event_data)
+    const { data: rows, error } = await admin
+      .from('realtime_events')
+      .select('id,event_data,created_at')
+      .eq('recipient_id', recipientId)
+      .eq('event_type', 'systemUpdate')
+      .gte('created_at', sinceIso)
+      .order('created_at', { ascending: false })
+      .limit(30)
+    if (!error && Array.isArray(rows)) {
+      for (const row of rows) {
+        const payloadRaw = (row as Record<string, unknown>).event_data
+        if (!isRecord(payloadRaw)) continue
+        const prevEvent = String(payloadRaw.event ?? '').trim()
+        if (prevEvent != event) continue
+        if (sessionId.length === 0) return true
+        const prevSessionId = String(payloadRaw.session_id ?? '').trim()
+        if (prevSessionId == sessionId) return true
+      }
+      return false
+    }
+  } catch {
+    // Fall through to legacy schema query.
+  }
+
+  try {
+    // Legacy schema (user_id / type / data)
+    const { data: rows, error } = await admin
+      .from('realtime_events')
+      .select('id,data,created_at')
+      .eq('user_id', recipientId)
+      .eq('type', 'systemUpdate')
+      .gte('created_at', sinceIso)
+      .order('created_at', { ascending: false })
+      .limit(30)
+    if (error || !Array.isArray(rows)) return false
+    for (const row of rows) {
+      const payloadRaw = (row as Record<string, unknown>).data
+      if (!isRecord(payloadRaw)) continue
+      const prevEvent = String(payloadRaw.event ?? '').trim()
+      if (prevEvent != event) continue
+      if (sessionId.length === 0) return true
+      const prevSessionId = String(payloadRaw.session_id ?? '').trim()
+      if (prevSessionId == sessionId) return true
+    }
+  } catch {
+    return false
+  }
+  return false
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -279,6 +371,7 @@ serve(async (req) => {
     event?: string
     lang?: string
     data?: Record<string, unknown>
+    persist_in_app?: boolean
   }
   try {
     bodyJson = await req.json()
@@ -293,6 +386,16 @@ serve(async (req) => {
   const event = bodyJson.event?.trim() ?? ''
   if (!UUID_RE.test(recipientId) || !event) {
     return new Response(JSON.stringify({ error: 'recipient_id and event are required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Refuse self-pushes — caller cannot notify themselves through this edge.
+  // Genuine in-app feedback is local, and this keeps the attack surface
+  // smaller (no "pretend the other person pinged me" spoof).
+  if (recipientId === user.id) {
+    return new Response(JSON.stringify({ success: false, error: 'self_push_forbidden' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
@@ -346,6 +449,81 @@ serve(async (req) => {
         })
       }
 
+      // ------------------------------------------------------------------
+      // AUTHORIZATION: Mood Match events must prove a legitimate session link
+      // between the sender (authenticated user) and the recipient. Without
+      // this check, any user could call `push-notify` with recipient_id=X and
+      // event='day_proposed' to deliver arbitrary Mood Match copy to X.
+      // ------------------------------------------------------------------
+      const dataObj: Record<string, unknown> =
+        bodyJson.data && typeof bodyJson.data === 'object'
+          ? (bodyJson.data as Record<string, unknown>)
+          : {}
+      const sessionId = String(dataObj.session_id ?? '').trim()
+
+      const requiresSession =
+        MOOD_MATCH_SESSION_EVENTS.has(event) ||
+        MOOD_MATCH_SENDER_ONLY_SESSION_EVENTS.has(event)
+
+      if (requiresSession) {
+        if (!UUID_RE.test(sessionId)) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'session_id_required' }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
+          )
+        }
+
+        // Sender must always be a member of the session.
+        const { data: senderRow, error: senderErr } = await admin
+          .from('group_session_members')
+          .select('user_id')
+          .eq('session_id', sessionId)
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (senderErr || !senderRow) {
+          console.warn(
+            `[push-notify] sender=${user.id} not a member of session=${sessionId} event=${event}`,
+          )
+          return new Response(
+            JSON.stringify({ success: false, error: 'not_session_member' }),
+            {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
+          )
+        }
+
+        // For non-invite events, recipient must also be a member — this is
+        // how we prevent strangers from blasting Mood Match updates at any
+        // user whose uuid they happen to know.
+        if (MOOD_MATCH_SESSION_EVENTS.has(event)) {
+          const { data: recipRow, error: recipErr } = await admin
+            .from('group_session_members')
+            .select('user_id')
+            .eq('session_id', sessionId)
+            .eq('user_id', recipientId)
+            .maybeSingle()
+          if (recipErr || !recipRow) {
+            console.warn(
+              `[push-notify] recipient=${recipientId} not a member of session=${sessionId} event=${event}`,
+            )
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'recipient_not_session_member',
+              }),
+              {
+                status: 403,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              },
+            )
+          }
+        }
+      }
+
       const { data: rows, error: tokErr } = await admin
         .from('push_tokens')
         .select('token')
@@ -368,8 +546,42 @@ serve(async (req) => {
       }
 
       const nl = (bodyJson.lang ?? 'en').toLowerCase().startsWith('nl')
-      const dataObj = bodyJson.data && typeof bodyJson.data === 'object' ? bodyJson.data : {}
       const { title, body: notifBody } = notificationCopy(nl, event, dataObj)
+      const shouldPersistInApp = bodyJson.persist_in_app !== false
+      const duplicate = await hasRecentDuplicateRealtimeEvent(
+        admin,
+        recipientId,
+        event,
+        dataObj,
+      )
+      if (duplicate) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            deduped: true,
+            sent: 0,
+            attempted: 0,
+            message: 'duplicate_suppressed',
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+      if (shouldPersistInApp) {
+        try {
+          await admin.rpc('send_realtime_notification', {
+            target_user_id: recipientId,
+            event_type: 'systemUpdate',
+            event_title: title,
+            event_message: notifBody,
+            event_data: dataObj,
+            source_user_id: user.id,
+            related_post_id: null,
+            priority_level: 3,
+          })
+        } catch (e) {
+          console.warn('[push-notify] realtime mirror failed:', e)
+        }
+      }
       const dataStrings = fcmDataStrings(event, dataObj)
       dataStrings.sender_id = user.id
 

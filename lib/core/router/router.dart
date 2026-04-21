@@ -29,6 +29,7 @@ import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/share_profile_screen.dart';
 import '../../features/profile/presentation/screens/globe_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
+import '../../screens/notification_centre_screen.dart';
 import '../../features/profile/presentation/screens/comprehensive_settings_screen.dart';
 import '../../features/profile/presentation/screens/preferences_screen.dart';
 import '../../features/profile/presentation/screens/account_security_screen.dart';
@@ -61,6 +62,7 @@ import '../../features/group_planning/presentation/group_planning_reveal_screen.
 import '../../features/group_planning/presentation/group_planning_scan_screen.dart';
 import '../../features/group_planning/presentation/group_planning_invite_wanderer_screen.dart';
 import '../../features/group_planning/presentation/group_planning_day_picker_screen.dart';
+import '../../features/group_planning/presentation/group_planning_match_loading_screen.dart';
 import '../../features/group_planning/presentation/group_planning_time_picker_screen.dart';
 import '../../features/group_planning/presentation/group_planning_confirmation_screen.dart';
 import '../../features/social/presentation/screens/create_post_screen.dart';
@@ -737,6 +739,17 @@ GoRouter router(RouterRef ref) {
         },
       ),
       GoRoute(
+        path: '/group-planning/match-loading/:sessionId',
+        name: 'group-planning-match-loading',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['sessionId']!;
+          return moodMatchTransitionPage<void>(
+            key: state.pageKey,
+            child: GroupPlanningMatchLoadingScreen(sessionId: id),
+          );
+        },
+      ),
+      GoRoute(
         path: '/group-planning/time-picker/:sessionId',
         name: 'group-planning-time-picker',
         pageBuilder: (context, state) {
@@ -924,7 +937,7 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/notifications',
         name: 'notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        builder: (context, state) => const NotificationCentreScreen(),
       ),
       GoRoute(
         path: '/settings/location',

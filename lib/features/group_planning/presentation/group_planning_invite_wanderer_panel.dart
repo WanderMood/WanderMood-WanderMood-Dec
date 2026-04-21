@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/features/group_planning/data/mood_match_invited_profile.dart';
+import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/data/profile_invite_search_row.dart';
 import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
 import 'package:wandermood/features/group_planning/domain/mood_match_in_app_invite_result.dart';
@@ -35,6 +37,7 @@ class _GroupPlanningInviteWandererPanelState
   List<ProfileInviteSearchRow> _results = [];
   bool _searching = false;
   final Set<String> _invitingIds = {};
+  final Set<String> _sentInviteIds = {};
 
   late final String _joinLink;
 
@@ -77,6 +80,7 @@ class _GroupPlanningInviteWandererPanelState
   }
 
   Future<void> _invite(ProfileInviteSearchRow row) async {
+    if (_sentInviteIds.contains(row.id)) return;
     final l10n = AppLocalizations.of(context)!;
     final code = widget.joinCode.trim().toUpperCase();
     setState(() => _invitingIds.add(row.id));
@@ -92,6 +96,16 @@ class _GroupPlanningInviteWandererPanelState
 
     switch (result) {
       case MoodMatchInAppInviteResult.delivered:
+        await MoodMatchSessionPrefs.upsertInvitedProfile(
+          sessionId: widget.sessionId,
+          profile: MoodMatchInvitedProfile(
+            id: row.id,
+            username: row.username,
+            fullName: row.fullName,
+            imageUrl: row.imageUrl,
+          ),
+        );
+        setState(() => _sentInviteIds.add(row.id));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.moodMatchInviteSent)),
         );
@@ -199,6 +213,7 @@ class _GroupPlanningInviteWandererPanelState
             itemBuilder: (context, i) {
               final row = _results[i];
               final busy = _invitingIds.contains(row.id);
+              final sent = _sentInviteIds.contains(row.id);
               return Material(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -249,10 +264,43 @@ class _GroupPlanningInviteWandererPanelState
                           height: 28,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : TextButton(
-                          onPressed: () => _invite(row),
-                          child: Text(l10n.moodMatchInviteButton),
-                        ),
+                      : sent
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: GroupPlanningUi.forestTint,
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: GroupPlanningUi.forest.withValues(alpha: 0.25),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    size: 14,
+                                    color: GroupPlanningUi.forest,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    l10n.moodMatchInvitedWaitingTag,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: GroupPlanningUi.forest,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : TextButton(
+                              onPressed: () => _invite(row),
+                              child: Text(l10n.moodMatchInviteButton),
+                            ),
                 ),
               );
             },

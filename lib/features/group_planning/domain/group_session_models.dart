@@ -13,6 +13,7 @@ class GroupSessionRow {
     this.plannedDate,
     this.proposedByUserId,
     this.proposedSlot,
+    this.completedAt,
   });
 
   final String id;
@@ -28,7 +29,12 @@ class GroupSessionRow {
   final String? proposedByUserId;
   final String? proposedSlot;
 
+  /// First moment any member committed the plan to their My Day. Null until
+  /// then. See migration 20260420220000_group_sessions_completed_at.sql.
+  final DateTime? completedAt;
+
   factory GroupSessionRow.fromMap(Map<String, dynamic> map) {
+    final completedRaw = map['completed_at'];
     return GroupSessionRow(
       id: map['id'] as String,
       createdBy: map['created_by'] as String,
@@ -42,6 +48,9 @@ class GroupSessionRow {
       plannedDate: map['planned_date'] as String?,
       proposedByUserId: map['proposed_by_user_id'] as String?,
       proposedSlot: map['proposed_slot'] as String?,
+      completedAt: completedRaw is String && completedRaw.isNotEmpty
+          ? DateTime.tryParse(completedRaw)
+          : null,
     );
   }
 }
@@ -115,6 +124,7 @@ class GroupPlanRow {
     required this.sessionId,
     required this.planData,
     required this.createdAt,
+    this.planDataVersion = 0,
   });
 
   final String id;
@@ -122,8 +132,14 @@ class GroupPlanRow {
   final Map<String, dynamic> planData;
   final DateTime createdAt;
 
+  /// Optimistic-concurrency token for `plan_data`. Bumped by the repository on
+  /// every successful merge so concurrent writers (owner + guest racing) can
+  /// detect a stale snapshot and retry instead of clobbering each other.
+  final int planDataVersion;
+
   factory GroupPlanRow.fromMap(Map<String, dynamic> map) {
     final raw = map['plan_data'];
+    final rawVersion = map['plan_data_version'];
     return GroupPlanRow(
       id: map['id'] as String,
       sessionId: map['session_id'] as String,
@@ -131,6 +147,9 @@ class GroupPlanRow {
           ? raw
           : Map<String, dynamic>.from(raw as Map),
       createdAt: DateTime.parse(map['created_at'] as String),
+      planDataVersion: rawVersion is int
+          ? rawVersion
+          : int.tryParse('${rawVersion ?? ''}') ?? 0,
     );
   }
 }

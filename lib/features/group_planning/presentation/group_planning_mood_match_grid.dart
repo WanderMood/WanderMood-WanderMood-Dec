@@ -74,12 +74,13 @@ class GroupPlanningMoodMatchGrid extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       itemCount: kMoodMatchMoodTags.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.95,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1.12,
       ),
       itemBuilder: (context, i) {
         final tag = kMoodMatchMoodTags[i];
@@ -93,9 +94,9 @@ class GroupPlanningMoodMatchGrid extends StatelessWidget {
           title: hubLabel,
           isSelected: sel,
           dimmed: selectedTag != null && !sel,
-          emojiSize: 28,
-          titleSize: 10.5,
-          tileRadius: 18,
+          emojiSize: 21,
+          titleSize: 9.5,
+          tileRadius: 14,
           onTap: enabled ? () => onSelect(tag) : null,
         );
       },

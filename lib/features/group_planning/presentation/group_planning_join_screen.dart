@@ -62,8 +62,11 @@ class _GroupPlanningJoinScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.groupPlanJoinError('$e'))),
+      GroupPlanningUi.showErrorSnack(
+        context,
+        l10n,
+        e,
+        fallback: l10n.groupPlanJoinError(''),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -85,78 +88,105 @@ class _GroupPlanningJoinScreenState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final topInset = MediaQuery.paddingOf(context).top;
     return Scaffold(
-      backgroundColor: GroupPlanningUi.cream,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: GroupPlanningUi.moodMatchDeep,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Stack(
             children: [
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(20, 44, 20, 28),
-                    decoration: const BoxDecoration(
-                      color: GroupPlanningUi.forest,
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(28),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          '🔗',
-                          style: TextStyle(fontSize: 44),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          l10n.groupPlanJoinTitle,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.groupPlanJoinBody,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            height: 1.4,
-                            color: Colors.white.withValues(alpha: 0.65),
-                          ),
-                        ),
-                      ],
-                    ),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(20, topInset + 30, 20, 30),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      GroupPlanningUi.moodMatchDeepSurface,
+                      GroupPlanningUi.moodMatchDeep,
+                    ],
                   ),
-                  Positioned(
-                    top: 4,
-                    left: 4,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(28),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      '🔗',
+                      style: TextStyle(fontSize: 42),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      l10n.groupPlanJoinTitle,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
-                        size: 20,
                       ),
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/group-planning');
-                        }
-                      },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.groupPlanJoinBody,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        height: 1.4,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+              Positioned(
+                top: topInset + 2,
+                left: 4,
+                child: IconButton(
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/group-planning');
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Material(
+              color: GroupPlanningUi.cream,
+              elevation: 8,
+              shadowColor: GroupPlanningUi.moodMatchShadow(0.35),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: GroupPlanningUi.stone.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     if (!_manualEntry) ...[
                       GroupPlanningUi.primaryCta(
                         label: l10n.groupPlanJoinScanQr,
@@ -267,9 +297,9 @@ class _GroupPlanningJoinScreenState
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

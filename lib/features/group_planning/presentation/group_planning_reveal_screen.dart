@@ -5,12 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/group_planning/domain/group_plan_compatibility.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
-import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart'
     show GroupMemberView, GroupPlanRow, GroupSessionRow;
 import 'package:wandermood/features/group_planning/presentation/group_planning_mood_labels.dart';
@@ -18,7 +16,6 @@ import 'package:wandermood/features/group_planning/presentation/group_planning_m
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
 import 'package:wandermood/features/group_planning/domain/mood_match_copy.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_ui.dart';
-import 'package:wandermood/features/group_planning/presentation/share_sheet_origin.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -39,10 +36,8 @@ class _GroupPlanningRevealScreenState
   late final AnimationController _master;
   Map<String, dynamic>? _planData;
   List<GroupMemberView> _members = [];
-  String? _joinCode;
   bool _loading = true;
   String? _error;
-  final GlobalKey _shareKey = GlobalKey();
 
   static const _sunset = Color(0xFFE8784A);
 
@@ -128,7 +123,6 @@ class _GroupPlanningRevealScreenState
       setState(() {
         _planData = planDataForReveal;
         _members = members;
-        _joinCode = session.joinCode;
         _loading = false;
       });
       _master.forward(from: 0);
@@ -292,6 +286,8 @@ class _GroupPlanningRevealScreenState
                       Align(
                         alignment: Alignment.centerLeft,
                         child: IconButton(
+                          tooltip:
+                              MaterialLocalizations.of(context).closeButtonTooltip,
                           icon: const Icon(Icons.close_rounded,
                               color: Colors.white54),
                           onPressed: () => context.go('/group-planning'),
@@ -299,7 +295,10 @@ class _GroupPlanningRevealScreenState
                       ),
                       Expanded(
                         child: SingleChildScrollView(
-                          physics: const NeverScrollableScrollPhysics(),
+                          // Allow vertical scrolling on short devices / large
+                          // text-scale settings — previously the reveal content
+                          // could overflow the hero area with no escape hatch.
+                          physics: const ClampingScrollPhysics(),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -570,40 +569,6 @@ class _GroupPlanningRevealScreenState
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  KeyedSubtree(
-                                    key: _shareKey,
-                                    child: IconButton.filled(
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: Colors.white
-                                            .withValues(alpha: 0.08),
-                                      ),
-                                      icon: const Icon(Icons.ios_share_rounded,
-                                          color: Colors.white70),
-                                      tooltip: l10n.moodMatchSeePlanShareA11y,
-                                      onPressed: () async {
-                                        final code = _joinCode;
-                                        final text = code != null &&
-                                                code.isNotEmpty
-                                            ? '${l10n.moodMatchInviteShare(code)}\n${groupPlanningJoinShareLink(code).toString()}'
-                                            : l10n.moodMatchTagline;
-                                        final origin =
-                                            sharePositionOriginForContext(
-                                          _shareKey.currentContext ?? context,
-                                        );
-                                        await SharePlus.instance.share(
-                                          ShareParams(
-                                            text: text,
-                                            sharePositionOrigin: origin,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
                               ),
                               const SizedBox(height: 12),
                             ],
@@ -881,9 +846,9 @@ class _CompatRingState extends State<_CompatRing>
                   Text(
                     widget.label.toUpperCase(),
                     style: GoogleFonts.poppins(
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 1.6,
+                      letterSpacing: 1.4,
                       color: Colors.white.withValues(alpha: 0.55),
                     ),
                   ),

@@ -273,6 +273,62 @@ class GroupPlanV2 {
         .toList();
   }
 
+  /// Resolve the first usable place_id for scheduling. Checks top-level
+  /// keys and a nested `location` map; treats empty strings as missing and
+  /// skips synthetic `groupplan_*` ids that can't be re-fetched.
+  static String? resolvePlaceId(Map<String, dynamic> m) {
+    String? pick(dynamic v) {
+      if (v == null) return null;
+      final t = v.toString().trim();
+      if (t.isEmpty) return null;
+      if (t.startsWith('groupplan_')) return null;
+      return t;
+    }
+
+    for (final v in [m['place_id'], m['placeId'], m['id']]) {
+      final id = pick(v);
+      if (id != null) return id;
+    }
+    final loc = m['location'];
+    if (loc is Map) {
+      for (final key in ['place_id', 'placeId', 'id']) {
+        final id = pick(loc[key]);
+        if (id != null) return id;
+      }
+    }
+    return null;
+  }
+
+  /// Best-effort hero image for My Day / scheduled rows (direct URL or first photo).
+  static String resolveActivityImageUrl(Map<String, dynamic> a) {
+    for (final k in <String>[
+      'imageUrl',
+      'image_url',
+      'photoUrl',
+      'photo_url',
+      'thumbnail',
+    ]) {
+      final v = a[k]?.toString().trim();
+      if (v != null && v.isNotEmpty) return v;
+    }
+    final photos = a['photos'];
+    if (photos is List) {
+      for (final p in photos) {
+        if (p is String) {
+          final t = p.trim();
+          if (t.isNotEmpty) return t;
+        }
+        if (p is Map) {
+          for (final key in ['url', 'photoUri', 'photo_uri', 'uri']) {
+            final u = p[key]?.toString().trim();
+            if (u != null && u.isNotEmpty) return u;
+          }
+        }
+      }
+    }
+    return '';
+  }
+
   /// Rows for [GroupPlanningRepository.saveGroupScheduledActivities] when
   /// finishing Mood Match without the separate time-picker step.
   /// Maps may include `time_slot` when the activity is tied to a part of day.
@@ -286,8 +342,8 @@ class GroupPlanV2 {
         final slot = slotFromActivity(a);
         return {
           'name': a['name'] ?? a['title'] ?? 'Activity',
-          'place_id':
-              a['place_id']?.toString() ?? a['id']?.toString() ?? '',
+          'place_id': resolvePlaceId(a) ?? '',
+          'image_url': resolveActivityImageUrl(a),
           'duration_minutes': durationMinutes(a) ?? 60,
           if (slot != null) 'time_slot': slot,
         };
@@ -299,7 +355,8 @@ class GroupPlanV2 {
       final m = Map<String, dynamic>.from(r as Map);
       return {
         'name': m['name'] ?? m['title'] ?? 'Activity',
-        'place_id': m['place_id']?.toString() ?? m['id']?.toString() ?? '',
+        'place_id': resolvePlaceId(m) ?? '',
+        'image_url': resolveActivityImageUrl(m),
         'duration_minutes': (m['duration_minutes'] as num?)?.toInt() ?? 60,
         'time_slot': 'morning',
       };

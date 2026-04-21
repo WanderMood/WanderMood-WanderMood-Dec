@@ -1,17 +1,19 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart';
+import 'package:wandermood/features/group_planning/data/mood_match_realtime_event_adapter.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_push_intent.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/domain/mood_match_plan_proposals.dart';
@@ -26,8 +28,10 @@ import 'package:wandermood/features/group_planning/presentation/group_planning_u
 import 'package:wandermood/features/group_planning/domain/mood_match_copy.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/place_type_formatter.dart';
-import 'package:wandermood/features/group_planning/domain/mood_match_activity_note.dart';
+import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/location/services/location_service.dart'
+    as wm_location;
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Mood Match shared plan: 3 slots (owner confirms → send → guest responds).
@@ -47,6 +51,9 @@ const _wmSunset = Color(0xFFE8784A);
 /// Light ink on dark bars (header, loading, bottom CTA strip).
 const _textPrimary = Color(0xFFF5F0E8);
 const _mint = Color(0xFF5DCAA5);
+const _starGold = Color(0xFFD4A012);
+/// Primary copy on white Mood Match activity cards (high contrast).
+const _slotCardBodyInk = Color(0xFF000000);
 /// Same as lobby Mood Match body: titles and copy on [GroupPlanningUi.cream].
 const _creamInk = GroupPlanningUi.charcoal;
 const _creamInkSoft = GroupPlanningUi.stone;
@@ -64,6 +71,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   final Set<String> _swapDecisionSheetsShown = {};
   final Set<String> _ownerSlotDraft = {};
   bool _ownerBatchSaving = false;
+  int _slotCarouselIndex = 0;
+  PageController? _slotPageController;
 
   @override
   void initState() {
@@ -79,7 +88,38 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   void dispose() {
     _planSub?.cancel();
     _planUpdateEventsSub?.cancel();
+    _slotPageController?.dispose();
     super.dispose();
+  }
+
+  /// Picks morning / afternoon / evening landing tab from session + plan.
+  int _initialSlotCarouselIndex(
+    Map<String, dynamic> planData,
+    GroupSessionRow session,
+  ) {
+    const allSlots = GroupPlanV2.slots;
+    final withActivity =
+        GroupPlanV2.slotsRequiringConfirmation(planData).toSet();
+    final preferred = (session.proposedSlot ?? '').trim();
+    final ts = (planData['time_slot'] ?? '').toString().trim();
+    final seed = preferred.isNotEmpty && preferred != 'whole_day'
+        ? preferred
+        : (ts.isNotEmpty && ts != 'whole_day' ? ts : '');
+    if (seed.isNotEmpty && allSlots.contains(seed)) {
+      return allSlots.indexOf(seed);
+    }
+    for (var i = 0; i < allSlots.length; i++) {
+      if (withActivity.contains(allSlots[i])) return i;
+    }
+    return 0;
+  }
+
+  void _jumpSlotPage(int index) {
+    final i = index.clamp(0, GroupPlanV2.slots.length - 1);
+    final c = _slotPageController;
+    if (c != null && c.hasClients) {
+      c.jumpToPage(i);
+    }
   }
 
   void _startPlanRealtime() {
@@ -122,8 +162,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       _planUpdateEventsSub = supabase
           .from('realtime_events')
           .stream(primaryKey: ['id'])
-          // DB column is `user_id` (see send_realtime_notification); not recipient_id.
-          .eq('user_id', uid)
+          .eq('recipient_id', uid)
           .listen(
             (rows) {
               if (!mounted) return;
@@ -136,35 +175,26 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                 _handlePlanUpdateRealtimeRow(Map<String, dynamic>.from(row));
               }
             },
-            onError: (_) {},
+            onError: (Object e, StackTrace st) {
+              debugPrint('[Result] plan-update stream error: $e\n$st');
+            },
           );
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('[Result] plan-update stream subscribe failed: $e\n$st');
+    }
   }
 
   Map<String, dynamic>? _planUpdateDataFromRow(Map<String, dynamic> row) {
-    final evType = row['event_type'] as String? ?? row['type'] as String?;
+    final evType = MoodMatchRealtimeEventAdapter.eventTypeFromRow(row);
     if (evType != 'planUpdate') return null;
-    final raw = row['event_data'] ?? row['data'];
-    if (raw is String) {
-      try {
-        final decoded = jsonDecode(raw);
-        if (decoded is Map) {
-          return Map<String, dynamic>.from(decoded);
-        }
-        return null;
-      } catch (_) {
-        return null;
-      }
-    }
-    if (raw is Map) return Map<String, dynamic>.from(raw);
-    return null;
+    return MoodMatchRealtimeEventAdapter.eventDataFromRow(row);
   }
 
   String _actorFirstNameFromRow(
     Map<String, dynamic> row,
     AppLocalizations l10n,
   ) {
-    final sid = row['related_user_id']?.toString();
+    final sid = row['sender_id']?.toString() ?? row['related_user_id']?.toString();
     if (sid != null && sid.isNotEmpty) {
       for (final m in _members) {
         if (m.member.userId == sid) return _firstName(m, l10n);
@@ -292,10 +322,16 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
   Future<void> _load() async {
     final l10n = AppLocalizations.of(context)!;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    final isInitialLoad = _planData == null;
+    final preservedCarouselIndex = _slotCarouselIndex;
+    if (isInitialLoad) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    } else if (mounted) {
+      setState(() => _error = null);
+    }
     try {
       final repo = ref.read(groupPlanningRepositoryProvider);
       final results = await Future.wait([
@@ -339,6 +375,23 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         _members = members;
         _session = session;
         _loading = false;
+        if (isInitialLoad) {
+          _slotCarouselIndex =
+              _initialSlotCarouselIndex(planData, session);
+          _slotPageController?.dispose();
+          _slotPageController = PageController(
+            initialPage:
+                _slotCarouselIndex.clamp(0, GroupPlanV2.slots.length - 1),
+            viewportFraction: 0.98,
+          );
+        } else {
+          _slotCarouselIndex =
+              preservedCarouselIndex.clamp(0, GroupPlanV2.slots.length - 1);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _jumpSlotPage(_slotCarouselIndex);
+          });
+        }
         if (_isOwner && !_ownerBatchSaving) {
           final oc = _oc(planData);
           _ownerSlotDraft
@@ -352,17 +405,22 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _maybePresentSwapDecisionSheet();
       });
-    } on TimeoutException {
+    } on TimeoutException catch (e, st) {
+      debugPrint('[Result] _load timeout: $e\n$st');
       if (mounted) {
         setState(() {
           _error = AppLocalizations.of(context)!.planLoadingErrorNetwork;
           _loading = false;
         });
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[Result] _load failed: $e\n$st');
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
-          _error = e.toString();
+          _error = l10n == null
+              ? null
+              : GroupPlanningUi.classifyError(l10n, e);
           _loading = false;
         });
       }
@@ -490,11 +548,37 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return need.every((s) => m[s] == true);
   }
 
+  bool _ownerHasAnyConfirmed(Map<String, dynamic>? p) {
+    if (p == null) return false;
+    final m = _oc(p);
+    final need = GroupPlanV2.slotsRequiringConfirmation(p);
+    return need.any((s) => m[s] == true);
+  }
+
   bool _allGuestConfirmed(Map<String, dynamic>? p) {
     if (p == null) return false;
     final m = _gc(p);
     final need = GroupPlanV2.slotsRequiringConfirmation(p);
     return need.every((s) => m[s] == true);
+  }
+
+  /// Slots that have an activity in this plan (guest/owner review targets).
+  List<String> _slotsNeedingReview(Map<String, dynamic>? p) =>
+      GroupPlanV2.slotsRequiringConfirmation(p);
+
+  (int, int) _guestConfirmProgress(Map<String, dynamic>? p) {
+    final need = _slotsNeedingReview(p);
+    if (need.isEmpty) return (0, 0);
+    final m = _gc(p);
+    final done = need.where((s) => m[s] == true).length;
+    return (done, need.length);
+  }
+
+  (int, int) _ownerDraftProgress(Map<String, dynamic>? p) {
+    final need = _slotsNeedingReview(p);
+    if (need.isEmpty) return (0, 0);
+    final done = need.where((s) => _ownerSlotDraft.contains(s)).length;
+    return (done, need.length);
   }
 
   bool _hasPendingSwap(Map<String, dynamic>? p) {
@@ -521,40 +605,76 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return false;
   }
 
+  /// Resolves a Places id for navigation. Treats **empty strings** as missing
+  /// (unlike `??`, which only skips `null` — a blank `place_id` would otherwise
+  /// block falling through to `id`).
+  String? _placeIdForDetailNavigation(Map<String, dynamic> activity) {
+    String? pick(dynamic v) {
+      if (v == null) return null;
+      final t = v.toString().trim();
+      return t.isEmpty ? null : t;
+    }
+
+    for (final v in [
+      activity['place_id'],
+      activity['placeId'],
+      activity['id'],
+    ]) {
+      final id = pick(v);
+      if (id != null && !id.startsWith('groupplan_')) return id;
+    }
+    final loc = activity['location'];
+    if (loc is Map) {
+      for (final key in ['placeId', 'place_id', 'id']) {
+        final id = pick(loc[key]);
+        if (id != null && !id.startsWith('groupplan_')) return id;
+      }
+    }
+    return null;
+  }
+
   /// Open the standard place detail screen for an activity, just like the
-  /// Explorer screen does. Uses the activity's place_id (Moody attaches one
-  /// for every Google Places result).
+  /// Explorer screen does.
   void _openPlaceDetail(Map<String, dynamic> activity) {
-    final raw = (activity['place_id'] ??
-            activity['placeId'] ??
-            (activity['location'] is Map
-                ? (activity['location'] as Map)['placeId'] ??
-                    (activity['location'] as Map)['place_id']
-                : null))
-        ?.toString()
-        .trim();
+    final raw = _placeIdForDetailNavigation(activity);
     if (raw == null || raw.isEmpty) return;
     context.push('/place/${Uri.encodeComponent(raw)}');
   }
 
   Future<String?> _resolvePlannedDateString() async {
-    var date = _planData?['planned_date'] as String?;
-    if (date == null || date.isEmpty) {
-      date = _session?.plannedDate;
+    String? normalize(String? raw) {
+      final t = raw?.trim();
+      if (t == null || t.isEmpty) return null;
+      final d = DateTime.tryParse(t);
+      if (d != null) {
+        final l = d.toLocal();
+        return '${l.year}-${l.month.toString().padLeft(2, '0')}-${l.day.toString().padLeft(2, '0')}';
+      }
+      if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(t)) return t;
+      return null;
     }
-    if (date == null || date.isEmpty) {
-      date = await MoodMatchSessionPrefs.readPlannedDate(widget.sessionId);
+
+    return normalize(_session?.plannedDate) ??
+        normalize(await MoodMatchSessionPrefs.readPlannedDate(widget.sessionId)) ??
+        normalize(_planData?['planned_date'] as String?);
+  }
+
+  void _syncHomeAfterPlanSave(String yyyyMmDd) {
+    final d = DateTime.tryParse(yyyyMmDd);
+    if (d != null) {
+      ref.read(selectedMyDayDateProvider.notifier).state =
+          DateTime(d.year, d.month, d.day);
     }
-    final trimmed = date?.trim();
-    if (trimmed == null || trimmed.isEmpty) return null;
-    return trimmed;
+    unawaited(MoodMatchSessionPrefs.savePlannedDate(widget.sessionId, yyyyMmDd));
+    ref.invalidate(scheduledActivitiesForTodayProvider);
+    ref.invalidate(todayActivitiesProvider);
   }
 
   void _goToMyDayHome(
     String? plannedDate, {
     bool showMoodMatchSuccessToast = false,
   }) {
-    final extra = <String, dynamic>{};
+    final extra = <String, dynamic>{'tab': 3};
     if (plannedDate != null &&
         plannedDate.isNotEmpty &&
         DateTime.tryParse(plannedDate) != null) {
@@ -564,7 +684,9 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       extra['moodMatchMyDayToast'] = true;
       extra['moodMatchToastNonce'] = DateTime.now().microsecondsSinceEpoch;
     }
-    context.go('/main?tab=0', extra: extra.isEmpty ? null : extra);
+    // Route to My Plans (tab=3) so users land on the day they scheduled —
+    // My Day always shows today, which confused users on future dates.
+    context.go('/main?tab=3', extra: extra);
   }
 
   Future<void> _finishNavigateToMyDay(String? plannedDate) async {
@@ -609,6 +731,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       if (mounted) setState(() => _saving = false);
     }
     if (!mounted) return;
+    _syncHomeAfterPlanSave(date);
     await _finishNavigateToMyDay(date);
   }
 
@@ -643,6 +766,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       if (mounted) setState(() => _saving = false);
     }
     if (!mounted) return;
+    _syncHomeAfterPlanSave(date);
     await _finishNavigateToMyDay(date);
   }
 
@@ -656,6 +780,42 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         return l10n.moodMatchTimePickerEvening;
       default:
         return slot;
+    }
+  }
+
+  String _slotEmojiPrefix(String slot) {
+    return switch (slot) {
+      'morning' => '🌅 ',
+      'afternoon' => '☀️ ',
+      'evening' => '🌆 ',
+      _ => '',
+    };
+  }
+
+  String _moodTagEmoji(String tag) {
+    switch (tag.toLowerCase()) {
+      case 'adventurous':
+        return '🧗';
+      case 'relaxed':
+        return '😌';
+      case 'social':
+        return '🥂';
+      case 'cultural':
+        return '🏛️';
+      case 'romantic':
+        return '💕';
+      case 'energetic':
+        return '⚡';
+      case 'foody':
+        return '🍽️';
+      case 'creative':
+        return '🎨';
+      case 'cozy':
+        return '🕯️';
+      case 'surprise':
+        return '✨';
+      default:
+        return '✨';
     }
   }
 
@@ -712,7 +872,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
   Future<void> _commitOwnerSlotDraft(AppLocalizations l10n) async {
     if (_ownerBatchSaving || !_isOwner || _planData == null) return;
-    if (_ownerSlotDraft.length != GroupPlanV2.slots.length) return;
+    if (_ownerSlotDraft.isEmpty) return;
     setState(() => _ownerBatchSaving = true);
     try {
       final repo = ref.read(groupPlanningRepositoryProvider);
@@ -735,7 +895,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
   Future<void> _onSendToGuest(AppLocalizations l10n) async {
     final guest = _guestMember();
-    if (guest == null || !_allOwnerConfirmed(_planData)) return;
+    if (guest == null || !_ownerHasAnyConfirmed(_planData)) return;
     if (_saving) return;
     setState(() => _saving = true);
     try {
@@ -768,6 +928,19 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     }
   }
 
+  Future<void> _onGuestUnconfirmSlot(String slot) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      await ref
+          .read(groupPlanningRepositoryProvider)
+          .setGuestSlotConfirmed(widget.sessionId, slot, false);
+      await _load();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   Future<void> _pickSwapAlternative(
     String slot,
     Map<String, dynamic> activity,
@@ -775,11 +948,20 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      await ref.read(groupPlanningRepositoryProvider).setSwapRequest(
-            sessionId: widget.sessionId,
-            slot: slot,
-            proposedActivity: activity,
-          );
+      final sent = _sentToGuest(_planData);
+      if (_isOwner && !sent) {
+        await ref.read(groupPlanningRepositoryProvider).replaceActivityForSlot(
+              sessionId: widget.sessionId,
+              slot: slot,
+              activity: activity,
+            );
+      } else {
+        await ref.read(groupPlanningRepositoryProvider).setSwapRequest(
+              sessionId: widget.sessionId,
+              slot: slot,
+              proposedActivity: activity,
+            );
+      }
       final owner = _ownerMember();
       final guest = _guestMember();
       final uid = Supabase.instance.client.auth.currentUser?.id;
@@ -787,7 +969,6 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
               uid == owner.member.userId
           ? guest?.member.userId
           : owner?.member.userId;
-      final sent = _sentToGuest(_planData);
       // Draft phase: owner refines before "Send to guest" — no swap ping to guest.
       if (notifyUserId != null && sent) {
         try {
@@ -820,23 +1001,69 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             .toList() ??
         ['relaxed'];
     final pos = await ref.read(userLocationProvider.future);
-    final lat = pos?.latitude ?? 52.3676;
-    final lng = pos?.longitude ?? 4.9041;
-    final ai = await WanderMoodAIService.getRecommendations(
+    final lat = pos?.latitude ??
+        (wm_location.LocationService.defaultLocation['latitude'] as double);
+    final lng = pos?.longitude ??
+        (wm_location.LocationService.defaultLocation['longitude'] as double);
+    final locationAsync = ref.read(locationNotifierProvider);
+    final rawCity = locationAsync.value?.trim();
+    final city = (rawCity != null && rawCity.isNotEmpty)
+        ? rawCity
+        : (wm_location.LocationService.defaultLocation['name'] as String);
+    final prefs = ref.read(preferencesProvider);
+    DateTime? plannedDayLocal;
+    final pd = (_planData!['planned_date'] as String?)?.trim();
+    if (pd != null && pd.isNotEmpty) {
+      final parsed = DateTime.tryParse(pd);
+      if (parsed != null) {
+        final l = parsed.toLocal();
+        plannedDayLocal = DateTime(l.year, l.month, l.day);
+      }
+    }
+    final ai = await WanderMoodAIService.getGroupMatchCreateDayPlan(
       moods: moods,
+      location: city,
       latitude: lat,
       longitude: lng,
-      plannedDate: _planData!['planned_date'] as String?,
-      groupMatch: true,
+      languageCode: prefs.languagePreference,
+      plannedDay: plannedDayLocal,
     );
-    final extras = ai.recommendations
-        .map(GroupPlanV2.aiRecommendationToActivityMap)
+    if (ai.recommendations.isEmpty) return;
+
+    final usedPlaceIds = <String>{};
+    void trackPlace(Map<String, dynamic> m) {
+      final id = GroupPlanV2.resolvePlaceId(m);
+      if (id != null && id.isNotEmpty) usedPlaceIds.add(id);
+    }
+
+    for (final x in pools[slot] ?? const <Map<String, dynamic>>[]) {
+      trackPlace(x);
+    }
+    final current = GroupPlanV2.activityForSlot(_planData, slot);
+    if (current != null) trackPlace(current);
+
+    final slotLc = slot.toLowerCase();
+    var ordered = ai.recommendations
+        .where((r) => r.timeSlot.toLowerCase().trim() == slotLc)
         .toList();
+    if (ordered.isEmpty) ordered = List.of(ai.recommendations);
+
+    final extras = <Map<String, dynamic>>[];
+    for (final r in ordered) {
+      final m = GroupPlanV2.aiRecommendationToActivityMap(r);
+      final pid = GroupPlanV2.resolvePlaceId(m);
+      if (pid != null && pid.isNotEmpty && usedPlaceIds.contains(pid)) {
+        continue;
+      }
+      if (pid != null && pid.isNotEmpty) usedPlaceIds.add(pid);
+      extras.add(m);
+      if (extras.length >= 8) break;
+    }
     if (extras.isEmpty) return;
     await ref.read(groupPlanningRepositoryProvider).appendSwapPoolForSlot(
           sessionId: widget.sessionId,
           slot: slot,
-          extras: extras.take(8).toList(),
+          extras: extras,
         );
     await _load();
   }
@@ -1094,19 +1321,37 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       return Scaffold(
         backgroundColor: GroupPlanningUi.moodMatchDeep,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const MoodyCharacter(size: 100, mood: 'thinking'),
-              const SizedBox(height: 16),
-              Text(
-                l10n.groupPlanLoadingCompactHeadline,
-                style: GoogleFonts.poppins(
-                  color: _textPrimary.withValues(alpha: 0.85),
-                  fontWeight: FontWeight.w600,
+          child: Semantics(
+            liveRegion: true,
+            label: l10n.groupPlanLoadingCompactHeadline,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const MoodyCharacter(size: 100, mood: 'thinking'),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.groupPlanLoadingCompactHeadline,
+                  style: GoogleFonts.poppins(
+                    color: _textPrimary.withValues(alpha: 0.85),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                // Subtle progress so users know the app is actually working
+                // (the 15s timeout on `_load` previously gave zero feedback
+                // on slow networks — just a stationary Moody for 10+ seconds).
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _textPrimary.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -1118,17 +1363,46 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
           backgroundColor: GroupPlanningUi.moodMatchDeep,
           foregroundColor: _textPrimary,
           leading: IconButton(
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => context.go('/group-planning'),
           ),
         ),
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(color: _textPrimary.withValues(alpha: 0.7)),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('😕', style: TextStyle(fontSize: 44)),
+                const SizedBox(height: 14),
+                Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: _textPrimary.withValues(alpha: 0.85),
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                FilledButton.icon(
+                  onPressed: _load,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: Text(l10n.planLoadingTryAgain),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: GroupPlanningUi.moodMatchDeep,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1144,7 +1418,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     // recaps "matching vibes" — repeating it here makes Moody sound robotic).
     // Pick a result-specific line from a small rotating set, keyed off the
     // session id so it stays stable across rebuilds for the same plan.
-    // Hero shows a short teaser only (score lives on reveal).
+    // Full hero line (no hard character cap — that mid-word cut "another o…").
     final commStyle = ref.watch(preferencesProvider).communicationStyle;
     final moodyLineFull = _isOwner
         ? moodMatchPlanResultMoodyLine(
@@ -1155,7 +1429,6 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             backendOverride: plan['moodyMessageResult'] as String?,
           )
         : l10n.moodMatchPlanV2GuestMoody(ownerName);
-    final moodyLineHero = moodMatchResultHeroMoodyTeaser(moodyLineFull);
 
     final dateStr = plan['planned_date'] as String? ??
         _session?.plannedDate ??
@@ -1168,8 +1441,23 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
     final sent = _sentToGuest(plan);
     final guestWaiting = !_isOwner && !sent;
-    final activeSlots =
+    final activitySlots =
         GroupPlanV2.slotsRequiringConfirmation(plan).toList();
+    final activityCount = activitySlots.length;
+    final carouselIdx =
+        _slotCarouselIndex.clamp(0, GroupPlanV2.slots.length - 1);
+    final currentCarouselSlot = GroupPlanV2.slots[carouselIdx];
+    final ocMap = _oc(plan);
+    final gcMap = _gc(plan);
+    final currentSlotOwnerIn = ocMap[currentCarouselSlot] == true;
+    final currentSlotGuestIn = gcMap[currentCarouselSlot] == true;
+    final moodyLineDisplay = _moodyLineWithActivityCount(
+      moodyLineFull,
+      activityCount,
+    );
+    final planMoodsRaw = plan['moods'];
+    final hasPlanLevelMoods =
+        planMoodsRaw is List<dynamic> && planMoodsRaw.isNotEmpty;
 
     return Scaffold(
       backgroundColor: GroupPlanningUi.moodMatchDeep,
@@ -1287,16 +1575,9 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                     CrossAxisAlignment.stretch,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _headerAvatars(
-                                    owner,
-                                    guest,
-                                    ownerName,
-                                    guestName,
-                                  ),
-                                  const SizedBox(height: 10),
                                   _moodyHeroLine(
-                                    moodyLineHero,
-                                    maxLines: 3,
+                                    moodyLineDisplay,
+                                    maxLines: 5,
                                   ),
                                 ],
                               ),
@@ -1339,30 +1620,68 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                     ),
                                   ),
                                   const SizedBox(height: 8),
+                                  _creamAvatarSection(
+                                    l10n,
+                                    plan,
+                                    owner,
+                                    guest,
+                                    ownerName,
+                                    guestName,
+                                    ownerAccepted: currentSlotOwnerIn,
+                                    guestAccepted: currentSlotGuestIn,
+                                    bothInCaption: sent &&
+                                            currentSlotOwnerIn &&
+                                            currentSlotGuestIn
+                                        ? (_isOwner
+                                            ? l10n.moodMatchPlanV2YouBothIn(
+                                                guestName,
+                                              )
+                                            : l10n.moodMatchPlanV2YouBothIn(
+                                                ownerName,
+                                              ))
+                                        : null,
+                                  ),
+                                  if (!_isOwner &&
+                                      sent &&
+                                      currentSlotOwnerIn &&
+                                      !currentSlotGuestIn &&
+                                      GroupPlanV2.swapRequestForSlot(
+                                            plan,
+                                            currentCarouselSlot,
+                                          ) ==
+                                          null) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      l10n.moodMatchPlanV2OwnerInYourCall(
+                                        ownerName,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: _wmSunset,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 14),
                                   if (dateStr.isNotEmpty) ...[
                                     _contextPill(
-                                      l10n.moodMatchPlanV2ContextPlannedDay(
-                                        dayPretty,
-                                      ),
+                                      '📅  $dayPretty',
                                     ),
                                     const SizedBox(height: 12),
                                   ] else
                                     const SizedBox(height: 6),
-                                  _planMoodsSummary(l10n, plan),
+                                  if (!hasPlanLevelMoods)
+                                    _planMoodsSummary(l10n, plan),
                                   if (_isOwner)
                                     _ownerSwapBanners(l10n, guestName),
-                                  for (final slot in activeSlots)
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 14,
-                                      ),
-                                      child: _slotCard(
-                                        slot,
-                                        l10n,
-                                        ownerName,
-                                        guestName,
-                                      ),
-                                    ),
+                                  _slotCarousel(
+                                    activitySlots,
+                                    l10n,
+                                    ownerName,
+                                    guestName,
+                                  ),
                                 ],
                               ),
                             ),
@@ -1403,72 +1722,6 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     );
   }
 
-  Widget _headerAvatars(
-    GroupMemberView? owner,
-    GroupMemberView? guest,
-    String ownerName,
-    String guestName, {
-    bool forLightBackground = false,
-  }) {
-    final nameColor = forLightBackground
-        ? _creamInk.withValues(alpha: 0.88)
-        : _textPrimary.withValues(alpha: 0.88);
-    final plusColor = forLightBackground
-        ? _creamInkSoft.withValues(alpha: 0.45)
-        : _textPrimary.withValues(alpha: 0.35);
-
-    Widget av(GroupMemberView? m, String label) {
-      final url = m?.avatarUrl?.trim();
-      return Column(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: _wmForest,
-            backgroundImage:
-                url != null && url.isNotEmpty ? NetworkImage(url) : null,
-            child: url == null || url.isEmpty
-                ? Text(
-                    label.isNotEmpty ? label[0].toUpperCase() : '?',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: nameColor,
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        av(owner, ownerName),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            '+',
-            style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w300,
-              color: plusColor,
-            ),
-          ),
-        ),
-        av(guest, guestName),
-      ],
-    );
-  }
-
   /// Moody as part of the hero — no “boxed” callout; matches reveal energy.
   Widget _moodyHeroLine(
     String text, {
@@ -1481,7 +1734,10 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const MoodyCharacter(size: 50, mood: 'happy'),
+        const Opacity(
+          opacity: 0.82,
+          child: MoodyCharacter(size: 44, mood: 'happy'),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Padding(
@@ -1504,6 +1760,317 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     );
   }
 
+  String _moodyLineWithActivityCount(String source, int activityCount) {
+    final s = source.trim();
+    if (s.isEmpty || activityCount >= 3) return s;
+    if (activityCount <= 1) {
+      return s
+          .replaceAll('Three small moments', 'One great moment')
+          .replaceAll('three small moments', 'one great moment')
+          .replaceAll('3 spots', '1 spot')
+          .replaceAll('three spots', 'one spot');
+    }
+    return s
+        .replaceAll('Three small moments', 'Two great moments')
+        .replaceAll('three small moments', 'two great moments')
+        .replaceAll('3 spots', '2 spots')
+        .replaceAll('three spots', 'two spots');
+  }
+
+  Widget _slotCarousel(
+    List<String> activitySlots,
+    AppLocalizations l10n,
+    String ownerName,
+    String guestName,
+  ) {
+    const displaySlots = GroupPlanV2.slots;
+    final hasActivity = activitySlots.toSet();
+    final pageCount = displaySlots.length;
+    final safeIndex = _slotCarouselIndex.clamp(0, pageCount - 1);
+    if (safeIndex != _slotCarouselIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _slotCarouselIndex = safeIndex);
+      });
+    }
+
+    _slotPageController ??= PageController(
+      initialPage: safeIndex,
+      viewportFraction: 0.98,
+    );
+
+    /// Single-slot plans still use the 3-tab strip + placeholder pages.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 50,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: GroupPlanningUi.cardBorder, width: 1.4),
+          ),
+          child: Row(
+            children: List.generate(pageCount, (i) {
+              final slot = displaySlots[i];
+              final inPlan = hasActivity.contains(slot);
+              final selected = i == _slotCarouselIndex;
+              return Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _slotCarouselIndex = i);
+                    _jumpSlotPage(i);
+                  },
+                  child: AnimatedOpacity(
+                    opacity: inPlan ? 1 : 0.42,
+                    duration: const Duration(milliseconds: 160),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      decoration: BoxDecoration(
+                        color:
+                            selected ? GroupPlanningUi.forest : Colors.transparent,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${(i + 1).toString().padLeft(2, '0')} ${_slotEmojiPrefix(slot)}${_slotTitle(l10n, slot)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: selected ? Colors.white : _creamInkSoft,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 560,
+          child: PageView.builder(
+            controller: _slotPageController,
+            onPageChanged: (i) {
+              HapticFeedback.lightImpact();
+              setState(() => _slotCarouselIndex = i);
+            },
+            itemCount: pageCount,
+            itemBuilder: (context, i) {
+              final slot = displaySlots[i];
+              return Padding(
+                padding: const EdgeInsets.only(right: 6, bottom: 4),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: hasActivity.contains(slot)
+                      ? _slotCard(slot, l10n, ownerName, guestName)
+                      : _inactiveSlotPlaceholder(slot, l10n),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _inactiveSlotPlaceholder(String slot, AppLocalizations l10n) {
+    final label = _slotTitle(l10n, slot);
+    return Material(
+      color: GroupPlanningUi.forestTint.withValues(alpha: 0.35),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: GroupPlanningUi.cardBorder.withValues(alpha: 0.6)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              switch (slot) {
+                'morning' => '🌅',
+                'afternoon' => '☀️',
+                'evening' => '🌆',
+                _ => '✨',
+              },
+              style: const TextStyle(fontSize: 36),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: _creamInk,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              l10n.moodMatchPlanV2SlotNotInThisPlan(label),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                height: 1.4,
+                color: _creamInkSoft,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _creamAvatarSection(
+    AppLocalizations l10n,
+    Map<String, dynamic> plan,
+    GroupMemberView? owner,
+    GroupMemberView? guest,
+    String ownerName,
+    String guestName, {
+    required bool ownerAccepted,
+    required bool guestAccepted,
+    String? bothInCaption,
+  }) {
+    Widget circleOnly(GroupMemberView? m, String label, bool accepted) {
+      final url = m?.avatarUrl?.trim();
+      final borderColor =
+          accepted ? const Color(0xFF2A6049) : GroupPlanningUi.cardBorder;
+      return Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 2.5),
+          boxShadow: accepted
+              ? [
+                  BoxShadow(
+                    color: _mint.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : null,
+        ),
+        child: CircleAvatar(
+          radius: 28,
+          backgroundColor: _wmForest,
+          backgroundImage:
+              url != null && url.isNotEmpty ? NetworkImage(url) : null,
+          child: url == null || url.isEmpty
+              ? Text(
+                  label.isNotEmpty ? label[0].toUpperCase() : '?',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                )
+              : null,
+        ),
+      );
+    }
+
+    final rawMoods = plan['moods'];
+    final moodTags = <String>[];
+    if (rawMoods is List<dynamic>) {
+      for (final e in rawMoods) {
+        final s = e.toString().trim().toLowerCase();
+        if (s.isNotEmpty && !moodTags.contains(s)) moodTags.add(s);
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            circleOnly(owner, ownerName, ownerAccepted),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Text(
+                '+',
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w300,
+                  color: _creamInkSoft.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
+            circleOnly(guest, guestName, guestAccepted),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                ownerName,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _creamInk.withValues(alpha: 0.88),
+                ),
+              ),
+            ),
+            const SizedBox(width: 50),
+            Expanded(
+              child: Text(
+                guestName,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _creamInk.withValues(alpha: 0.88),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (bothInCaption != null && bothInCaption.trim().isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            bothInCaption,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _creamInk.withValues(alpha: 0.88),
+              height: 1.3,
+            ),
+          ),
+        ],
+        if (moodTags.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            moodTags
+                .map(
+                  (t) =>
+                      '${_moodTagEmoji(t)} ${groupPlanLocalizedMoodTag(l10n, t)}',
+                )
+                .join('  ·  '),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _wmForest.withValues(alpha: 0.9),
+              height: 1.35,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _planMoodsSummary(AppLocalizations l10n, Map<String, dynamic> plan) {
     final raw = plan['moods'];
     final tags = <String>[];
@@ -1517,18 +2084,28 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     final labels =
         tags.map((t) => groupPlanLocalizedMoodTag(l10n, t)).join(' · ');
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Center(
-        child: Text(
-          l10n.moodMatchPlanV2BasedOnMoods(labels),
-          textAlign: TextAlign.center,
-          maxLines: 4,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: _creamInkSoft,
-            height: 1.35,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: GroupPlanningUi.forestTint.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: GroupPlanningUi.forest.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Text(
+            l10n.moodMatchPlanV2BasedOnMoods(labels),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: _creamInk,
+              height: 1.25,
+            ),
           ),
         ),
       ),
@@ -1538,7 +2115,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   Widget _contextPill(String text) {
     return Center(
       child: FractionallySizedBox(
-        widthFactor: 1,
+        widthFactor: 0.76,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
           decoration: BoxDecoration(
@@ -1556,28 +2133,17 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.calendar_month_rounded,
-                size: 18,
-                color: GroupPlanningUi.forest,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  text,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    height: 1.25,
-                    color: _creamInk,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              height: 1.25,
+              color: _creamInk,
+            ),
           ),
         ),
       ),
@@ -1694,6 +2260,148 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return Column(children: widgets);
   }
 
+  String _priceLineFromActivity(dynamic costRaw) {
+    if (costRaw == null) return '€€';
+    var t = costRaw.toString().trim();
+    if (t.isEmpty) return '€€';
+    t = t.replaceAll(r'$', '€');
+    if (!t.contains('€')) {
+      final n = int.tryParse(t);
+      if (n != null && n >= 1 && n <= 4) {
+        return List.generate(n, (_) => '€').join();
+      }
+    }
+    return t;
+  }
+
+  /// Readable inline metadata (star · price · type) without a heavy pill frame.
+  Widget _slotCardMetaLine({
+    required double rating,
+    required dynamic costRaw,
+    required String typeLabel,
+  }) {
+    final price = _priceLineFromActivity(costRaw);
+    final showRating = rating > 0.05;
+    final textStyle = GoogleFonts.poppins(
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      height: 1.35,
+      color: _creamInkSoft.withValues(alpha: 0.84),
+    );
+    final dotStyle = textStyle.copyWith(
+      fontWeight: FontWeight.w700,
+      color: _creamInkSoft.withValues(alpha: 0.55),
+    );
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 6,
+      runSpacing: 4,
+      children: [
+        if (showRating) ...[
+          Icon(Icons.star_rounded, size: 18, color: _starGold),
+          Text(rating.toStringAsFixed(1), style: textStyle),
+          Text('·', style: dotStyle),
+        ] else
+          Text('—', style: textStyle),
+        Text(price, style: textStyle),
+        if (typeLabel.isNotEmpty) ...[
+          Text('·', style: dotStyle),
+          Text(typeLabel, style: textStyle),
+        ],
+      ],
+    );
+  }
+
+  String? _activityMoodLine(AppLocalizations l10n, String moodRaw) {
+    final parts = moodRaw
+        .split(RegExp(r'[;,]'))
+        .map((s) => s.trim().toLowerCase())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return null;
+    final labels =
+        parts.map((t) => groupPlanLocalizedMoodTag(l10n, t)).join(', ');
+    return l10n.moodMatchPlanV2ActivityMood(labels);
+  }
+
+  Widget _slotCardBothInFooter(
+    AppLocalizations l10n,
+    GroupMemberView? ownerMv,
+    GroupMemberView? guestMv,
+    String ownerName,
+    String guestName,
+  ) {
+    Widget face(GroupMemberView? m) {
+      final url = m?.avatarUrl?.trim();
+      final label = (m?.displayName ?? '?').trim();
+      final initial = label.isNotEmpty ? label[0].toUpperCase() : '?';
+      return Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: CircleAvatar(
+          radius: 13,
+          backgroundColor: _wmForest,
+          backgroundImage:
+              url != null && url.isNotEmpty ? NetworkImage(url) : null,
+          child: url == null || url.isEmpty
+              ? Text(
+                  initial,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1,
+                  ),
+                )
+              : null,
+        ),
+      );
+    }
+
+    final caption = _isOwner
+        ? l10n.moodMatchPlanV2YouBothIn(guestName)
+        : l10n.moodMatchPlanV2YouBothIn(ownerName);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F1EB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE5DFD4),
+        ),
+      ),
+      child: Row(
+        children: [
+          face(ownerMv),
+          Transform.translate(
+            offset: const Offset(-8, 0),
+            child: face(guestMv),
+          ),
+          const SizedBox(width: 2),
+          Expanded(
+            child: Text(
+              caption,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+                color: _slotCardBodyInk.withValues(alpha: 0.78),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _slotCard(
     String slot,
     AppLocalizations l10n,
@@ -1704,7 +2412,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     if (act == null) {
       return Text(
         slot,
-        style: const TextStyle(color: _creamInk),
+        style: const TextStyle(color: _slotCardBodyInk),
       );
     }
     final idx = GroupPlanV2.slotIndex(slot);
@@ -1723,16 +2431,10 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         swapReq != null ? GroupPlanV2.swapRequestedByUserId(swapReq) : null;
     final ownerId = _session?.createdBy;
     final guestUserId = _guestMember()?.member.userId;
-
-    final dur = GroupPlanV2.durationMinutes(act) ?? 60;
-    final timeBadge = '$dur min';
+    final ownerMv = _ownerMember();
+    final guestMv = _guestMember();
 
     final moodRaw = (act['moodMatch'] ?? '').toString().trim();
-    final moodLabel = moodRaw.isNotEmpty
-        ? groupPlanLocalizedMoodTag(l10n, moodRaw.toLowerCase())
-        : null;
-
-    final titleUpper = _slotTitle(l10n, slot).toUpperCase();
 
     final sent = _sentToGuest(_planData);
     final draftSelected = _isOwner && !sent && _ownerSlotDraft.contains(slot);
@@ -1742,20 +2444,35 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       (place.primaryType ?? act['type'] ?? '').toString(),
       languageCode: lang,
     );
-    final rawNote = (act['moodyNote'] ?? '').toString().trim();
-    final moodyNote = rawNote.isNotEmpty
-        ? rawNote
-        : moodMatchActivityNoteLine(
-            lang,
-            (place.primaryType ?? act['type'] ?? '').toString(),
-            moodRaw.isNotEmpty ? moodRaw.toLowerCase() : null,
-          );
+    // Prefer real Moody / model copy — avoid repeating the same generic "tip"
+    // for every card when the backend did not attach a moody line.
+    final moodyRaw = (act['moodyNote'] ??
+            act['moody_note'] ??
+            act['moody_line'] ??
+            act['insight'] ??
+            '')
+        .toString()
+        .trim();
+    final activityDesc = (act['description'] ?? '').toString().trim();
+    final placeBlurp =
+        (place.editorialSummary ?? place.description ?? '').toString().trim();
+    final primaryStory = moodyRaw.isNotEmpty
+        ? moodyRaw
+        : (activityDesc.isNotEmpty ? activityDesc : placeBlurp);
+    final secondaryStory = moodyRaw.isNotEmpty &&
+            placeBlurp.isNotEmpty &&
+            placeBlurp != moodyRaw &&
+            !placeBlurp.startsWith(moodyRaw)
+        ? placeBlurp
+        : '';
+    final planFullySignedOff = _allGuestConfirmed(_planData) &&
+        _allOwnerConfirmed(_planData);
 
     String? statusBadge;
     Color statusColor = const Color(0xFF5DCAA5);
-    if (guestOk && ownerOk) {
-      statusBadge = l10n.moodMatchPlanV2BothIn;
-      statusColor = const Color(0xFF5DCAA5);
+    final bothConfirmedOnSlot = guestOk && ownerOk;
+    if (bothConfirmedOnSlot) {
+      statusBadge = null;
     } else if (!_isOwner &&
         pendingSwap &&
         ownerId != null &&
@@ -1773,91 +2490,42 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       statusColor = _wmSunset;
     }
 
-    // Participant line is only shown when both are in (a real "with X"
-    // signal), or when there is a meaningful nudge for the guest. Avoids
-    // repeating "Confirm before sending" / "Waiting for you" on every card.
-    String? participantLine;
-    if (guestOk && ownerOk) {
-      participantLine = l10n.moodMatchPlanV2YouBothIn(ownerName);
-    } else if (!_isOwner && ownerOk && !guestOk && !pendingSwap) {
-      participantLine = l10n.moodMatchPlanV2OwnerInYourCall(ownerName);
-    }
-
     final url = (act['imageUrl'] ?? '').toString();
-    final ownerM = _ownerMember();
-    final guestM = _guestMember();
     final ownerLocks = _ownerLocksPlanWhileGuestReviews(_planData);
+    final showHeroDraftCheck = draftSelected && !bothConfirmedOnSlot;
+    final moodLine = _activityMoodLine(l10n, moodRaw);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Text(
-              switch (slot) {
-                'morning' => '🌅',
-                'afternoon' => '☀️',
-                'evening' => '🌆',
-                _ => '',
-              },
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              titleUpper,
-              style: GoogleFonts.poppins(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-                color: _creamInkSoft.withValues(alpha: 0.85),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Container(
-                  height: 1,
-                  color: _creamInk.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
         Material(
           color: Colors.white,
-          elevation: pendingSwap ? 8 : 4,
-          shadowColor: GroupPlanningUi.moodMatchShadow(0.12),
+          elevation: pendingSwap ? 5 : 3,
+          shadowColor: GroupPlanningUi.moodMatchShadow(0.14),
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             side: pendingSwap
                 ? BorderSide(
-                    color: _wmSunset.withValues(alpha: 0.45),
-                    width: 1,
+                    color: _wmSunset.withValues(alpha: 0.55),
+                    width: 1.2,
                   )
-                : draftSelected
-                    ? const BorderSide(color: _wmForest, width: 2)
-                    : BorderSide(color: GroupPlanningUi.cardBorder),
+                : const BorderSide(
+                    color: Color(0xFF2A6049),
+                    width: 1.2,
+                  ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: InkWell(
-            onTap: () {
-              if (_isOwner &&
-                  !sent &&
-                  !pendingSwap &&
-                  !ownerLocks) {
-                _toggleOwnerSlotDraft(slot);
-              } else {
-                _openPlaceDetail(act);
-              }
-            },
+            onTap: () => _openPlaceDetail(act),
+            borderRadius: BorderRadius.circular(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Stack(
+                  clipBehavior: Clip.hardEdge,
                   children: [
                     SizedBox(
-                      height: 90,
+                      height: 168,
                       width: double.infinity,
                       child: url.isNotEmpty
                           ? WmPlacePhotoNetworkImage(url, fit: BoxFit.cover)
@@ -1867,97 +2535,72 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                               ),
                             ),
                     ),
-                    if (_isOwner && !sent && !pendingSwap && !ownerLocks)
+                    if (bothConfirmedOnSlot)
                       Positioned(
-                        left: 2,
-                        top: 2,
-                        child: Material(
-                          color: Colors.black45,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            onTap: () => _openPlaceDetail(act),
-                            child: const SizedBox(
-                              width: 44,
-                              height: 44,
-                              child: Icon(
-                                Icons.info_outline_rounded,
+                        right: 8,
+                        top: 8,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.sizeOf(context).width * 0.58,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2A6049),
+                              borderRadius: BorderRadius.circular(999),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x33000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              l10n.moodMatchPlanV2BothIn,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
-                                size: 22,
+                                height: 1.2,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    if (draftSelected && statusBadge == null)
-                      const Positioned(
+                      )
+                    else if (showHeroDraftCheck)
+                      Positioned(
                         right: 8,
                         top: 8,
                         child: DecoratedBox(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Color(0xFF2A6049),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x33000000),
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.all(4),
+                          child: const Padding(
+                            padding: EdgeInsets.all(5),
                             child: Icon(
                               Icons.check_rounded,
                               color: Colors.white,
-                              size: 18,
+                              size: 16,
                             ),
                           ),
                         ),
-                      ),
-                    Positioned(
-                      left: 8,
-                      bottom: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: GroupPlanningUi.moodMatchShadow(0.55),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          timeBadge,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 8,
-                      bottom: 8,
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(6, 4, 4, 4),
-                        decoration: BoxDecoration(
-                          color: GroupPlanningUi.moodMatchShadow(0.55),
-                          borderRadius: BorderRadius.circular(999),
-                          border: guestOk && ownerOk
-                              ? Border.all(
-                                  color: const Color(0xFF2A6049)
-                                      .withValues(alpha: 0.45),
-                                )
-                              : null,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _microAvatar(ownerM, ownerOk),
-                            Transform.translate(
-                              offset: const Offset(-8, 0),
-                              child: _microAvatar(guestM, guestOk),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if (statusBadge != null)
+                      )
+                    else if (statusBadge != null)
                       Positioned(
                         right: 8,
                         top: 8,
@@ -1977,7 +2620,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                           child: Text(
                             statusBadge,
                             style: GoogleFonts.poppins(
-                              fontSize: 9,
+                              fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: statusColor,
                             ),
@@ -1987,68 +2630,109 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                   ],
                 ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
                       place.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: _creamInk,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: _slotCardBodyInk,
+                        height: 1.25,
                       ),
                     ),
-                    if (moodLabel != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.moodMatchPlanV2ActivityMood(moodLabel),
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: _wmForest.withValues(alpha: 0.88),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Text(
-                      '★ ${place.rating.toStringAsFixed(1)} · ${act['cost'] ?? '€€'} · $typeLabel',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: _creamInkSoft,
-                      ),
-                    ),
-                    if (moodyNote.isNotEmpty) ...[
+                    if (moodLine != null) ...[
                       const SizedBox(height: 6),
                       Text(
-                        '✨ $moodyNote',
+                        moodLine,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                           height: 1.35,
-                          color: const Color(0xFFF5F0E8).withValues(alpha: 0.6),
+                          color: const Color(0xFF2A6049),
                         ),
                       ),
                     ],
-                    if (participantLine != null) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _tinyAvatar(ownerName, true),
-                          const SizedBox(width: 6),
-                          _tinyAvatar(guestName, true),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              participantLine,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: _creamInkSoft,
-                              ),
+                    const SizedBox(height: 8),
+                    _slotCardMetaLine(
+                      rating: place.rating,
+                      costRaw: act['cost'],
+                      typeLabel: typeLabel,
+                    ),
+                    // Fixed vertical space so every slot card reads as the same
+                    // height, whether the model attached a long Moody line or not.
+                    SizedBox(
+                      height: 104,
+                      child: primaryStory.isEmpty && secondaryStory.isEmpty
+                          ? const SizedBox.shrink()
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (primaryStory.isNotEmpty)
+                                  Text(
+                                    primaryStory.startsWith('✨')
+                                        ? primaryStory
+                                        : '✨ $primaryStory',
+                                    maxLines: 4,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: true,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.45,
+                                      color: _slotCardBodyInk
+                                          .withValues(alpha: 0.82),
+                                    ),
+                                  ),
+                                if (secondaryStory.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    secondaryStory,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: true,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      height: 1.45,
+                                      fontWeight: FontWeight.w500,
+                                      color: _slotCardBodyInk
+                                          .withValues(alpha: 0.76),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                          ),
-                        ],
+                    ),
+                    if (!_isOwner &&
+                        sent &&
+                        guestOk &&
+                        !pendingSwap &&
+                        !planFullySignedOff) ...[
+                      const SizedBox(height: 6),
+                      Center(
+                        child: TextButton(
+                          onPressed: _saving
+                              ? null
+                              : () => _onGuestUnconfirmSlot(slot),
+                          child: Text(l10n.moodMatchPlanV2UndoMyChoice),
+                        ),
+                      ),
+                    ],
+                    if (bothConfirmedOnSlot) ...[
+                      const SizedBox(height: 12),
+                      _slotCardBothInFooter(
+                        l10n,
+                        ownerMv,
+                        guestMv,
+                        ownerName,
+                        guestName,
                       ),
                     ],
                     if (_isOwner) ...[
@@ -2075,7 +2759,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                 ),
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: _creamInk,
+                                  color: _slotCardBodyInk,
                                   height: 1.35,
                                 ),
                               ),
@@ -2085,9 +2769,11 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                     ? null
                                     : () => _ownerWithdrawSwap(slot),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: _wmForest,
+                                  foregroundColor: _slotCardBodyInk,
                                   side: BorderSide(
-                                    color: _wmForest.withValues(alpha: 0.35),
+                                    color: _slotCardBodyInk.withValues(
+                                      alpha: 0.35,
+                                    ),
                                   ),
                                 ),
                                 child: Text(l10n.moodMatchPlanV2WithdrawSwap),
@@ -2103,30 +2789,82 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             fontSize: 11,
-                            color: _creamInkSoft,
+                            color: _slotCardBodyInk.withValues(alpha: 0.88),
                             fontStyle: FontStyle.italic,
                             height: 1.35,
                           ),
                         ),
                       ] else if (!ownerLocks) ...[
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: _saving || pendingSwap
-                                ? null
-                                : () => _openSwapSheet(slot, l10n),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _wmForest,
-                              side: BorderSide(
-                                color: _wmForest.withValues(alpha: 0.35),
+                        Row(
+                          children: [
+                            if (!sent) ...[
+                              Expanded(
+                                child: draftSelected
+                                    ? FilledButton.icon(
+                                        onPressed: _saving
+                                            ? null
+                                            : () =>
+                                                _toggleOwnerSlotDraft(slot),
+                                        icon: const Icon(
+                                          Icons.lock_outline_rounded,
+                                          size: 18,
+                                        ),
+                                        label: Text(
+                                          l10n.moodMatchPlanV2YourPickSaved,
+                                        ),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFFEAE6DF,
+                                          ),
+                                          foregroundColor: _slotCardBodyInk,
+                                          elevation: 0,
+                                          shadowColor: Colors.transparent,
+                                          shape: const StadiumBorder(),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                      )
+                                    : FilledButton(
+                                        onPressed: _saving
+                                            ? null
+                                            : () =>
+                                                _toggleOwnerSlotDraft(slot),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: _wmForest,
+                                          foregroundColor: Colors.white,
+                                          shape: const StadiumBorder(),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          l10n.moodMatchPlanV2PickThis,
+                                        ),
+                                      ),
                               ),
-                              shape: const StadiumBorder(),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              const SizedBox(width: 8),
+                            ],
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _saving || pendingSwap
+                                    ? null
+                                    : () => _openSwapSheet(slot, l10n),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _slotCardBodyInk,
+                                  backgroundColor: Colors.white,
+                                  side: const BorderSide(
+                                    color: Color(0xFFD9D0C3),
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                child: Text(
+                                  l10n.moodMatchPlanV2SuggestDifferentPlace,
+                                ),
+                              ),
                             ),
-                            child: Text(
-                              l10n.moodMatchPlanV2SuggestDifferentPlace,
-                            ),
-                          ),
+                          ],
                         ),
                       ],
                     ],
@@ -2160,9 +2898,11 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                   ? null
                                   : () => _openSwapSheet(slot, l10n),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: _wmForest,
+                                foregroundColor: _slotCardBodyInk,
                                 side: BorderSide(
-                                  color: _wmForest.withValues(alpha: 0.35),
+                                  color: _slotCardBodyInk.withValues(
+                                    alpha: 0.35,
+                                  ),
                                 ),
                                 shape: const StadiumBorder(),
                                 padding: const EdgeInsets.symmetric(
@@ -2188,7 +2928,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                           ),
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            color: _wmSunset,
+                            color: _slotCardBodyInk,
                             height: 1.35,
                           ),
                         ),
@@ -2202,9 +2942,11 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                     : () =>
                                         _guestResolveSwap(slot, false, l10n),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: _wmForest,
+                                  foregroundColor: _slotCardBodyInk,
                                   side: BorderSide(
-                                    color: _wmForest.withValues(alpha: 0.35),
+                                    color: _slotCardBodyInk.withValues(
+                                      alpha: 0.35,
+                                    ),
                                   ),
                                 ),
                                 child: Text(
@@ -2251,7 +2993,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                 ),
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
-                                  color: _wmSunset,
+                                  color: _slotCardBodyInk,
                                   height: 1.35,
                                 ),
                               ),
@@ -2261,9 +3003,11 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                     ? null
                                     : () => _guestCancelSwap(slot),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: _wmForest,
+                                  foregroundColor: _slotCardBodyInk,
                                   side: BorderSide(
-                                    color: _wmForest.withValues(alpha: 0.35),
+                                    color: _slotCardBodyInk.withValues(
+                                      alpha: 0.35,
+                                    ),
                                   ),
                                 ),
                                 child: Text(l10n.moodMatchPlanV2WithdrawSwap),
@@ -2284,64 +3028,25 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     );
   }
 
-  Widget _tinyAvatar(String name, bool filled) {
-    return CircleAvatar(
-      radius: 14,
-      backgroundColor:
-          filled ? _wmForest : GroupPlanningUi.forestTint,
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: GoogleFonts.poppins(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: filled ? Colors.white : _wmForest.withValues(alpha: 0.55),
-        ),
-      ),
-    );
-  }
-
-  Widget _microAvatar(GroupMemberView? m, bool on) {
-    final url = m?.avatarUrl?.trim();
-    final raw = (m?.displayName ?? '').trim();
-    final letter = raw.isNotEmpty ? raw[0].toUpperCase() : '?';
-    return CircleAvatar(
-      radius: 11,
-      backgroundColor: on
-          ? const Color(0xFF2A6049).withValues(alpha: 0.2)
-          : Colors.white24,
-      backgroundImage:
-          url != null && url.isNotEmpty ? NetworkImage(url) : null,
-      child: url == null || url.isEmpty
-          ? Text(
-              letter,
-              style: GoogleFonts.poppins(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: on ? _wmForest : _creamInkSoft,
-              ),
-            )
-          : null,
-    );
-  }
-
   Widget _bottomBar(
     AppLocalizations l10n,
     String ownerName,
     String guestName,
   ) {
     final plan = _planData!;
-    // Counter (e.g. "2/3") is now part of the CTA label instead of three
-    // round checkmarks below it. The user found the dots confusing.
-    final needSlots = GroupPlanV2.slotsRequiringConfirmation(plan);
-    final guestCount = needSlots.where((s) => _gc(plan)[s] == true).length;
-    final total = needSlots.length;
 
     String ctaLabel;
     VoidCallback? onCta;
     if (_isOwner) {
       if (_sentToGuest(plan)) {
         if (!_allGuestConfirmed(plan) || _hasPendingSwap(plan)) {
-          ctaLabel = l10n.moodMatchWaitingGuestReviewPlan(guestName);
+          final (gd, gt) = _guestConfirmProgress(plan);
+          if (gt > 0 && gd < gt && !_hasPendingSwap(plan)) {
+            ctaLabel =
+                '${l10n.moodMatchWaitingGuestReviewPlan(guestName)} · ${l10n.moodMatchPlanV2StopsReviewed(gd, gt)}';
+          } else {
+            ctaLabel = l10n.moodMatchWaitingGuestReviewPlan(guestName);
+          }
           onCta = null;
         } else {
           ctaLabel = l10n.moodMatchPlanV2OpenMyDay;
@@ -2349,14 +3054,18 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             unawaited(_openMyDayAfterPlanSent());
           };
         }
-      } else if (_allOwnerConfirmed(plan)) {
+      } else if (_ownerHasAnyConfirmed(plan)) {
         ctaLabel = l10n.moodMatchPlanV2SendToGuest(guestName);
         onCta = _saving ? null : () => _onSendToGuest(l10n);
       } else {
-        final allDraft =
-            GroupPlanV2.slots.every(_ownerSlotDraft.contains);
-        if (!allDraft) {
+        final (dd, dt) = _ownerDraftProgress(plan);
+        if (dt == 0) {
           ctaLabel = l10n.moodMatchPlanV2SelectAllThreeToContinue;
+          onCta = null;
+        } else if (dd < dt) {
+          ctaLabel = dd == 0
+              ? l10n.moodMatchPlanV2SelectAllThreeToContinue
+              : l10n.moodMatchPlanV2OwnerPickEachPart(dd, dt);
           onCta = null;
         } else {
           ctaLabel = l10n.moodMatchPlanV2ImIn;
@@ -2381,8 +3090,10 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                 unawaited(_finalizeGuestPlanToMyDay(l10n));
               };
       } else {
-        ctaLabel =
-            '${l10n.moodMatchPlanV2ConfirmAllGuest(total)} · $guestCount/$total';
+        final (gd, gt) = _guestConfirmProgress(plan);
+        ctaLabel = gt > 0
+            ? l10n.moodMatchPlanV2FooterGuestReviewNudge(gd, gt)
+            : l10n.moodMatchPlanV2SelectAllThreeToContinue;
         onCta = null;
       }
     }
