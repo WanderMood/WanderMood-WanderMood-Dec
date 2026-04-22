@@ -128,19 +128,25 @@ Future<void> applyWmFcmDataNavigation(
 
   switch (event) {
     case 'mood_match_invite':
-      // Invitee is not in `group_session_members` yet — RLS hides the session
-      // row, so [fetchSession] fails unless we use join_code → invite flow.
-      if (sessionId != null) {
-        final jc = data['join_code']?.toString().trim();
-        if (jc != null && jc.isNotEmpty) {
-          router.go(
-            '/group-planning/invite-wm/$sessionId',
-            extra: <String, dynamic>{'joinCode': jc.toUpperCase()},
+      // Invitee should always land on JOIN flow (never sender invite screen).
+      final jc = data['join_code']?.toString().trim();
+      if (jc != null && jc.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint(
+            '[notifications] mood_match_invite -> /group-planning/join '
+            'session_id=${sessionId ?? "(none)"} code=${jc.toUpperCase()}',
           );
-        } else {
-          // Push payloads often omit join_code; hub loads pending inbox rows.
-          router.go('/group-planning');
         }
+        router.go('/group-planning/join?code=${Uri.encodeQueryComponent(jc.toUpperCase())}');
+      } else {
+        // Without code we cannot prefill join; open hub/inbox fallback.
+        if (kDebugMode) {
+          debugPrint(
+            '[notifications] mood_match_invite missing join_code '
+            'session_id=${sessionId ?? "(none)"} -> /group-planning',
+          );
+        }
+        router.go('/group-planning');
       }
       break;
     case 'guest_joined':
