@@ -94,6 +94,18 @@
       "sub": "Your city is waiting. Tell Moody your mood and let him take it from there.",
       "appStore": "App Store",
       "googlePlay": "Google Play"
+    },
+    "tour": {
+      "skip": "Skip",
+      "next": "Next",
+      "done": "Done",
+      "replay": "Site tour",
+      "stepOf": "Step {current} of {total}",
+      "navTitle": "Navigation",
+      "navBody": "Jump to any section from here — {how}, {moods}, {business}, or {download}.",
+      "navBodyCompact": "Here you'll always see the logo, language switcher, and Download the app. How it works, Moods, and For businesses sit in this bar on wider screens — on a phone, scroll through each section below or use the footer links.",
+      "moodsBody": "These chips use the same mood labels as in the app — Relaxed, Foodie, Energetic, Adventurous, and the rest — so you know what to expect from Moody.",
+      "closeAria": "Interactive site tour"
     }
   },
   "footer": {

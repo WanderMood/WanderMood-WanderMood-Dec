@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import LandingTour, { type LandingTourHandle } from "@/components/LandingTour";
 
 const LOCALES = [
   { code: "en", label: "EN" },
@@ -69,6 +70,7 @@ export default function LandingHome() {
   const pathname = usePathname();
   const currentLocale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
+  const tourRef = useRef<LandingTourHandle>(null);
 
   const trialMail = `mailto:${tLegal("contactEmail")}?subject=${encodeURIComponent(t("b2b.trialSubject"))}`;
 
@@ -107,7 +109,7 @@ export default function LandingHome() {
 
   return (
     <div ref={rootRef} className="landing-root">
-      <nav>
+      <nav id="landing-nav">
         <Link href="/" className="nav-logo">
           <div className="nav-logo-icon">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -381,11 +383,17 @@ export default function LandingHome() {
           <li>
             <a href="#business">{tFooter("forBusiness")}</a>
           </li>
+          <li>
+            <button type="button" className="footer-tour-btn" onClick={() => tourRef.current?.start()}>
+              {t("tour.replay")}
+            </button>
+          </li>
         </ul>
         <div className="footer-copy">
           © {new Date().getFullYear()} {tFooter("brand")}
         </div>
       </footer>
+      <LandingTour ref={tourRef} />
     </div>
   );
 }

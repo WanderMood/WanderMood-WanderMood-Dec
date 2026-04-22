@@ -914,3 +914,131 @@
     margin: 0 24px;
   }
 }
+
+/* Interactive site tour (fixed overlay — outside section scroll-margin) */
+.landing-tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  pointer-events: none;
+}
+
+.landing-tour-blocker {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.landing-tour-spotlight {
+  position: fixed;
+  z-index: 20001;
+  pointer-events: none;
+  box-sizing: content-box;
+}
+
+.landing-tour-cursor {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: rgba(42, 96, 73, 0.35);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  z-index: 20002;
+  pointer-events: none;
+}
+
+.landing-tour-tooltip {
+  position: fixed;
+  z-index: 20003;
+  pointer-events: auto;
+  width: min(340px, calc(100vw - 32px));
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  background: #f5f0e8;
+  border: 1px solid #e8e2d8;
+  box-shadow: 0 16px 48px rgba(15, 18, 16, 0.22);
+}
+
+.landing-tour-tooltip--above {
+  top: auto !important;
+}
+
+.landing-tour-step-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2a6049;
+  margin-bottom: 8px;
+}
+
+.landing-tour-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e1c18;
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.landing-tour-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4a4640;
+  margin: 0;
+  max-height: min(40vh, 280px);
+  overflow-y: auto;
+}
+
+.landing-tour-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.landing-tour-skip {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8c8780;
+  padding: 8px 12px;
+}
+
+.landing-tour-skip:hover {
+  color: #1e1c18;
+}
+
+.landing-tour-next {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #2a6049;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+}
+
+.landing-tour-next:hover {
+  filter: brightness(1.05);
+}
+
+.landing-root .footer-tour-btn {
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.4);
+  font-family: var(--font-dm-sans), sans-serif;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.landing-root .footer-tour-btn:hover {
+  color: rgba(245, 240, 232, 0.8);
+}
