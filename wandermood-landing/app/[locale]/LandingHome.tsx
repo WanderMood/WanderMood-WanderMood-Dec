@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import LandingTour, { type LandingTourHandle } from "@/components/LandingTour";
+import { LandingWalkthroughPlayer } from "@/components/LandingWalkthroughPlayer";
+import { buildWalkthroughCopyForVideo } from "@/lib/build-walkthrough-copy";
 
 const LOCALES = [
   { code: "en", label: "EN" },
@@ -73,6 +75,11 @@ export default function LandingHome() {
   const tourRef = useRef<LandingTourHandle>(null);
 
   const trialMail = `mailto:${tLegal("contactEmail")}?subject=${encodeURIComponent(t("b2b.trialSubject"))}`;
+
+  const walkthroughVideoProps = useMemo(() => {
+    const { stepTitles, stepBodies } = buildWalkthroughCopyForVideo(t);
+    return { stepTitles, stepBodies };
+  }, [t]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -257,6 +264,23 @@ export default function LandingHome() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" aria-hidden />
+
+      <section id="walkthrough-video" className="walkthrough-video-section">
+        <div className="walkthrough-video-inner">
+          <p className="section-eyebrow reveal">{t("walkthroughVideo.eyebrow")}</p>
+          <h2 className="reveal walkthrough-video-title">
+            {t("walkthroughVideo.title1")}
+            <br />
+            <em>{t("walkthroughVideo.titleEm")}</em>
+          </h2>
+          <p className="section-sub reveal">{t("walkthroughVideo.sub")}</p>
+          <div className="walkthrough-video-player-wrap reveal">
+            <LandingWalkthroughPlayer {...walkthroughVideoProps} />
           </div>
         </div>
       </section>

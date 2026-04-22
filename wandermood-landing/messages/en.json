@@ -95,6 +95,12 @@
       "appStore": "App Store",
       "googlePlay": "Google Play"
     },
+    "walkthroughVideo": {
+      "eyebrow": "Video tour",
+      "title1": "Walk through",
+      "titleEm": "the site.",
+      "sub": "Programmatic tour with the same wording as the page — use the player controls to play, pause, or scrub."
+    },
     "tour": {
       "skip": "Skip",
       "next": "Next",

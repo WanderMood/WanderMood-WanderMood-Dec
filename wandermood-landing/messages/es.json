@@ -95,6 +95,12 @@
       "appStore": "App Store",
       "googlePlay": "Google Play"
     },
+    "walkthroughVideo": {
+      "eyebrow": "Tour en vídeo",
+      "title1": "Recorre",
+      "titleEm": "el sitio.",
+      "sub": "Tour animado con los mismos textos que la página: usa los controles para reproducir, pausar o mover la línea de tiempo."
+    },
     "tour": {
       "skip": "Saltar",
       "next": "Siguiente",

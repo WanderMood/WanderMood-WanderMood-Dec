@@ -95,6 +95,12 @@
       "appStore": "App Store",
       "googlePlay": "Google Play"
     },
+    "walkthroughVideo": {
+      "eyebrow": "Video-Rundgang",
+      "title1": "Einmal durch",
+      "titleEm": "die Seite.",
+      "sub": "Programmierte Tour mit denselben Texten wie auf der Seite — Steuerung zum Abspielen, Pausieren und Scrubben."
+    },
     "tour": {
       "skip": "Überspringen",
       "next": "Weiter",
