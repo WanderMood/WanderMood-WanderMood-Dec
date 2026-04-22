@@ -237,6 +237,14 @@ Future<void> applyWmFcmDataNavigation(
         );
       }
       break;
+    case 'guest_left_session':
+    case 'host_ended_session':
+      final c = snackContext;
+      if (c != null && c.mounted) {
+        _moodMatchNotifToast(c, (l) => l.moodMatchNotificationTapSessionEnded);
+      }
+      router.go('/group-planning');
+      break;
     case 'leaving_soon':
       final lat = data['latitude'];
       final lng = data['longitude'];

@@ -5584,9 +5584,11 @@
   "moodMatchHubConfirmDismissInviteTitle": "Remove this invite?",
   "moodMatchHubConfirmDismissInviteBody": "You can still join later with the join code if your friend shares it again.",
   "moodMatchHubConfirmLeaveSessionTitle": "Remove this Mood Match?",
-  "moodMatchHubConfirmLeaveSessionBodyGuest": "You will leave the session. Your friend can continue until they leave too.",
-  "moodMatchHubConfirmLeaveSessionBodyHost": "This cancels the Mood Match for both of you.",
+  "moodMatchHubConfirmLeaveSessionBodyGuest": "You'll leave this Mood Match. We'll let your friend know.",
+  "moodMatchHubConfirmLeaveSessionBodyHost": "This removes the Mood Match for both of you. Your friend will be notified.",
   "moodMatchHubConfirmRemoveAction": "Remove",
+  "moodMatchHubLeaveSuccessGuestToast": "You left the Mood Match. We let your friend know.",
+  "moodMatchHubLeaveSuccessHostToast": "Mood Match removed. We let your friend know.",
   "moodMatchLobbyWaitTease0": "Waiting on {name}… no pressure 👀",
   "@moodMatchLobbyWaitTease0": {
     "placeholders": {

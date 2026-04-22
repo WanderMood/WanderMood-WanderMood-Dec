@@ -4782,9 +4782,11 @@
   "moodMatchHubConfirmDismissInviteTitle": "Retirer cette invitation ?",
   "moodMatchHubConfirmDismissInviteBody": "Tu pourras toujours rejoindre plus tard avec le code si ton ami le partage à nouveau.",
   "moodMatchHubConfirmLeaveSessionTitle": "Retirer ce Mood Match ?",
-  "moodMatchHubConfirmLeaveSessionBodyGuest": "Tu quitteras la session. Ton ami peut continuer jusqu'à ce qu'il parte aussi.",
-  "moodMatchHubConfirmLeaveSessionBodyHost": "Cela annule le Mood Match pour vous deux.",
+  "moodMatchHubConfirmLeaveSessionBodyGuest": "Tu quitteras ce Mood Match. On prévient ton ami.",
+  "moodMatchHubConfirmLeaveSessionBodyHost": "Cela met fin au Mood Match pour vous deux. Ton ami sera prévenu.",
   "moodMatchHubConfirmRemoveAction": "Retirer",
+  "moodMatchHubLeaveSuccessGuestToast": "Tu as quitté le Mood Match. Ton ami a été prévenu.",
+  "moodMatchHubLeaveSuccessHostToast": "Mood Match supprimé. Ton ami a été prévenu.",
   "moodMatchLobbyWaitTease0": "En attente de {name}… sans pression 👀",
   "@moodMatchLobbyWaitTease0": {
     "placeholders": {

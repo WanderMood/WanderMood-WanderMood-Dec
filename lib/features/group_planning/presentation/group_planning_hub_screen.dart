@@ -16,6 +16,7 @@ import 'package:wandermood/features/group_planning/presentation/group_planning_u
 import 'package:wandermood/features/group_planning/presentation/share_sheet_origin.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 
 /// Rounded shape + accent hairline; shadow comes from [Material.elevation] for
 /// smooth corners (avoids “pointy” box-shadow artifacts on large radii).
@@ -633,6 +634,14 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
       await MoodMatchSessionPrefs.clear();
       if (!mounted) return;
       await _checkActiveSession();
+      if (mounted) {
+        showWanderMoodToast(
+          context,
+          message: s.createdBy == uid
+              ? l10n.moodMatchHubLeaveSuccessHostToast
+              : l10n.moodMatchHubLeaveSuccessGuestToast,
+        );
+      }
     } catch (e) {
       if (mounted) {
         GroupPlanningUi.showErrorSnack(

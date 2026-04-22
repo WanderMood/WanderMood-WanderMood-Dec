@@ -20190,13 +20190,13 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchHubConfirmLeaveSessionBodyGuest.
   ///
   /// In en, this message translates to:
-  /// **'You will leave the session. Your friend can continue until they leave too.'**
+  /// **'You\'ll leave this Mood Match. We\'ll let your friend know.'**
   String get moodMatchHubConfirmLeaveSessionBodyGuest;
 
   /// No description provided for @moodMatchHubConfirmLeaveSessionBodyHost.
   ///
   /// In en, this message translates to:
-  /// **'This cancels the Mood Match for both of you.'**
+  /// **'This removes the Mood Match for both of you. Your friend will be notified.'**
   String get moodMatchHubConfirmLeaveSessionBodyHost;
 
   /// No description provided for @moodMatchHubConfirmRemoveAction.
@@ -20204,6 +20204,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get moodMatchHubConfirmRemoveAction;
+
+  /// No description provided for @moodMatchHubLeaveSuccessGuestToast.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the Mood Match. We let your friend know.'**
+  String get moodMatchHubLeaveSuccessGuestToast;
+
+  /// No description provided for @moodMatchHubLeaveSuccessHostToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match removed. We let your friend know.'**
+  String get moodMatchHubLeaveSuccessHostToast;
 
   /// No description provided for @moodMatchLobbyWaitTease0.
   ///

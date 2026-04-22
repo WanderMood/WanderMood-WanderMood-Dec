@@ -11608,14 +11608,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get moodMatchHubConfirmLeaveSessionBodyGuest =>
-      'Du verlässt die Session. Dein:e Partner:in kann weitermachen, bis auch er/sie geht.';
+      'Du verlässt diesen Mood Match. Wir benachrichtigen deinen Partner.';
 
   @override
   String get moodMatchHubConfirmLeaveSessionBodyHost =>
-      'Damit wird der Mood Match für euch beide abgebrochen.';
+      'Der Mood Match wird für euch beide beendet. Dein Partner wird benachrichtigt.';
 
   @override
   String get moodMatchHubConfirmRemoveAction => 'Entfernen';
+
+  @override
+  String get moodMatchHubLeaveSuccessGuestToast =>
+      'Du hast den Mood Match verlassen. Dein Partner wurde informiert.';
+
+  @override
+  String get moodMatchHubLeaveSuccessHostToast =>
+      'Mood Match entfernt. Dein Partner wurde informiert.';
 
   @override
   String moodMatchLobbyWaitTease0(String name) {

@@ -4868,9 +4868,11 @@
   "moodMatchHubConfirmDismissInviteTitle": "Deze uitnodiging verwijderen?",
   "moodMatchHubConfirmDismissInviteBody": "Je kunt later nog meedoen met de joincode als je vriend die opnieuw deelt.",
   "moodMatchHubConfirmLeaveSessionTitle": "Deze Mood Match verwijderen?",
-  "moodMatchHubConfirmLeaveSessionBodyGuest": "Je verlaat de sessie. Je vriend kan doorgaan tot die ook stopt.",
-  "moodMatchHubConfirmLeaveSessionBodyHost": "Hiermee wordt de Mood Match voor jullie beiden geannuleerd.",
+  "moodMatchHubConfirmLeaveSessionBodyGuest": "Je verlaat deze Mood Match. We laten het je vriend weten.",
+  "moodMatchHubConfirmLeaveSessionBodyHost": "Hiermee verwijder je de Mood Match voor jullie beiden. Je vriend krijgt een bericht.",
   "moodMatchHubConfirmRemoveAction": "Verwijderen",
+  "moodMatchHubLeaveSuccessGuestToast": "Je bent uit de Mood Match gestapt. We hebben het je vriend laten weten.",
+  "moodMatchHubLeaveSuccessHostToast": "Mood Match verwijderd. We hebben het je vriend laten weten.",
   "moodMatchLobbyWaitTease0": "Wachten op {name}… geen haast 👀",
   "@moodMatchLobbyWaitTease0": {
     "placeholders": {

@@ -400,13 +400,72 @@ class GroupPlanningRepository {
     }
   }
 
+  /// Notifies other [group_session_members] before this user deletes the session
+  /// or leaves (so push-notify still sees them as session members).
+  Future<void> _notifySessionExitPartners({
+    required String sessionId,
+    required bool hostEnded,
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      final members = await fetchMembersWithProfiles(sessionId);
+      if (members.length <= 1) return;
+      final username = await fetchProfileDisplayUsername(_client, uid) ?? '';
+      final event = hostEnded ? 'host_ended_session' : 'guest_left_session';
+      final nl = await wandermoodNotificationLangCode() == 'nl';
+      final message = InAppNotificationCopy.planMessage(
+        nl: nl,
+        event: event,
+        data: {'sender_username': username},
+      );
+      final title = InAppNotificationCopy.planTitle(nl);
+      for (final m in members) {
+        if (m.member.userId == uid) continue;
+        try {
+          await _client.rpc(
+            'send_realtime_notification',
+            params: {
+              'target_user_id': m.member.userId,
+              'event_type': 'groupTravelUpdate',
+              'event_title': title,
+              'event_message': message,
+              'event_data': {
+                'event': event,
+                'session_id': sessionId,
+                'sender_username': username,
+              },
+              'source_user_id': uid,
+              'related_post_id': null,
+              'priority_level': 3,
+            },
+          );
+        } catch (e, st) {
+          debugPrint('_notifySessionExitPartners realtime: $e\n$st');
+        }
+        schedulePushNotify(
+          recipientId: m.member.userId,
+          event: event,
+          data: {
+            'sender_username': username,
+            'session_id': sessionId,
+          },
+        );
+      }
+    } catch (e, st) {
+      debugPrint('_notifySessionExitPartners: $e\n$st');
+    }
+  }
+
   Future<void> deleteSession(String sessionId) async {
+    await _notifySessionExitPartners(sessionId: sessionId, hostEnded: true);
     await _client.from('group_sessions').delete().eq('id', sessionId);
   }
 
   Future<void> removeSelfFromSession(String sessionId) async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) return;
+    await _notifySessionExitPartners(sessionId: sessionId, hostEnded: false);
     await _client
         .from('group_session_members')
         .delete()

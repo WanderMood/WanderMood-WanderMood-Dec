@@ -35,6 +35,8 @@ const MOOD_MATCH_SESSION_EVENTS = new Set<string>([
   'swap_declined',
   'swap_counter_proposed',
   'both_confirmed',
+  'guest_left_session',
+  'host_ended_session',
 ])
 
 /// Events where the recipient is not yet a member, but the sender must be
@@ -128,6 +130,16 @@ function planBody(nl: boolean, event: string, d: Record<string, unknown>): strin
       return nl
         ? 'Jullie dag is bevestigd. Kies je starttijd en je bent klaar 🗓️'
         : "Your day is locked. Pick your start time and you're ready 🗓️"
+    case 'guest_left_session':
+      return sub(
+        nl ? '[name] heeft de Mood Match verlaten.' : '[name] left this Mood Match.',
+        { name },
+      )
+    case 'host_ended_session':
+      return sub(
+        nl ? '[name] heeft deze Mood Match geannuleerd.' : '[name] ended this Mood Match.',
+        { name },
+      )
     case 'leaving_soon':
       return sub(
         nl ? '[place] is [minutes] minuten rijden. Het kan slim zijn om nu te gaan.' : '[place] is [minutes] minutes away. Might be worth leaving now.',

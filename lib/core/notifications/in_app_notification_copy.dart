@@ -103,6 +103,16 @@ class InAppNotificationCopy {
         return sub(nl ? '[name] hield de originele keuze voor de [slot]. Prima.' : '[name] kept the original for the [slot]. Fair enough.', {'name': name, 'slot': slot});
       case 'both_confirmed':
         return nl ? 'Jullie dag is bevestigd. Kies je starttijd en je bent klaar 🗓️' : 'Your day is locked. Pick your start time and you\'re ready 🗓️';
+      case 'guest_left_session':
+        return sub(
+          nl ? '[name] heeft de Mood Match verlaten.' : '[name] left this Mood Match.',
+          {'name': name},
+        );
+      case 'host_ended_session':
+        return sub(
+          nl ? '[name] heeft deze Mood Match geannuleerd.' : '[name] ended this Mood Match.',
+          {'name': name},
+        );
       case 'leaving_soon':
         return sub(
           nl
