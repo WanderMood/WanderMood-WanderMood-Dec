@@ -10,6 +10,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/presentation/widgets/moody_settings_glyph.dart';
 
 class UnifiedProfileScreen extends ConsumerStatefulWidget {
   final String? userId;
@@ -77,7 +78,11 @@ class _UnifiedProfileScreenState extends ConsumerState<UnifiedProfileScreen> wit
           children: [
             if (_isOwnProfile) ...[
               ListTile(
-                leading: const Icon(Icons.settings, color: Color(0xFF2A6049)),
+                leading: const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Center(child: MoodySettingsGlyph(size: 26)),
+                ),
                 title: Text(
                   'Settings',
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w500),

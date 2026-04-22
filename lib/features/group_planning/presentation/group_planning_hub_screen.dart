@@ -337,7 +337,7 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
   // there's no dead whitespace under the button when there are 2+ invites.
   // Extra 8px to give the layered drop-shadow room to breathe without
   // getting clipped by the PageView viewport.
-  static const double _inviteCarouselHeight = 236;
+  static const double _inviteCarouselHeight = 224;
 
   @override
   void initState() {
@@ -1218,7 +1218,7 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
                           else ...[
                             for (final item in hubActive)
                               Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 16),
                                 child: _ongoingActiveResumeCard(
                                   l10n,
                                   uid,
@@ -1247,7 +1247,7 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
                           else ...[
                             for (final item in hubCompleted)
                               Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(bottom: 16),
                                 child: _CompletedResumeCard(
                                   l10n: l10n,
                                   sessionTitle: _sessionDisplayTitle(

@@ -25,6 +25,7 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
+import 'package:wandermood/core/presentation/widgets/moody_settings_glyph.dart';
 
 /// v2 profile — design tokens
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -1033,7 +1034,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             borderRadius: BorderRadius.circular(999),
           ),
         ),
-        icon: const Icon(Icons.settings_outlined, size: 18),
+        icon: const MoodySettingsGlyph(size: 20),
         label: Text(
           l10n.profileAppSettingsLink,
           style: GoogleFonts.poppins(

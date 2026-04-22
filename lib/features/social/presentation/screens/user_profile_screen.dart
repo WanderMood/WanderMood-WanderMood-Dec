@@ -10,6 +10,7 @@ import 'package:wandermood/features/social/presentation/screens/create_post_scre
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/presentation/widgets/moody_settings_glyph.dart';
 
 // Current user provider - in a real app this would get the authenticated user
 final currentUserIdProvider = Provider<String>((ref) => 'user1');
@@ -47,7 +48,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> with Sing
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.settings, color: Color(0xFF2A6049)),
+              leading: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(child: MoodySettingsGlyph(size: 26)),
+              ),
               title: Text(
                 'Settings',
                 style: GoogleFonts.poppins(

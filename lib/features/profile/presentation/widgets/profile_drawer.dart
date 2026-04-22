@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
+import 'package:wandermood/core/presentation/widgets/moody_settings_glyph.dart';
 
 /// WanderMood v2 design tokens — side drawer
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -171,7 +172,7 @@ class ProfileDrawer extends ConsumerWidget {
                   ),
                   _sectionHeader(l10n.drawerSettings),
                   _DrawerMenuItem(
-                    icon: Icons.settings_outlined,
+                    leading: const MoodySettingsGlyph(size: 20),
                     label: l10n.drawerAppSettings,
                     onTap: () {
                       Navigator.pop(context);
@@ -386,19 +387,21 @@ class _HeaderBadge extends StatelessWidget {
 }
 
 class _DrawerMenuItem extends StatefulWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? leading;
   final String label;
   final VoidCallback onTap;
   final bool isDestructive;
   final bool showChevron;
 
   const _DrawerMenuItem({
-    required this.icon,
+    this.icon,
+    this.leading,
     required this.label,
     required this.onTap,
     this.isDestructive = false,
     this.showChevron = true,
-  });
+  }) : assert(icon != null || leading != null);
 
   @override
   State<_DrawerMenuItem> createState() => _DrawerMenuItemState();
@@ -427,7 +430,9 @@ class _DrawerMenuItemState extends State<_DrawerMenuItem> {
               children: [
                 SizedBox(
                   width: 40,
-                  child: Icon(widget.icon, size: 20, color: iconColor),
+                  child: widget.leading != null
+                      ? Center(child: widget.leading!)
+                      : Icon(widget.icon, size: 20, color: iconColor),
                 ),
                 Expanded(
                   child: Text(

@@ -115,6 +115,12 @@ class AppTheme {
         elevation: 0,
         shape: const RoundedRectangleBorder(),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 
@@ -130,6 +136,12 @@ class AppTheme {
         scrimColor: Colors.black.withValues(alpha: 0.4),
         elevation: 0,
         shape: const RoundedRectangleBorder(),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        },
       ),
       textTheme: GoogleFonts.poppinsTextTheme(
         ThemeData.dark().textTheme,
