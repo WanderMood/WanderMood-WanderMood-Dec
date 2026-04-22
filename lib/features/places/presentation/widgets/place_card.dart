@@ -52,6 +52,8 @@ class PlaceCard extends ConsumerWidget {
   final bool showAddToMyDayButton;
   /// Optional override for the "Add to My Day" tap — e.g. to show a time-picker sheet.
   final VoidCallback? onAddToMyDayTap;
+  /// Optional callback when this place gets newly saved (not unsaved).
+  final VoidCallback? onSavedTap;
   /// When true, shows a "See activity" label (e.g. on Day Plan where we don't book yet).
   final bool showSeeActivityLabel;
   /// Outer margin around the card.
@@ -67,6 +69,7 @@ class PlaceCard extends ConsumerWidget {
     this.cityName,
     this.showAddToMyDayButton = true,
     this.onAddToMyDayTap,
+    this.onSavedTap,
     this.showSeeActivityLabel = false,
     this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.photoSelectionSeed = 0,
@@ -811,7 +814,7 @@ class PlaceCard extends ConsumerWidget {
                           icon: Icons.ios_share_rounded,
                           onTap: () async {
                             try {
-                              await SharingService.sharePlace(place);
+                              await SharingService.sharePlace(place, context: context);
                             } catch (e) {
                               showWanderMoodToast(
                                 context,
@@ -839,6 +842,7 @@ class PlaceCard extends ConsumerWidget {
                               } else {
                                 await savedPlacesService.savePlace(place);
                                 ref.invalidate(savedPlacesProvider);
+                                onSavedTap?.call();
                                 showWanderMoodToast(
                                   context,
                                   message: l10n.placeCardSaved(place.name),

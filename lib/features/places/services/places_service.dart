@@ -347,12 +347,13 @@ class PlacesService extends _$PlacesService {
       final description = editorialSummary?['overview'] as String? ??
           result['vicinity'] as String? ?? '';
 
+      final userRatingsTotal = result['user_ratings_total'] as num?;
       final details = {
         'name': result['name'] as String? ?? '',
         'address': result['formatted_address'] as String? ?? '',
         'description': description,
         'rating': result['rating'] as num?,
-        'user_ratings_total': reviews.length,
+        'user_ratings_total': userRatingsTotal?.round() ?? reviews.length,
         'reviews': reviews,
         'photos': photoReferences,
         'types': (result['types'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
@@ -577,15 +578,27 @@ class PlacesService extends _$PlacesService {
     ];
   }
 
-  /// Get place photos by photo reference
+  /// Places API (New) `/v1/.../media` for a photo [name] (e.g. `places/ChIJ…/photos/…`).
+  /// Aligned with `supabase/functions/moody/index.ts` — legacy [GoogleMapsPlaces.buildPhotoUrl] cannot.
+  String placesApiNewMediaUrlForPhotoName(String name, {int maxWidthPx = 800}) {
+    final t = name.trim();
+    if (t.isEmpty) return t;
+    return 'https://places.googleapis.com/v1/$t/media?maxWidthPx=$maxWidthPx&key=${ApiKeys.googlePlacesKey}';
+  }
+
+  /// Resolves a photo to an HTTP URL. Supports legacy [photo_reference] and New photo resource `name`.
   String getPhotoUrl(String photoReference) {
     if (!_isInitialized) {
       debugPrint('⚠️ Warning: Getting photo URL before service initialization');
       _initializePlaces();
     }
-
+    final ref = photoReference.trim();
+    if (ref.isEmpty) return ref;
+    if (ref.startsWith('places/') && ref.contains('/photos/')) {
+      return placesApiNewMediaUrlForPhotoName(ref, maxWidthPx: 800);
+    }
     return _places.buildPhotoUrl(
-      photoReference: photoReference,
+      photoReference: ref,
       maxWidth: 400,
     );
   }

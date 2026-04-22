@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import '../../application/mood_service.dart';
 import '../../domain/models/mood_data.dart';
 
@@ -8,6 +9,7 @@ class MoodStatsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final moodServiceAsync = ref.watch(moodServiceProvider);
 
     return moodServiceAsync.when(
@@ -24,9 +26,9 @@ class MoodStatsCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Mood Statistieken',
-                  style: TextStyle(
+                Text(
+                  l10n.moodStatsTitle,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -36,21 +38,21 @@ class MoodStatsCard extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildStatItem(
-                      'Gemiddelde Mood',
+                      l10n.moodStatsAverageLabel,
                       analytics.averageMood.toStringAsFixed(1),
                       Icons.sentiment_satisfied,
                     ),
                     _buildStatItem(
-                      'Totaal Entries',
+                      l10n.moodStatsTotalEntriesLabel,
                       analytics.totalEntries.toString(),
                       Icons.history,
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Mood Types',
-                  style: TextStyle(
+                Text(
+                  l10n.moodStatsTypesLabel,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -72,7 +74,7 @@ class MoodStatsCard extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(
-        child: Text('Error: $error'),
+        child: Text('${l10n.recErrorPrefix} $error'),
       ),
     );
   }

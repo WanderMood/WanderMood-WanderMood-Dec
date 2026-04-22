@@ -45,6 +45,7 @@ class ActivityRatingService {
     }
   }
 
+
   /// Get ratings for a specific activity
   Future<ActivityRating?> getRatingForActivity(String activityId) async {
     if (activityId.isEmpty) return null;

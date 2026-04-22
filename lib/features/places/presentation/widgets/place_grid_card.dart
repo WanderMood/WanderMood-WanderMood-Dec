@@ -27,6 +27,8 @@ class PlaceGridCard extends ConsumerWidget {
   final Place place;
   final VoidCallback onTap;
   final VoidCallback? onAddToMyDayTap;
+  /// Optional callback when this place gets newly saved (not unsaved).
+  final VoidCallback? onSavedTap;
   final Position? userLocation;
   final String? cityName; // City name for fallback distance calculation
   final int photoSelectionSeed;
@@ -36,6 +38,7 @@ class PlaceGridCard extends ConsumerWidget {
     required this.place,
     required this.onTap,
     this.onAddToMyDayTap,
+    this.onSavedTap,
     this.userLocation,
     this.cityName,
     this.photoSelectionSeed = 0,
@@ -242,7 +245,7 @@ class PlaceGridCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              height: 2,
+              height: 3,
               width: double.infinity,
               color: _wmForest,
             ),
@@ -311,6 +314,7 @@ class PlaceGridCard extends ConsumerWidget {
                                 await savedPlacesService.unsavePlace(place.id);
                               } else {
                                 await savedPlacesService.savePlace(place);
+                                onSavedTap?.call();
                               }
                               ref.invalidate(savedPlacesProvider);
                             } catch (e) {

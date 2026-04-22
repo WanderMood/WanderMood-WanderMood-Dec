@@ -176,18 +176,23 @@ class _GroupPlanningMatchLoadingScreenState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: GroupPlanningUi.cream,
-      appBar: AppBar(
+    return PopScope(
+      canPop: !_working,
+      child: Scaffold(
+        backgroundColor: GroupPlanningUi.cream,
+        appBar: AppBar(
         backgroundColor: GroupPlanningUi.cream,
         elevation: 0,
         foregroundColor: GroupPlanningUi.charcoal,
-        leading: IconButton(
-          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () =>
-              context.go('/group-planning/reveal/${widget.sessionId}'),
-        ),
+        automaticallyImplyLeading: false,
+        leading: _working
+            ? const SizedBox.shrink()
+            : IconButton(
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                onPressed: () =>
+                    context.go('/group-planning/reveal/${widget.sessionId}'),
+              ),
         title: Text(
           moodMatchMatchLoadingAppBarTitle(l10n),
           style: GoogleFonts.poppins(
@@ -280,6 +285,7 @@ class _GroupPlanningMatchLoadingScreenState
           ),
         ],
       ),
+    ),
     );
   }
 }

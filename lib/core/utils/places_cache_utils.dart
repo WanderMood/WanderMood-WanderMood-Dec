@@ -35,8 +35,8 @@ class ExplorePlacesCacheHit {
 class PlacesCacheUtils {
   PlacesCacheUtils._();
 
-  /// Same as aggregate explore cache prefix in `moody` (`explore_v7_…`).
-  static const String exploreCacheSchemaVersion = 'v7';
+  /// Same as aggregate explore cache prefix in `moody` (`explore_v8_…`).
+  static const String exploreCacheSchemaVersion = 'v8';
 
   /// Section ids for `get_explore` (`section` param) + broad `discovery` aggregate.
   static const List<String> exploreV7SectionIds = [

@@ -9,27 +9,25 @@ import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// Solid base behind frosted glass — one tone per idle bucket (time-of-day mood).
+/// Solid base behind frosted glass — one tone per four idle time buckets.
 const Map<MoodyIdleState, Color> kIdleBackgroundColors = {
-  MoodyIdleState.sleeping: Color(0xFF0D1B2A), // midnight blue
   MoodyIdleState.morning: Color(0xFF2D1B00), // warm sunrise amber
-  MoodyIdleState.lunch: Color(0xFF1A0A00), // deep terracotta
-  MoodyIdleState.afternoon: Color(0xFF001A2D), // deep sky blue
+  MoodyIdleState.day: Color(0xFF001A2D), // daylight blue
   MoodyIdleState.evening: Color(0xFF1A0D2E), // dusk purple
-  MoodyIdleState.lateNight: Color(0xFF0A0A1A), // dark slate navy
+  MoodyIdleState.night: Color(0xFF0D1B2A), // night / rest
 };
 
-/// Full-screen idle welcome for any [MoodyIdleState]. Wire [onComplete] after the
-/// user taps Moody and the wake sequence finishes.
+/// Full-screen idle welcome (four [MoodyIdleState] buckets). Wire [onComplete] after
+/// the user taps Moody and the wake sequence finishes.
 ///
-/// For [MoodyIdleState.afternoon], pass [afternoonInterestCategory] using lowercase
-/// keys: `outdoor`, `food`, `culture`, `social` — props default to ✨.
+/// For [MoodyIdleState.day], pass [dayInterestCategory] with lowercase
+/// `outdoor`, `food`, `culture`, `social` — props default to ✨.
 class MoodyIdleScreen extends StatefulWidget {
   const MoodyIdleScreen({
     super.key,
     required this.idleState,
     required this.wakeMessage,
-    this.afternoonInterestCategory,
+    this.dayInterestCategory,
     this.userPreferences,
     this.topInterest,
     this.onComplete,
@@ -40,8 +38,8 @@ class MoodyIdleScreen extends StatefulWidget {
   /// Shown after the wake animation — must align with [onComplete] (plan vs mood).
   final String wakeMessage;
 
-  /// Drives afternoon floating props per spec (outdoor / food / culture / social).
-  final String? afternoonInterestCategory;
+  /// Optional interest hint for the [MoodyIdleState.day] bucket (floating props).
+  final String? dayInterestCategory;
 
   /// Passed through to `generate_hub_message` as `user_preferences` (optional).
   final Map<String, dynamic>? userPreferences;
@@ -51,8 +49,8 @@ class MoodyIdleScreen extends StatefulWidget {
 
   final VoidCallback? onComplete;
 
-  /// Prop emoji for afternoon when [afternoonInterestCategory] is absent or unknown.
-  static String afternoonPropForInterest(String? category) {
+  /// Prop emoji for the day bucket when [dayInterestCategory] is absent or unknown.
+  static String dayPropForInterest(String? category) {
     switch (category?.toLowerCase().trim()) {
       case 'outdoor':
       case 'outdoors':
@@ -83,6 +81,9 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
   late final AnimationController _breathController;
   late final Animation<double> _breathScale;
 
+  late final AnimationController _tapCtaPulseController;
+  late final Animation<double> _tapCtaScale;
+
   late final AnimationController _wakePopController;
   late final Animation<double> _wakePopScale;
 
@@ -93,24 +94,17 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
   bool _woken = false;
   bool _showWakeLine = false;
 
-  bool _idleLineLoading = true;
+  /// Filled from edge [MoodyIdleMessageService] when ready; before that, UI uses
+  /// [_copy.fallbackMessage] so the first paint is never an empty "shimmer" bar.
   String? _idleAiText;
-
-  late final AnimationController _linePulseController;
 
   @override
   void initState() {
     super.initState();
-    _linePulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    )..repeat(reverse: true);
 
     _visuals = _IdleVisuals.forState(
       widget.idleState,
-      afternoonEmoji: MoodyIdleScreen.afternoonPropForInterest(
-        widget.afternoonInterestCategory,
-      ),
+      dayEmoji: MoodyIdleScreen.dayPropForInterest(widget.dayInterestCategory),
     );
 
     _breathController = AnimationController(
@@ -119,6 +113,17 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     )..repeat(reverse: true);
     _breathScale = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
+
+    _tapCtaPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+    _tapCtaScale = Tween<double>(begin: 0.96, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _tapCtaPulseController,
+        curve: Curves.easeInOut,
+      ),
     );
 
     _wakePopController = AnimationController(
@@ -150,7 +155,9 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     _exitFade =
         CurvedAnimation(parent: _exitFadeController, curve: Curves.easeOut);
 
-    Future<void>.delayed(const Duration(milliseconds: 2500), () {
+    // Show "tap Moody" on the next frame so users aren't waiting ~2.5s for a hint
+    // (the main line is instant via localized fallback, not a network call).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() => _hintVisible = true);
     });
   }
@@ -179,17 +186,17 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
       topInterest: widget.topInterest,
     );
     if (!mounted) return;
-    _linePulseController.stop();
+    final t = msg?.trim();
+    if (t == null || t.isEmpty) return;
     setState(() {
-      _idleAiText = msg;
-      _idleLineLoading = false;
+      _idleAiText = t;
     });
   }
 
   @override
   void dispose() {
-    _linePulseController.dispose();
     _breathController.dispose();
+    _tapCtaPulseController.dispose();
     _wakePopController.dispose();
     _exitFadeController.dispose();
     super.dispose();
@@ -202,19 +209,73 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
         color: Colors.white.withValues(alpha: 0.7),
       );
 
-  TextStyle get _wmCaptionOnDark => GoogleFonts.poppins(
-        fontSize: 12,
-        height: 1.3,
-        fontWeight: FontWeight.w500,
-        color: Colors.white.withValues(alpha: 0.5),
-      );
+  /// Prominent CTA: icon + two lines so users notice they must tap the character.
+  Widget _buildTapToContinueCta() {
+    final l10n = AppLocalizations.of(context)!;
+    return AnimatedOpacity(
+      opacity: _hintVisible && !_woken ? 1 : 0,
+      duration: const Duration(milliseconds: 400),
+      child: ScaleTransition(
+        scale: _tapCtaScale,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.45),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.touch_app_rounded,
+                size: 28,
+                color: Colors.white.withValues(alpha: 0.95),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.moodyIdleTapMoodyHint,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        height: 1.25,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.moodyIdleTapMoodySub,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        height: 1.3,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _onMoodyTap() async {
     if (_woken) return;
-    // Haptic on first tap only — same path for all 6 [MoodyIdleState] buckets.
+    // Haptic on first tap only — same path for all [MoodyIdleState] buckets.
     HapticFeedback.mediumImpact();
     setState(() => _woken = true);
     _breathController.stop();
+    _tapCtaPulseController.stop();
 
     await _wakePopController.forward(from: 0);
     if (!mounted) return;
@@ -329,49 +390,21 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
                               overflow: TextOverflow.ellipsis,
                               style: _wmBodyOnDark,
                             )
-                          : _idleLineLoading
-                              ? AnimatedBuilder(
-                                  key: const ValueKey<String>('idle-shimmer'),
-                                  animation: _linePulseController,
-                                  builder: (context, child) {
-                                    return Opacity(
-                                      opacity: 0.35 +
-                                          0.45 * _linePulseController.value,
-                                      child: Container(
-                                        height: 20,
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Text(
-                                  _idleAiText ?? _copy.fallbackMessage,
-                                  key: ValueKey<String>(
-                                      'idle-${_idleAiText ?? _copy.fallbackMessage}'),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: _wmBodyOnDark,
-                                ),
+                          : Text(
+                              _idleAiText ?? _copy.fallbackMessage,
+                              key: ValueKey<String>(
+                                'idle-${_idleAiText != null ? 'ai' : 'fb'}-'
+                                '${widget.idleState}',
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: _wmBodyOnDark,
+                            ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  AnimatedOpacity(
-                    opacity: _hintVisible && !_woken ? 1 : 0,
-                    duration: const Duration(milliseconds: 400),
-                    child: Text(
-                      AppLocalizations.of(context)!.moodyIdleTapMoodyHint,
-                      textAlign: TextAlign.center,
-                      style: _wmCaptionOnDark,
-                    ),
-                  ),
+                  const SizedBox(height: 16),
+                  _buildTapToContinueCta(),
                   const Spacer(flex: 3),
                 ],
               ),
@@ -383,7 +416,7 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
   }
 }
 
-/// Original sleep-only entry; same as [MoodyIdleScreen] with [MoodyIdleState.sleeping].
+/// Original sleep-only entry; same as [MoodyIdleScreen] in the [MoodyIdleState.night] look.
 class MoodySleepScreen extends StatelessWidget {
   const MoodySleepScreen({super.key, this.onComplete});
 
@@ -393,7 +426,7 @@ class MoodySleepScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return MoodyIdleScreen(
-      idleState: MoodyIdleState.sleeping,
+      idleState: MoodyIdleState.night,
       wakeMessage: l10n.moodyIdleWelcomeBack,
       onComplete: onComplete,
     );
@@ -425,15 +458,6 @@ class _IdleCopy {
     required String wakeMessage,
   }) {
     switch (s) {
-      case MoodyIdleState.sleeping:
-        return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackSleeping,
-          wakeMessage: wakeMessage,
-          preWakeMoodLabel: 'sleeping',
-          preWakeMouthScale: 1.0,
-          awakeMoodLabel: 'idle',
-          awakeMouthScale: 1.0,
-        );
       case MoodyIdleState.morning:
         return _IdleCopy(
           fallbackMessage: l10n.moodyIdleFallbackMorning,
@@ -443,21 +467,12 @@ class _IdleCopy {
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
-      case MoodyIdleState.lunch:
+      case MoodyIdleState.day:
         return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackLunch,
+          fallbackMessage: l10n.moodyIdleFallbackDay,
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
-          preWakeMouthScale: 1.0,
-          awakeMoodLabel: 'idle',
-          awakeMouthScale: 1.0,
-        );
-      case MoodyIdleState.afternoon:
-        return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackAfternoon,
-          wakeMessage: wakeMessage,
-          preWakeMoodLabel: 'idle',
-          preWakeMouthScale: 1.15,
+          preWakeMouthScale: 1.1,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
@@ -470,11 +485,11 @@ class _IdleCopy {
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
         );
-      case MoodyIdleState.lateNight:
+      case MoodyIdleState.night:
         return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackLateNight,
+          fallbackMessage: l10n.moodyIdleFallbackNight,
           wakeMessage: wakeMessage,
-          preWakeMoodLabel: 'idle',
+          preWakeMoodLabel: 'sleeping',
           preWakeMouthScale: 1.0,
           awakeMoodLabel: 'idle',
           awakeMouthScale: 1.0,
@@ -496,27 +511,17 @@ class _IdleVisuals {
 
   static _IdleVisuals forState(
     MoodyIdleState s, {
-    required String afternoonEmoji,
+    required String dayEmoji,
   }) {
     switch (s) {
-      case MoodyIdleState.sleeping:
-        return const _IdleVisuals(
-          propEmoji: '💤',
-          idleAvatar: _IdleAvatarKind.moodyCharacter,
-        );
       case MoodyIdleState.morning:
         return const _IdleVisuals(
           propEmoji: '☕',
           idleAvatar: _IdleAvatarKind.moodyCharacter,
         );
-      case MoodyIdleState.lunch:
-        return const _IdleVisuals(
-          propEmoji: '🍽',
-          idleAvatar: _IdleAvatarKind.moodyCharacter,
-        );
-      case MoodyIdleState.afternoon:
+      case MoodyIdleState.day:
         return _IdleVisuals(
-          propEmoji: afternoonEmoji,
+          propEmoji: dayEmoji,
           idleAvatar: _IdleAvatarKind.moodyCharacter,
         );
       case MoodyIdleState.evening:
@@ -524,9 +529,9 @@ class _IdleVisuals {
           propEmoji: '🌙',
           idleAvatar: _IdleAvatarKind.moodyCharacter,
         );
-      case MoodyIdleState.lateNight:
+      case MoodyIdleState.night:
         return const _IdleVisuals(
-          propEmoji: '⭐',
+          propEmoji: '💤',
           idleAvatar: _IdleAvatarKind.drowsyOrb,
         );
     }

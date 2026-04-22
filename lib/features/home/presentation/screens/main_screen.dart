@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +20,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
+import 'package:wandermood/features/home/presentation/main_app_tour.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 
 // v2 bottom nav — Screen 11 (active = wmForest, pill bg = wmForestTint)
 const Color _navWmForest = Color(0xFF2A6049);
@@ -28,16 +32,6 @@ const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
-
-// Create a Provider for the tab controller
-final mainTabProvider = StateProvider<int>((ref) => 0);
-
-/// Bottom tabs: 0 My Day, 1 Explore, 2 Moody, 3 Agenda, 4 Profile.
-int normalizeMainTabIndex(int tab) {
-  if (tab < 0) return 0;
-  if (tab > 4) return 4;
-  return tab;
-}
 
 // Provider to check if user has seen Moody intro overlay
 // Made public so it can be invalidated from MoodyHubScreen when intro is dismissed
@@ -75,6 +69,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   DateTime? _weekendSaturday;
   DateTime? _weekendSunday;
   bool _weekendBannerDismissed = false;
+  final List<GlobalKey> _mainTourNavKeys =
+      List<GlobalKey>.generate(5, (_) => GlobalKey());
+  bool _mainTourShowing = false;
 
   /// Tabs the user has opened at least once — kept in the tree with [Offstage]
   /// so switching back (e.g. Moody) does not rebuild from scratch every tap.
@@ -150,8 +147,33 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         if (!mounted) return;
         await _showMoodyIdleGateIfNeeded();
         await _checkForWeekendSuggestion();
+        if (!mounted) return;
+        await _maybeShowMainAppTourAuto();
       });
     });
+  }
+
+  Future<void> _maybeShowMainAppTourAuto() async {
+    if (!mounted || _mainTourShowing) return;
+    final done = await isMainAppTourCompleted();
+    if (!mounted || done) return;
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    if (!mounted || _mainTourShowing) return;
+    _presentMainAppTour();
+  }
+
+  void _presentMainAppTour() {
+    if (_mainTourShowing || !mounted) return;
+    setState(() => _mainTourShowing = true);
+    showMainAppTour(
+      context: context,
+      ref: ref,
+      navKeys: _mainTourNavKeys,
+      onSessionEnd: () {
+        _mainTourShowing = false;
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   /// After 30+ min away, full-screen Moody idle; then timestamps next session baseline.
@@ -352,6 +374,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final connectivityAsync = ref.watch(isConnectedProvider);
     final isConnected = connectivityAsync.valueOrNull ?? true;
 
+    ref.listen<int>(mainAppTourRequestProvider, (previous, next) {
+      if (next == 0) return;
+      if (previous == next) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _mainTourShowing) return;
+        _presentMainAppTour();
+      });
+    });
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -368,14 +399,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   color: const Color(0xFFE05C5C),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.wifi_off, color: Colors.white, size: 16),
-                      SizedBox(width: 8),
+                      const Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                      const SizedBox(width: 8),
                       Text(
-                        'No internet connection',
-                        style: TextStyle(
+                        l10n.mainNavNoConnection,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -417,19 +448,34 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
+                            child: KeyedSubtree(
+                              key: _mainTourNavKeys[0],
+                              child: _buildRegularNavItem(context, ref, selectedIndex, 0, l10n.navMyDay, Icons.calendar_today_outlined, Icons.calendar_today, _navWmForest, _navWmForestTint),
+                            ),
                           ),
                           Expanded(
-                            child: _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
+                            child: KeyedSubtree(
+                              key: _mainTourNavKeys[1],
+                              child: _buildRegularNavItem(context, ref, selectedIndex, 1, l10n.navExplore, Icons.explore_outlined, Icons.explore, _navWmForest, _navWmForestTint),
+                            ),
                           ),
                           Expanded(
-                            child: _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
+                            child: KeyedSubtree(
+                              key: _mainTourNavKeys[2],
+                              child: _buildCenterMoodyButton(context, ref, selectedIndex, l10n.navMoody),
+                            ),
                           ),
                           Expanded(
-                            child: _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navAgenda, Icons.calendar_month_outlined, Icons.calendar_month, _navWmForest, _navWmForestTint),
+                            child: KeyedSubtree(
+                              key: _mainTourNavKeys[3],
+                              child: _buildRegularNavItem(context, ref, selectedIndex, 3, l10n.navAgenda, Icons.calendar_month_outlined, Icons.calendar_month, _navWmForest, _navWmForestTint),
+                            ),
                           ),
                           Expanded(
-                            child: _buildRegularNavItem(context, ref, selectedIndex, 4, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                            child: KeyedSubtree(
+                              key: _mainTourNavKeys[4],
+                              child: _buildRegularNavItem(context, ref, selectedIndex, 4, l10n.navProfile, Icons.person_outline, Icons.person, _navWmForest, _navWmForestTint),
+                            ),
                           ),
                         ],
                       ),
@@ -626,43 +672,51 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // body goes blank). Full tab width via [SizedBox(width: double.infinity)] inside
     // [Expanded]; icon slot ≥44×44 (iOS minimum touch target); character slightly
     // larger than Material icons so the center tab reads as the hero control.
+    void openMoodyHub() {
+      ref.read(mainTabProvider.notifier).state = 2;
+    }
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => ref.read(mainTabProvider.notifier).state = 2,
+        onTap: openMoodyHub,
         borderRadius: BorderRadius.circular(999),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: SizedBox(
-            width: double.infinity,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 46,
-                  height: 46,
-                  child: Center(
-                    child: MoodyCharacter(
-                      size: 36,
-                      mood: isSelected ? 'happy' : 'default',
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 46,
+                    height: 46,
+                    child: Center(
+                      child: MoodyCharacter(
+                        size: 36,
+                        mood: isSelected ? 'happy' : 'default',
+                        onTap: openMoodyHub,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  moodyLabel,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 9,
-                    height: 1.05,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? _navWmForest : Colors.grey.shade500,
+                  const SizedBox(height: 2),
+                  Text(
+                    moodyLabel,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 9,
+                      height: 1.05,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? _navWmForest : Colors.grey.shade500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

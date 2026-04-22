@@ -119,8 +119,17 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   void _jumpSlotPage(int index) {
     final i = index.clamp(0, GroupPlanV2.slots.length - 1);
     final c = _slotPageController;
-    if (c != null && c.hasClients) {
-      c.jumpToPage(i);
+    if (c == null) return;
+    void jump() {
+      if (c.hasClients) c.jumpToPage(i);
+    }
+
+    jump();
+    if (!c.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        jump();
+      });
     }
   }
 
@@ -610,32 +619,10 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return false;
   }
 
-  /// Resolves a Places id for navigation. Treats **empty strings** as missing
-  /// (unlike `??`, which only skips `null` — a blank `place_id` would otherwise
-  /// block falling through to `id`).
+  /// Resolves a Google Places id for [PlaceDetailScreen] (same rules as
+  /// [GroupPlanV2.resolvePlaceId]).
   String? _placeIdForDetailNavigation(Map<String, dynamic> activity) {
-    String? pick(dynamic v) {
-      if (v == null) return null;
-      final t = v.toString().trim();
-      return t.isEmpty ? null : t;
-    }
-
-    for (final v in [
-      activity['place_id'],
-      activity['placeId'],
-      activity['id'],
-    ]) {
-      final id = pick(v);
-      if (id != null && !id.startsWith('groupplan_')) return id;
-    }
-    final loc = activity['location'];
-    if (loc is Map) {
-      for (final key in ['placeId', 'place_id', 'id']) {
-        final id = pick(loc[key]);
-        if (id != null && !id.startsWith('groupplan_')) return id;
-      }
-    }
-    return null;
+    return GroupPlanV2.resolvePlaceId(activity);
   }
 
   /// Open the standard place detail screen for an activity, just like the
@@ -1001,7 +988,10 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
   Future<void> _ensureSwapPool(String slot) async {
     final pools = GroupPlanV2.swapPools(_planData);
-    if (pools[slot]!.length >= 3) return;
+    // Initial plan already seeds the swap pool from the same create_day_plan call.
+    // Refilling up to 3 here blocked opening "Anders voorstellen" on every tap
+    // with a full Edge round-trip. Only fetch when there is nothing to show.
+    if ((pools[slot] ?? []).isNotEmpty) return;
     final moods = (_planData!['moods'] as List<dynamic>?)
             ?.map((e) => e.toString())
             .where((s) => s.isNotEmpty)
@@ -1133,7 +1123,10 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                   ),
                 ),
                 const SizedBox(height: 16),
-                Flexible(
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.42,
+                  ),
                   child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: options.length.clamp(0, 5),
@@ -2477,7 +2470,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
     String? statusBadge;
     Color statusColor = const Color(0xFF5DCAA5);
-    final bothConfirmedOnSlot = guestOk && ownerOk;
+    final bothConfirmedOnSlot = guestOk && (ownerOk || sent);
     if (bothConfirmedOnSlot) {
       statusBadge = null;
     } else if (!_isOwner &&
@@ -2492,7 +2485,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         swapBy == guestUserId) {
       statusBadge = l10n.moodMatchPlanV2SwapRequested;
       statusColor = _wmSunset;
-    } else if (!_isOwner && ownerOk && !guestOk && !pendingSwap) {
+    } else if (!_isOwner && sent && !guestOk && !pendingSwap) {
       statusBadge = l10n.moodMatchPlanV2YourTurn;
       statusColor = _wmSunset;
     }
@@ -2877,7 +2870,6 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                     ],
                     if (!_isOwner &&
                         _sentToGuest(_planData) &&
-                        ownerOk &&
                         !guestOk &&
                         !pendingSwap) ...[
                       const SizedBox(height: 10),

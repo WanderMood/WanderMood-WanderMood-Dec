@@ -54,6 +54,8 @@ Future<void> _navigateMoodMatchFromNotificationData({
     if (c != null && c.mounted) {
       _moodMatchNotifToast(c, (l) => l.moodMatchNotificationTapOpenFailed);
     }
+    // Stale id, deleted session, or RLS (e.g. invitee not a member yet).
+    router.go('/group-planning');
     return;
   }
 
@@ -118,15 +120,32 @@ Future<void> applyWmFcmDataNavigation(
   BuildContext? snackContext,
 }) async {
   final event = data['event']?.toString() ?? '';
-  final sessionId = data['session_id']?.toString();
+  final sessionIdRaw = data['session_id']?.toString().trim();
+  final sessionId =
+      sessionIdRaw != null && sessionIdRaw.isNotEmpty ? sessionIdRaw : null;
   final postId =
       data['post_id']?.toString() ?? data['related_post_id']?.toString();
 
   switch (event) {
     case 'mood_match_invite':
+      // Invitee is not in `group_session_members` yet — RLS hides the session
+      // row, so [fetchSession] fails unless we use join_code → invite flow.
+      if (sessionId != null) {
+        final jc = data['join_code']?.toString().trim();
+        if (jc != null && jc.isNotEmpty) {
+          router.go(
+            '/group-planning/invite-wm/$sessionId',
+            extra: <String, dynamic>{'joinCode': jc.toUpperCase()},
+          );
+        } else {
+          // Push payloads often omit join_code; hub loads pending inbox rows.
+          router.go('/group-planning');
+        }
+      }
+      break;
     case 'guest_joined':
     case 'mood_locked':
-      if (sessionId != null && sessionId.isNotEmpty) {
+      if (sessionId != null) {
         await _navigateMoodMatchFromNotificationData(
           router: router,
           ref: ref,

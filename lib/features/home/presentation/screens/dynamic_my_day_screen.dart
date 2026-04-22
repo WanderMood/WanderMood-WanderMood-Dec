@@ -260,76 +260,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  /// Quick actions — white cards, forest border, soft lift shadow (premium floating).
-  Widget _buildMyDayQuickActionsRow(AppLocalizations l10n) {
-    const wmCard = Color(0xFFFFFFFF);
-    const wmForest = Color(0xFF2A6049);
-    const wmCharcoal = Color(0xFF1E1C18);
-
-    Widget tile({
-      required VoidCallback onTap,
-      required IconData icon,
-      required String label,
-    }) {
-      return Expanded(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTapDown: (_) => HapticFeedback.lightImpact(),
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
-            child: Ink(
-              height: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: wmCard,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: wmForest.withValues(alpha: 0.35), width: 1),
-                boxShadow: const [],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: wmForest, size: 24),
-                  const SizedBox(height: 6),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: wmCharcoal,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        tile(
-          onTap: () => unawaited(_openMoodSelectionForPlanning()),
-          icon: Icons.auto_awesome_rounded,
-          label: l10n.myDayPlanWithMoodyButton,
-        ),
-        const SizedBox(width: 12),
-        tile(
-          onTap: () => unawaited(_openMoodMatchHub()),
-          icon: Icons.favorite_rounded,
-          label: l10n.moodMatchTitle,
-        ),
-      ],
-    );
-  }
-  
   @override
   Widget build(BuildContext context) {
     debugPrint('🏠 DynamicMyDayScreen: Building My Day screen');
@@ -416,18 +346,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         loading: () => _buildLoadingStatusCard(),
                         error: (error, stack) => _buildErrorStatusCard(),
                       ),
-                      if (_timelineHasActivities(timelineActivities)) ...[
-                        const SizedBox(height: 12),
-                        _buildMyDayQuickActionsRow(l10n),
-                        const SizedBox(height: 6),
-                        const Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Color(0xFFE8E2D8),
-                        ),
-                        const SizedBox(height: 14),
-                      ] else
-                        const SizedBox(height: 16),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),

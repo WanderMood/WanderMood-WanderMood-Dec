@@ -12,7 +12,7 @@ import '../../../plans/domain/enums/time_slot.dart';
 import '../../../plans/domain/enums/payment_type.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../home/presentation/screens/dynamic_my_day_provider.dart';
-import '../../../home/presentation/screens/main_screen.dart';
+import '../../../home/presentation/providers/main_navigation_provider.dart';
 import '../../../places/services/saved_places_service.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';

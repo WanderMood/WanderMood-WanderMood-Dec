@@ -6,6 +6,10 @@ import 'package:wandermood/core/utils/auth_helper.dart';
 class MoodyHubMessageService {
   MoodyHubMessageService._();
 
+  /// Log line on the edge is `Moody v96: …`. Update when you change
+  /// [supabase/functions/moody/index.ts] and redeploy so support/debug references match.
+  static const String moodyEdgeBuildLabel = 'v96';
+
   /// Edge + optional OpenAI needs more than a tight client timeout.
   static const Duration _timeout = Duration(seconds: 8);
 

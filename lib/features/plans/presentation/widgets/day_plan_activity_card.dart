@@ -326,7 +326,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
   Future<void> _share(BuildContext context) async {
     try {
       final place = activityToPlace(widget.activity);
-      await SharingService.sharePlace(place);
+      await SharingService.sharePlace(place, context: context);
     } catch (e) {
       if (context.mounted) {
         showWanderMoodToast(

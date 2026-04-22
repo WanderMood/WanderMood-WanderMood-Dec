@@ -497,7 +497,9 @@ class ExplorePlaceCardCopy {
     AppLocalizations l10n,
   ) {
     Object.hash(place.id, l10n.hashCode);
-    return text.trim();
+    final t = text.trim();
+    if (t.isNotEmpty) return t;
+    return l10n.exploreCardBlurbDefault;
   }
 
   /// Extra copy for the place detail info card (third paragraph + context).

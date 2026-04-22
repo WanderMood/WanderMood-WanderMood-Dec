@@ -56,7 +56,7 @@ class ProfileDrawer extends ConsumerWidget {
                             : ''),
                     avatarUrl: currentProfile?.avatarUrl,
                     travellerLevel: _getTravellerLevel(context, streak),
-                    streakLabel: '🔥 ${l10n.drawerDayStreak('$streak')}',
+                    streakLabel: '🔥 ${l10n.myDayMoodStreakBadge(streak)}',
                     onAvatarTap: () {
                       Navigator.pop(context);
                       context.push('/profile');
@@ -74,7 +74,7 @@ class ProfileDrawer extends ConsumerWidget {
                     avatarUrl: currentProfile?.avatarUrl,
                     travellerLevel:
                         _getTravellerLevel(context, currentProfile?.moodStreak),
-                    streakLabel: '🔥 ${l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}')}',
+                    streakLabel: '🔥 ${l10n.myDayMoodStreakBadge(currentProfile?.moodStreak ?? 0)}',
                     onAvatarTap: () {
                       Navigator.pop(context);
                       context.push('/profile');
@@ -92,7 +92,7 @@ class ProfileDrawer extends ConsumerWidget {
                     avatarUrl: currentProfile?.avatarUrl,
                     travellerLevel:
                         _getTravellerLevel(context, currentProfile?.moodStreak),
-                    streakLabel: '🔥 ${l10n.drawerDayStreak('${currentProfile?.moodStreak ?? 0}')}',
+                    streakLabel: '🔥 ${l10n.myDayMoodStreakBadge(currentProfile?.moodStreak ?? 0)}',
                     onAvatarTap: () {
                       Navigator.pop(context);
                       context.push('/profile');

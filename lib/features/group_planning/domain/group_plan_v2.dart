@@ -285,15 +285,34 @@ class GroupPlanV2 {
       return t;
     }
 
-    for (final v in [m['place_id'], m['placeId'], m['id']]) {
+    bool looksLikeGooglePlacesRef(String id) {
+      if (id.startsWith('google_')) return true;
+      if (id.startsWith('ChIJ') || id.startsWith('EhIJ')) return true;
+      return false;
+    }
+
+    for (final v in [m['place_id'], m['placeId']]) {
       final id = pick(v);
       if (id != null) return id;
+    }
+    // Skip synthetic `activity_*` rows and short slugs — they are not Google ids
+    // and break `/place/:id` + photo resolution (wrong hero / "mock" images).
+    final topId = pick(m['id']);
+    if (topId != null &&
+        !topId.startsWith('activity_') &&
+        looksLikeGooglePlacesRef(topId)) {
+      return topId;
     }
     final loc = m['location'];
     if (loc is Map) {
       for (final key in ['place_id', 'placeId', 'id']) {
         final id = pick(loc[key]);
-        if (id != null) return id;
+        if (id == null) continue;
+        if (key == 'id' &&
+            (id.startsWith('activity_') || !looksLikeGooglePlacesRef(id))) {
+          continue;
+        }
+        return id;
       }
     }
     return null;

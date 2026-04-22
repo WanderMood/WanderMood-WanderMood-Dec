@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/settings_providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/features/home/presentation/main_app_tour.dart';
 import 'package:wandermood/features/profile/presentation/widgets/travel_mode_toggle.dart';
 
 // v2 design tokens
@@ -212,6 +213,18 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                   iconBgColor: _wmSkyTint,
                   iconColor: _wmSky,
                   onTap: () => context.push('/settings/data'),
+                ),
+                const SizedBox(height: 10),
+                _buildSettingButton(
+                  icon: Icons.touch_app_outlined,
+                  label: l10n.settingsAppTourLabel,
+                  subtitle: l10n.settingsAppTourSubtitle,
+                  iconBgColor: _wmForestTint,
+                  iconColor: _wmForest,
+                  onTap: () {
+                    requestMainAppTour(ref);
+                    context.go('/main?tab=0');
+                  },
                 ),
                 const SizedBox(height: 10),
                 _buildSettingButton(

@@ -4,51 +4,41 @@ import 'package:wandermood/core/utils/moody_idle_checker.dart';
 /// Idle welcome line for [MoodyIdleScreen].
 ///
 /// Uses the same `moody` action as the hub: **`generate_hub_message`** (v63+).
-/// The legacy `idle_message` action is not implemented on the edge function.
+/// The app has four [MoodyIdleState] buckets; we send hub `time_of_day` as
+/// **`morning` / `afternoon` / `evening` / `night`** (the [MoodyIdleState.day]
+/// bucket maps to `afternoon`, which is what the edge prompt already expects).
 class MoodyIdleMessageService {
   MoodyIdleMessageService._();
 
-  /// Maps idle bucket → `time_of_day` for the hub prompt.
   static String _timeOfDayFor(MoodyIdleState state) {
     switch (state) {
-      case MoodyIdleState.sleeping:
-      case MoodyIdleState.lateNight:
-        return 'night';
       case MoodyIdleState.morning:
         return 'morning';
-      case MoodyIdleState.lunch:
-        return 'midday';
-      case MoodyIdleState.afternoon:
+      case MoodyIdleState.day:
         return 'afternoon';
       case MoodyIdleState.evening:
         return 'evening';
+      case MoodyIdleState.night:
+        return 'night';
     }
   }
 
-  /// Mood strings for OpenAI context when no [topInterest] is provided.
   static List<String> _moodsFor(MoodyIdleState state, String? topInterest) {
     final t = topInterest?.trim();
     if (t != null && t.isNotEmpty) return [t];
     switch (state) {
-      case MoodyIdleState.sleeping:
-        return ['restful'];
       case MoodyIdleState.morning:
         return ['morning'];
-      case MoodyIdleState.lunch:
-        return ['midday'];
-      case MoodyIdleState.afternoon:
+      case MoodyIdleState.day:
         return ['afternoon'];
       case MoodyIdleState.evening:
         return ['evening'];
-      case MoodyIdleState.lateNight:
-        return ['late night'];
+      case MoodyIdleState.night:
+        return ['restful'];
     }
   }
 
   /// Returns `null` on timeout / error / missing `message`.
-  ///
-  /// [languageCode] must match the app locale (e.g. from
-  /// `Localizations.localeOf(context).languageCode`), not the OS locale alone.
   static Future<String?> fetchIdleMessage({
     required MoodyIdleState idleState,
     required String languageCode,

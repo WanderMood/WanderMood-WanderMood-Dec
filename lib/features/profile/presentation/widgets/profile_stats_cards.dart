@@ -115,7 +115,7 @@ class ProfileStatsCards extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        l10n.profileStatsStreakTitle,
+                        l10n.profileStatsStreakSubtitle(moodStreak),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,

@@ -920,14 +920,6 @@
   "drawerAdventureExpert": "Abenteuer-Experte",
   "drawerSeasonedExplorer": "Erfahrener Entdecker",
   "drawerTravelEnthusiast": "Reise-Enthusiast",
-  "drawerDayStreak": "{count} Tage in Folge",
-  "@drawerDayStreak": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "notificationsMethodsTitle": "Benachrichtigungsmethoden",
   "notificationsPushTitle": "Push-Benachrichtigungen",
   "notificationsPushSubtitle": "Push-Benachrichtigungen auf diesem Gerät erhalten",
@@ -1324,14 +1316,13 @@
   "moodHubBannerNight": "Spätabend — lass uns was Passendes finden.",
   "moodyIdleWakeOpenPlan": "Lass uns deinen Plan für heute öffnen.",
   "moodyIdleWakeChooseMood": "Was machen wir heute? Wähle deine Stimmung und wir gestalten den Tag.",
-  "moodyIdleTapMoodyHint": "Tippe auf Moody, um fortzufahren",
+  "moodyIdleTapMoodyHint": "Tippe auf Moody, um WanderMood zu öffnen",
+  "moodyIdleTapMoodySub": "Du musst auf das Gesicht oben tippen — es gibt keinen anderen Weg.",
   "moodyIdleWelcomeBack": "Willkommen zurück!",
-  "moodyIdleFallbackSleeping": "Psst… Moody hat geschlafen 😴",
   "moodyIdleFallbackMorning": "Moody hat einen Kaffee geholt ☕",
-  "moodyIdleFallbackLunch": "Moody war in der Mittagspause 🍽",
-  "moodyIdleFallbackAfternoon": "Moody war beschäftigt — ist aber wieder für dich da ✨",
+  "moodyIdleFallbackDay": "Moody war unterwegs — bereit für dich ✨",
   "moodyIdleFallbackEvening": "Moody hat runtergefahren 🌙",
-  "moodyIdleFallbackLateNight": "Es wird spät… Moody war fast eingeschlafen ⭐",
+  "moodyIdleFallbackNight": "Ruhige Stunden… Moody war fast eingeschlafen 😴",
   "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "Erstelle deinen perfekten Plan! 🎯",
   "moodHubBackToHub": "Zurück zur Hub",
@@ -1624,6 +1615,7 @@
   "navAgenda": "Meine Pläne",
   "navProfile": "Profil",
   "navMoody": "Moody",
+  "mainNavNoConnection": "Keine Internetverbindung",
   "exploreAlreadyInDayPlan": "Steht schon in deinem Tagesplan 👍",
   "myDayStatusTitleRightNow": "Gerade",
   "myDayStatusTitleUpNext": "Als Nächstes",
@@ -2063,6 +2055,8 @@
   "exploreFilterNoAlcohol": "Kein Alkohol",
   "exploreFilterWheelchairAccessible": "Rollstuhlgerecht",
   "exploreFilterLgbtqFriendly": "LGBTQ+-freundlich",
+  "exploreFilterSensoryFriendly": "Sensorikfreundlich",
+  "exploreFilterFamilyFriendly": "Familienfreundlich",
   "exploreFilterSeniorFriendly": "Seniorenfreundlich",
   "exploreFilterBabyFriendly": "Babyfreundlich",
   "exploreFilterBlackOwned": "Black-owned",
@@ -3872,6 +3866,14 @@
   "profileSavedPlacesSeeAll": "Alle anzeigen",
   "profileSavedPlacesTitle": "Gespeicherte Orte",
   "profileStatsStreakTitle": "Serie",
+  "profileStatsStreakSubtitle": "{count, plural, one{Tag in Folge} other{Tage in Folge}}",
+  "@profileStatsStreakSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "profileTopMoodEmpty": "Noch keine",
   "pushEmailInApp": "Push, E-Mail und in der App",
   "settings": "Einstellungen",
@@ -3970,6 +3972,68 @@
   "authWelcomeTitle": "Du bist drin! Willkommen 🎉",
   "authCallbackConfirmingEmail": "E-Mail wird bestätigt…",
   "authCallbackVerificationFailed": "E-Mail-Bestätigung fehlgeschlagen. Bitte versuche es erneut.",
+  "authRememberMe": "Angemeldet bleiben",
+  "authForgotPassword": "Passwort vergessen?",
+  "authPasswordLabel": "Passwort",
+  "authSignInHeadline": "Melde dich in deinem Konto an",
+  "authLoginCta": "Anmelden",
+  "authOrContinueWith": "oder fortfahren mit",
+  "authNoAccount": "Noch kein Konto? ",
+  "authRegisterCta": "Registrieren",
+  "authReviewerHint": "App-Store-Test? Hier tippen",
+  "authEmailRequired": "Bitte gib deine E-Mail ein",
+  "authEmailInvalid": "Bitte gib eine gültige E-Mail ein",
+  "authPasswordRequired": "Bitte gib dein Passwort ein",
+  "authDemoSignInFailed": "Demo-Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "authSignInCancelledOrFailed": "Anmeldung abgebrochen oder fehlgeschlagen. Bitte erneut versuchen.",
+  "authSignInFailedGeneric": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "authSocialLoginNotConfigured": "Social-Login ist noch nicht eingerichtet. Bitte E-Mail/Passwort nutzen.",
+  "authSignInCancelledShort": "Anmeldung abgebrochen.",
+  "authNetworkErrorCheckConnection": "Netzwerkfehler. Bitte Internetverbindung prüfen.",
+  "authGoogleSignInIncomplete": "Google-Anmeldung unvollständig. Bitte E-Mail/Passwort nutzen.",
+  "authFacebookSignInIncomplete": "Facebook-Anmeldung unvollständig. Bitte E-Mail/Passwort nutzen.",
+  "moodyChatMicrophoneRequired": "Mikrofonzugriff wird für die Spracheingabe benötigt.",
+  "devAdminScreenDisabled": "Admin-Panel ist in Produktions-Builds deaktiviert.",
+  "moodStatsTitle": "Mood-Statistiken",
+  "moodStatsAverageLabel": "Durchschnittswert",
+  "moodStatsTotalEntriesLabel": "Einträge gesamt",
+  "moodStatsTypesLabel": "Mood-Typen",
+  "signupAlreadyHaveAccount": "Schon ein Konto?",
+  "signupFormCreateAccount": "Konto erstellen",
+  "signupFormJourneyLine": "Lass uns starten – dein nächstes Abenteuer wartet!",
+  "signupFormFullNameLabel": "Vollständiger Name",
+  "signupFormNameRequired": "Bitte gib deinen Namen ein",
+  "signupFormPasswordMinLength": "Passwort muss mindestens {min} Zeichen haben",
+  "@signupFormPasswordMinLength": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "signupFormConfirmPasswordLabel": "Passwort bestätigen",
+  "signupFormConfirmPasswordRequired": "Bitte bestätige dein Passwort",
+  "signupFormPasswordsMismatch": "Passwörter stimmen nicht überein",
+  "signupFormAcceptTerms": "Ich akzeptiere die AGB",
+  "signupFormTermsNotAccepted": "Bitte akzeptiere die AGB",
+  "signupFormAccountCreated": "Konto erstellt!",
+  "signupFormVerifyEmailToast": "Konto erstellt! Prüfe {email} zur Bestätigung.",
+  "@signupFormVerifyEmailToast": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "signupFormEmailAlreadyRegistered": "Diese E-Mail ist schon registriert. Melde dich an.",
+  "signupFormFailed": "Registrierung fehlgeschlagen: {message}",
+  "@signupFormFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "dialogClose": "Schließen",
   "supportHowCanWeHelp": "Wobei können wir dir helfen?",
   "supportContactUsCard": "Kontakt",
@@ -3997,6 +4061,15 @@
   "supportToastOpeningFeedback": "Feedback wird geöffnet…",
   "supportToastOpeningTutorial": "Tutorial wird geöffnet…",
   "supportToastOpeningIssue": "Meldung wird geöffnet…",
+  "appTourStepMyDayBody": "Dein Plan ist in Momente geteilt – Morgen, Mittag, Abend und Nacht. Wähle deine Vibes und Favoriten, ich kümmere mich um die Magie. 🧭🎯 Basierend auf Ort, Zeit, Wetter & Mood.",
+  "appTourStepExploreBody": "Geh zum Tab Entdecken und starte einen neuen Plan. Wähle Stimmung, Interessen und Reisevorlieben für personalisierte Vorschläge.",
+  "appTourStepMoodyBody": "Moody lernt deine Vibes, deine Energie und deinen Tag kennen. Daraus entstehen persönliche Pläne – nur für dich. Stell dir mich als neugierigen Kumpel vor, der immer Lust auf Entdecken hat 🌆🎈",
+  "appTourStepAgendaBody": "Sieh in Meine Pläne, was ansteht — heute, morgen oder ein beliebiger Tag — und spring zurück zu Moody, wenn der Tag noch frei ist.",
+  "appTourStepProfileBody": "Gespeicherte Orte, Reisemodus, Statistiken und Lieblings-Vibes findest du hier. Tippe auf App-Einstellungen für Benachrichtigungen, Sprache, Datenschutz und Hilfe.",
+  "settingsAppTourLabel": "App-Rundgang",
+  "settingsAppTourSubtitle": "Die unteren Tabs jederzeit erneut ansehen",
+  "helpSupportAppTourTitle": "App-Rundgang",
+  "helpSupportAppTourSubtitle": "Interaktive Führung durch die Haupttabs erneut abspielen",
   "recListTitle": "Reiseempfehlungen",
   "recErrorPrefix": "Fehler:",
   "recTryAgain": "Erneut versuchen",
@@ -5191,7 +5264,7 @@
       }
     }
   },
-  "moodMatchPlanV2FooterGuestReviewNudge": "{done} von {total} bestätigt — bitte Morgen, Mittag & Abend oben freigeben",
+  "moodMatchPlanV2FooterGuestReviewNudge": "{done}/{total} · oben je Register bestätigen",
   "@moodMatchPlanV2FooterGuestReviewNudge": {
     "placeholders": {
       "done": {

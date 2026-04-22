@@ -18,7 +18,7 @@ import 'package:wandermood/features/places/presentation/screens/place_detail_scr
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';

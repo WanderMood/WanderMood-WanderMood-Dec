@@ -4,6 +4,26 @@ import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 import 'package:wandermood/core/utils/places_new_photo_resolver.dart';
 
+/// When Places New photo JSON resolve fails, avoid loading `/media` (see [WmPlacePhotoNetworkImage]).
+Widget _wmPlacesNewMediaUnresolved(
+  BuildContext context,
+  ImageErrorWidgetBuilder? errorBuilder,
+) {
+  if (errorBuilder != null) {
+    return errorBuilder(
+      context,
+      Exception('places_new_media_unresolved'),
+      StackTrace.current,
+    );
+  }
+  return ColoredBox(
+    color: Colors.grey.shade300,
+    child: Center(
+      child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade600),
+    ),
+  );
+}
+
 bool isGooglePlacePhotoHttpUrl(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) return false;
@@ -126,21 +146,24 @@ class WmPlacePhotoNetworkImage extends StatelessWidget {
             );
           }
           if (snapshot.hasError) {
-            return WmNetworkImage(
-              accessible,
-              fit: fit,
-              width: width,
-              height: height,
-              alignment: alignment,
-              filterQuality: filterQuality,
-              errorBuilder: errorBuilder,
-              scale: scale,
-              progressIndicatorBuilder: progressIndicatorBuilder,
-            );
+            // Never hand `/media` to [CachedNetworkImage] on iOS release (redirect hang / grey).
+            return _wmPlacesNewMediaUnresolved(context, errorBuilder);
           }
           final resolved = (snapshot.data ?? accessible).trim();
+          final String loadUrl;
+          if (resolved.isNotEmpty) {
+            loadUrl = resolved;
+          } else {
+            loadUrl = accessible;
+          }
+          final forDecode =
+              deviceAccessibleGooglePlacePhotoUrl(loadUrl).trim();
+          if (isPlacesApiNewPhotoUrl(forDecode)) {
+            // JSON resolve did not return `photoUri` — do not follow `/media` redirects.
+            return _wmPlacesNewMediaUnresolved(context, errorBuilder);
+          }
           return WmNetworkImage(
-            resolved.isEmpty ? accessible : resolved,
+            loadUrl,
             fit: fit,
             width: width,
             height: height,

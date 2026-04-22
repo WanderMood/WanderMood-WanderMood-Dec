@@ -897,7 +897,7 @@ class GroupPlanningRepository {
   bool _planHasAllSlotsConfirmed(Map<String, dynamic> d) {
     final oc = GroupPlanV2.boolSlotMap(d['ownerConfirmed']);
     final gc = GroupPlanV2.boolSlotMap(d['guestConfirmed']);
-    for (final s in GroupPlanV2.slots) {
+    for (final s in GroupPlanV2.slotsRequiringConfirmation(d)) {
       if (oc[s] != true || gc[s] != true) return false;
     }
     return true;
@@ -1098,6 +1098,23 @@ class GroupPlanningRepository {
     await mergePlanData(sessionId, (d) {
       d['sentToGuest'] = true;
       d['guestReviewState'] = 'pending';
+      // Sending the plan implies the owner stands behind every proposed slot;
+      // otherwise guests only see actions on slots the owner had toggled true.
+      final need = GroupPlanV2.slotsRequiringConfirmation(
+        Map<String, dynamic>.from(d),
+      );
+      final m = Map<String, dynamic>.from(
+        d['ownerConfirmed'] is Map
+            ? d['ownerConfirmed'] as Map
+            : {for (final s in GroupPlanV2.slots) s: false},
+      );
+      for (final s in GroupPlanV2.slots) {
+        m.putIfAbsent(s, () => false);
+      }
+      for (final s in need) {
+        m[s] = true;
+      }
+      d['ownerConfirmed'] = m;
       return d;
     });
     await writeSessionStatus(sessionId, 'ready');
@@ -2109,6 +2126,7 @@ class GroupPlanningRepository {
         data: {
           'sender_username': ownerName,
           'session_id': sessionId,
+          'join_code': joinCode.trim().toUpperCase(),
         },
       );
       return MoodMatchInAppInviteResult.delivered;

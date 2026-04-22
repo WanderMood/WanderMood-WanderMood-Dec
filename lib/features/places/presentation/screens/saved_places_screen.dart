@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.dart';
 import 'package:wandermood/features/places/models/place.dart';

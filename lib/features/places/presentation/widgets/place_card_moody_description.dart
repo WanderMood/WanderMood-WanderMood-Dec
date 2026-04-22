@@ -92,9 +92,19 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
         if (ui.isRich) {
           final hookText = ui.hook?.trim();
           final hasHook = hookText != null && hookText.isNotEmpty;
+          String hookLineForStack() {
+            if (hasHook) return hookText;
+            var line = ExplorePlaceCardCopy.editorialLineForExploreCard(fallback);
+            if (line.trim().isEmpty) {
+              final f = fallback.trim();
+              line = f.length > 120 ? '${f.substring(0, 117)}…' : f;
+            }
+            return line;
+          }
 
           if (useCardStackLayout) {
             final bodyLines = (lineCap - _kRichHookMaxLines).clamp(2, 10);
+            final stackHook = hookLineForStack();
             return Padding(
               padding: EdgeInsets.only(top: paddingTop),
               child: Column(
@@ -106,9 +116,9 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
                     width: double.infinity,
                     child: Align(
                       alignment: Alignment.topLeft,
-                      child: hasHook
+                      child: stackHook.isNotEmpty
                           ? Text(
-                              hookText,
+                              stackHook,
                               style: GoogleFonts.poppins(
                                 fontSize: _kRichHookLineFontSize,
                                 fontStyle: FontStyle.italic,

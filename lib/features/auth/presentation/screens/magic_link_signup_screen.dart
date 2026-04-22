@@ -323,8 +323,8 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Demo sign-in failed. Please try again.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.authDemoSignInFailed),
         ),
       );
     } finally {

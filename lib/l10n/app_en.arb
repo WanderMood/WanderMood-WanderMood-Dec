@@ -522,6 +522,14 @@
   "profileStatsPlacesSubtitle": "Tap to explore",
   "profileStatsTopMoodTitle": "Top Mood",
   "profileStatsStreakTitle": "Streak",
+  "profileStatsStreakSubtitle": "{count, plural, one{day streak} other{days streak}}",
+  "@profileStatsStreakSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "profileTopMoodEmpty": "None yet",
   "profileSavedPlacesTitle": "Saved places",
   "profileSavedPlacesSeeAll": "See all",
@@ -853,14 +861,6 @@
   "drawerAdventureExpert": "Adventure Expert",
   "drawerSeasonedExplorer": "Seasoned Explorer",
   "drawerTravelEnthusiast": "Travel Enthusiast",
-  "drawerDayStreak": "{count} Day Streak",
-  "@drawerDayStreak": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "profileModeLocal": "Local Mode",
   "profileModeTravel": "Traveling",
   "profileModeWhatDoesThisDo": "What does this do?",
@@ -1605,14 +1605,13 @@
   "moodHubMoodPickerBanner": "Pick up to three moods below — I'll shape ideas around them.",
   "moodyIdleWakeOpenPlan": "Let's open your plan for today.",
   "moodyIdleWakeChooseMood": "What are we doing today? Pick your mood and we'll build the day.",
-  "moodyIdleTapMoodyHint": "Tap Moody to continue",
+  "moodyIdleTapMoodyHint": "Tap Moody to open WanderMood",
+  "moodyIdleTapMoodySub": "You have to tap the face above — there's no other way in.",
   "moodyIdleWelcomeBack": "Welcome back!",
-  "moodyIdleFallbackSleeping": "Sssh… Moody was sleeping 😴",
   "moodyIdleFallbackMorning": "Moody was grabbing a coffee ☕",
-  "moodyIdleFallbackLunch": "Moody was on a lunch break 🍽",
-  "moodyIdleFallbackAfternoon": "Moody was busy — but is here for you again ✨",
+  "moodyIdleFallbackDay": "Moody was out and about — ready when you are ✨",
   "moodyIdleFallbackEvening": "Moody was winding down 🌙",
-  "moodyIdleFallbackLateNight": "It's getting late… Moody was almost asleep ⭐",
+  "moodyIdleFallbackNight": "Quiet hours… Moody was almost asleep 😴",
   "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "Let's create your perfect plan! 🎯",
   "moodHubBackToHub": "Back to Hub",
@@ -1992,6 +1991,7 @@
   "navAgenda": "My Plans",
   "navProfile": "Profile",
   "navMoody": "Moody",
+  "mainNavNoConnection": "No internet connection",
   "exploreAlreadyInDayPlan": "Already in your day plan 👍",
   "myDayStatusTitleRightNow": "Right Now",
   "myDayStatusTitleUpNext": "Up Next",
@@ -2784,7 +2784,7 @@
   "myDayExploreNearbyButton": "Explore Nearby",
   "myDayAskMoodyButton": "Ask Moody",
   "myDayOpenFullPlaceDetails": "Open full place",
-  "myDayMoodStreakBadge": "{count, plural, one{1 day streak} other{{count} day streak}}",
+  "myDayMoodStreakBadge": "{count, plural, one{1 day streak} other{{count} days streak}}",
   "@myDayMoodStreakBadge": {
     "placeholders": {
       "count": {
@@ -2892,6 +2892,8 @@
   "exploreFilterNoAlcohol": "No Alcohol",
   "exploreFilterWheelchairAccessible": "Wheelchair Accessible",
   "exploreFilterLgbtqFriendly": "LGBTQ+ Friendly",
+  "exploreFilterSensoryFriendly": "Sensory-friendly",
+  "exploreFilterFamilyFriendly": "Family-friendly",
   "exploreFilterSeniorFriendly": "Senior-Friendly",
   "exploreFilterBabyFriendly": "Baby-Friendly",
   "exploreFilterBlackOwned": "Black-owned",
@@ -2910,7 +2912,7 @@
       }
     }
   },
-  "exploreMoodyHintFiltersActive": "Nice! {count, plural, one{1 filter} other{{count} filters}} active — I'll keep that in mind.",
+  "exploreMoodyHintFiltersActive": "Nice, {count, plural, one{1 filter is on} other{{count} filters are on}}.",
   "@exploreMoodyHintFiltersActive": {
     "placeholders": {
       "count": {
@@ -2918,13 +2920,13 @@
       }
     }
   },
-  "exploreMoodyHintFiltersIntro": "Hey! I'm Moody. Use filters to find exactly what fits your vibe — dietary, accessibility, photo spots, and more.",
+  "exploreMoodyHintFiltersIntro": "I'm Moody. Pick a few filters and I'll find better matches right away.",
   "exploreClearAll": "Clear all",
-  "exploreSectionQuickSuggestions": "Quick suggestions",
+  "exploreSectionQuickSuggestions": "Quick picks",
   "exploreSectionDietaryPreferences": "Dietary preferences",
   "exploreSectionAccessibilityInclusion": "Accessibility & inclusion",
-  "exploreSectionComfortConvenience": "Comfort & convenience",
-  "exploreSectionPhotoAesthetic": "Photo & aesthetic",
+  "exploreSectionComfortConvenience": "Practical",
+  "exploreSectionPhotoAesthetic": "Photo & vibe",
   "exploreSaveFiltersWithCount": "Save {count} filters",
   "@exploreSaveFiltersWithCount": {
     "placeholders": {
@@ -4713,6 +4715,68 @@
   "authWelcomeTitle": "You're in! Welcome 🎉",
   "authCallbackConfirmingEmail": "Confirming your email…",
   "authCallbackVerificationFailed": "Email verification failed. Please try again.",
+  "authRememberMe": "Remember me",
+  "authForgotPassword": "Forgot password?",
+  "authPasswordLabel": "Password",
+  "authSignInHeadline": "Sign in to your account",
+  "authLoginCta": "Log in",
+  "authOrContinueWith": "or continue with",
+  "authNoAccount": "Don't have an account? ",
+  "authRegisterCta": "Register",
+  "authReviewerHint": "App Store reviewer? Tap here",
+  "authEmailRequired": "Please enter your email address",
+  "authEmailInvalid": "Please enter a valid email address",
+  "authPasswordRequired": "Please enter your password",
+  "authDemoSignInFailed": "Demo sign-in failed. Please try again.",
+  "authSignInCancelledOrFailed": "Sign-in was cancelled or failed. Please try again.",
+  "authSignInFailedGeneric": "Sign-in failed. Please try again.",
+  "authSocialLoginNotConfigured": "Social login is not configured yet. Please use email/password for now.",
+  "authSignInCancelledShort": "Sign-in was cancelled.",
+  "authNetworkErrorCheckConnection": "Network error. Please check your internet connection.",
+  "authGoogleSignInIncomplete": "Google Sign-In setup is incomplete. Please use email/password for now.",
+  "authFacebookSignInIncomplete": "Facebook Sign-In setup is incomplete. Please use email/password for now.",
+  "moodyChatMicrophoneRequired": "Microphone access is needed for voice input.",
+  "devAdminScreenDisabled": "Admin screen is disabled in production builds.",
+  "moodStatsTitle": "Mood statistics",
+  "moodStatsAverageLabel": "Average mood",
+  "moodStatsTotalEntriesLabel": "Total entries",
+  "moodStatsTypesLabel": "Mood types",
+  "signupAlreadyHaveAccount": "Already have an account?",
+  "signupFormCreateAccount": "Create account",
+  "signupFormJourneyLine": "Let's get you started on your journey!",
+  "signupFormFullNameLabel": "Full name",
+  "signupFormNameRequired": "Please enter your name",
+  "signupFormPasswordMinLength": "Password must be at least {min} characters",
+  "@signupFormPasswordMinLength": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "signupFormConfirmPasswordLabel": "Confirm password",
+  "signupFormConfirmPasswordRequired": "Please confirm your password",
+  "signupFormPasswordsMismatch": "Passwords do not match",
+  "signupFormAcceptTerms": "I accept the terms and conditions",
+  "signupFormTermsNotAccepted": "Please accept the terms and conditions",
+  "signupFormAccountCreated": "Account created successfully!",
+  "signupFormVerifyEmailToast": "Account created! Please check your email at {email} to verify your account.",
+  "@signupFormVerifyEmailToast": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "signupFormEmailAlreadyRegistered": "This email is already registered. Please sign in instead.",
+  "signupFormFailed": "Sign-up failed: {message}",
+  "@signupFormFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "dialogClose": "Close",
   "supportHowCanWeHelp": "How can we help you?",
   "supportContactUsCard": "Contact Us",
@@ -4740,6 +4804,15 @@
   "supportToastOpeningFeedback": "Opening feedback form…",
   "supportToastOpeningTutorial": "Opening app tutorial…",
   "supportToastOpeningIssue": "Opening issue report…",
+  "appTourStepMyDayBody": "Your plan is broken into moments—morning, afternoon, evening, and night. Choose your vibe, pick your favorites, and I'll handle the magic. 🧭🎯 All based on location, time, weather & mood.",
+  "appTourStepExploreBody": "To plan a new adventure, go to the Explore tab and start a new plan. You can choose your mood, interests, and travel preferences to get personalized recommendations.",
+  "appTourStepMoodyBody": "Moody gets to know your vibe, your energy, and the kind of day you're having. With all that, I create personalized plans — made just for you. Think of me as your fun, curious bestie who's always down to explore 🌆🎈",
+  "appTourStepAgendaBody": "See what's scheduled in My Plans — today, tomorrow, or any day — and jump back to Moody when a day is still wide open.",
+  "appTourStepProfileBody": "Saved places, travel mode, stats, and favorite vibes live here. Tap App settings for notifications, language, privacy, and help.",
+  "settingsAppTourLabel": "App tour",
+  "settingsAppTourSubtitle": "Walk through the bottom tabs again anytime",
+  "helpSupportAppTourTitle": "App tour",
+  "helpSupportAppTourSubtitle": "Replay the interactive walkthrough of the main tabs",
   "recListTitle": "Travel Recommendations",
   "recErrorPrefix": "Error:",
   "recTryAgain": "Try Again",
@@ -6079,7 +6152,7 @@
       }
     }
   },
-  "moodMatchPlanV2FooterGuestReviewNudge": "{done} of {total} reviewed — confirm Morning, Afternoon & Evening above",
+  "moodMatchPlanV2FooterGuestReviewNudge": "{done}/{total} · confirm each tab above",
   "@moodMatchPlanV2FooterGuestReviewNudge": {
     "placeholders": {
       "done": {

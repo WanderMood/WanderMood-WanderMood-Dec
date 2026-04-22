@@ -24,8 +24,7 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart'
-    show mainTabProvider;
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_action_sheet.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
@@ -525,8 +524,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     if (!ready || !mounted) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Microphone access is needed for voice input.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.moodyChatMicrophoneRequired),
             behavior: SnackBarBehavior.floating,
           ),
         );

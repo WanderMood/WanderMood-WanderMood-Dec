@@ -1412,6 +1412,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileStatsStreakTitle => 'Reeks';
 
   @override
+  String profileStatsStreakSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'dagen op rij',
+      one: 'dag op rij',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get profileTopMoodEmpty => 'Nog geen';
 
   @override
@@ -2193,11 +2204,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get drawerTravelEnthusiast => 'Reisliefhebber';
-
-  @override
-  String drawerDayStreak(String count) {
-    return '$count dagen op rij';
-  }
 
   @override
   String get profileModeLocal => 'Lokale modus';
@@ -3679,31 +3685,28 @@ class AppLocalizationsNl extends AppLocalizations {
       'Wat doen we vandaag? Kies je mood en we bouwen de dag.';
 
   @override
-  String get moodyIdleTapMoodyHint => 'Tik op Moody om verder te gaan';
+  String get moodyIdleTapMoodyHint => 'Tik op Moody om WanderMood te openen';
+
+  @override
+  String get moodyIdleTapMoodySub =>
+      'Je moet op het gezicht hierboven tikken — er is geen andere knop.';
 
   @override
   String get moodyIdleWelcomeBack => 'Welkom terug!';
-
-  @override
-  String get moodyIdleFallbackSleeping => 'Sssst… Moody was aan het slapen 😴';
 
   @override
   String get moodyIdleFallbackMorning =>
       'Moody was een koffietje aan het doen ☕';
 
   @override
-  String get moodyIdleFallbackLunch => 'Moody was even aan het lunchen 🍽';
-
-  @override
-  String get moodyIdleFallbackAfternoon =>
-      'Moody was even bezig, maar is er weer voor je ✨';
+  String get moodyIdleFallbackDay => 'Moody was onderweg — klaar voor jou ✨';
 
   @override
   String get moodyIdleFallbackEvening => 'Moody was even aan het ontspannen 🌙';
 
   @override
-  String get moodyIdleFallbackLateNight =>
-      'Het wordt laat… Moody was bijna aan het slapen ⭐';
+  String get moodyIdleFallbackNight =>
+      'Stille uren… Moody was bijna in dromenland 😴';
 
   @override
   String get moodyHubNewConversation => 'Nieuw gesprek';
@@ -4389,6 +4392,9 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get navMoody => 'Moody';
+
+  @override
+  String get mainNavNoConnection => 'Geen internetverbinding';
 
   @override
   String get exploreAlreadyInDayPlan => 'Staat al in je dagplan 👍';
@@ -6154,6 +6160,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get exploreFilterLgbtqFriendly => 'LGBTQ+ vriendelijk';
 
   @override
+  String get exploreFilterSensoryFriendly => 'Prikkelvriendelijk';
+
+  @override
+  String get exploreFilterFamilyFriendly => 'Gezinsvriendelijk';
+
+  @override
   String get exploreFilterSeniorFriendly => 'Senioren-vriendelijk';
 
   @override
@@ -6200,34 +6212,33 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count actieve filters',
-      one: '1 actieve filter',
+      other: '$count filters staan aan',
+      one: '1 filter staat aan',
     );
-    return 'Nice! $_temp0 — ik onthoud het.';
+    return 'Top, $_temp0.';
   }
 
   @override
   String get exploreMoodyHintFiltersIntro =>
-      'Hé! Ik ben Moody. Gebruik filters om precies te vinden wat bij je vibe past — dieet, toegankelijkheid, fotoplekken en meer.';
+      'Ik ben Moody. Kies een paar filters en ik zoek meteen betere matches voor je.';
 
   @override
   String get exploreClearAll => 'Alles wissen';
 
   @override
-  String get exploreSectionQuickSuggestions => 'Snelle suggesties';
+  String get exploreSectionQuickSuggestions => 'Snelle keuzes';
 
   @override
   String get exploreSectionDietaryPreferences => 'Dieetvoorkeuren';
 
   @override
-  String get exploreSectionAccessibilityInclusion =>
-      'Toegankelijkheid & inclusie';
+  String get exploreSectionAccessibilityInclusion => 'Toegankelijk & inclusief';
 
   @override
-  String get exploreSectionComfortConvenience => 'Comfort & gemak';
+  String get exploreSectionComfortConvenience => 'Praktisch';
 
   @override
-  String get exploreSectionPhotoAesthetic => 'Foto & esthetiek';
+  String get exploreSectionPhotoAesthetic => 'Foto & vibe';
 
   @override
   String exploreSaveFiltersWithCount(int count) {
@@ -9968,6 +9979,145 @@ class AppLocalizationsNl extends AppLocalizations {
       'E-mailverificatie mislukt. Probeer het opnieuw.';
 
   @override
+  String get authRememberMe => 'Onthoud mij';
+
+  @override
+  String get authForgotPassword => 'Wachtwoord vergeten?';
+
+  @override
+  String get authPasswordLabel => 'Wachtwoord';
+
+  @override
+  String get authSignInHeadline => 'Log in op je account';
+
+  @override
+  String get authLoginCta => 'Inloggen';
+
+  @override
+  String get authOrContinueWith => 'of ga verder met';
+
+  @override
+  String get authNoAccount => 'Nog geen account? ';
+
+  @override
+  String get authRegisterCta => 'Registreren';
+
+  @override
+  String get authReviewerHint => 'App Store-recensent? Tik hier';
+
+  @override
+  String get authEmailRequired => 'Vul je e-mailadres in';
+
+  @override
+  String get authEmailInvalid => 'Vul een geldig e-mailadres in';
+
+  @override
+  String get authPasswordRequired => 'Vul je wachtwoord in';
+
+  @override
+  String get authDemoSignInFailed => 'Demoinloggen mislukt. Probeer opnieuw.';
+
+  @override
+  String get authSignInCancelledOrFailed =>
+      'Inloggen geannuleerd of mislukt. Probeer opnieuw.';
+
+  @override
+  String get authSignInFailedGeneric => 'Inloggen mislukt. Probeer opnieuw.';
+
+  @override
+  String get authSocialLoginNotConfigured =>
+      'Inloggen via social is nog niet ingesteld. Gebruik e-mail en wachtwoord.';
+
+  @override
+  String get authSignInCancelledShort => 'Inloggen geannuleerd.';
+
+  @override
+  String get authNetworkErrorCheckConnection =>
+      'Netwerkfout. Controleer je internetverbinding.';
+
+  @override
+  String get authGoogleSignInIncomplete =>
+      'Google-inlog is niet compleet. Gebruik e-mail en wachtwoord.';
+
+  @override
+  String get authFacebookSignInIncomplete =>
+      'Facebook-inlog is niet compleet. Gebruik e-mail en wachtwoord.';
+
+  @override
+  String get moodyChatMicrophoneRequired =>
+      'Microfoontoegang is nodig voor spraak.';
+
+  @override
+  String get devAdminScreenDisabled =>
+      'Beheerdersscherm is uit in productiebuilds.';
+
+  @override
+  String get moodStatsTitle => 'Mood-statistieken';
+
+  @override
+  String get moodStatsAverageLabel => 'Gemiddelde mood';
+
+  @override
+  String get moodStatsTotalEntriesLabel => 'Totaal aantal';
+
+  @override
+  String get moodStatsTypesLabel => 'Mood-types';
+
+  @override
+  String get signupAlreadyHaveAccount => 'Heb je al een account?';
+
+  @override
+  String get signupFormCreateAccount => 'Account aanmaken';
+
+  @override
+  String get signupFormJourneyLine => 'Laten we je op weg helpen!';
+
+  @override
+  String get signupFormFullNameLabel => 'Volledige naam';
+
+  @override
+  String get signupFormNameRequired => 'Vul je naam in';
+
+  @override
+  String signupFormPasswordMinLength(int min) {
+    return 'Wachtwoord moet minimaal $min tekens zijn';
+  }
+
+  @override
+  String get signupFormConfirmPasswordLabel => 'Bevestig wachtwoord';
+
+  @override
+  String get signupFormConfirmPasswordRequired => 'Bevestig je wachtwoord';
+
+  @override
+  String get signupFormPasswordsMismatch => 'Wachtwoorden komen niet overeen';
+
+  @override
+  String get signupFormAcceptTerms =>
+      'Ik ga akkoord met de algemene voorwaarden';
+
+  @override
+  String get signupFormTermsNotAccepted =>
+      'Ga akkoord met de algemene voorwaarden';
+
+  @override
+  String get signupFormAccountCreated => 'Account aangemaakt!';
+
+  @override
+  String signupFormVerifyEmailToast(String email) {
+    return 'Account aangemaakt! Controleer je e-mail op $email om te bevestigen.';
+  }
+
+  @override
+  String get signupFormEmailAlreadyRegistered =>
+      'Dit e-mailadres is al geregistreerd. Log in.';
+
+  @override
+  String signupFormFailed(String message) {
+    return 'Aanmelden mislukt: $message';
+  }
+
+  @override
   String get dialogClose => 'Sluiten';
 
   @override
@@ -10054,6 +10204,40 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get supportToastOpeningIssue => 'Melding openen…';
+
+  @override
+  String get appTourStepMyDayBody =>
+      'Je plan bestaat uit momenten—ochtend, middag, avond en nacht. Kies je vibe, je favorieten, ik regel de magie. 🧭🎯 Alles op basis van locatie, tijd, weer & mood.';
+
+  @override
+  String get appTourStepExploreBody =>
+      'Ga naar het tabblad Ontdekken en start een nieuw plan. Kies je stemming, interesses en voorkeuren voor persoonlijke aanbevelingen.';
+
+  @override
+  String get appTourStepMoodyBody =>
+      'Moody leert je vibe, energie en hoe je dag voelt kennen. Daarmee maak ik persoonlijke plannen – speciaal voor jou. Zie me als je nieuwsgierige maatje die altijd wil ontdekken 🌆🎈';
+
+  @override
+  String get appTourStepAgendaBody =>
+      'Bekijk wat er gepland staat in Mijn plannen — vandaag, morgen of een andere dag — en ga terug naar Moody als een dag nog leeg is.';
+
+  @override
+  String get appTourStepProfileBody =>
+      'Opgeslagen plekken, reismodus, statistieken en favoriete vibes staan hier. Tik op App-instellingen voor meldingen, taal, privacy en hulp.';
+
+  @override
+  String get settingsAppTourLabel => 'App-rondleiding';
+
+  @override
+  String get settingsAppTourSubtitle =>
+      'Bekijk de onderste tabbladen opnieuw wanneer je wilt';
+
+  @override
+  String get helpSupportAppTourTitle => 'App-rondleiding';
+
+  @override
+  String get helpSupportAppTourSubtitle =>
+      'Speel de interactieve rondleiding van de hoofdtabbladen opnieuw af';
 
   @override
   String get recListTitle => 'Reisaanbevelingen';
@@ -11960,7 +12144,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String moodMatchPlanV2FooterGuestReviewNudge(int done, int total) {
-    return '$done van $total bevestigd — rond Ochtend, Middag & Avond hierboven af';
+    return '$done/$total · bevestig per tab hierboven';
   }
 
   @override

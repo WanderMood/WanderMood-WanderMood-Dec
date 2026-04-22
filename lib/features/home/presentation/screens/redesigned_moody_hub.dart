@@ -12,7 +12,7 @@ import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_feedback_prompt_card.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/localization/localized_mood_labels.dart';
@@ -117,7 +117,7 @@ class _MoodyHubWithPlanState extends ConsumerState<_MoodyHubWithPlan>
   }
 
   void _openChangeMoodSheet(BuildContext context) {
-    unawaited(showMoodChangePlanBottomSheet(context, ref));
+    unawaited(showMoodChangePlanBottomSheet(context));
   }
 
   Color _moodColor(String mood) {
@@ -920,7 +920,7 @@ class _MoodyHubNoPlanState extends ConsumerState<_MoodyHubNoPlan>
   }
 
   void _openChangeMoodFromNoPlan(BuildContext context) {
-    unawaited(showMoodChangePlanBottomSheet(context, ref));
+    unawaited(showMoodChangePlanBottomSheet(context));
   }
 
   @override

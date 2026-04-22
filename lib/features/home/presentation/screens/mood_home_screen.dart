@@ -21,7 +21,6 @@ import 'package:wandermood/features/mood/providers/mood_options_provider.dart';
 import 'package:wandermood/features/mood/models/mood_option.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart'; // Import mainTabProvider from here
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';

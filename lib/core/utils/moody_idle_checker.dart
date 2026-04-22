@@ -1,14 +1,17 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 
-/// Time-of-day buckets for Moody idle / welcome experiences.
+/// Time-of-day buckets for Moody idle / welcome (four simple windows).
+///
+/// - [morning]: 06:00–12:00
+/// - [day]: 12:00–17:00 (lunch + afternoon merged)
+/// - [evening]: 17:00–22:00
+/// - [night]: 22:00–06:00 (late night + overnight “sleep” merged)
 enum MoodyIdleState {
-  sleeping, // 00:00 - 08:00
-  morning, // 08:00 - 12:00
-  lunch, // 12:00 - 14:00
-  afternoon, // 14:00 - 18:00
-  evening, // 18:00 - 21:00
-  lateNight, // 21:00 - 24:00
+  morning,
+  day,
+  evening,
+  night,
 }
 
 /// Decides when to show the Moody idle screen and which idle bucket applies.
@@ -44,11 +47,9 @@ class MoodyIdleChecker {
   /// Idle visual / copy bucket from the current local hour.
   static MoodyIdleState getIdleState() {
     final hour = MoodyClock.now().hour;
-    if (hour >= 0 && hour < 8) return MoodyIdleState.sleeping;
-    if (hour >= 8 && hour < 12) return MoodyIdleState.morning;
-    if (hour >= 12 && hour < 14) return MoodyIdleState.lunch;
-    if (hour >= 14 && hour < 18) return MoodyIdleState.afternoon;
-    if (hour >= 18 && hour < 21) return MoodyIdleState.evening;
-    return MoodyIdleState.lateNight;
+    if (hour >= 6 && hour < 12) return MoodyIdleState.morning;
+    if (hour >= 12 && hour < 17) return MoodyIdleState.day;
+    if (hour >= 17 && hour < 22) return MoodyIdleState.evening;
+    return MoodyIdleState.night;
   }
 }

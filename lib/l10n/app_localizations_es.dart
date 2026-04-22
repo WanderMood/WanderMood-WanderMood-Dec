@@ -1416,6 +1416,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileStatsStreakTitle => 'Racha';
 
   @override
+  String profileStatsStreakSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'días seguidos',
+      one: 'día seguido',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get profileTopMoodEmpty => 'Aún ninguno';
 
   @override
@@ -2200,11 +2211,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get drawerTravelEnthusiast => 'Entusiasta de viajes';
-
-  @override
-  String drawerDayStreak(String count) {
-    return 'Racha de $count días';
-  }
 
   @override
   String get profileModeLocal => 'Modo local';
@@ -3714,30 +3720,27 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Qué hacemos hoy? Elige tu mood y armamos el día.';
 
   @override
-  String get moodyIdleTapMoodyHint => 'Toca Moody para continuar';
+  String get moodyIdleTapMoodyHint => 'Toca Moody para abrir WanderMood';
+
+  @override
+  String get moodyIdleTapMoodySub =>
+      'Tienes que tocar la cara de arriba: no hay otra forma de entrar.';
 
   @override
   String get moodyIdleWelcomeBack => '¡Bienvenido de nuevo!';
 
   @override
-  String get moodyIdleFallbackSleeping => 'Shhh… Moody estaba durmiendo 😴';
-
-  @override
   String get moodyIdleFallbackMorning => 'Moody estaba tomando un café ☕';
 
   @override
-  String get moodyIdleFallbackLunch => 'Moody estaba en el almuerzo 🍽';
-
-  @override
-  String get moodyIdleFallbackAfternoon =>
-      'Moody estaba ocupado — pero ya está aquí para ti ✨';
+  String get moodyIdleFallbackDay => 'Moody estaba fuera — listo para ti ✨';
 
   @override
   String get moodyIdleFallbackEvening => 'Moody estaba relajándose 🌙';
 
   @override
-  String get moodyIdleFallbackLateNight =>
-      'Se hace tarde… Moody casi se dormía ⭐';
+  String get moodyIdleFallbackNight =>
+      'Horas tranquilas… Moody casi se dormía 😴';
 
   @override
   String get moodyHubNewConversation => 'New conversation';
@@ -4418,6 +4421,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get navMoody => 'Moody';
+
+  @override
+  String get mainNavNoConnection => 'Sin conexión a Internet';
 
   @override
   String get exploreAlreadyInDayPlan => 'Ya está en tu plan del día 👍';
@@ -6181,6 +6187,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exploreFilterLgbtqFriendly => 'LGBTQ+ amigable';
+
+  @override
+  String get exploreFilterSensoryFriendly => 'Sensorialmente amigable';
+
+  @override
+  String get exploreFilterFamilyFriendly => 'Apto para familias';
 
   @override
   String get exploreFilterSeniorFriendly => 'Apto para mayores';
@@ -10032,6 +10044,145 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo verificar el correo. Inténtalo de nuevo.';
 
   @override
+  String get authRememberMe => 'Recordarme';
+
+  @override
+  String get authForgotPassword => '¿Olvidaste la contraseña?';
+
+  @override
+  String get authPasswordLabel => 'Contraseña';
+
+  @override
+  String get authSignInHeadline => 'Inicia sesión en tu cuenta';
+
+  @override
+  String get authLoginCta => 'Iniciar sesión';
+
+  @override
+  String get authOrContinueWith => 'o continúa con';
+
+  @override
+  String get authNoAccount => '¿No tienes cuenta? ';
+
+  @override
+  String get authRegisterCta => 'Registrarse';
+
+  @override
+  String get authReviewerHint => '¿Revisor de la App Store? Toca aquí';
+
+  @override
+  String get authEmailRequired => 'Introduce tu correo';
+
+  @override
+  String get authEmailInvalid => 'Introduce un correo válido';
+
+  @override
+  String get authPasswordRequired => 'Introduce tu contraseña';
+
+  @override
+  String get authDemoSignInFailed =>
+      'Error en el acceso demo. Inténtalo de nuevo.';
+
+  @override
+  String get authSignInCancelledOrFailed =>
+      'Inicio de sesión cancelado o erróneo. Inténtalo de nuevo.';
+
+  @override
+  String get authSignInFailedGeneric =>
+      'No se pudo iniciar sesión. Inténtalo de nuevo.';
+
+  @override
+  String get authSocialLoginNotConfigured =>
+      'El inicio social aún no está configurado. Usa correo y contraseña.';
+
+  @override
+  String get authSignInCancelledShort => 'Inicio de sesión cancelado.';
+
+  @override
+  String get authNetworkErrorCheckConnection =>
+      'Error de red. Comprueba tu conexión a Internet.';
+
+  @override
+  String get authGoogleSignInIncomplete =>
+      'Inicio con Google incompleto. Usa correo y contraseña.';
+
+  @override
+  String get authFacebookSignInIncomplete =>
+      'Inicio con Facebook incompleto. Usa correo y contraseña.';
+
+  @override
+  String get moodyChatMicrophoneRequired =>
+      'Hace falta acceso al micrófono para el dictado por voz.';
+
+  @override
+  String get devAdminScreenDisabled =>
+      'La pantalla de administración está desactivada en compilar para producción.';
+
+  @override
+  String get moodStatsTitle => 'Estadísticas de ánimo';
+
+  @override
+  String get moodStatsAverageLabel => 'Ánimo medio';
+
+  @override
+  String get moodStatsTotalEntriesLabel => 'Entradas totales';
+
+  @override
+  String get moodStatsTypesLabel => 'Tipos de ánimo';
+
+  @override
+  String get signupAlreadyHaveAccount => '¿Ya tienes una cuenta?';
+
+  @override
+  String get signupFormCreateAccount => 'Crear cuenta';
+
+  @override
+  String get signupFormJourneyLine => '¡Vamos a empezar tu próximo plan!';
+
+  @override
+  String get signupFormFullNameLabel => 'Nombre completo';
+
+  @override
+  String get signupFormNameRequired => 'Introduce tu nombre';
+
+  @override
+  String signupFormPasswordMinLength(int min) {
+    return 'La contraseña debe tener al menos $min caracteres';
+  }
+
+  @override
+  String get signupFormConfirmPasswordLabel => 'Confirmar contraseña';
+
+  @override
+  String get signupFormConfirmPasswordRequired => 'Confirma tu contraseña';
+
+  @override
+  String get signupFormPasswordsMismatch => 'Las contraseñas no coinciden';
+
+  @override
+  String get signupFormAcceptTerms => 'Acepto los términos y condiciones';
+
+  @override
+  String get signupFormTermsNotAccepted => 'Acepta los términos y condiciones';
+
+  @override
+  String get signupFormAccountCreated => '¡Cuenta creada!';
+
+  @override
+  String signupFormVerifyEmailToast(String email) {
+    return '¡Cuenta creada! Revisa $email para verificar tu cuenta.';
+  }
+
+  @override
+  String get signupFormEmailAlreadyRegistered =>
+      'Este correo ya está registrado. Inicia sesión.';
+
+  @override
+  String signupFormFailed(String message) {
+    return 'Error al registrarse: $message';
+  }
+
+  @override
   String get dialogClose => 'Cerrar';
 
   @override
@@ -10119,6 +10270,40 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get supportToastOpeningIssue => 'Abriendo informe de incidencia…';
+
+  @override
+  String get appTourStepMyDayBody =>
+      'Tu plan se divide en momentos—mañana, tarde, noche. Elige tu vibe, tus favoritos, yo me encargo de la magia. 🧭🎯 Según lugar, hora, clima y mood.';
+
+  @override
+  String get appTourStepExploreBody =>
+      'Ve a la pestaña Explorar y empieza un plan nuevo. Elige tu estado de ánimo, intereses y preferencias para recomendaciones personalizadas.';
+
+  @override
+  String get appTourStepMoodyBody =>
+      'Moody aprende tu vibe, tu energía y cómo va tu día. Con eso creo planes personalizados solo para ti. Piensa en mí como tu colega curioso que siempre quiere explorar 🌆🎈';
+
+  @override
+  String get appTourStepAgendaBody =>
+      'Mira lo programado en Mis planes — hoy, mañana o cualquier día — y vuelve a Moody si el día aún está libre.';
+
+  @override
+  String get appTourStepProfileBody =>
+      'Aquí están lugares guardados, modo de viaje, estadísticas y vibes favoritos. Toca Ajustes de la app para notificaciones, idioma, privacidad y ayuda.';
+
+  @override
+  String get settingsAppTourLabel => 'Recorrido de la app';
+
+  @override
+  String get settingsAppTourSubtitle =>
+      'Vuelve a ver las pestañas inferiores cuando quieras';
+
+  @override
+  String get helpSupportAppTourTitle => 'Recorrido de la app';
+
+  @override
+  String get helpSupportAppTourSubtitle =>
+      'Repite el tutorial interactivo de las pestañas principales';
 
   @override
   String get recListTitle => 'Recomendaciones de viaje';
@@ -12028,7 +12213,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String moodMatchPlanV2FooterGuestReviewNudge(int done, int total) {
-    return '$done de $total revisados — confirma Mañana, Tarde y Noche arriba';
+    return '$done/$total · confirma cada pestaña arriba';
   }
 
   @override

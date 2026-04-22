@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 
 const Color _fvWmForest = Color(0xFF2A6049);
 const Color _fvWmForestDeep = Color(0xFF1E4A3A);
@@ -582,17 +584,11 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _fvWmCream,
-      body: Column(
-        children: [
-          // Header
-          Container(
-            color: _fvWmCream,
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-              bottom: 16,
-            ),
-            child: SafeArea(
-              bottom: false,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 12, 12),
               child: Row(
                 children: [
                   IconButton(
@@ -604,118 +600,88 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       l10n.profileVibesEditTitle,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                         color: _fvWmCharcoal,
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: TextButton(
-                      onPressed: _hasChanges && _selectedVibes.isNotEmpty ? _saveChanges : null,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: Container(
-                        decoration: _hasChanges && _selectedVibes.isNotEmpty
-                            ? BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [_fvWmForest, _fvWmForestDeep],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                              )
-                            : BoxDecoration(
-                              color: _fvWmParchment,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Text(
-                          l10n.profileVibesSave,
-                          style: GoogleFonts.poppins(
-                            color: _hasChanges && _selectedVibes.isNotEmpty
-                                ? Colors.white
-                              : _fvWmStone,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(width: 44),
                 ],
               ),
             ),
-          ),
-          const Divider(height: 1, color: _fvWmParchment),
-          
-          // Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Info Card
-                  _buildInfoCard(context),
-                  const SizedBox(height: 24),
-                  
-                  // Selected Count
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.profileVibesSelectedCount(_selectedVibes.length.toString()),
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: _fvWmCharcoal,
-                        ),
-                      ),
-                      if (_selectedVibes.length == 5)
+            const Divider(height: 1, color: _fvWmParchment),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoCard(context),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                         Text(
-                          l10n.profileVibesMaxReached,
+                          l10n.profileVibesSelectedCount(_selectedVibes.length.toString()),
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: _fvWmSunset,
+                            fontWeight: FontWeight.w700,
+                            color: _fvWmCharcoal,
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Current Vibes (removable)
-                  if (_selectedVibes.isNotEmpty) ...[
-                    _buildCurrentVibes(context),
-                    const SizedBox(height: 24),
-                  ],
-                  
-                  // Available Vibes Grid
-                  Text(
-                    _selectedVibes.isEmpty ? l10n.profileVibesChooseTitle : l10n.profileVibesAddMore,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: _fvWmStone,
-                      letterSpacing: 1,
+                        if (_selectedVibes.length == 5)
+                          Text(
+                            l10n.profileVibesMaxReached,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _fvWmSunset,
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildAvailableVibesGrid(),
-                  const SizedBox(height: 24),
-                  
-                  // Tips Section
-                  _buildTipsCard(),
-                  const SizedBox(height: 32), // Bottom padding
-                ],
+                    const SizedBox(height: 12),
+                    _buildAvailableVibesGrid(),
+                    const SizedBox(height: 84),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: FilledButton(
+          onPressed: _hasChanges && _selectedVibes.isNotEmpty && !_isSaving
+              ? _saveChanges
+              : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: _fvWmForest,
+            disabledBackgroundColor: _fvWmParchment,
+            foregroundColor: Colors.white,
+            disabledForegroundColor: _fvWmStone,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+            elevation: 0,
           ),
-        ],
+          child: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : Text(
+                  l10n.profileVibesSave,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+        ),
       ),
     );
   }
@@ -723,7 +689,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
   Widget _buildInfoCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [_fvWmForestTint, _fvWmSunsetTint],
@@ -734,16 +700,16 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: _fvWmSunsetTint,
-              shape: BoxShape.circle,
+          const SizedBox(
+            width: 42,
+            height: 42,
+            child: MoodyCharacter(
+              size: 42,
+              mood: 'happy',
+              currentFeature: MoodyFeature.none,
             ),
-            child: const Icon(Icons.info_outline, color: _fvWmSunset, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,7 +717,8 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                 Text(
                   l10n.profileVibesChooseTitle,
                   style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                     color: _fvWmCharcoal,
                   ),
                 ),
@@ -759,76 +726,13 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                 Text(
                   l10n.profileVibesSubtitle,
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: _fvWmStone,
-                    height: 1.5,
+                    height: 1.35,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCurrentVibes(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _fvWmWhite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _fvWmParchment, width: 0.5),
-        boxShadow: const [],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context)!.profileVibesCurrentTitle,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: _fvWmStone,
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: _selectedVibes.map((vibeName) {
-              final vibe = _resolveVibe(vibeName);
-              if (vibe == null) return const SizedBox.shrink();
-              return GestureDetector(
-                onTap: () => _toggleVibe(vibe.name),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: _fvWmForestTint,
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: _fvWmParchment, width: 0.5),
-                    boxShadow: const [],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(vibe.emoji, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
-                      Text(
-                        localizedVibeName(AppLocalizations.of(context)!, vibe.id),
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          color: _fvWmForest,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.delete_outline, color: _fvWmSunset, size: 18),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
           ),
         ],
       ),
@@ -841,9 +745,9 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.85,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.05,
       ),
       itemCount: allVibes.length,
       itemBuilder: (context, index) {
@@ -858,12 +762,12 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
           onTap: isMaxed ? null : () => _toggleVibe(vibe.name),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isSelected
                   ? _fvWmForestTint
                   : (isMaxed ? _fvWmCream : _fvWmWhite),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: isSelected ? _fvWmForest : _fvWmParchment,
                 width: isSelected ? 2 : 1,
@@ -889,26 +793,15 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Emoji with bounce animation
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.elasticOut,
-                      builder: (context, value, child) {
-                        return Transform.translate(
-                          offset: Offset(0, -10 * value),
-                          child: Text(
-                            vibe.emoji,
-                            style: const TextStyle(fontSize: 36),
-                          ),
-                        );
-                      },
+                    Text(
+                      vibe.emoji,
+                      style: const TextStyle(fontSize: 30),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       localizedVibeName(l10nGrid, vibe.id),
                       style: GoogleFonts.poppins(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: isSelected ? _fvWmForest : _fvWmCharcoal,
                       ),
@@ -918,7 +811,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       child: Text(
                         localizedVibeDescription(l10nGrid, vibe.id),
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
+                          fontSize: 12,
                           color: isSelected
                               ? _fvWmDusk
                               : _fvWmStone,
@@ -950,28 +843,6 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       ),
                     ),
                   ),
-                // Add icon (for hover effect on web)
-                if (!isSelected && !isMaxed)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Opacity(
-                      opacity: 0.0, // Hidden on mobile, can be shown on hover for web
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                        color: _fvWmCream,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: _fvWmSunset,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -980,54 +851,4 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
     );
   }
 
-  Widget _buildTipsCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [_fvWmCream, _fvWmForestTint],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _fvWmParchment, width: 0.5),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: _fvWmSunset,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.profileVibesProTipsTitle,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    color: _fvWmCharcoal,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppLocalizations.of(context)!.profileVibesProTipsBody,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: _fvWmStone,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

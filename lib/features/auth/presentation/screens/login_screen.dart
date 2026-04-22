@@ -9,12 +9,10 @@ import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/auth/application/social_auth_service.dart';
 import 'package:wandermood/features/auth/domain/providers/auth_provider.dart';
-import 'package:wandermood/features/auth/application/auth_service.dart';
 import 'package:wandermood/features/auth/presentation/screens/forgot_password_screen.dart';
-import 'package:wandermood/features/auth/presentation/screens/register_screen.dart' as register;
-import 'package:wandermood/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -69,20 +67,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  void _validateInputs() {
+  void _validateInputs(AppLocalizations l10n) {
     setState(() {
-      // Email validation
       if (_emailController.text.isEmpty) {
-        _emailError = 'Please enter your email address';
+        _emailError = l10n.authEmailRequired;
       } else if (!_isValidEmail(_emailController.text)) {
-        _emailError = 'Please enter a valid email address';
+        _emailError = l10n.authEmailInvalid;
       } else {
         _emailError = null;
       }
 
-      // Password validation
       if (_passwordController.text.isEmpty) {
-        _passwordError = 'Please enter your password';
+        _passwordError = l10n.authPasswordRequired;
       } else {
         _passwordError = null;
       }
@@ -144,7 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       showWanderMoodToast(
         context,
-        message: 'Demo sign-in failed. Please try again.',
+        message: AppLocalizations.of(context)!.authDemoSignInFailed,
         isError: true,
         duration: const Duration(seconds: 4),
       );
@@ -154,9 +150,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      try {
+    if (_isLoading) return;
+    final l10n = AppLocalizations.of(context)!;
+    _validateInputs(l10n);
+    if (_emailError != null || _passwordError != null) {
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
         await ref.read(authStateProvider.notifier).signIn(
           email: _emailController.text.trim(),
           password: _passwordController.text,
@@ -173,15 +174,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             }
           },
         );
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
   Future<void> _handleSocialSignIn(Future<AuthResponse?> Function() signInMethod) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
     try {
       print('🔍 Social Sign-In: Starting authentication...');
@@ -203,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) {
           showWanderMoodToast(
             context,
-            message: 'Sign-in was cancelled or failed. Please try again.',
+            message: l10n.authSignInCancelledOrFailed,
             backgroundColor: Colors.orange.shade400,
           );
         }
@@ -211,19 +212,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       print('❌ Social Sign-In Error: $e');
       if (mounted) {
-        String errorMessage = 'Sign-in failed. Please try again.';
-        
-        // Customize error message based on error type
+        var errorMessage = l10n.authSignInFailedGeneric;
         if (e.toString().contains('not configured')) {
-          errorMessage = 'Social login is not configured yet. Please use email/password for now.';
+          errorMessage = l10n.authSocialLoginNotConfigured;
         } else if (e.toString().contains('cancelled')) {
-          errorMessage = 'Sign-in was cancelled.';
+          errorMessage = l10n.authSignInCancelledShort;
         } else if (e.toString().contains('network')) {
-          errorMessage = 'Network error. Please check your internet connection.';
+          errorMessage = l10n.authNetworkErrorCheckConnection;
         } else if (e.toString().contains('GoogleService-Info.plist')) {
-          errorMessage = 'Google Sign-In setup incomplete. Please use email/password for now.';
+          errorMessage = l10n.authGoogleSignInIncomplete;
         } else if (e.toString().contains('Facebook App ID')) {
-          errorMessage = 'Facebook Sign-In setup incomplete. Please use email/password for now.';
+          errorMessage = l10n.authFacebookSignInIncomplete;
         }
         
         showWanderMoodToast(
@@ -279,6 +278,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SwirlBackground(
@@ -324,8 +324,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             // Sign in text
                             Center(
                               child: Text(
-                                'Sign in to your account',
-                                style: TextStyle(
+                                l10n.authSignInHeadline,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black87,
@@ -340,7 +340,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
-                                labelText: 'Email',
+                                labelText: l10n.signupEmailLabel,
                                 prefixIcon: const Icon(Icons.email_outlined),
                                 errorText: _emailError,
                                 border: OutlineInputBorder(
@@ -356,7 +356,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               controller: _passwordController,
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
-                                labelText: 'Password',
+                                labelText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 errorText: _passwordError,
                                 border: OutlineInputBorder(
@@ -393,7 +393,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         await _saveRememberMeState(newValue);
                                       },
                                     ),
-                                    const Text('Remember me'),
+                                    Text(l10n.authRememberMe),
                                   ],
                                 ),
                                 
@@ -409,7 +409,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                     );
                                   },
-                                  child: const Text('Forgot Password?'),
+                                  child: Text(l10n.authForgotPassword),
                                 ),
                               ],
                             ),
@@ -431,9 +431,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 child: _isLoading
                                     ? const CircularProgressIndicator(color: Colors.white)
-                                    : const Text(
-                                        'Login',
-                                        style: TextStyle(
+                                    : Text(
+                                        l10n.authLoginCta,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -446,9 +446,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text(
-                                  'or continue with',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.authOrContinueWith,
+                                  style: const TextStyle(
                                     color: Colors.black54,
                                     fontSize: 14,
                                   ),
@@ -490,13 +490,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account? ",
+                        l10n.authNoAccount,
                         style: GoogleFonts.poppins(color: Colors.black87),
                       ),
                       TextButton(
                         onPressed: () => context.go('/register'),
                         child: Text(
-                          'Register',
+                          l10n.authRegisterCta,
                           style: GoogleFonts.poppins(
                             color: const Color(0xFF2A6049),
                             fontWeight: FontWeight.w600,
@@ -519,7 +519,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        'App Store reviewer? Tap here',
+                        l10n.authReviewerHint,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

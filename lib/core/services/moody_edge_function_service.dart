@@ -203,6 +203,20 @@ class MoodyEdgeFunctionService {
         return PlacesCacheUtils.placeFromMoodyExploreCard(m);
       }).toList();
 
+      // #region agent log – H-A: log photo_url distinctness from edge function cards
+      final _photoUrls9a3a3b = <String>{};
+      for (final c in cards.take(8)) {
+        final m9 = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
+        _photoUrls9a3a3b.add((m9['photo_url'] as String?) ?? '');
+      }
+      debugPrint('🔍 dbg9a3a3b explore_response: cached=${responseData['cached']} total=${cards.length} distinct_photo_urls=${_photoUrls9a3a3b.length}');
+      for (int _i9 = 0; _i9 < cards.length && _i9 < 5; _i9++) {
+        final m9 = cards[_i9] is Map<String, dynamic> ? cards[_i9] as Map<String, dynamic> : Map<String, dynamic>.from(cards[_i9] as Map);
+        final url9 = (m9['photo_url'] as String?) ?? '';
+        debugPrint('  [${_i9}] ${m9['name']} | photo_url_path=${url9.length > 50 ? url9.substring(30, url9.length > 100 ? 100 : url9.length) : url9}');
+      }
+      // #endregion
+
       if (kDebugMode) {
         debugPrint('✅ Edge Function returned ${places.length} places');
         debugPrint('   cached: ${responseData['cached'] ?? false}');

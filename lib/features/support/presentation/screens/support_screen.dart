@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/features/home/presentation/main_app_tour.dart';
 import 'package:wandermood/core/utils/legal_url_launcher.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
@@ -362,8 +364,8 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   }
   
   void _showTutorial() {
-    final l10n = AppLocalizations.of(context)!;
-    showWanderMoodToast(context, message: l10n.supportToastOpeningTutorial);
+    requestMainAppTour(ref);
+    context.go('/main?tab=0');
   }
   
   void _reportIssue() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/features/home/presentation/main_app_tour.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/constants/legal_urls.dart';
 import 'package:wandermood/core/utils/legal_url_launcher.dart';
@@ -64,6 +65,16 @@ class HelpSupportScreen extends ConsumerWidget {
             title: l10n.helpSupportEmailSupportTitle,
             subtitle: l10n.helpSupportEmailAddress,
             onTap: () => _sendEmail(context),
+          ),
+          const SizedBox(height: 12),
+          _buildSettingCard(
+            icon: Icons.touch_app_outlined,
+            title: l10n.helpSupportAppTourTitle,
+            subtitle: l10n.helpSupportAppTourSubtitle,
+            onTap: () {
+              requestMainAppTour(ref);
+              context.go('/main?tab=0');
+            },
           ),
           const SizedBox(height: 24),
           Text(

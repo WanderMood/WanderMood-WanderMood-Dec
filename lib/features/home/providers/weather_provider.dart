@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
+import 'package:wandermood/features/weather/application/enhanced_weather_service.dart';
 import 'package:wandermood/features/weather/application/weather_service.dart';
 import 'package:wandermood/features/weather/domain/models/weather.dart';
 import 'package:wandermood/features/weather/domain/models/weather_forecast.dart';
@@ -60,25 +62,55 @@ final weatherProvider = FutureProvider.autoDispose<Weather?>((ref) async {
   final loc = await _resolveWeatherLocation(ref);
   if (loc == null) return null;
 
-  final service = ref.watch(weatherServiceProvider.notifier);
+  final edgeService = ref.watch(enhancedWeatherServiceProvider.notifier);
+  final fallbackService = ref.watch(weatherServiceProvider.notifier);
   try {
-    return await service.getCurrentWeather(loc);
+    final weather = await edgeService.getCurrentWeather(loc);
+    if (kDebugMode) {
+      debugPrint('🌦️ Home weather source=edge location=${loc.name}');
+    }
+    return weather;
   } catch (_) {
-    return null;
+    try {
+      final weather = await fallbackService.getCurrentWeather(loc);
+      if (kDebugMode) {
+        debugPrint('🌦️ Home weather source=fallback-direct location=${loc.name}');
+      }
+      return weather;
+    } catch (_) {
+      return null;
+    }
   }
 });
 
-/// Hourly-style forecast rows from [WeatherService.getHourlyForecast].
+/// Hourly-style forecast rows (edge function first, direct API fallback).
 final hourlyForecastProvider =
     FutureProvider.autoDispose<List<WeatherForecast>>((ref) async {
   final loc = await _resolveWeatherLocation(ref);
   if (loc == null) return [];
 
-  final service = ref.watch(weatherServiceProvider.notifier);
+  final edgeService = ref.watch(enhancedWeatherServiceProvider.notifier);
+  final fallbackService = ref.watch(weatherServiceProvider.notifier);
   try {
-    return await service.getHourlyForecast(loc);
+    final forecast = await edgeService.getHourlyForecast(loc);
+    if (kDebugMode) {
+      debugPrint(
+        '🌦️ Home hourly source=edge location=${loc.name} count=${forecast.length}',
+      );
+    }
+    return forecast;
   } catch (_) {
-    return [];
+    try {
+      final forecast = await fallbackService.getHourlyForecast(loc);
+      if (kDebugMode) {
+        debugPrint(
+          '🌦️ Home hourly source=fallback-direct location=${loc.name} count=${forecast.length}',
+        );
+      }
+      return forecast;
+    } catch (_) {
+      return [];
+    }
   }
 });
 

@@ -2600,6 +2600,12 @@ abstract class AppLocalizations {
   /// **'Streak'**
   String get profileStatsStreakTitle;
 
+  /// No description provided for @profileStatsStreakSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{day streak} other{days streak}}'**
+  String profileStatsStreakSubtitle(int count);
+
   /// No description provided for @profileTopMoodEmpty.
   ///
   /// In en, this message translates to:
@@ -4063,12 +4069,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Travel Enthusiast'**
   String get drawerTravelEnthusiast;
-
-  /// No description provided for @drawerDayStreak.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} Day Streak'**
-  String drawerDayStreak(String count);
 
   /// No description provided for @profileModeLocal.
   ///
@@ -6695,8 +6695,14 @@ abstract class AppLocalizations {
   /// No description provided for @moodyIdleTapMoodyHint.
   ///
   /// In en, this message translates to:
-  /// **'Tap Moody to continue'**
+  /// **'Tap Moody to open WanderMood'**
   String get moodyIdleTapMoodyHint;
+
+  /// No description provided for @moodyIdleTapMoodySub.
+  ///
+  /// In en, this message translates to:
+  /// **'You have to tap the face above — there\'s no other way in.'**
+  String get moodyIdleTapMoodySub;
 
   /// No description provided for @moodyIdleWelcomeBack.
   ///
@@ -6704,29 +6710,17 @@ abstract class AppLocalizations {
   /// **'Welcome back!'**
   String get moodyIdleWelcomeBack;
 
-  /// No description provided for @moodyIdleFallbackSleeping.
-  ///
-  /// In en, this message translates to:
-  /// **'Sssh… Moody was sleeping 😴'**
-  String get moodyIdleFallbackSleeping;
-
   /// No description provided for @moodyIdleFallbackMorning.
   ///
   /// In en, this message translates to:
   /// **'Moody was grabbing a coffee ☕'**
   String get moodyIdleFallbackMorning;
 
-  /// No description provided for @moodyIdleFallbackLunch.
+  /// No description provided for @moodyIdleFallbackDay.
   ///
   /// In en, this message translates to:
-  /// **'Moody was on a lunch break 🍽'**
-  String get moodyIdleFallbackLunch;
-
-  /// No description provided for @moodyIdleFallbackAfternoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Moody was busy — but is here for you again ✨'**
-  String get moodyIdleFallbackAfternoon;
+  /// **'Moody was out and about — ready when you are ✨'**
+  String get moodyIdleFallbackDay;
 
   /// No description provided for @moodyIdleFallbackEvening.
   ///
@@ -6734,11 +6728,11 @@ abstract class AppLocalizations {
   /// **'Moody was winding down 🌙'**
   String get moodyIdleFallbackEvening;
 
-  /// No description provided for @moodyIdleFallbackLateNight.
+  /// No description provided for @moodyIdleFallbackNight.
   ///
   /// In en, this message translates to:
-  /// **'It\'s getting late… Moody was almost asleep ⭐'**
-  String get moodyIdleFallbackLateNight;
+  /// **'Quiet hours… Moody was almost asleep 😴'**
+  String get moodyIdleFallbackNight;
 
   /// No description provided for @moodyHubNewConversation.
   ///
@@ -7939,6 +7933,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Moody'**
   String get navMoody;
+
+  /// No description provided for @mainNavNoConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get mainNavNoConnection;
 
   /// No description provided for @exploreAlreadyInDayPlan.
   ///
@@ -10505,7 +10505,7 @@ abstract class AppLocalizations {
   /// No description provided for @myDayMoodStreakBadge.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, one{1 day streak} other{{count} day streak}}'**
+  /// **'{count, plural, one{1 day streak} other{{count} days streak}}'**
   String myDayMoodStreakBadge(int count);
 
   /// No description provided for @myDayGetReadyButton.
@@ -11024,6 +11024,18 @@ abstract class AppLocalizations {
   /// **'LGBTQ+ Friendly'**
   String get exploreFilterLgbtqFriendly;
 
+  /// No description provided for @exploreFilterSensoryFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensory-friendly'**
+  String get exploreFilterSensoryFriendly;
+
+  /// No description provided for @exploreFilterFamilyFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Family-friendly'**
+  String get exploreFilterFamilyFriendly;
+
   /// No description provided for @exploreFilterSeniorFriendly.
   ///
   /// In en, this message translates to:
@@ -11093,13 +11105,13 @@ abstract class AppLocalizations {
   /// No description provided for @exploreMoodyHintFiltersActive.
   ///
   /// In en, this message translates to:
-  /// **'Nice! {count, plural, one{1 filter} other{{count} filters}} active — I\'ll keep that in mind.'**
+  /// **'Nice, {count, plural, one{1 filter is on} other{{count} filters are on}}.'**
   String exploreMoodyHintFiltersActive(int count);
 
   /// No description provided for @exploreMoodyHintFiltersIntro.
   ///
   /// In en, this message translates to:
-  /// **'Hey! I\'m Moody. Use filters to find exactly what fits your vibe — dietary, accessibility, photo spots, and more.'**
+  /// **'I\'m Moody. Pick a few filters and I\'ll find better matches right away.'**
   String get exploreMoodyHintFiltersIntro;
 
   /// No description provided for @exploreClearAll.
@@ -11111,7 +11123,7 @@ abstract class AppLocalizations {
   /// No description provided for @exploreSectionQuickSuggestions.
   ///
   /// In en, this message translates to:
-  /// **'Quick suggestions'**
+  /// **'Quick picks'**
   String get exploreSectionQuickSuggestions;
 
   /// No description provided for @exploreSectionDietaryPreferences.
@@ -11129,13 +11141,13 @@ abstract class AppLocalizations {
   /// No description provided for @exploreSectionComfortConvenience.
   ///
   /// In en, this message translates to:
-  /// **'Comfort & convenience'**
+  /// **'Practical'**
   String get exploreSectionComfortConvenience;
 
   /// No description provided for @exploreSectionPhotoAesthetic.
   ///
   /// In en, this message translates to:
-  /// **'Photo & aesthetic'**
+  /// **'Photo & vibe'**
   String get exploreSectionPhotoAesthetic;
 
   /// No description provided for @exploreSaveFiltersWithCount.
@@ -17493,6 +17505,252 @@ abstract class AppLocalizations {
   /// **'Email verification failed. Please try again.'**
   String get authCallbackVerificationFailed;
 
+  /// No description provided for @authRememberMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember me'**
+  String get authRememberMe;
+
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get authForgotPassword;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authSignInHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account'**
+  String get authSignInHeadline;
+
+  /// No description provided for @authLoginCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get authLoginCta;
+
+  /// No description provided for @authOrContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'or continue with'**
+  String get authOrContinueWith;
+
+  /// No description provided for @authNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? '**
+  String get authNoAccount;
+
+  /// No description provided for @authRegisterCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get authRegisterCta;
+
+  /// No description provided for @authReviewerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'App Store reviewer? Tap here'**
+  String get authReviewerHint;
+
+  /// No description provided for @authEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email address'**
+  String get authEmailRequired;
+
+  /// No description provided for @authEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get authEmailInvalid;
+
+  /// No description provided for @authPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get authPasswordRequired;
+
+  /// No description provided for @authDemoSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo sign-in failed. Please try again.'**
+  String get authDemoSignInFailed;
+
+  /// No description provided for @authSignInCancelledOrFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in was cancelled or failed. Please try again.'**
+  String get authSignInCancelledOrFailed;
+
+  /// No description provided for @authSignInFailedGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed. Please try again.'**
+  String get authSignInFailedGeneric;
+
+  /// No description provided for @authSocialLoginNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Social login is not configured yet. Please use email/password for now.'**
+  String get authSocialLoginNotConfigured;
+
+  /// No description provided for @authSignInCancelledShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in was cancelled.'**
+  String get authSignInCancelledShort;
+
+  /// No description provided for @authNetworkErrorCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your internet connection.'**
+  String get authNetworkErrorCheckConnection;
+
+  /// No description provided for @authGoogleSignInIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In setup is incomplete. Please use email/password for now.'**
+  String get authGoogleSignInIncomplete;
+
+  /// No description provided for @authFacebookSignInIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook Sign-In setup is incomplete. Please use email/password for now.'**
+  String get authFacebookSignInIncomplete;
+
+  /// No description provided for @moodyChatMicrophoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is needed for voice input.'**
+  String get moodyChatMicrophoneRequired;
+
+  /// No description provided for @devAdminScreenDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin screen is disabled in production builds.'**
+  String get devAdminScreenDisabled;
+
+  /// No description provided for @moodStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood statistics'**
+  String get moodStatsTitle;
+
+  /// No description provided for @moodStatsAverageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Average mood'**
+  String get moodStatsAverageLabel;
+
+  /// No description provided for @moodStatsTotalEntriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total entries'**
+  String get moodStatsTotalEntriesLabel;
+
+  /// No description provided for @moodStatsTypesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood types'**
+  String get moodStatsTypesLabel;
+
+  /// No description provided for @signupAlreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get signupAlreadyHaveAccount;
+
+  /// No description provided for @signupFormCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get signupFormCreateAccount;
+
+  /// No description provided for @signupFormJourneyLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s get you started on your journey!'**
+  String get signupFormJourneyLine;
+
+  /// No description provided for @signupFormFullNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get signupFormFullNameLabel;
+
+  /// No description provided for @signupFormNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get signupFormNameRequired;
+
+  /// No description provided for @signupFormPasswordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least {min} characters'**
+  String signupFormPasswordMinLength(int min);
+
+  /// No description provided for @signupFormConfirmPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get signupFormConfirmPasswordLabel;
+
+  /// No description provided for @signupFormConfirmPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password'**
+  String get signupFormConfirmPasswordRequired;
+
+  /// No description provided for @signupFormPasswordsMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get signupFormPasswordsMismatch;
+
+  /// No description provided for @signupFormAcceptTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'I accept the terms and conditions'**
+  String get signupFormAcceptTerms;
+
+  /// No description provided for @signupFormTermsNotAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the terms and conditions'**
+  String get signupFormTermsNotAccepted;
+
+  /// No description provided for @signupFormAccountCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created successfully!'**
+  String get signupFormAccountCreated;
+
+  /// No description provided for @signupFormVerifyEmailToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created! Please check your email at {email} to verify your account.'**
+  String signupFormVerifyEmailToast(String email);
+
+  /// No description provided for @signupFormEmailAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered. Please sign in instead.'**
+  String get signupFormEmailAlreadyRegistered;
+
+  /// No description provided for @signupFormFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-up failed: {message}'**
+  String signupFormFailed(String message);
+
   /// No description provided for @dialogClose.
   ///
   /// In en, this message translates to:
@@ -17654,6 +17912,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opening issue report…'**
   String get supportToastOpeningIssue;
+
+  /// No description provided for @appTourStepMyDayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is broken into moments—morning, afternoon, evening, and night. Choose your vibe, pick your favorites, and I\'ll handle the magic. 🧭🎯 All based on location, time, weather & mood.'**
+  String get appTourStepMyDayBody;
+
+  /// No description provided for @appTourStepExploreBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To plan a new adventure, go to the Explore tab and start a new plan. You can choose your mood, interests, and travel preferences to get personalized recommendations.'**
+  String get appTourStepExploreBody;
+
+  /// No description provided for @appTourStepMoodyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody gets to know your vibe, your energy, and the kind of day you\'re having. With all that, I create personalized plans — made just for you. Think of me as your fun, curious bestie who\'s always down to explore 🌆🎈'**
+  String get appTourStepMoodyBody;
+
+  /// No description provided for @appTourStepAgendaBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See what\'s scheduled in My Plans — today, tomorrow, or any day — and jump back to Moody when a day is still wide open.'**
+  String get appTourStepAgendaBody;
+
+  /// No description provided for @appTourStepProfileBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved places, travel mode, stats, and favorite vibes live here. Tap App settings for notifications, language, privacy, and help.'**
+  String get appTourStepProfileBody;
+
+  /// No description provided for @settingsAppTourLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'App tour'**
+  String get settingsAppTourLabel;
+
+  /// No description provided for @settingsAppTourSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk through the bottom tabs again anytime'**
+  String get settingsAppTourSubtitle;
+
+  /// No description provided for @helpSupportAppTourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App tour'**
+  String get helpSupportAppTourTitle;
+
+  /// No description provided for @helpSupportAppTourSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay the interactive walkthrough of the main tabs'**
+  String get helpSupportAppTourSubtitle;
 
   /// No description provided for @recListTitle.
   ///
@@ -20760,7 +21072,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodMatchPlanV2FooterGuestReviewNudge.
   ///
   /// In en, this message translates to:
-  /// **'{done} of {total} reviewed — confirm Morning, Afternoon & Evening above'**
+  /// **'{done}/{total} · confirm each tab above'**
   String moodMatchPlanV2FooterGuestReviewNudge(int done, int total);
 
   /// No description provided for @moodMatchPlanV2OwnerPickEachPart.

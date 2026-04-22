@@ -1,14 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:wandermood/features/group_planning/presentation/share_sheet_origin.dart';
 import '../models/place.dart';
 
 class SharingService {
-  static Future<void> sharePlace(Place place) async {
+  static Future<void> sharePlace(Place place, {required BuildContext context}) async {
     try {
       final shareText = _buildShareText(place);
-      
-      await Share.share(
-        shareText,
-        subject: 'Check out ${place.name}!',
+      final origin = sharePositionOriginForContext(context);
+      await SharePlus.instance.share(
+        ShareParams(
+          text: shareText,
+          subject: 'Check out ${place.name}!',
+          sharePositionOrigin: origin,
+        ),
       );
     } catch (e) {
       print('Error sharing place: $e');
@@ -46,20 +51,30 @@ class SharingService {
     return buffer.toString();
   }
 
-  static Future<void> sharePlaceWithImage(Place place, String? imagePath) async {
+  static Future<void> sharePlaceWithImage(
+    Place place,
+    String? imagePath, {
+    required BuildContext context,
+  }) async {
     try {
       final shareText = _buildShareText(place);
-      
+      final origin = sharePositionOriginForContext(context);
       if (imagePath != null) {
-        await Share.shareXFiles(
-          [XFile(imagePath)],
-          text: shareText,
-          subject: 'Check out ${place.name}!',
+        await SharePlus.instance.share(
+          ShareParams(
+            text: shareText,
+            subject: 'Check out ${place.name}!',
+            sharePositionOrigin: origin,
+            files: [XFile(imagePath)],
+          ),
         );
       } else {
-        await Share.share(
-          shareText,
-          subject: 'Check out ${place.name}!',
+        await SharePlus.instance.share(
+          ShareParams(
+            text: shareText,
+            subject: 'Check out ${place.name}!',
+            sharePositionOrigin: origin,
+          ),
         );
       }
     } catch (e) {

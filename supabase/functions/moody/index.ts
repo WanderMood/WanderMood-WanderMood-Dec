@@ -224,6 +224,11 @@ function getFilterSearchQueries(filterName: string): string[] {
     wellness: ['spa','yoga studio','wellness center','bath house'],
     cultural: ['art museum','history museum','art gallery','cultural center'],
     foodie: ['food market','street food','artisan bakery','coffee roastery'],
+    walking_tours: ['walking tour city center','guided city walk','architecture walking tour','historic walking route'],
+    museums_exhibitions: ['museum exhibition','modern art museum','immersive digital art exhibition','history museum'],
+    boat_tours: ['boat tour city','canal cruise','harbor cruise','splash tour'],
+    landmarks_viewpoints: ['famous landmark city','observation tower viewpoint','must see attraction','iconic city spot'],
+    events_night_out: ['live event tonight','cocktail workshop','comedy show','live music venue'],
   }
   return map[k] || [`${filterName} restaurant cafe`]
 }
@@ -460,17 +465,56 @@ function filterByNamedFilter(places: PlaceCard[], filterName: string): PlaceCard
       return typeOk && vibe
     })
   }
+  if (f === 'walking_tours') {
+    return places.filter(p => /walking tour|guided walk|city walk|architecture walk|free tour|self[- ]guided/i.test(textOf(p)) ||
+      ['tourist_attraction','point_of_interest','historical_landmark'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'museums_exhibitions') {
+    return places.filter(p => /museum|gallery|exhibition|immersive|culture|art/i.test(textOf(p)) ||
+      ['museum','art_gallery','cultural_center','performing_arts_theater'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'boat_tours') {
+    return places.filter(p => /boat|canal cruise|harbor cruise|water taxi|splash tour|river cruise/i.test(textOf(p)) ||
+      ['marina','tourist_attraction'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'landmarks_viewpoints') {
+    return places.filter(p => /landmark|viewpoint|observation|iconic|must[- ]?see|panoramic/i.test(textOf(p)) ||
+      ['historical_landmark','tourist_attraction','point_of_interest'].some(t => typesOf(p).includes(t)))
+  }
+  if (f === 'events_night_out') {
+    return places.filter(p => /event|live music|concert|show|festival|comedy|night|cocktail workshop|party/i.test(textOf(p)) ||
+      ['night_club','bar','performing_arts_theater'].some(t => typesOf(p).includes(t)))
+  }
   return places
 }
 
 async function enrichAndFilter(input: PlaceCard[], thresholds: { minRating?: number; minReviews?: number } = {}): Promise<PlaceCard[]> { return input.filter(p => isPlaceValid(p, { minRating: thresholds.minRating ?? 4.0, minReviews: thresholds.minReviews ?? 8 })) }
 
 async function checkCache(supabase: any, cacheKey: string): Promise<ExploreResponse | null> {
-  try { const { data } = await supabase.from('places_cache').select('data,expires_at').eq('cache_key', cacheKey).is('place_id', null).maybeSingle(); if (!data || new Date(data.expires_at) < new Date() || !data.data?.cards) return null; return { cards: shuffleArray(data.data.cards as PlaceCard[]), cached: true, total_found: data.data.cards.length, cache_key: cacheKey } } catch { return null }
+  try {
+    const { data } = await supabase.from('places_cache').select('data,expires_at').eq('cache_key', cacheKey).is('place_id', null).maybeSingle()
+    if (!data || new Date(data.expires_at) < new Date() || !data.data?.cards) return null
+    const cards = data.data.cards as PlaceCard[]
+    // #region agent log – H-A/H-B: are all cached photo_urls the same?
+    const photoSample = cards.slice(0, 5).map(c => `${c.name}|${(c.photo_url ?? '').slice(40, 100)}`)
+    const distinctPhotos = new Set(cards.map(c => c.photo_url ?? '')).size
+    console.log(`🔍 dbg9a3a3b cache_hit key=${cacheKey} total=${cards.length} distinct_photos=${distinctPhotos} sample=[${photoSample.join(' ; ')}]`)
+    // #endregion
+    return { cards: shuffleArray(cards), cached: true, total_found: cards.length, cache_key: cacheKey }
+  } catch { return null }
 }
 
 async function cacheExplore(supabase: any, cacheKey: string, places: PlaceCard[]): Promise<void> {
-  try { const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7); await supabase.from('places_cache').upsert({ cache_key: cacheKey, data: { cards: places }, place_id: null, user_id: null, request_type: 'explore', expires_at: expiresAt.toISOString() }, { onConflict: 'cache_key' }) } catch (e) { console.error('❌ cacheExplore:', e) }
+  try {
+    // #region agent log – H-B: log distinct photo_urls when writing fresh cache
+    const distinctPhotos = new Set(places.map(p => p.photo_url ?? '')).size
+    const photoSample = places.slice(0, 3).map(p => `${p.name}|${(p.photo_url ?? '').slice(40, 100)}`)
+    console.log(`💾 dbg9a3a3b cache_write key=${cacheKey} total=${places.length} distinct_photos=${distinctPhotos} sample=[${photoSample.join(' ; ')}]`)
+    // #endregion
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 7)
+    await supabase.from('places_cache').upsert({ cache_key: cacheKey, data: { cards: places }, place_id: null, user_id: null, request_type: 'explore', expires_at: expiresAt.toISOString() }, { onConflict: 'cache_key' })
+  } catch (e) { console.error('❌ cacheExplore:', e) }
 }
 
 function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
@@ -512,6 +556,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const groupMatch = params.group_match === true
     const namedFilters: string[] = Array.isArray(params.namedFilters) ? params.namedFilters.filter((f: any) => typeof f === 'string') : []
     const hasNamedFilters = namedFilters.length > 0
+    const verboseFilterLogs = Deno.env.get('MOODY_VERBOSE_FILTER_LOGS') === 'true'
     const section: string | undefined = params.section
     const mood = params.mood || 'all'
     const isBroadFeed = !params.mood || params.mood === 'all' || params.mood === 'discover'
@@ -519,7 +564,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const modeKey = userContext.isLocalMode ? 'local' : 'travel'
     const timeCtx = getTimeOfDayContext()
     const lang = googlePlacesLanguageFromRequest(params)
-    const cacheKey = lang === 'en' ? `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v7_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
+    const cacheKey = lang === 'en' ? `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
     if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const enriched = enrichWithSignals(applyFilters(reranked, filters), userContext.isLocalMode); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
@@ -533,7 +578,22 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
     if (!hasNamedFilters && places.length < 15) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
     places = places.slice(0, 100)
-    if (hasNamedFilters) { for (const f of namedFilters) places = filterByNamedFilter(places, f) }
+    if (hasNamedFilters) {
+      if (verboseFilterLogs) {
+        console.log(`🧪 named_filters start total=${places.length} filters=[${namedFilters.join(',')}]`)
+      }
+      for (const f of namedFilters) {
+        const before = places.length
+        places = filterByNamedFilter(places, f)
+        const after = places.length
+        if (verboseFilterLogs) {
+          console.log(`🧪 named_filter slug=${f} before=${before} after=${after}`)
+        }
+      }
+      if (verboseFilterLogs) {
+        console.log(`🧪 named_filters done total=${places.length}`)
+      }
+    }
     const thresholds = hasNamedFilters ? { minRating: 4.0, minReviews: 12 } : { minRating: 4.0, minReviews: 8 }
     let qualified = await enrichAndFilter(places, thresholds)
     if (!hasNamedFilters && qualified.length < 8) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 5 })
@@ -555,9 +615,53 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     if (quickPick === 'coffee') {
       const coffeeQueries = [`specialty coffee shop ${location}`,`cafe coffee ${location}`,`matcha bar ${location}`,`coffee roastery ${location}`]
       let places = await fetchPlacesFromGoogle(location, coordinates, 'foodie', {}, coffeeQueries, false, placesLang)
-      let cafes = places.filter(p => { const types = (p.types || []).map(t => t.toLowerCase()), primary = (p.primaryType || '').toLowerCase(), name = (p.name || '').toLowerCase(); return (['cafe','bakery','coffee_shop','patisserie'].some(t => types.includes(t) || primary === t) || name.includes('coffee') || name.includes('cafe') || name.includes('matcha') || name.includes('espresso')) && p.photo_url?.trim() && (p.rating || 0) >= 3.8 && (p.user_ratings_total || 0) >= 10 })
-      if (cafes.length === 0) cafes = places.filter(p => p.photo_url?.trim() && (p.rating || 0) >= 3.5)
-      if (cafes.length === 0) cafes = places.slice(0, 3)
+      const isCannabisVenue = (p: PlaceCard): boolean => {
+        const text = `${p.name || ''} ${p.primaryType || ''} ${(p.types || []).join(' ')}`.toLowerCase()
+        return [
+          'coffeeshop',
+          'cannabis',
+          'weed',
+          'marihuana',
+          'marijuana',
+          'hash',
+          'dispensary',
+          'smartshop',
+        ].some(k => text.includes(k))
+      }
+      const isCoffeeVenue = (p: PlaceCard): boolean => {
+        const types = (p.types || []).map(t => t.toLowerCase())
+        const primary = (p.primaryType || '').toLowerCase()
+        const name = (p.name || '').toLowerCase()
+        return (
+          ['cafe','bakery','coffee_shop','patisserie'].some(t => types.includes(t) || primary === t) ||
+          name.includes('coffee') ||
+          name.includes('cafe') ||
+          name.includes('matcha') ||
+          name.includes('espresso')
+        )
+      }
+      let cafes = places.filter(
+        p =>
+          !isCannabisVenue(p) &&
+          isCoffeeVenue(p) &&
+          !!p.photo_url?.trim() &&
+          (p.rating || 0) >= 3.8 &&
+          (p.user_ratings_total || 0) >= 10,
+      )
+      if (cafes.length === 0) {
+        cafes = places.filter(
+          p =>
+            !isCannabisVenue(p) &&
+            isCoffeeVenue(p) &&
+            !!p.photo_url?.trim() &&
+            (p.rating || 0) >= 3.5,
+        )
+      }
+      if (cafes.length === 0) {
+        cafes = places.filter(
+          p => !isCannabisVenue(p) && isCoffeeVenue(p) && !!p.photo_url?.trim(),
+        )
+      }
       cafes.sort((a, b) => (b.rating || 0) - (a.rating || 0))
       const pick = cafes[0]
       if (!pick) return new Response(JSON.stringify({ success: false, activities: [], total_found: 0, error: 'No coffee place found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -884,7 +988,7 @@ Deno.serve(async (req) => {
     const admin = getServiceSupabase(), rateKey = userRateKey(authUser.id), rateStarted = performance.now(), maxPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
     if (admin) { const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxPerMin); if (!allowed) { logApiInvocationFireAndForget(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action, http_status: 429, duration_ms: Math.round(performance.now() - rateStarted), error_snippet: `rate_limit count=${currentCount}` }); return new Response(JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }) } }
     const traceStarted = performance.now()
-    console.log(`🎯 Moody v95: action=${action}, userId=${authUser.id}`)
+    console.log(`🎯 Moody v97: action=${action}, userId=${authUser.id}`)
     return traceEdgeResponse(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action }, traceStarted,
       (async (): Promise<Response> => {
         switch (action) {

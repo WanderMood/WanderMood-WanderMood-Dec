@@ -1,0 +1,229 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
+
+const String kMainAppTourCompletedPrefsKey = 'main_app_tour_completed';
+
+/// Increment to request [MainScreen] to show the tab tour (e.g. from Settings).
+final mainAppTourRequestProvider = StateProvider<int>((ref) => 0);
+
+Future<bool> isMainAppTourCompleted() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(kMainAppTourCompletedPrefsKey) ?? false;
+}
+
+Future<void> setMainAppTourCompleted(bool value) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(kMainAppTourCompletedPrefsKey, value);
+}
+
+void requestMainAppTour(WidgetRef ref) {
+  ref.read(mainAppTourRequestProvider.notifier).state++;
+}
+
+String _tabTitle(AppLocalizations l10n, int i) {
+  switch (i) {
+    case 0:
+      return l10n.navMyDay;
+    case 1:
+      return l10n.navExplore;
+    case 2:
+      return l10n.navMoody;
+    case 3:
+      return l10n.navAgenda;
+    case 4:
+      return l10n.navProfile;
+    default:
+      return '';
+  }
+}
+
+String _tabBody(AppLocalizations l10n, int i) {
+  switch (i) {
+    case 0:
+      return l10n.appTourStepMyDayBody;
+    case 1:
+      return l10n.appTourStepExploreBody;
+    case 2:
+      return l10n.appTourStepMoodyBody;
+    case 3:
+      return l10n.appTourStepAgendaBody;
+    case 4:
+      return l10n.appTourStepProfileBody;
+    default:
+      return '';
+  }
+}
+
+List<TargetFocus> buildMainAppTourTargets({
+  required AppLocalizations l10n,
+  required List<GlobalKey> navKeys,
+}) {
+  assert(navKeys.length == 5);
+  return List<TargetFocus>.generate(5, (i) {
+    final isLast = i == 4;
+    return TargetFocus(
+      identify: i,
+      keyTarget: navKeys[i],
+      shape: ShapeLightFocus.RRect,
+      radius: 14,
+      paddingFocus: 4,
+      enableOverlayTab: false,
+      contents: [
+        TargetContent(
+          align: ContentAlign.top,
+          builder: (context, controller) {
+            return _MainTourTooltip(
+              title: _tabTitle(l10n, i),
+              body: _tabBody(l10n, i),
+              primaryLabel: isLast ? l10n.myDayDone : l10n.continueButton,
+              onPrimary: controller.next,
+            );
+          },
+        ),
+      ],
+    );
+  });
+}
+
+/// Interactive coach marks for the main bottom navigation.
+void showMainAppTour({
+  required BuildContext context,
+  required WidgetRef ref,
+  required List<GlobalKey> navKeys,
+  required VoidCallback onSessionEnd,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  TutorialCoachMark(
+    targets: buildMainAppTourTargets(l10n: l10n, navKeys: navKeys),
+    beforeFocus: (target) async {
+      final i = target.identify as int;
+      ref.read(mainTabProvider.notifier).state = i;
+    },
+    colorShadow: Colors.black,
+    opacityShadow: 0.78,
+    paddingFocus: 6,
+    alignSkip: Alignment.topRight,
+    textSkip: l10n.introSkip,
+    textStyleSkip: GoogleFonts.poppins(
+      color: Colors.white,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    ),
+    useSafeArea: true,
+    pulseEnable: true,
+    disableBackButton: true,
+    showSkipInLastTarget: true,
+    onFinish: () {
+      onSessionEnd();
+      setMainAppTourCompleted(true);
+    },
+    onSkip: () {
+      onSessionEnd();
+      setMainAppTourCompleted(true);
+      return true;
+    },
+  ).show(context: context);
+}
+
+class _MainTourTooltip extends StatelessWidget {
+  const _MainTourTooltip({
+    required this.title,
+    required this.body,
+    required this.primaryLabel,
+    required this.onPrimary,
+  });
+
+  final String title;
+  final String body;
+  final String primaryLabel;
+  final VoidCallback onPrimary;
+
+  static const Color _forest = Color(0xFF2A6049);
+  static const Color _cream = Color(0xFFF5F0E8);
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.sizeOf(context).width - 32,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.42,
+        ),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+          decoration: BoxDecoration(
+            color: _cream,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE8E2D8)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1C18),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.28,
+                ),
+                child: SingleChildScrollView(
+                  child: Text(
+                    body,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      height: 1.45,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF4A4640),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _forest,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  onPressed: onPrimary,
+                  child: Text(
+                    primaryLabel,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

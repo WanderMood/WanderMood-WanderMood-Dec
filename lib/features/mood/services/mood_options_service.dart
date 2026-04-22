@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/utils/moody_clock.dart';
 import '../models/mood_option.dart';
 
 class MoodOptionsService {
@@ -7,12 +8,137 @@ class MoodOptionsService {
   // 🚨 ZERO API CALLS: toggle to completely skip Supabase for mood options
   static const bool _enableApiCalls = false;
 
+  /// Offline / empty-DB mood grid (English labels; use [localizedMoodDisplayLabel] in UI).
+  static List<MoodOption> fallbackMoodOptions() {
+    final now = MoodyClock.now();
+    return [
+      MoodOption(
+        id: 'happy',
+        label: 'Happy',
+        emoji: '😊',
+        colorHex: '#FCDF7E',
+        displayOrder: 1,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'adventurous',
+        label: 'Adventurous',
+        emoji: '🚀',
+        colorHex: '#F79F9C',
+        displayOrder: 2,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'relaxed',
+        label: 'Relaxed',
+        emoji: '😌',
+        colorHex: '#72DED5',
+        displayOrder: 3,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'energetic',
+        label: 'Energetic',
+        emoji: '⚡',
+        colorHex: '#84C8F0',
+        displayOrder: 4,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'romantic',
+        label: 'Romantic',
+        emoji: '💕',
+        colorHex: '#F4A9D3',
+        displayOrder: 5,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'social',
+        label: 'Social',
+        emoji: '👥',
+        colorHex: '#ECCBA3',
+        displayOrder: 6,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'cultural',
+        label: 'Cultural',
+        emoji: '🎭',
+        colorHex: '#BFA8E0',
+        displayOrder: 7,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'curious',
+        label: 'Curious',
+        emoji: '🔍',
+        colorHex: '#EFB887',
+        displayOrder: 8,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'cozy',
+        label: 'Cozy',
+        emoji: '☕',
+        colorHex: '#D2A08B',
+        displayOrder: 9,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'excited',
+        label: 'Excited',
+        emoji: '🤩',
+        colorHex: '#A3E0A3',
+        displayOrder: 10,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'foody',
+        label: 'Foody',
+        emoji: '🍽️',
+        colorHex: '#FFD3A3',
+        displayOrder: 11,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      MoodOption(
+        id: 'surprise',
+        label: 'Surprise',
+        emoji: '😲',
+        colorHex: '#C0D3E0',
+        displayOrder: 12,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    ];
+  }
+
   /// Fetch all mood options
   static Future<List<MoodOption>> getMoodOptions() async {
     if (!_enableApiCalls) {
-      // Let the UI fall back to rich offline mood options
-      // (see _getFallbackMoodOptions in mood_home_screen.dart)
-      return [];
+      return fallbackMoodOptions();
     }
 
     try {
@@ -23,7 +149,7 @@ class MoodOptionsService {
           .order('display_order', ascending: true);
 
       if (response.isEmpty) {
-        return [];
+        return fallbackMoodOptions();
       }
 
       final moodOptions = (response as List)
@@ -32,8 +158,7 @@ class MoodOptionsService {
 
       return moodOptions;
     } catch (_) {
-      // On any error, surface no results so the UI uses its local fallback list
-      return [];
+      return fallbackMoodOptions();
     }
   }
 

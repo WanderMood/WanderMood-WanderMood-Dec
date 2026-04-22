@@ -920,14 +920,6 @@
   "drawerAdventureExpert": "Avontuur-expert",
   "drawerSeasonedExplorer": "Ervaren ontdekker",
   "drawerTravelEnthusiast": "Reisliefhebber",
-  "drawerDayStreak": "{count} dagen op rij",
-  "@drawerDayStreak": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "notificationsMethodsTitle": "Meldingsmethoden",
   "notificationsPushTitle": "Pushmeldingen",
   "notificationsPushSubtitle": "Ontvang pushmeldingen op dit apparaat",
@@ -1407,14 +1399,13 @@
   "moodHubBannerNight": "Late avond — laten we iets passends vinden.",
   "moodyIdleWakeOpenPlan": "Laten we je plan van vandaag openen.",
   "moodyIdleWakeChooseMood": "Wat doen we vandaag? Kies je mood en we bouwen de dag.",
-  "moodyIdleTapMoodyHint": "Tik op Moody om verder te gaan",
+  "moodyIdleTapMoodyHint": "Tik op Moody om WanderMood te openen",
+  "moodyIdleTapMoodySub": "Je moet op het gezicht hierboven tikken — er is geen andere knop.",
   "moodyIdleWelcomeBack": "Welkom terug!",
-  "moodyIdleFallbackSleeping": "Sssst… Moody was aan het slapen 😴",
   "moodyIdleFallbackMorning": "Moody was een koffietje aan het doen ☕",
-  "moodyIdleFallbackLunch": "Moody was even aan het lunchen 🍽",
-  "moodyIdleFallbackAfternoon": "Moody was even bezig, maar is er weer voor je ✨",
+  "moodyIdleFallbackDay": "Moody was onderweg — klaar voor jou ✨",
   "moodyIdleFallbackEvening": "Moody was even aan het ontspannen 🌙",
-  "moodyIdleFallbackLateNight": "Het wordt laat… Moody was bijna aan het slapen ⭐",
+  "moodyIdleFallbackNight": "Stille uren… Moody was bijna in dromenland 😴",
   "moodyHubNewConversation": "Nieuw gesprek",
   "moodHubCreatePlan": "Maak je perfecte plan! 🎯",
   "moodHubBackToHub": "Terug naar Hub",
@@ -1680,6 +1671,7 @@
   "navAgenda": "Mijn Plannen",
   "navProfile": "Profiel",
   "navMoody": "Moody",
+  "mainNavNoConnection": "Geen internetverbinding",
   "exploreAlreadyInDayPlan": "Staat al in je dagplan 👍",
   "myDayStatusTitleRightNow": "Nu bezig",
   "myDayStatusTitleUpNext": "Straks",
@@ -2119,6 +2111,8 @@
   "exploreFilterNoAlcohol": "Geen alcohol",
   "exploreFilterWheelchairAccessible": "Rolstoeltoegankelijk",
   "exploreFilterLgbtqFriendly": "LGBTQ+ vriendelijk",
+  "exploreFilterSensoryFriendly": "Prikkelvriendelijk",
+  "exploreFilterFamilyFriendly": "Gezinsvriendelijk",
   "exploreFilterSeniorFriendly": "Senioren-vriendelijk",
   "exploreFilterBabyFriendly": "Babyvriendelijk",
   "exploreFilterBlackOwned": "Black-owned",
@@ -2137,7 +2131,7 @@
       }
     }
   },
-  "exploreMoodyHintFiltersActive": "Nice! {count, plural, one{1 actieve filter} other{{count} actieve filters}} — ik onthoud het.",
+  "exploreMoodyHintFiltersActive": "Top, {count, plural, one{1 filter staat aan} other{{count} filters staan aan}}.",
   "@exploreMoodyHintFiltersActive": {
     "placeholders": {
       "count": {
@@ -2145,13 +2139,13 @@
       }
     }
   },
-  "exploreMoodyHintFiltersIntro": "Hé! Ik ben Moody. Gebruik filters om precies te vinden wat bij je vibe past — dieet, toegankelijkheid, fotoplekken en meer.",
+  "exploreMoodyHintFiltersIntro": "Ik ben Moody. Kies een paar filters en ik zoek meteen betere matches voor je.",
   "exploreClearAll": "Alles wissen",
-  "exploreSectionQuickSuggestions": "Snelle suggesties",
+  "exploreSectionQuickSuggestions": "Snelle keuzes",
   "exploreSectionDietaryPreferences": "Dieetvoorkeuren",
-  "exploreSectionAccessibilityInclusion": "Toegankelijkheid & inclusie",
-  "exploreSectionComfortConvenience": "Comfort & gemak",
-  "exploreSectionPhotoAesthetic": "Foto & esthetiek",
+  "exploreSectionAccessibilityInclusion": "Toegankelijk & inclusief",
+  "exploreSectionComfortConvenience": "Praktisch",
+  "exploreSectionPhotoAesthetic": "Foto & vibe",
   "exploreSaveFiltersWithCount": "{count} filters opslaan",
   "@exploreSaveFiltersWithCount": {
     "placeholders": {
@@ -3951,6 +3945,14 @@
   "profileSavedPlacesSeeAll": "Alles bekijken",
   "profileSavedPlacesTitle": "Opgeslagen plekken",
   "profileStatsStreakTitle": "Reeks",
+  "profileStatsStreakSubtitle": "{count, plural, one{dag op rij} other{dagen op rij}}",
+  "@profileStatsStreakSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "profileTopMoodEmpty": "Nog geen",
   "pushEmailInApp": "Push, e-mail en in-app",
   "settings": "Instellingen",
@@ -4056,6 +4058,68 @@
   "authWelcomeTitle": "Je bent erin! Welkom 🎉",
   "authCallbackConfirmingEmail": "Je e-mail wordt bevestigd…",
   "authCallbackVerificationFailed": "E-mailverificatie mislukt. Probeer het opnieuw.",
+  "authRememberMe": "Onthoud mij",
+  "authForgotPassword": "Wachtwoord vergeten?",
+  "authPasswordLabel": "Wachtwoord",
+  "authSignInHeadline": "Log in op je account",
+  "authLoginCta": "Inloggen",
+  "authOrContinueWith": "of ga verder met",
+  "authNoAccount": "Nog geen account? ",
+  "authRegisterCta": "Registreren",
+  "authReviewerHint": "App Store-recensent? Tik hier",
+  "authEmailRequired": "Vul je e-mailadres in",
+  "authEmailInvalid": "Vul een geldig e-mailadres in",
+  "authPasswordRequired": "Vul je wachtwoord in",
+  "authDemoSignInFailed": "Demoinloggen mislukt. Probeer opnieuw.",
+  "authSignInCancelledOrFailed": "Inloggen geannuleerd of mislukt. Probeer opnieuw.",
+  "authSignInFailedGeneric": "Inloggen mislukt. Probeer opnieuw.",
+  "authSocialLoginNotConfigured": "Inloggen via social is nog niet ingesteld. Gebruik e-mail en wachtwoord.",
+  "authSignInCancelledShort": "Inloggen geannuleerd.",
+  "authNetworkErrorCheckConnection": "Netwerkfout. Controleer je internetverbinding.",
+  "authGoogleSignInIncomplete": "Google-inlog is niet compleet. Gebruik e-mail en wachtwoord.",
+  "authFacebookSignInIncomplete": "Facebook-inlog is niet compleet. Gebruik e-mail en wachtwoord.",
+  "moodyChatMicrophoneRequired": "Microfoontoegang is nodig voor spraak.",
+  "devAdminScreenDisabled": "Beheerdersscherm is uit in productiebuilds.",
+  "moodStatsTitle": "Mood-statistieken",
+  "moodStatsAverageLabel": "Gemiddelde mood",
+  "moodStatsTotalEntriesLabel": "Totaal aantal",
+  "moodStatsTypesLabel": "Mood-types",
+  "signupAlreadyHaveAccount": "Heb je al een account?",
+  "signupFormCreateAccount": "Account aanmaken",
+  "signupFormJourneyLine": "Laten we je op weg helpen!",
+  "signupFormFullNameLabel": "Volledige naam",
+  "signupFormNameRequired": "Vul je naam in",
+  "signupFormPasswordMinLength": "Wachtwoord moet minimaal {min} tekens zijn",
+  "@signupFormPasswordMinLength": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "signupFormConfirmPasswordLabel": "Bevestig wachtwoord",
+  "signupFormConfirmPasswordRequired": "Bevestig je wachtwoord",
+  "signupFormPasswordsMismatch": "Wachtwoorden komen niet overeen",
+  "signupFormAcceptTerms": "Ik ga akkoord met de algemene voorwaarden",
+  "signupFormTermsNotAccepted": "Ga akkoord met de algemene voorwaarden",
+  "signupFormAccountCreated": "Account aangemaakt!",
+  "signupFormVerifyEmailToast": "Account aangemaakt! Controleer je e-mail op {email} om te bevestigen.",
+  "@signupFormVerifyEmailToast": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "signupFormEmailAlreadyRegistered": "Dit e-mailadres is al geregistreerd. Log in.",
+  "signupFormFailed": "Aanmelden mislukt: {message}",
+  "@signupFormFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "dialogClose": "Sluiten",
   "supportHowCanWeHelp": "Waarmee kunnen we je helpen?",
   "supportContactUsCard": "Contact",
@@ -4083,6 +4147,15 @@
   "supportToastOpeningFeedback": "Feedbackformulier openen…",
   "supportToastOpeningTutorial": "Tutorial openen…",
   "supportToastOpeningIssue": "Melding openen…",
+  "appTourStepMyDayBody": "Je plan bestaat uit momenten—ochtend, middag, avond en nacht. Kies je vibe, je favorieten, ik regel de magie. 🧭🎯 Alles op basis van locatie, tijd, weer & mood.",
+  "appTourStepExploreBody": "Ga naar het tabblad Ontdekken en start een nieuw plan. Kies je stemming, interesses en voorkeuren voor persoonlijke aanbevelingen.",
+  "appTourStepMoodyBody": "Moody leert je vibe, energie en hoe je dag voelt kennen. Daarmee maak ik persoonlijke plannen – speciaal voor jou. Zie me als je nieuwsgierige maatje die altijd wil ontdekken 🌆🎈",
+  "appTourStepAgendaBody": "Bekijk wat er gepland staat in Mijn plannen — vandaag, morgen of een andere dag — en ga terug naar Moody als een dag nog leeg is.",
+  "appTourStepProfileBody": "Opgeslagen plekken, reismodus, statistieken en favoriete vibes staan hier. Tik op App-instellingen voor meldingen, taal, privacy en hulp.",
+  "settingsAppTourLabel": "App-rondleiding",
+  "settingsAppTourSubtitle": "Bekijk de onderste tabbladen opnieuw wanneer je wilt",
+  "helpSupportAppTourTitle": "App-rondleiding",
+  "helpSupportAppTourSubtitle": "Speel de interactieve rondleiding van de hoofdtabbladen opnieuw af",
   "recListTitle": "Reisaanbevelingen",
   "recErrorPrefix": "Fout:",
   "recTryAgain": "Opnieuw proberen",
@@ -5277,7 +5350,7 @@
       }
     }
   },
-  "moodMatchPlanV2FooterGuestReviewNudge": "{done} van {total} bevestigd — rond Ochtend, Middag & Avond hierboven af",
+  "moodMatchPlanV2FooterGuestReviewNudge": "{done}/{total} · bevestig per tab hierboven",
   "@moodMatchPlanV2FooterGuestReviewNudge": {
     "placeholders": {
       "done": {

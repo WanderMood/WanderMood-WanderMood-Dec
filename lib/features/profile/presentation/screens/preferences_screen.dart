@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/constants/inclusion_preference_options.dart';
 import 'package:wandermood/features/profile/presentation/widgets/inclusion_dietary_preference_field.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 
 class PreferencesScreen extends ConsumerStatefulWidget {
   const PreferencesScreen({super.key});
@@ -21,12 +23,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   final supabase = Supabase.instance.client;
 
   String? _communicationStyle;
-  String? _planningPace;
   List<String> _travelInterests = [];
   List<String> _socialVibe = [];
-  List<String> _travelStyles = [];
-  List<String> _favoriteMoods = [];
-  List<String> _selectedMoods = [];
   final Set<String> _dietaryInclusionKeys = {};
 
   bool _isLoading = true;
@@ -42,32 +40,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     'Wellness',
   ];
   static const _socialOptions = ['Solo', 'Small-group', 'Mix', 'Social'];
-  static const _travelStyleOptions = [
-    'Relaxed',
-    'Adventurous',
-    'Cultural',
-    'City-break',
-  ];
-  static const _favoriteMoodOptions = [
-    'Happy',
-    'Adventurous',
-    'Calm',
-    'Romantic',
-    'Energetic',
-  ];
-  static const _planningOptions = [
-    'Same Day Planner',
-    'Week Ahead Planner',
-    'Spontaneous',
-  ];
-  static const _selectedMoodOptions = [
-    'Happy',
-    'Relaxed',
-    'Cultural',
-    'Romantic',
-    'Energetic',
-    'Creative',
-  ];
 
   @override
   void initState() {
@@ -89,10 +61,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
             communication_style,
             travel_interests,
             social_vibe,
-            travel_styles,
-            favorite_moods,
-            planning_pace,
-            selected_moods,
             dietary_restrictions
           ''')
           .eq('user_id', userId)
@@ -111,13 +79,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               List<String>.from((response?['travel_interests'] as List?) ?? const []);
           _socialVibe =
               List<String>.from((response?['social_vibe'] as List?) ?? const []);
-          _travelStyles =
-              List<String>.from((response?['travel_styles'] as List?) ?? const []);
-          _favoriteMoods =
-              List<String>.from((response?['favorite_moods'] as List?) ?? const []);
-          _planningPace = response?['planning_pace'] as String?;
-          _selectedMoods =
-              List<String>.from((response?['selected_moods'] as List?) ?? const []);
           _dietaryInclusionKeys
             ..clear()
             ..addAll(dr);
@@ -141,10 +102,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
             : canonicalCommunicationStyleKey(_communicationStyle),
         'travel_interests': _travelInterests,
         'social_vibe': _socialVibe,
-        'travel_styles': _travelStyles,
-        'favorite_moods': _favoriteMoods,
-        'planning_pace': _planningPace,
-        'selected_moods': _selectedMoods,
         'dietary_restrictions':
             normalizeInclusionPreferenceKeys(_dietaryInclusionKeys),
         'updated_at': DateTime.now().toIso8601String(),
@@ -210,8 +167,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       _hasChanges = true;
       if (key == 'communicationStyle') {
         _communicationStyle = value;
-      } else if (key == 'planningPace') {
-        _planningPace = value;
       }
     });
   }
@@ -265,70 +220,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     }
   }
 
-  String _travelStyleLabel(AppLocalizations l10n, String stored) {
-    switch (stored) {
-      case 'Relaxed':
-        return l10n.prefTravelRelaxed;
-      case 'Adventurous':
-        return l10n.prefTravelAdventurous;
-      case 'Cultural':
-        return l10n.prefTravelCultural;
-      case 'City-break':
-        return l10n.prefTravelCityBreak;
-      default:
-        return stored;
-    }
-  }
-
-  String _favoriteMoodLabel(AppLocalizations l10n, String stored) {
-    switch (stored) {
-      case 'Happy':
-        return l10n.prefFavHappy;
-      case 'Adventurous':
-        return l10n.prefFavAdventurous;
-      case 'Calm':
-        return l10n.prefFavCalm;
-      case 'Romantic':
-        return l10n.prefFavRomantic;
-      case 'Energetic':
-        return l10n.prefFavEnergetic;
-      default:
-        return stored;
-    }
-  }
-
-  String _planningLabel(AppLocalizations l10n, String stored) {
-    switch (stored) {
-      case 'Same Day Planner':
-        return l10n.prefPlanSameDay;
-      case 'Week Ahead Planner':
-        return l10n.prefPlanWeekAhead;
-      case 'Spontaneous':
-        return l10n.prefPlanSpontaneous;
-      default:
-        return stored;
-    }
-  }
-
-  String _selectedMoodLabel(AppLocalizations l10n, String stored) {
-    switch (stored) {
-      case 'Happy':
-        return l10n.prefSelHappy;
-      case 'Relaxed':
-        return l10n.prefSelRelaxed;
-      case 'Cultural':
-        return l10n.prefSelCultural;
-      case 'Romantic':
-        return l10n.prefSelRomantic;
-      case 'Energetic':
-        return l10n.prefSelEnergetic;
-      case 'Creative':
-        return l10n.prefSelCreative;
-      default:
-        return stored;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -339,10 +230,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           : Column(
               children: [
                 Container(
-                  color: Colors.white,
+                  color: const Color(0xFFF5F0E8),
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).padding.top,
-                    bottom: 10,
+                    bottom: 12,
                   ),
                   child: SafeArea(
                     bottom: false,
@@ -363,113 +254,92 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                             ),
                           ),
                         ),
-                        TextButton(
-                          onPressed: _hasChanges ? _savePreferences : null,
-                          child: Text(
-                            l10n.prefSave,
-                            style: GoogleFonts.poppins(
-                              color: _hasChanges
-                                  ? const Color(0xFF2A6049)
-                                  : const Color(0xFF8C8780),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        const SizedBox(width: 48),
                       ],
                     ),
                   ),
                 ),
-                Container(height: 1, color: const Color(0xFFE8E2D8)),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSectionTitle(l10n.prefSectionCommunicationStyle),
-                        const SizedBox(height: 10),
-                        _buildSingleOptions(
-                          l10n: l10n,
-                          options: _communicationOptions,
-                          selected: _communicationStyle,
-                          labelFor: _communicationLabel,
-                          onSelected: (v) => _setSingle('communicationStyle', v),
-                        ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionInterests),
-                        const SizedBox(height: 10),
-                        _buildChipOptions(
-                          l10n: l10n,
-                          options: _interestOptions,
-                          selected: _travelInterests,
-                          labelFor: _interestLabel,
-                          onTap: (v) => _toggleValue(_travelInterests, v),
-                        ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionSocialVibe),
-                        const SizedBox(height: 10),
-                        _buildChipOptions(
-                          l10n: l10n,
-                          options: _socialOptions,
-                          selected: _socialVibe,
-                          labelFor: _socialLabel,
-                          onTap: (v) => _toggleValue(_socialVibe, v),
-                        ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionTravelStyles),
-                        const SizedBox(height: 10),
-                        _buildChipOptions(
-                          l10n: l10n,
-                          options: _travelStyleOptions,
-                          selected: _travelStyles,
-                          labelFor: _travelStyleLabel,
-                          onTap: (v) => _toggleValue(_travelStyles, v),
-                        ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionDietaryInclusion),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.prefDietaryInclusionSubtitle,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: const Color(0xFF8C8780),
-                            height: 1.35,
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFFFF),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFE8E2D8)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: MoodyCharacter(
+                                  size: 44,
+                                  mood: 'happy',
+                                  currentFeature: MoodyFeature.none,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  l10n.prefSectionInterestsSub,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    color: const Color(0xFF4A4640),
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        InclusionDietaryPreferenceField(
-                          selected: _dietaryInclusionKeys,
-                          onToggleKey: _toggleDietaryInclusionKey,
+                        const SizedBox(height: 12),
+                        _buildSectionCard(
+                          title: '${l10n.prefSectionCommunicationStyle} 💬',
+                          child: _buildSingleOptions(
+                            l10n: l10n,
+                            options: _communicationOptions,
+                            selected: _communicationStyle,
+                            labelFor: _communicationLabel,
+                            onSelected: (v) => _setSingle('communicationStyle', v),
+                          ),
                         ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionFavoriteMoods),
-                        const SizedBox(height: 10),
-                        _buildChipOptions(
-                          l10n: l10n,
-                          options: _favoriteMoodOptions,
-                          selected: _favoriteMoods,
-                          labelFor: _favoriteMoodLabel,
-                          onTap: (v) => _toggleValue(_favoriteMoods, v),
+                        const SizedBox(height: 14),
+                        _buildSectionCard(
+                          title: '${l10n.prefSectionInterests} ✨',
+                          child: _buildChipOptions(
+                            l10n: l10n,
+                            options: _interestOptions,
+                            selected: _travelInterests,
+                            labelFor: _interestLabel,
+                            onTap: (v) => _toggleValue(_travelInterests, v),
+                          ),
                         ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionPlanningPace),
-                        const SizedBox(height: 10),
-                        _buildSingleOptions(
-                          l10n: l10n,
-                          options: _planningOptions,
-                          selected: _planningPace,
-                          labelFor: _planningLabel,
-                          onSelected: (v) => _setSingle('planningPace', v),
+                        const SizedBox(height: 14),
+                        _buildSectionCard(
+                          title: '${l10n.prefSectionSocialVibe} 🫶',
+                          child: _buildChipOptions(
+                            l10n: l10n,
+                            options: _socialOptions,
+                            selected: _socialVibe,
+                            labelFor: _socialLabel,
+                            onTap: (v) => _toggleValue(_socialVibe, v),
+                          ),
                         ),
-                        const SizedBox(height: 22),
-                        _buildSectionTitle(l10n.prefSectionSelectedMoods),
-                        const SizedBox(height: 10),
-                        _buildChipOptions(
-                          l10n: l10n,
-                          options: _selectedMoodOptions,
-                          selected: _selectedMoods,
-                          labelFor: _selectedMoodLabel,
-                          onTap: (v) => _toggleValue(_selectedMoods, v),
+                        const SizedBox(height: 14),
+                        _buildSectionCard(
+                          title: '${l10n.prefSectionDietaryInclusion} 🌿',
+                          subtitle: l10n.prefDietaryInclusionSubtitle,
+                          child: InclusionDietaryPreferenceField(
+                            selected: _dietaryInclusionKeys,
+                            onToggleKey: _toggleDietaryInclusionKey,
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -478,16 +348,71 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                 ),
               ],
             ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: FilledButton(
+          onPressed: _hasChanges ? _savePreferences : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF2A6049),
+            disabledBackgroundColor: const Color(0xFFE8E2D8),
+            foregroundColor: Colors.white,
+            disabledForegroundColor: const Color(0xFF8C8780),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+            elevation: 0,
+          ),
+          child: Text(
+            l10n.prefSave,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF1E1C18),
+  Widget _buildSectionCard({
+    required String title,
+    String? subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E2D8), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1E1C18),
+            ),
+          ),
+          if (subtitle != null && subtitle.trim().isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF8C8780),
+                height: 1.35,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          child,
+        ],
       ),
     );
   }

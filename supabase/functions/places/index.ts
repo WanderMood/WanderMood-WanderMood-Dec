@@ -29,6 +29,137 @@ interface PlacesRequest {
   language?: string
 }
 
+/** Maps Places API (New) GET Place response to the legacy `details/json` shape the Flutter client expects. */
+function mapNewPlaceDetailsToLegacyData(p: Record<string, unknown>, _language: string) {
+  const displayName = (p.displayName as { text?: string } | undefined)?.text ?? ''
+  const loc = p.location as { latitude?: number; longitude?: number } | undefined
+  const priceMap: Record<string, number> = {
+    PRICE_LEVEL_FREE: 0,
+    PRICE_LEVEL_INEXPENSIVE: 1,
+    PRICE_LEVEL_MODERATE: 2,
+    PRICE_LEVEL_EXPENSIVE: 3,
+    PRICE_LEVEL_VERY_EXPENSIVE: 4,
+  }
+  const pl = p.priceLevel
+  const priceLevel =
+    typeof pl === 'number' ? pl : (typeof pl === 'string' ? priceMap[pl] : undefined) ?? 0
+  const photos = Array.isArray(p.photos)
+    ? (p.photos as { name?: string }[])
+        .map((ph) => {
+          const name = (ph.name ?? '').trim()
+          if (!name) return null
+          // Flutter reads `photo_reference`; for New, store the photo resource `name` and build `/media` URLs in Dart.
+          return { photo_reference: name }
+        })
+        .filter((x) => x != null)
+    : []
+  const reviews = Array.isArray(p.reviews)
+    ? (p.reviews as Record<string, unknown>[]).map((r) => {
+        const textObj = r.text as { text?: string } | string | undefined
+        const text =
+          typeof textObj === 'string' ? textObj : (textObj as { text?: string } | undefined)?.text ?? ''
+        const att = r.authorAttribution as { displayName?: string; uri?: string } | undefined
+        const author = att?.displayName || att?.uri || 'Anonymous'
+        const pub = r.publishTime as string | undefined
+        const timeSec = pub
+          ? Math.floor(new Date(pub).getTime() / 1000)
+          : 0
+        return {
+          author_name: author,
+          rating: (r.rating as number) ?? 0,
+          text,
+          time: timeSec,
+        }
+      })
+    : []
+  const opening = p.currentOpeningHours as { openNow?: boolean } | undefined
+  const editorial = p.editorialSummary as { text?: string } | undefined
+
+  const result: Record<string, unknown> = {
+    name: displayName,
+    formatted_address: (p.formattedAddress as string) ?? '',
+    geometry: {
+      location: { lat: loc?.latitude ?? 0, lng: loc?.longitude ?? 0 },
+    },
+    photos,
+    rating: (p.rating as number) ?? 0,
+    user_ratings_total: (p.userRatingCount as number) ?? 0,
+    types: Array.isArray(p.types) ? p.types : [],
+    price_level: priceLevel,
+    opening_hours: opening ? { open_now: opening.openNow ?? false } : undefined,
+    website: (p.websiteUri as string) ?? undefined,
+    formatted_phone_number: (p.nationalPhoneNumber as string) ?? undefined,
+    reviews,
+    userRatingCount: (p.userRatingCount as number) ?? 0,
+  }
+  if (editorial?.text) {
+    result.editorial_summary = { overview: editorial.text }
+  } else {
+    result.vicinity = (p.shortFormattedAddress as string) ?? ''
+  }
+  return { status: 'OK', result }
+}
+
+async function fetchPlaceDetailsWithFallback(
+  placeId: string,
+  language: string,
+  apiKey: string,
+): Promise<{ data: { status: string; result: Record<string, unknown> }; response: Response }> {
+  const fieldMask = [
+    'id',
+    'displayName',
+    'formattedAddress',
+    'location',
+    'rating',
+    'userRatingCount',
+    'photos',
+    'priceLevel',
+    'currentOpeningHours',
+    'types',
+    'websiteUri',
+    'nationalPhoneNumber',
+    'editorialSummary',
+    'reviews',
+    'shortFormattedAddress',
+  ].join(',')
+  const v1Url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=${encodeURIComponent(
+    language,
+  )}`
+  let res = await fetch(v1Url, {
+    method: 'GET',
+    headers: {
+      'X-Goog-Api-Key': apiKey,
+      'X-Goog-FieldMask': fieldMask,
+    },
+  })
+  if (res.ok) {
+    const p = (await res.json()) as Record<string, unknown>
+    const data = mapNewPlaceDetailsToLegacyData(p, language)
+    const photosN = (p.photos as { name?: string }[] | undefined)?.length ?? 0
+    console.log(`places.details v1=NEW placeId=${placeId} photos_count=${photosN}`)
+    return { data, response: res }
+  }
+  const errBody = (await res.text()).slice(0, 500)
+  console.log(`places.details NEW failed status=${res.status} placeId=${placeId} body=${errBody} — falling back to legacy details`)
+
+  const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(
+    placeId,
+  )}&key=${apiKey}&language=${encodeURIComponent(
+    language,
+  )}&fields=place_id,name,formatted_address,geometry,photos,rating,user_ratings_total,price_level,opening_hours,website,formatted_phone_number,reviews,types,vicinity,editorial_summary`
+  res = await fetch(detailsUrl)
+  const legacy = (await res.json()) as { status: string; result: Record<string, unknown>; error_message?: string }
+  const photos = Array.isArray(legacy?.result?.photos) ? legacy.result.photos : []
+  console.log(
+    `places.details v1=LEGACY placeId=${placeId} status=${legacy?.status ?? 'unknown'} photos_count=${photos.length}`,
+  )
+  if (photos.length > 0) {
+    const firstRef = (photos[0] as { photo_reference?: string })?.photo_reference ?? ''
+    console.log(`places.details LEGACY first_photo_reference=${firstRef ? 'yes' : 'no'}`)
+  }
+  return { data: legacy as { status: string; result: Record<string, unknown> }, response: res }
+}
+
 async function processPlacesBody(
   supabaseClient: ReturnType<typeof createClient>,
   user: { id: string },
@@ -72,24 +203,10 @@ async function processPlacesBody(
 
     case 'details':
       if (!placeId) throw new Error('Place ID required for details')
-
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_PLACES_API_KEY}&language=${language}&fields=place_id,name,formatted_address,geometry,photos,rating,user_ratings_total,price_level,opening_hours,website,formatted_phone_number,reviews,types,vicinity,editorial_summary`
-      response = await fetch(detailsUrl)
-      data = await response.json()
       {
-        const photos = Array.isArray(data?.result?.photos) ? data.result.photos : []
-        console.log(
-          `📸 places.details placeId=${placeId} status=${data?.status ?? 'unknown'} photos_count=${photos.length}`,
-        )
-        if (photos.length > 0) {
-          const firstRef = photos[0]?.photo_reference ?? ''
-          console.log(`📸 places.details first_photo_reference_present=${firstRef ? 'yes' : 'no'}`)
-        } else {
-          console.log(`📸 places.details no photos returned by Google for placeId=${placeId}`)
-        }
-        if (data?.error_message) {
-          console.log(`📸 places.details error_message=${data.error_message}`)
-        }
+        const r = await fetchPlaceDetailsWithFallback(placeId, language, GOOGLE_PLACES_API_KEY)
+        data = r.data
+        response = r.response
       }
       break
 

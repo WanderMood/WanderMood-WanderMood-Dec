@@ -11,8 +11,10 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/presentation/utils/save_explore_place_to_my_day.dart';
 import 'package:wandermood/features/places/presentation/widgets/add_place_to_my_day_sheet.dart';
+import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/core/services/taste_profile_service.dart';
 
 class MoodySuggestedPlacesRow extends StatelessWidget {
   const MoodySuggestedPlacesRow({
@@ -298,6 +300,11 @@ class _MiniPlaceCard extends ConsumerWidget {
             startTime: startTime,
             photoSelectionSeed: 0,
           );
+          TasteProfileService.recordFromPlace(
+            place,
+            interactionType: 'added_to_day',
+            timeSlot: TasteProfileService.inferTimeSlotFromHour(startTime.hour),
+          );
         },
       ),
     );
@@ -307,6 +314,8 @@ class _MiniPlaceCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final photo = place.photos.isNotEmpty ? place.photos.first : '';
+    final savedPlacesAsync = ref.watch(savedPlacesProvider);
+    final isFavorite = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
 
     return SizedBox(
       width: 160,
@@ -316,7 +325,13 @@ class _MiniPlaceCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.push('/place/${place.id}'),
+          onTap: () {
+            TasteProfileService.recordFromPlace(
+              place,
+              interactionType: 'tapped',
+            );
+            context.push('/place/${place.id}');
+          },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -367,27 +382,66 @@ class _MiniPlaceCard extends ConsumerWidget {
                       ),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            minimumSize: const Size(0, 0),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: const Color(0xFFEBF3EE),
-                            foregroundColor: const Color(0xFF2A6049),
-                            shape: RoundedRectangleBorder(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                backgroundColor: const Color(0xFFEBF3EE),
+                                foregroundColor: const Color(0xFF2A6049),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                textStyle: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              onPressed: () => _addToMyDay(context, ref),
+                              child: Text(
+                                '+ ${l10n.carouselAddToDay}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: () async {
+                                final savedPlacesService =
+                                    ref.read(savedPlacesServiceProvider);
+                                try {
+                                  if (isFavorite) {
+                                    await savedPlacesService.unsavePlace(place.id);
+                                  } else {
+                                    await savedPlacesService.savePlace(place);
+                                    TasteProfileService.recordFromPlace(
+                                      place,
+                                      interactionType: 'saved',
+                                    );
+                                  }
+                                  ref.invalidate(savedPlacesProvider);
+                                } catch (_) {}
+                              },
                               borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEBF3EE),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                                  size: 14,
+                                  color: isFavorite
+                                      ? const Color(0xFFE05C5C)
+                                      : const Color(0xFF2A6049),
+                                ),
+                              ),
                             ),
-                            textStyle: GoogleFonts.poppins(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onPressed: () => _addToMyDay(context, ref),
-                          child: Text(
-                            '+ ${l10n.carouselAddToDay}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          ],
                         ),
                       ),
                     ],

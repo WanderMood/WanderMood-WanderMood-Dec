@@ -891,9 +891,11 @@ GoRouter router(RouterRef ref) {
           name: 'admin',
           builder: (context, state) {
             // Lazy import to avoid loading admin screen in production
-            return const Scaffold(
+            return Scaffold(
               body: Center(
-                child: Text('Admin screen disabled in production builds'),
+                child: Text(
+                  AppLocalizations.of(context)!.devAdminScreenDisabled,
+                ),
               ),
             );
           },

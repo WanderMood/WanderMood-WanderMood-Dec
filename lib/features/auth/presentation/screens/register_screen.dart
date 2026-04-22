@@ -5,11 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/presentation/widgets/swirl_background.dart';
-import '../../domain/providers/auth_provider.dart';
-import '../../application/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/config/supabase_config.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -40,17 +38,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleSignUp() async {
-    debugPrint('🔥 NEW CODE: Sign up button pressed - LATEST VERSION');
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) {
-      debugPrint('Form validation failed');
       return;
     }
-    
+
     if (!_acceptTerms) {
-      debugPrint('Terms not accepted');
       showWanderMoodToast(
         context,
-        message: 'Please accept the terms and conditions',
+        message: l10n.signupFormTermsNotAccepted,
       );
       return;
     }
@@ -85,7 +81,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
         
         debugPrint('📧 Signup response: ${response.user?.id}');
-        debugPrint('📧 Signup session: ${response.session?.user?.id}');
+        debugPrint('📧 Signup session: ${response.session?.user.id}');
         
         if (response.user != null) {
           debugPrint('✅ Signup successful! User ID: ${response.user!.id}');
@@ -107,7 +103,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               
               showWanderMoodToast(
                 context,
-                message: 'Account created successfully!',
+                message: l10n.signupFormAccountCreated,
                 duration: const Duration(seconds: 2),
               );
               
@@ -126,7 +122,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               
               showWanderMoodToast(
                 context,
-                message: 'Account created! Please check your email at $email to verify your account.',
+                message: l10n.signupFormVerifyEmailToast(email),
                 duration: const Duration(seconds: 5),
               );
               
@@ -136,24 +132,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             }
           }
         } else {
-          throw Exception('Signup failed: No user returned');
+          if (mounted) {
+            setState(() => _isLoading = false);
+            showWanderMoodToast(
+              context,
+              message: l10n.signupErrorGeneric,
+              isError: true,
+            );
+          }
+          return;
         }
       } on AuthException catch (e) {
         debugPrint('❌ Auth error: ${e.message}');
         if (mounted) {
           setState(() => _isLoading = false);
-          
-          // Handle "User already registered" case
+
           if (e.message.contains('User already registered')) {
-            // Show more helpful message and redirect to login
             showWanderMoodToast(
               context,
-              message: 'This email is already registered. Please sign in instead.',
+              message: l10n.signupFormEmailAlreadyRegistered,
               backgroundColor: Colors.orange,
               duration: const Duration(seconds: 4),
             );
-            
-            // Redirect to login screen after a short delay
+
             Future.delayed(const Duration(seconds: 2), () {
               if (mounted) {
                 context.go('/auth/magic-link');
@@ -162,7 +163,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           } else {
             showWanderMoodToast(
               context,
-              message: 'Signup failed: ${e.message}',
+              message: l10n.signupFormFailed(e.message),
               isError: true,
             );
           }
@@ -173,7 +174,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           setState(() => _isLoading = false);
           showWanderMoodToast(
             context,
-            message: 'Signup failed: $e',
+            message: l10n.signupFormFailed(e.toString()),
             isError: true,
           );
         }
@@ -184,7 +185,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         setState(() => _isLoading = false);
         showWanderMoodToast(
           context,
-          message: e.toString(),
+          message: l10n.signupErrorGeneric,
           isError: true,
         );
       }
@@ -193,6 +194,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SwirlBackground(
@@ -216,7 +218,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   
                   // Title
                   Text(
-                    'Create Account',
+                    l10n.signupFormCreateAccount,
                     style: GoogleFonts.museoModerno(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -226,7 +228,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   
                   const SizedBox(height: 8),
                   Text(
-                    'Let\'s get you started on your journey!',
+                    l10n.signupFormJourneyLine,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       color: Colors.black87,
@@ -253,7 +255,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             TextFormField(
                               controller: _nameController,
                               decoration: InputDecoration(
-                                labelText: 'Full Name',
+                                labelText: l10n.signupFormFullNameLabel,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -262,7 +264,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter your name';
+                                  return l10n.signupFormNameRequired;
                                 }
                                 return null;
                               },
@@ -273,7 +275,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             TextFormField(
                               controller: _emailController,
                               decoration: InputDecoration(
-                                labelText: 'Email',
+                                labelText: l10n.signupEmailLabel,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -282,10 +284,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter your email';
+                                  return l10n.signupEmailRequired;
                                 }
                                 if (!value.contains('@')) {
-                                  return 'Please enter a valid email';
+                                  return l10n.signupEmailInvalid;
                                 }
                                 return null;
                               },
@@ -297,7 +299,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               controller: _passwordController,
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
-                                labelText: 'Password',
+                                labelText: l10n.authPasswordLabel,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -317,10 +319,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter a password';
+                                  return l10n.authPasswordRequired;
                                 }
                                 if (value.length < 6) {
-                                  return 'Password must be at least 6 characters';
+                                  return l10n.signupFormPasswordMinLength(6);
                                 }
                                 return null;
                               },
@@ -332,7 +334,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               controller: _confirmPasswordController,
                               obscureText: !_isConfirmPasswordVisible,
                               decoration: InputDecoration(
-                                labelText: 'Confirm Password',
+                                labelText: l10n.signupFormConfirmPasswordLabel,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -352,10 +354,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please confirm your password';
+                                  return l10n.signupFormConfirmPasswordRequired;
                                 }
                                 if (value != _passwordController.text) {
-                                  return 'Passwords do not match';
+                                  return l10n.signupFormPasswordsMismatch;
                                 }
                                 return null;
                               },
@@ -376,8 +378,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 ),
                                 Expanded(
                                   child: Text(
-                                    'I accept the Terms and Conditions',
-                                    style: TextStyle(
+                                    l10n.signupFormAcceptTerms,
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black87,
                                     ),
@@ -403,9 +405,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 ),
                                 child: _isLoading
                                     ? const CircularProgressIndicator(color: Colors.white)
-                                    : const Text(
-                                        'Create Account',
-                                        style: TextStyle(
+                                    : Text(
+                                        l10n.signupFormCreateAccount,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -425,12 +427,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account? ',
-                        style: TextStyle(color: Colors.black87),
+                        '${l10n.signupAlreadyHaveAccount} ',
+                        style: const TextStyle(color: Colors.black87),
                       ),
                       TextButton(
                         onPressed: () => context.go('/login'),
-                        child: const Text('Login'),
+                        child: Text(l10n.authLoginCta),
                       ),
                     ],
                   ),

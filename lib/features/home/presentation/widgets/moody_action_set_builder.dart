@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
 import 'package:wandermood/features/home/presentation/providers/moody_hub_state_provider.dart';
-import 'package:wandermood/features/home/presentation/screens/main_screen.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_action.dart';
 import 'package:wandermood/features/home/presentation/widgets/mood_change_plan_bottom_sheet.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -39,7 +39,7 @@ List<MoodyAction> buildMoodyActions({
   void openMoodyStandalone() => context.pushNamed('moody-standalone');
 
   void openChangeMoodBottomSheet() {
-    unawaited(showMoodChangePlanBottomSheet(context, ref));
+    unawaited(showMoodChangePlanBottomSheet(context));
   }
 
   void openMoodMatch() => routeMoodMatch(context, state.match);

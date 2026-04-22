@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/auth/application/auth_provider.dart';
 import 'package:wandermood/features/home/presentation/providers/moody_hub_state_provider.dart';
@@ -379,7 +381,7 @@ Widget _moodyHubPrimaryPlanBubble({
   );
 }
 
-class _MoodyHubExpandedBody extends ConsumerWidget {
+class _MoodyHubExpandedBody extends ConsumerStatefulWidget {
   const _MoodyHubExpandedBody({
     required this.state,
     required this.actions,
@@ -391,7 +393,54 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
   final AppLocalizations l10n;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_MoodyHubExpandedBody> createState() =>
+      _MoodyHubExpandedBodyState();
+}
+
+class _MoodyHubExpandedBodyState extends ConsumerState<_MoodyHubExpandedBody> {
+  static const int _moodyTabIndex = 2;
+
+  /// Bumps when returning to the Moody tab so hub content replays entrance motion.
+  int _entranceVersion = 0;
+  ProviderSubscription<int>? _tabSub;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tabSub ??= ref.listenManual<int>(mainTabProvider, (previous, next) {
+      if (next == _moodyTabIndex &&
+          previous != null &&
+          previous != _moodyTabIndex) {
+        setState(() => _entranceVersion++);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabSub?.close();
+    super.dispose();
+  }
+
+  /// Staggered fade + slide for hub blocks (after hero mascot).
+  Widget _hubStagger(int step, Widget child) {
+    final delayMs = 70 * step;
+    return child
+        .animate(delay: delayMs.ms)
+        .fadeIn(duration: 420.ms, curve: Curves.easeOutCubic)
+        .slideY(
+          begin: 0.07,
+          duration: 420.ms,
+          curve: Curves.easeOutCubic,
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = widget.actions;
+    final l10n = widget.l10n;
+    final state = widget.state;
+
     MoodyAction? primary;
     for (final a in actions) {
       if (a.tone == MoodyActionTone.primary) {
@@ -428,59 +477,80 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
           : HubBubbleEmphasis.secondary;
     }
 
+    var staggerStep = 1;
+
     // Use ListView (not SingleChildScrollView) so the viewport gets a bounded
     // height from the parent AnimatedContainer — avoids _RenderSingleChildViewport
     // "not laid out" + semantics.parentDataDirty cascades during tab/keyboard churn.
     return ListView(
+      key: ValueKey<int>(_entranceVersion),
       clipBehavior: Clip.none,
       padding: EdgeInsets.fromLTRB(16, 8, 16, bottomInset + 6),
       physics: const BouncingScrollPhysics(),
       children: [
-        const Center(child: _MoodyHubHeroMascot()),
+        Center(
+          child: const _MoodyHubHeroMascot(),
+        )
+            .animate()
+            .scale(
+              duration: 560.ms,
+              begin: const Offset(0.38, 0.38),
+              curve: Curves.easeOutBack,
+            )
+            .fadeIn(duration: 360.ms, curve: Curves.easeOutCubic),
         const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FractionallySizedBox(
-            widthFactor: 0.92,
+        _hubStagger(
+          staggerStep++,
+          Align(
             alignment: Alignment.centerLeft,
-            child: _MoodyHubHeroMessageCard(
-              title: _greeting(l10n, firstName: firstName),
-              body: heroBody,
+            child: FractionallySizedBox(
+              widthFactor: 0.92,
+              alignment: Alignment.centerLeft,
+              child: _MoodyHubHeroMessageCard(
+                title: _greeting(l10n, firstName: firstName),
+                body: heroBody,
+              ),
             ),
           ),
         ),
         const SizedBox(height: 14),
         // Killer feature: Mood Match card leads (above day CTA).
         if (state.match.state == MoodyMatchState.sharedReady) ...[
-          Builder(
-            builder: (context) {
-              final e = nextLeadEmphasis();
-              return _HubBubbleFrame(
-                emphasis: e,
-                child: _SharedPlanCard(
-                  state: state,
-                  l10n: l10n,
+          _hubStagger(
+            staggerStep++,
+            Builder(
+              builder: (context) {
+                final e = nextLeadEmphasis();
+                return _HubBubbleFrame(
                   emphasis: e,
-                ),
-              );
-            },
+                  child: _SharedPlanCard(
+                    state: state,
+                    l10n: l10n,
+                    emphasis: e,
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 12),
         ],
         if (state.match.state == MoodyMatchState.invite) ...[
-          Builder(
-            builder: (context) {
-              final e = nextLeadEmphasis();
-              return _HubBubbleFrame(
-                emphasis: e,
-                child: _MoodMatchPromoCard(
-                  l10n: l10n,
+          _hubStagger(
+            staggerStep++,
+            Builder(
+              builder: (context) {
+                final e = nextLeadEmphasis();
+                return _HubBubbleFrame(
                   emphasis: e,
-                  ctaLabel: l10n.moodyHubMoodMatchInviteCta,
-                  onCta: () => routeMoodMatch(context, state.match),
-                ),
-              );
-            },
+                  child: _MoodMatchPromoCard(
+                    l10n: l10n,
+                    emphasis: e,
+                    ctaLabel: l10n.moodyHubMoodMatchInviteCta,
+                    onCta: () => routeMoodMatch(context, state.match),
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 12),
         ],
@@ -489,39 +559,8 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
             matchAction != null &&
             state.match.state != MoodyMatchState.sharedReady &&
             state.match.state != MoodyMatchState.invite) ...[
-          Builder(
-            builder: (context) {
-              final e = nextLeadEmphasis();
-              final m = matchAction!;
-              return _HubBubbleFrame(
-                emphasis: e,
-                child: _MoodMatchPromoCard(
-                  l10n: l10n,
-                  emphasis: e,
-                  ctaLabel: m.label,
-                  onCta: () => _deferMoodyHubActionTap(m.onTap),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          Builder(
-            builder: (context) {
-              final e = nextLeadEmphasis();
-              return _moodyHubPrimaryPlanBubble(
-                primary: primary!,
-                l10n: l10n,
-                emphasis: e,
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-        ] else ...[
-          // Empty day: full Mood Match card (body + CTA) leads, then Plan / Change mood —
-          // same stack as the shipped hub reference, not the thin accent row.
-          if (state.match.state != MoodyMatchState.sharedReady &&
-              state.match.state != MoodyMatchState.invite &&
-              matchAction != null) ...[
+          _hubStagger(
+            staggerStep++,
             Builder(
               builder: (context) {
                 final e = nextLeadEmphasis();
@@ -537,9 +576,10 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
                 );
               },
             ),
-            const SizedBox(height: 10),
-          ],
-          if (primary != null) ...[
+          ),
+          const SizedBox(height: 10),
+          _hubStagger(
+            staggerStep++,
             Builder(
               builder: (context) {
                 final e = nextLeadEmphasis();
@@ -550,10 +590,54 @@ class _MoodyHubExpandedBody extends ConsumerWidget {
                 );
               },
             ),
+          ),
+          const SizedBox(height: 10),
+        ] else ...[
+          // Empty day: full Mood Match card (body + CTA) leads, then Plan / Change mood —
+          // same stack as the shipped hub reference, not the thin accent row.
+          if (state.match.state != MoodyMatchState.sharedReady &&
+              state.match.state != MoodyMatchState.invite &&
+              matchAction != null) ...[
+            _hubStagger(
+              staggerStep++,
+              Builder(
+                builder: (context) {
+                  final e = nextLeadEmphasis();
+                  final m = matchAction!;
+                  return _HubBubbleFrame(
+                    emphasis: e,
+                    child: _MoodMatchPromoCard(
+                      l10n: l10n,
+                      emphasis: e,
+                      ctaLabel: m.label,
+                      onCta: () => _deferMoodyHubActionTap(m.onTap),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (primary != null) ...[
+            _hubStagger(
+              staggerStep++,
+              Builder(
+                builder: (context) {
+                  final e = nextLeadEmphasis();
+                  return _moodyHubPrimaryPlanBubble(
+                    primary: primary!,
+                    l10n: l10n,
+                    emphasis: e,
+                  );
+                },
+              ),
+            ),
             const SizedBox(height: 10),
           ],
         ],
-        ..._secondaryPairs(secondary),
+        ..._secondaryPairs(secondary).map(
+          (row) => _hubStagger(staggerStep++, row),
+        ),
       ],
     );
   }

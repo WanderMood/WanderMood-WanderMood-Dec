@@ -5,7 +5,7 @@ import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -241,6 +241,17 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final c = _cachedPlace;
     if (c != null && c.id == candidate.id) return c;
     return candidate;
+  }
+
+  /// Sliver [FlexibleSpaceBar] already shows the first image; the Foto’s tab lists
+  /// the remaining gallery only (up to 9) so the hero is not repeated in the grid.
+  List<String> _fotosTabPhotoUrlsExcludingHero(List<String> unified) {
+    if (unified.isEmpty) return const <String>[];
+    if (unified.length == 1) {
+      // Single image: nothing to add beyond the hero; avoid an empty tab.
+      return List<String>.from(unified);
+    }
+    return unified.skip(1).take(9).toList();
   }
 
   /// Interim: [place.photos] until unified resolution completes; then the same
@@ -616,7 +627,48 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
+  Widget _placeDetailHeroLoadingScaffold(AppLocalizations l10n) {
+    return Container(
+      color: const Color(0xFFE0E4E8),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 36,
+              height: 36,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.placeDetailLoadingPhotos,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF8C8780),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPhotoCarousel(Place place, AppLocalizations l10n) {
+    // Interim [place.photos] for Google often carries Places New `/media` strings.
+    // [WmPlacePhotoNetworkImage] must resolve those; painting before
+    // [_resolveUnifiedDetailPhotos] finishes can leave the IPA hero stuck on grey
+    // (LoadingBuilder / redirect hang). Wait for the merged, resolved list.
+    final bool googleHeroUntilUnified = _isGoogleBackedPlace(place.id) &&
+        !(_unifiedDetailPhotosResolutionComplete &&
+            _unifiedPhotosResolvedPlaceId == place.id);
+    if (googleHeroUntilUnified) {
+      return _placeDetailHeroLoadingScaffold(l10n);
+    }
+
     final photos = _displayPhotosForDetail(place);
     if (kDebugMode) {
       debugPrint(
@@ -629,32 +681,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (photos.isEmpty) {
       if (_unifiedDetailPhotosLoading) {
         // Same loading path as Foto's tab while the unified list is resolving.
-        return Container(
-          color: const Color(0xFFE0E4E8),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.placeDetailLoadingPhotos,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: const Color(0xFF8C8780),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return _placeDetailHeroLoadingScaffold(l10n);
       }
       return Container(
         color: const Color(0xFFE0E4E8),
@@ -733,14 +760,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ),
           ),
         ),
-        IgnorePointer(
-          child: Positioned(
+        Positioned(
           bottom: 24,
           right: 24,
           left: 24,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: IgnorePointer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Activity tags
               if (place.activities.isNotEmpty) ...[
                 Wrap(
@@ -827,32 +854,32 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ],
               ),
               // Removed address from image overlay as requested
-            ],
-          ),
+              ],
+            ),
           ),
         ),
         if (photos.length > 1) ...[
-          IgnorePointer(
-            child: Positioned(
+          Positioned(
             bottom: 80,
             left: 0,
             right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(photos.length, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentPhotoIndex == index
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.5),
-                  ),
-                );
-              }),
-            ),
+            child: IgnorePointer(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(photos.length, (index) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentPhotoIndex == index
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.5),
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ],
@@ -2818,14 +2845,15 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   Widget _buildPhotosTab(Place place) {
     final l10n = AppLocalizations.of(context)!;
-    final urls = _displayPhotosForDetail(place);
+    final allUrls = _displayPhotosForDetail(place);
+    final urls = _fotosTabPhotoUrlsExcludingHero(allUrls);
     if (kDebugMode) {
       debugPrint(
-        '📷 place_detail FOTOS_TAB placeId=${place.id} displayPhotos.len=${urls.length} '
-        'sameUnifiedListAsHero=true',
+        '📷 place_detail FOTOS_TAB placeId=${place.id} all.len=${allUrls.length} '
+        'gridExHero.len=${urls.length} ',
       );
     }
-    if (urls.isEmpty) {
+    if (allUrls.isEmpty) {
       if (_unifiedDetailPhotosLoading) {
         return Center(
           child: Column(
@@ -3322,11 +3350,19 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  void _sharePlace(Place place) {
-    Share.share(
-      'Check out ${place.name} at ${place.address}. Rated ${place.rating}/5.0!',
-      subject: 'Great place to visit!',
-    );
+  Future<void> _sharePlace(Place place) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await SharingService.sharePlace(place, context: context);
+    } catch (e) {
+      if (mounted) {
+        showWanderMoodToast(
+          context,
+          message: l10n.placeCardFailedToShare('$e'),
+          isError: true,
+        );
+      }
+    }
   }
 
   void _showFullScreenPhoto(List<String> photos, int initialIndex, bool isAsset) {

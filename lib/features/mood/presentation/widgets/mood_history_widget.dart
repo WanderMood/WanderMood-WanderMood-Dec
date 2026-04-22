@@ -216,7 +216,7 @@ class MoodHistoryWidget extends ConsumerWidget {
               const SizedBox(height: 12),
               streakAsync.when(
                 data: (streak) => Text(
-                  '🔥 ${l10n.drawerDayStreak('$streak')}',
+                  '🔥 ${l10n.myDayMoodStreakBadge(streak)}',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
