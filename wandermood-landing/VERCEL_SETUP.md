@@ -36,6 +36,8 @@ The Next.js app lives in a subfolder, so Vercel must build from that folder:
 - **Output Directory:** leave default (Next.js handles it)
 - **Install Command:** `npm install` (default)
 
+**Legacy `vercel.json`:** If the build log warns that **`builds` in your configuration file** means Project Settings won’t apply, and **“Build Completed” takes only a few milliseconds**, you are not running `next build`. An old static-site `vercel.json` (e.g. `@vercel/static` and `index.html`) causes that. **Delete that `vercel.json`** so Vercel auto-detects Next.js and runs a real production build (typically tens of seconds).
+
 ### Environment variables (optional)
 
 - **Public site only:** none required.
