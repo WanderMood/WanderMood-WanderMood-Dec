@@ -170,7 +170,8 @@ class CheckInService {
         return await _getStreakFromLocalStorage();
       }
 
-      final checkIns = await getRecentCheckIns(limit: 30);
+      // Need enough history for long consecutive-day streaks (was 30).
+      final checkIns = await getRecentCheckIns(limit: 400);
       if (checkIns.isEmpty) return 0;
 
       // Sort by date (most recent first)

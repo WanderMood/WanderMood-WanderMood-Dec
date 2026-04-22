@@ -22,7 +22,7 @@ const Color _wmSunsetTint = Color(0xFFFDF0E8);
 class MoodHistoryWidget extends ConsumerWidget {
   const MoodHistoryWidget({
     super.key,
-    this.daysToShow = 7,
+    this.daysToShow = 14,
   });
 
   final int daysToShow;

@@ -40,6 +40,8 @@ void showWanderMoodToast(
   messenger.showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
+      showCloseIcon: true,
+      closeIconColor: Colors.white70,
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottomClearance),
       padding: EdgeInsets.symmetric(
         horizontal: hasAction || leading != null ? 16 : 20,

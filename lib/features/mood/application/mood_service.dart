@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/mood/data/repositories/supabase_mood_repository.dart';
-import 'package:wandermood/features/mood/domain/models/mood.dart';
 import 'package:wandermood/features/mood/domain/models/activity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -20,7 +19,8 @@ final selectedMoodProvider = StateProvider<MoodData?>((ref) => null);
 // Provider voor de lijst van stemmingen van de gebruiker
 final userMoodsProvider = FutureProvider.family<List<MoodData>, String>((ref, userId) async {
   final moodService = ref.watch(moodServiceProvider.notifier);
-  return moodService.getMoodHistory();
+  // Full journey for history screen (not the old default of 10 rows).
+  return moodService.getMoodHistory(limit: 500);
 });
 
 // Provider voor de laatste stemming van de gebruiker
@@ -42,18 +42,18 @@ class MoodService extends _$MoodService {
 
   Future<MoodData?> getCurrentMood() async {
     try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return null;
       final response = await _client
           .from('moods')
           .select()
-          .eq('user_id', _client.auth.currentUser!.id)
+          .eq('user_id', userId)
           .order('timestamp', ascending: false)
           .limit(1)
-          .single();
+          .maybeSingle();
 
-      if (response != null) {
-        return MoodData.fromJson(response);
-      }
-      return null;
+      if (response == null) return null;
+      return MoodData.fromJson(response);
     } catch (e) {
       print('Error getting current mood: $e');
       return null;
@@ -63,7 +63,7 @@ class MoodService extends _$MoodService {
   Future<List<MoodData>> getMoodHistory({
     DateTime? startDate,
     DateTime? endDate,
-    int limit = 10,
+    int limit = 120,
   }) async {
     try {
       var query = _client
@@ -93,6 +93,10 @@ class MoodService extends _$MoodService {
     try {
       await _client.from('moods').insert(mood.toJson());
       ref.invalidateSelf();
+      final uid = _client.auth.currentUser?.id;
+      if (uid != null) {
+        ref.invalidate(userMoodsProvider(uid));
+      }
       // Schedule mood follow-up notification 4 h after mood is logged.
       try {
         await ref
@@ -113,6 +117,10 @@ class MoodService extends _$MoodService {
           .eq('id', mood.id)
           .eq('user_id', mood.userId);
       ref.invalidateSelf();
+      final uid = _client.auth.currentUser?.id;
+      if (uid != null) {
+        ref.invalidate(userMoodsProvider(uid));
+      }
     } catch (e) {
       print('Error updating mood: $e');
       rethrow;
@@ -127,6 +135,10 @@ class MoodService extends _$MoodService {
           .eq('id', moodId)
           .eq('user_id', _client.auth.currentUser!.id);
       ref.invalidateSelf();
+      final uid = _client.auth.currentUser?.id;
+      if (uid != null) {
+        ref.invalidate(userMoodsProvider(uid));
+      }
     } catch (e) {
       print('Error deleting mood: $e');
       rethrow;
@@ -156,6 +168,10 @@ class MoodService extends _$MoodService {
   Future<MoodData> saveMood(MoodData mood) async {
     final result = await _repository.saveMood(mood);
     ref.invalidateSelf();
+    final uid = _client.auth.currentUser?.id;
+    if (uid != null) {
+      ref.invalidate(userMoodsProvider(uid));
+    }
     // Schedule mood follow-up notification 4 h after mood is logged.
     try {
       await ref
@@ -168,6 +184,10 @@ class MoodService extends _$MoodService {
   Future<void> deleteMood(String moodId) async {
     await _repository.deleteMood(moodId);
     ref.invalidateSelf();
+    final uid = _client.auth.currentUser?.id;
+    if (uid != null) {
+      ref.invalidate(userMoodsProvider(uid));
+    }
   }
 
   Future<List<Activity>> getActivities() async {

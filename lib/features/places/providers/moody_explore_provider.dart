@@ -10,6 +10,59 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+const _foodishPlaceTypes = {
+  'restaurant',
+  'cafe',
+  'bakery',
+  'meal_takeaway',
+  'meal_delivery',
+  'bar',
+  'food',
+  'night_club',
+};
+
+bool _placeIsFoodish(Place p) {
+  final primary = p.primaryType?.toLowerCase();
+  if (primary != null && _foodishPlaceTypes.contains(primary)) return true;
+  for (final t in p.types) {
+    if (_foodishPlaceTypes.contains(t.toLowerCase())) return true;
+  }
+  return false;
+}
+
+/// Breaks up long runs of food venues so the discovery feed feels more mixed.
+List<Place> diversifyExplorePlaces(
+  List<Place> places, {
+  int maxConsecutiveFood = 2,
+}) {
+  if (places.length < 3) return places;
+  final pending = List<Place>.from(places);
+  final out = <Place>[];
+  var foodRun = 0;
+  while (pending.isNotEmpty) {
+    final first = pending.first;
+    final food = _placeIsFoodish(first);
+    if (food && foodRun >= maxConsecutiveFood) {
+      final idx = pending.indexWhere((p) => !_placeIsFoodish(p));
+      if (idx < 0) {
+        out.add(pending.removeAt(0));
+        foodRun++;
+      } else {
+        out.add(pending.removeAt(idx));
+        foodRun = _placeIsFoodish(out.last) ? 1 : 0;
+      }
+    } else {
+      out.add(pending.removeAt(0));
+      if (food) {
+        foodRun++;
+      } else {
+        foodRun = 0;
+      }
+    }
+  }
+  return out;
+}
+
 /// Parameters for the moody explore provider
 class ExploreParams {
   final String location;
@@ -93,7 +146,7 @@ final moodyExploreProvider = FutureProvider.family<List<Place>, ExploreParams>((
   final service = ref.watch(moodyEdgeFunctionServiceProvider);
   
   try {
-    final places = await service.getExplore(
+    final rawPlaces = await service.getExplore(
       location: params.location,
       latitude: params.latitude,
       longitude: params.longitude,
@@ -102,6 +155,7 @@ final moodyExploreProvider = FutureProvider.family<List<Place>, ExploreParams>((
       namedFilters: params.namedFilters,
       languageCode: params.languageCode,
     );
+    final places = diversifyExplorePlaces(rawPlaces);
     final notifier = ref.read(placesServiceProvider.notifier);
     for (final p in places) {
       notifier.cachePlaceObject(p);
@@ -183,6 +237,6 @@ final moodyHubExploreCacheOnlyProvider =
       appLocale: ref.watch(localeProvider),
     ),
   );
-  return places ?? [];
+  return diversifyExplorePlaces(places ?? const []);
 });
 

@@ -63,7 +63,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   late DateTime _selectedDate;
   
   bool _hasInitialized = false; // Prevent invalidate on hot reload
-  int _moodStreak = 0;
 
   String _safeActivityTitle(Map<String, dynamic> activity) {
     return activity['title']?.toString() ??
@@ -173,25 +172,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         });
       });
     }
-    _loadMoodStreak();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.invalidate(effectiveMoodStreakProvider);
+      }
+    });
   }
 
-  Future<void> _loadMoodStreak() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return;
-    final profile = await Supabase.instance.client
-        .from('profiles')
-        .select('mood_streak')
-        .eq('id', userId)
-        .maybeSingle();
+  Future<void> _refreshStreakProviders() async {
     if (!mounted) return;
-    setState(() {
-      _moodStreak = (profile?['mood_streak'] as int?) ?? 0;
-    });
-    if (mounted) {
-      unawaited(ref.read(currentUserProfileProvider.notifier).refresh());
-      ref.invalidate(effectiveMoodStreakProvider);
-    }
+    await ref.read(currentUserProfileProvider.notifier).refresh();
+    ref.invalidate(effectiveMoodStreakProvider);
   }
 
   Future<void> _updateMoodStreakFromCompletions() async {
@@ -208,7 +199,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     final prefs = await SharedPreferences.getInstance();
     final lastUpdate = prefs.getString('mood_streak_last_update');
     if (lastUpdate == todayIso) {
-      await _loadMoodStreak();
+      await _refreshStreakProviders();
       return;
     }
 
@@ -248,7 +239,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         })
         .eq('id', userId);
     await prefs.setString('mood_streak_last_update', todayIso);
-    await _loadMoodStreak();
+    await _refreshStreakProviders();
   }
 
   bool _timelineHasActivities(
@@ -271,7 +262,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       l10n: l10n,
       status: currentStatusValue,
     );
-    
+    final streakAsync = ref.watch(effectiveMoodStreakProvider);
+    final profileAsync = ref.watch(currentUserProfileProvider);
+    final moodStreakForBadge = streakAsync.when(
+      data: (s) => s,
+      loading: () => profileAsync.valueOrNull?.moodStreak ?? 0,
+      error: (_, __) => profileAsync.valueOrNull?.moodStreak ?? 0,
+    );
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const ProfileDrawer(),
@@ -308,7 +306,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           height: 1.5,
                         ),
                       ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
-                      if (_moodStreak > 0) ...[
+                      if (moodStreakForBadge > 0) ...[
                         const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -324,7 +322,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             ),
                           ),
                           child: Text(
-                            '🔥 ${l10n.myDayMoodStreakBadge(_moodStreak)}',
+                            '🔥 ${l10n.myDayMoodStreakBadge(moodStreakForBadge)}',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
