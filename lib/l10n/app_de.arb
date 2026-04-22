@@ -667,6 +667,10 @@
       }
     }
   },
+  "profileEditUnsavedTitle": "Änderungen verwerfen?",
+  "profileEditUnsavedMessage": "Du hast ungespeicherte Änderungen. Wenn du jetzt gehst, gehen sie verloren.",
+  "profileEditDiscard": "Verwerfen",
+  "profileEditKeepEditing": "Weiter bearbeiten",
   "profileMoodJourneyTitle": "Deine Stimmungsreise",
   "profileMoodJourneySubtitle": "Deine Stimmungsverlauf ansehen",
   "moodHistoryIntro": "Eine ruhige Zeitleiste deiner Gefühle.",

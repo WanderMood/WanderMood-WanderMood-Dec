@@ -3230,6 +3230,30 @@ abstract class AppLocalizations {
   /// **'Error loading profile: {error}'**
   String profileEditErrorLoading(String error);
 
+  /// No description provided for @profileEditUnsavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get profileEditUnsavedTitle;
+
+  /// No description provided for @profileEditUnsavedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved edits. If you leave now, your changes will be lost.'**
+  String get profileEditUnsavedMessage;
+
+  /// No description provided for @profileEditDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get profileEditDiscard;
+
+  /// No description provided for @profileEditKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get profileEditKeepEditing;
+
   /// No description provided for @profileVibesUpdated.
   ///
   /// In en, this message translates to:

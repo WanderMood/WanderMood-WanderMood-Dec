@@ -655,6 +655,10 @@
       }
     }
   },
+  "profileEditUnsavedTitle": "Discard changes?",
+  "profileEditUnsavedMessage": "You have unsaved edits. If you leave now, your changes will be lost.",
+  "profileEditDiscard": "Discard",
+  "profileEditKeepEditing": "Keep editing",
   "profileVibesUpdated": "Vibes updated! 🎉",
   "profileVibesSaveFailed": "Failed to save vibes: {error}",
   "@profileVibesSaveFailed": {

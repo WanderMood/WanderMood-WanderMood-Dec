@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,8 +10,6 @@ import 'package:wandermood/features/profile/domain/providers/current_user_profil
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
-import 'package:wandermood/features/places/application/places_service.dart';
-import 'package:wandermood/features/places/domain/models/place.dart' show PlaceAutocomplete;
 import '../widgets/edit_favorite_vibes.dart'
     show allVibes, localizedVibeDescription, localizedVibeLabelForStored, localizedVibeName;
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
@@ -42,12 +40,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _bioController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _locationFocusNode = FocusNode();
-  
-  List<PlaceAutocomplete> _locationSuggestions = [];
-  bool _showLocationSuggestions = false;
-  Timer? _locationDebounce;
 
   DateTime? _dateOfBirth;
   String? _selectedGender; // 'woman' | 'man' | 'non_binary' | 'prefer_not_to_say'
@@ -89,7 +81,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       // Fetch extra fields from profiles (date_of_birth, currently_exploring, travel_vibes)
       final profileResponse = await supabase
           .from('profiles')
-          .select('travel_vibes, currently_exploring, date_of_birth, gender')
+          .select('travel_vibes, date_of_birth, gender')
           .eq('id', userId)
           .maybeSingle();
 
@@ -119,11 +111,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _selectedGender = (profileResponse?['gender'] as String?) ??
               currentProfile?.gender;
           _profileImageUrl = avatarUrl;
-          // 'local' / 'traveling' / 'traveler' are travel-mode flags, not city names.
-          // Show an empty field so the user can type their actual city.
-          final rawLocation = profileResponse?['currently_exploring'] as String? ?? '';
-          const travelModeValues = {'local', 'traveling', 'traveler', 'Local Explorer', 'Traveler'};
-          _locationController.text = travelModeValues.contains(rawLocation) ? '' : rawLocation;
           _favoriteVibes = vibes;
           _dietaryInclusionKeys
             ..clear()
@@ -135,9 +122,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             'email': email,
             'bio': currentProfile?.bio ?? '',
             'dateOfBirth': dateOfBirth,
-            'gender': currentProfile?.gender,
+            'gender': _selectedGender,
             'imageUrl': avatarUrl,
-            'location': _locationController.text,
             'vibes': List<String>.from(_favoriteVibes),
             'dietaryInclusion': List<String>.from(dietaryNormalized),
           };
@@ -159,9 +145,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _usernameController.dispose();
     _emailController.dispose();
     _bioController.dispose();
-    _locationController.dispose();
-    _locationFocusNode.dispose();
-    _locationDebounce?.cancel();
     super.dispose();
   }
 
@@ -173,7 +156,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         _bioController.text != (_originalData['bio'] ?? '') ||
         _dateOfBirth != _originalData['dateOfBirth'] ||
         _selectedGender != _originalData['gender'] ||
-        _locationController.text != (_originalData['location'] ?? '') ||
         _selectedImagePath != null ||
         !_listEquals(_favoriteVibes, _originalData['vibes'] ?? []) ||
         !_setEquals(
@@ -263,31 +245,139 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final maxDate = DateTime.now();
+    var picked = _dateOfBirth ?? DateTime(maxDate.year - 18, maxDate.month, maxDate.day);
+
+    await showModalBottomSheet<void>(
       context: context,
-      initialDate: _dateOfBirth ?? DateTime.now().subtract(const Duration(days: 6570)),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: _wmForest,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (context, setModal) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        onPressed: () => Navigator.pop(sheetCtx),
+                        child: Text(
+                          MaterialLocalizations.of(sheetCtx).cancelButtonLabel,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: _wmStone,
+                          ),
+                        ),
+                      ),
+                      CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        onPressed: () {
+                          Navigator.pop(sheetCtx);
+                          if (!mounted) return;
+                          setState(() {
+                            _dateOfBirth = DateTime(
+                              picked.year,
+                              picked.month,
+                              picked.day,
+                            );
+                            _checkForChanges();
+                          });
+                        },
+                        child: Text(
+                          l10n.profileEditVibesDone,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: _wmForest,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 216,
+                    child: CupertinoTheme(
+                      data: CupertinoThemeData(
+                        textTheme: CupertinoTextThemeData(
+                          dateTimePickerTextStyle: GoogleFonts.poppins(
+                            fontSize: 20,
+                            color: const Color(0xFF1E1C18),
+                          ),
+                        ),
+                      ),
+                      child: Localizations.override(
+                        context: context,
+                        locale: locale,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.date,
+                          initialDateTime: picked.isAfter(maxDate)
+                              ? maxDate
+                              : (picked.isBefore(DateTime(1900))
+                                  ? DateTime(1900)
+                                  : picked),
+                          minimumDate: DateTime(1900),
+                          maximumDate: maxDate,
+                          onDateTimeChanged: (d) {
+                            picked = d;
+                            setModal(() {});
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
-    
-    if (picked != null && picked != _dateOfBirth) {
-      setState(() {
-        _dateOfBirth = picked;
-        _checkForChanges();
-      });
+  }
+
+  Future<bool?> _confirmDiscardUnsaved() async {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          l10n.profileEditUnsavedTitle,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          l10n.profileEditUnsavedMessage,
+          style: GoogleFonts.poppins(fontSize: 14, height: 1.35),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.profileEditKeepEditing),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
+            child: Text(l10n.profileEditDiscard),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleEditBack() async {
+    final navigator = Navigator.of(context);
+    if (!_hasChanges) {
+      if (mounted) navigator.pop();
+      return;
+    }
+    final discard = await _confirmDiscardUnsaved();
+    if (discard == true && mounted) {
+      navigator.pop();
     }
   }
 
@@ -348,11 +438,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         bio: _bioController.text,
       );
 
-      // Update location and travel_vibes in profiles table
+      // Update travel_vibes and gender in profiles table
       await supabase
           .from('profiles')
           .update({
-            'currently_exploring': _locationController.text.isEmpty ? null : _locationController.text,
             'travel_vibes': _favoriteVibes,
             'gender': _selectedGender,
             'updated_at': DateTime.now().toIso8601String(),
@@ -412,30 +501,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
-  void _cancelEdit() {
-    setState(() {
-      _nameController.text = _originalData['name'] ?? '';
-      _usernameController.text = _originalData['username'] ?? '';
-      _emailController.text = _originalData['email'] ?? '';
-      _bioController.text = _originalData['bio'] ?? '';
-      _dateOfBirth = _originalData['dateOfBirth'];
-      _locationController.text = _originalData['location'] ?? '';
-      _favoriteVibes = List<String>.from(_originalData['vibes'] ?? []);
-      _dietaryInclusionKeys
-        ..clear()
-        ..addAll(
-          normalizeInclusionPreferenceKeys(
-            (_originalData['dietaryInclusion'] as List<dynamic>?)
-                    ?.map((e) => e.toString()) ??
-                const [],
-          ),
-        );
-      _selectedImagePath = null;
-      _hasChanges = false;
-      _currentMode = EditScreenMode.edit;
-    });
-  }
-
   void _toggleDietaryInclusionKey(String key) {
     setState(() {
       if (_dietaryInclusionKeys.contains(key)) {
@@ -456,18 +521,41 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
     }
 
-    // Photo Screen
     if (_currentMode == EditScreenMode.photo) {
-      return _buildPhotoScreen();
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          setState(() => _currentMode = EditScreenMode.edit);
+        },
+        child: _buildPhotoScreen(),
+      );
     }
 
-    // Vibes Screen
     if (_currentMode == EditScreenMode.vibes) {
-      return _buildVibesScreen();
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          setState(() => _currentMode = EditScreenMode.edit);
+        },
+        child: _buildVibesScreen(),
+      );
     }
 
-    // Main Edit Screen
-    return _buildEditScreen();
+    return PopScope(
+      canPop: !_hasChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        final discard = await _confirmDiscardUnsaved();
+        if (!mounted) return;
+        if (discard == true) {
+          navigator.pop();
+        }
+      },
+      child: _buildEditScreen(),
+    );
   }
 
   Widget _buildEditScreen() {
@@ -496,7 +584,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         size: 20,
                         color: Color(0xFF4B5563),
                       ),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _handleEditBack,
                     ),
                     Expanded(
                       child: Text(
@@ -512,7 +600,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: TextButton(
-                        onPressed: _hasChanges ? _saveProfile : null,
+                        onPressed:
+                            (_hasChanges && !_isSaving) ? _saveProfile : null,
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
@@ -526,14 +615,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             color: _hasChanges ? _wmForest : _wmParchment,
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: Text(
-                            AppLocalizations.of(context)!.profileEditSave,
-                            style: GoogleFonts.poppins(
-                              color: _hasChanges ? Colors.white : _wmStone,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  AppLocalizations.of(context)!.profileEditSave,
+                                  style: GoogleFonts.poppins(
+                                    color:
+                                        _hasChanges ? Colors.white : _wmStone,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -736,10 +835,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      
-                      // Location with autocomplete
-                      _buildLocationInputCard(),
                       const SizedBox(height: 12),
                       
                       // Birthday
@@ -959,194 +1054,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
           const SizedBox(height: 12),
           child,
-        ],
-      ),
-    );
-  }
-
-  void _onLocationChanged(String value) {
-    _checkForChanges();
-    _locationDebounce?.cancel();
-    if (value.length < 2) {
-      setState(() {
-        _locationSuggestions = [];
-        _showLocationSuggestions = false;
-      });
-      return;
-    }
-    _locationDebounce = Timer(const Duration(milliseconds: 400), () async {
-      try {
-        final suggestions = await ref
-            .read(placesServiceProvider.notifier)
-            .getAutocomplete(value);
-        if (mounted) {
-          setState(() {
-            _locationSuggestions = suggestions;
-            _showLocationSuggestions = suggestions.isNotEmpty;
-          });
-        }
-      } catch (_) {}
-    });
-  }
-
-  Widget _buildLocationInputCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context)!.profileEditLocationLabel,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _locationController,
-            focusNode: _locationFocusNode,
-            onChanged: _onLocationChanged,
-            textCapitalization: TextCapitalization.words,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF1E1C18),
-            ),
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.profileEditLocationHintExamples,
-              hintStyle: GoogleFonts.poppins(color: _wmStone),
-              prefixIcon: const Icon(
-                Icons.location_on_outlined,
-                color: _wmStone,
-                size: 20,
-              ),
-              suffixIcon: _locationController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, color: _wmStone, size: 18),
-                      onPressed: () {
-                        _locationController.clear();
-                        setState(() {
-                          _locationSuggestions = [];
-                          _showLocationSuggestions = false;
-                        });
-                        _checkForChanges();
-                      },
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: _wmParchment),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: _wmForest, width: 1.5),
-              ),
-              filled: true,
-              fillColor: Colors.white,
-            ),
-          ),
-          if (_showLocationSuggestions && _locationSuggestions.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _wmParchment),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Column(
-                  children: _locationSuggestions
-                      .take(5)
-                      .toList()
-                      .asMap()
-                      .entries
-                      .map((entry) {
-                    final idx = entry.key;
-                    final suggestion = entry.value;
-                    final mainText = suggestion.structuredFormatting?.mainText ??
-                        suggestion.description.split(',').first;
-                    final secondaryText =
-                        suggestion.structuredFormatting?.secondaryText ??
-                            suggestion.description;
-                    return Column(
-                      children: [
-                        if (idx != 0) const Divider(height: 1, color: _wmParchment),
-                        InkWell(
-                          onTap: () {
-                            _locationController.text = suggestion.description;
-                            setState(() {
-                              _locationSuggestions = [];
-                              _showLocationSuggestions = false;
-                            });
-                            _locationFocusNode.unfocus();
-                            _checkForChanges();
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.location_on_outlined,
-                                    size: 18, color: _wmForest),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        mainText,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF1E1C18),
-                                        ),
-                                      ),
-                                      if (secondaryText != suggestion.description ||
-                                          suggestion.terms.length > 1)
-                                        Text(
-                                          secondaryText,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: _wmStone,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

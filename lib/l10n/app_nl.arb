@@ -667,6 +667,10 @@
       }
     }
   },
+  "profileEditUnsavedTitle": "Wijzigingen negeren?",
+  "profileEditUnsavedMessage": "Je hebt niet-opgeslagen wijzigingen. Als je nu weggaat, gaan die verloren.",
+  "profileEditDiscard": "Negeren",
+  "profileEditKeepEditing": "Verder bewerken",
   "profileMoodJourneyTitle": "Jouw mood journey",
   "profileMoodJourneySubtitle": "Bekijk je mood history",
   "moodHistoryIntro": "Een rustige tijdlijn van hoe je je voelde.",

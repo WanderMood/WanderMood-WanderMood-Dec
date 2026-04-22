@@ -1772,6 +1772,19 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get profileEditUnsavedTitle => 'Abandonner les modifications ?';
+
+  @override
+  String get profileEditUnsavedMessage =>
+      'Tu as des modifications non enregistrées. Si tu quittes maintenant, elles seront perdues.';
+
+  @override
+  String get profileEditDiscard => 'Abandonner';
+
+  @override
+  String get profileEditKeepEditing => 'Continuer l’édition';
+
+  @override
   String get profileVibesUpdated => 'Vibes mises à jour ! 🎉';
 
   @override

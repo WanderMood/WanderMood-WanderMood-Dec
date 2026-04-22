@@ -667,6 +667,10 @@
       }
     }
   },
+  "profileEditUnsavedTitle": "¿Descartar cambios?",
+  "profileEditUnsavedMessage": "Tienes cambios sin guardar. Si sales ahora, se perderán.",
+  "profileEditDiscard": "Descartar",
+  "profileEditKeepEditing": "Seguir editando",
   "profileMoodJourneyTitle": "Tu viaje de ánimo",
   "profileMoodJourneySubtitle": "Ver tu historial de ánimo",
   "moodHistoryIntro": "Una línea de tiempo tranquila de cómo te has sentido.",

@@ -668,6 +668,10 @@
       }
     }
   },
+  "profileEditUnsavedTitle": "Abandonner les modifications ?",
+  "profileEditUnsavedMessage": "Tu as des modifications non enregistrées. Si tu quittes maintenant, elles seront perdues.",
+  "profileEditDiscard": "Abandonner",
+  "profileEditKeepEditing": "Continuer l’édition",
   "profileMoodJourneyTitle": "Ton parcours d'humeur",
   "profileMoodJourneySubtitle": "Voir ton historique d'humeur",
   "moodHistoryIntro": "Une frise calme de ce que tu as ressenti.",

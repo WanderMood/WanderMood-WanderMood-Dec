@@ -1762,6 +1762,19 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get profileEditUnsavedTitle => 'Wijzigingen negeren?';
+
+  @override
+  String get profileEditUnsavedMessage =>
+      'Je hebt niet-opgeslagen wijzigingen. Als je nu weggaat, gaan die verloren.';
+
+  @override
+  String get profileEditDiscard => 'Negeren';
+
+  @override
+  String get profileEditKeepEditing => 'Verder bewerken';
+
+  @override
   String get profileVibesUpdated => 'Vibes bijgewerkt! 🎉';
 
   @override

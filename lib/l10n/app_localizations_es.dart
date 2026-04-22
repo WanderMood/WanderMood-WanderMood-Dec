@@ -1769,6 +1769,19 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get profileEditUnsavedTitle => '¿Descartar cambios?';
+
+  @override
+  String get profileEditUnsavedMessage =>
+      'Tienes cambios sin guardar. Si sales ahora, se perderán.';
+
+  @override
+  String get profileEditDiscard => 'Descartar';
+
+  @override
+  String get profileEditKeepEditing => 'Seguir editando';
+
+  @override
   String get profileVibesUpdated => '¡Vibes actualizadas! 🎉';
 
   @override
