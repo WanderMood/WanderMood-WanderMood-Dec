@@ -395,7 +395,11 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     
     final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     try {
-      await scheduledActivityService.saveScheduledActivities([widget.activity], isConfirmed: false);
+      await scheduledActivityService.saveScheduledActivities(
+        [widget.activity],
+        isConfirmed: false,
+        streakRefreshRef: ref,
+      );
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
       ref.invalidate(todayActivitiesProvider);

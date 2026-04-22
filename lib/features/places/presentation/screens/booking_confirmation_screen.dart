@@ -201,7 +201,11 @@ class _BookingConfirmationScreenState extends ConsumerState<BookingConfirmationS
       print('📅 Activity startTime ISO: ${startTime.toIso8601String()}');
       
       try {
-        await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: true);
+        await scheduledActivityService.saveScheduledActivities(
+          [activity],
+          isConfirmed: true,
+          streakRefreshRef: ref,
+        );
         print('✅ Booking saved to scheduled activities successfully');
       } catch (supabaseError) {
         print('⚠️ Supabase save failed: $supabaseError');

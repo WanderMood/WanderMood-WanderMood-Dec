@@ -11,7 +11,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dynamic_my_day_provider.dart';
@@ -45,6 +44,7 @@ import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
+import 'package:wandermood/features/mood/services/profile_mood_streak_from_schedule.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Accent for Mood Match CTAs (matches profile sunset token).
@@ -186,59 +186,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Future<void> _updateMoodStreakFromCompletions() async {
-    final client = Supabase.instance.client;
-    final userId = client.auth.currentUser?.id;
-    if (userId == null) return;
-
-    final now = MoodyClock.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final todayIso = today.toIso8601String().split('T').first;
-    final yesterdayIso = yesterday.toIso8601String().split('T').first;
-
-    final prefs = await SharedPreferences.getInstance();
-    final lastUpdate = prefs.getString('mood_streak_last_update');
-    if (lastUpdate == todayIso) {
-      await _refreshStreakProviders();
-      return;
-    }
-
-    final completedToday = await client
-        .from('scheduled_activities')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('scheduled_date', todayIso)
-        .eq('is_confirmed', true)
-        .limit(1);
-
-    if (completedToday.isEmpty) return;
-
-    final completedYesterday = await client
-        .from('scheduled_activities')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('scheduled_date', yesterdayIso)
-        .eq('is_confirmed', true)
-        .limit(1);
-
-    final profile = await client
-        .from('profiles')
-        .select('mood_streak')
-        .eq('id', userId)
-        .maybeSingle();
-    final currentStreak = (profile?['mood_streak'] as int?) ?? 0;
-    final nextStreak = completedYesterday.isNotEmpty
-        ? (currentStreak > 0 ? currentStreak + 1 : 1)
-        : 1;
-
-    await client
-        .from('profiles')
-        .update({
-          'mood_streak': nextStreak,
-          'updated_at': DateTime.now().toIso8601String(),
-        })
-        .eq('id', userId);
-    await prefs.setString('mood_streak_last_update', todayIso);
+    await ProfileMoodStreakFromSchedule.syncAfterScheduleChange(
+      Supabase.instance.client,
+    );
     await _refreshStreakProviders();
   }
 

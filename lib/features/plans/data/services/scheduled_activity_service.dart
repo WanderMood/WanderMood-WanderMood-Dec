@@ -9,6 +9,9 @@ import 'package:wandermood/features/plans/data/services/schema_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/features/mood/services/profile_mood_streak_from_schedule.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
+import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
 
 /// Provider for the ScheduledActivityService
 final scheduledActivityServiceProvider = Provider<ScheduledActivityService>((ref) {
@@ -29,7 +32,11 @@ class ScheduledActivityService {
   
   /// Save a list of activities to the scheduled_activities table.
   /// Returns how many rows were inserted (0 if all were duplicates or on auth failure in fallback path).
-  Future<int> saveScheduledActivities(List<Activity> activities, {bool isConfirmed = false}) async {
+  Future<int> saveScheduledActivities(
+    List<Activity> activities, {
+    bool isConfirmed = false,
+    WidgetRef? streakRefreshRef,
+  }) async {
     try {
       debugPrint('ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
       
@@ -41,7 +48,10 @@ class ScheduledActivityService {
       
       debugPrint('ScheduledActivityService: User ID: $userId');
       final activityData = _prepareActivityData(activities, userId, isConfirmed);
-      return await _insertActivities(activityData);
+      return await _insertActivities(
+        activityData,
+        streakRefreshRef: streakRefreshRef,
+      );
     } catch (e) {
       debugPrint('ScheduledActivityService: Database save failed: $e');
       debugPrint('ScheduledActivityService: Using in-memory fallback storage');
@@ -153,7 +163,10 @@ class ScheduledActivityService {
   }
   
   // Helper to insert activities with duplicate checking
-  Future<int> _insertActivities(List<Map<String, dynamic>> activityData) async {
+  Future<int> _insertActivities(
+    List<Map<String, dynamic>> activityData, {
+    WidgetRef? streakRefreshRef,
+  }) async {
     try {
       debugPrint('ScheduledActivityService: Inserting ${activityData.length} activities');
       
@@ -252,6 +265,13 @@ class ScheduledActivityService {
           timeSlot: _timeSlotKeyFromHour(start.hour),
         );
       }
+      try {
+        await ProfileMoodStreakFromSchedule.syncAfterScheduleChange(_client);
+        streakRefreshRef?.invalidate(currentUserProfileProvider);
+        streakRefreshRef?.invalidate(effectiveMoodStreakProvider);
+      } catch (e) {
+        debugPrint('ScheduledActivityService: mood streak sync skipped: $e');
+      }
       return filteredActivities.length;
     } catch (e) {
       debugPrint('ScheduledActivityService: Failed to save activities to Supabase: $e');
@@ -262,7 +282,10 @@ class ScheduledActivityService {
         try {
           await _schemaHelper.createScheduledActivitiesTable();
           debugPrint('ScheduledActivityService: Table created successfully, retrying insert');
-          return await _insertActivities(activityData);
+          return await _insertActivities(
+            activityData,
+            streakRefreshRef: streakRefreshRef,
+          );
         } catch (tableError) {
           debugPrint('ScheduledActivityService: Failed to create table: $tableError');
           rethrow;

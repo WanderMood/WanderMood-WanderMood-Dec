@@ -25,8 +25,6 @@ import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
-import 'package:wandermood/core/presentation/widgets/moody_settings_glyph.dart';
-
 /// v2 profile — design tokens
 const Color _wmCream = Color(0xFFF5F0E8);
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -269,31 +267,26 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           backgroundColor: _wmCream,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildProfileHeader(context, profile),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
                   _buildSavedPlacesCarouselStrip(context),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   TravelModeToggle(
                     isLocal: profile.isLocalMode,
                     onModeChanged: _updateTravelMode,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   const ProfileStatsCards(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   FavoriteVibesCard(
                     selectedVibes: profile.selectedMoods,
                     onEditTap: () => _navigateToEditVibes(profile.selectedMoods),
                   ),
-                  const SizedBox(height: 24),
-                  _buildSectionHeader(
-                    title: l10n.profilePreferencesTitle,
-                    subtitle: l10n.profileSectionPreferencesSubtitle,
-                  ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   _buildPreferencesCard(context, profile),
                   const SizedBox(height: 12),
                   _buildBottomSettingsLink(context),
@@ -522,7 +515,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 ...displayedVibes.map(
                   (vibe) => _buildHeroChip(
                     icon: Icons.auto_awesome_rounded,
-                    label: vibe,
+                    label: localizedVibeLabelForStored(l10n, vibe),
                     fillColor: _wmCream,
                     textColor: _wmForest,
                   ),
@@ -609,36 +602,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader({
-    required String title,
-    required String subtitle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: _wmCharcoal,
-            letterSpacing: -0.4,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: _wmStone,
-            height: 1.45,
-          ),
-        ),
-      ],
     );
   }
 
@@ -924,6 +887,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
+  /// Preference keys first; then vibe names stored in English (e.g. Social → Sociaal in NL).
+  String _profilePreviewChipLabel(AppLocalizations l10n, String raw) {
+    final chip = raw.trim();
+    final pref = localizedPreferenceChip(l10n, chip);
+    if (pref != chip) return pref;
+    return localizedVibeLabelForStored(l10n, chip);
+  }
+
   Widget _buildPreferencesCard(BuildContext context, CurrentUserProfile profile) {
     final l10n = AppLocalizations.of(context)!;
     final chips = <String>[
@@ -938,39 +909,69 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     ];
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
         color: _wmWhite,
         border: Border.all(color: _wmParchment, width: 1),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: _profileCardShadow(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.profilePreferencesTitle,
-                style: GoogleFonts.poppins(
-                  color: _wmCharcoal,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.profilePreferencesTitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: _wmCharcoal,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.profileSectionPreferencesSubtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: _wmStone,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              GestureDetector(
-                onTap: () async {
+              TextButton(
+                onPressed: () async {
                   await context.push('/preferences');
                   if (!mounted) return;
                   await _loadPreferences();
                   ref.read(currentUserProfileProvider.notifier).refresh();
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: _wmForest,
+                  backgroundColor: _wmForestTint,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
                 child: Text(
-                  l10n.profilePreferencesEditAll,
+                  l10n.profileFavoriteVibesEdit,
                   style: GoogleFonts.poppins(
                     color: _wmForest,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -998,18 +999,22 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               children: chips
                   .map(
                     (chip) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: _wmForestTint,
+                        color: const Color(0xFFE4EEE8),
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: _wmParchment, width: 0.8),
+                        border: Border.all(
+                          color: _wmForest.withValues(alpha: 0.28),
+                          width: 1,
+                        ),
                       ),
                       child: Text(
-                        localizedPreferenceChip(l10n, chip),
+                        _profilePreviewChipLabel(l10n, chip),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: _wmForest,
+                          fontWeight: FontWeight.w600,
+                          color: _wmCharcoal,
                         ),
                       ),
                     ),
@@ -1024,7 +1029,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   Widget _buildBottomSettingsLink(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Center(
-      child: TextButton.icon(
+      child: TextButton(
         onPressed: () => context.push('/settings'),
         style: TextButton.styleFrom(
           foregroundColor: _wmStone,
@@ -1034,8 +1039,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             borderRadius: BorderRadius.circular(999),
           ),
         ),
-        icon: const MoodySettingsGlyph(size: 20),
-        label: Text(
+        child: Text(
           l10n.profileAppSettingsLink,
           style: GoogleFonts.poppins(
             fontSize: 15,

@@ -1444,6 +1444,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileFavoriteVibesTitle => 'Jouw favoriete vibes';
 
   @override
+  String get profileFavoriteVibesSubtitle =>
+      'Helpt Moody suggesties af te stemmen op hoe jij graag onderweg bent.';
+
+  @override
   String get profileFavoriteVibesEdit => 'Bewerken';
 
   @override
@@ -1456,7 +1460,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileMoodJourneySubtitle => 'Bekijk je mood history';
 
   @override
-  String get moodHistoryIntro => 'Een rustige tijdlijn van hoe je je voelde.';
+  String get moodHistoryIntro => 'Je laatste check-ins.';
+
+  @override
+  String get moodHistoryScreenSubtitle =>
+      'Stemmingen en notities, nieuwste eerst.';
 
   @override
   String get moodHistorySectionRecent => 'Recent';
@@ -1469,7 +1477,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodHistoryEmptyBody =>
-      'Check in via Moody Hub of Mijn dag—je momenten verschijnen hieronder.';
+      'Log een stemming via Moody of Mijn dag om je reeks op te bouwen.';
 
   @override
   String get moodHistoryLoginRequired => 'Log in om je mood journey te zien.';
@@ -1540,7 +1548,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profileSectionPreferencesSubtitle =>
-      'De details die WanderMood persoonlijker en slimmer maken.';
+      'Stijl, tempo en hoe jij het liefst reist.';
 
   @override
   String get profileSavedPlacesSubtitle =>
@@ -1578,8 +1586,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Deze vibes helpen WanderMood bepalen welke plekken en plannen het beste bij je passen.';
 
   @override
-  String get profileFavoriteVibesEmptyHint =>
-      'Voeg je eerste vibe toe en geef je profiel meteen meer persoonlijkheid.';
+  String get profileFavoriteVibesEmptyHint => 'Vibes toevoegen';
 
   @override
   String get profileVibesProTipsTitle => '💡 Pro Tips';
@@ -3703,6 +3710,9 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get moodyIdleTapMoodySub =>
       'Je moet op het gezicht hierboven tikken — er is geen andere knop.';
+
+  @override
+  String get moodyIdleTapMoodyContinueShort => 'Tik op Moody om door te gaan';
 
   @override
   String get moodyIdleWelcomeBack => 'Welkom terug!';

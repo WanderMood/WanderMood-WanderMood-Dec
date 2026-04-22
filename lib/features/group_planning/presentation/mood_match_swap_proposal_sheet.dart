@@ -127,12 +127,16 @@ class _SwapDecisionBodyState extends State<_SwapDecisionBody> {
           accept: accept,
           ownerUserId: widget.ownerUserId,
         );
-      } else if (widget.guestUserId != null) {
+      } else {
+        final gid = widget.guestUserId;
+        if (gid == null) {
+          throw Exception('Mood Match swap: missing guest user id for owner resolve');
+        }
         await repo.ownerResolveSwap(
           sessionId: widget.sessionId,
           slot: widget.slot,
           accept: accept,
-          guestUserId: widget.guestUserId!,
+          guestUserId: gid,
         );
       }
       if (mounted) Navigator.of(context).pop();

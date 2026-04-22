@@ -1447,6 +1447,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileFavoriteVibesTitle => 'Deine Lieblings-Vibes';
 
   @override
+  String get profileFavoriteVibesSubtitle =>
+      'Hilft Moody, Vorschläge darauf abzustimmen, wie du dich unterwegs am liebsten fühlst.';
+
+  @override
   String get profileFavoriteVibesEdit => 'Bearbeiten';
 
   @override
@@ -1459,7 +1463,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileMoodJourneySubtitle => 'Deine Stimmungsverlauf ansehen';
 
   @override
-  String get moodHistoryIntro => 'Eine ruhige Zeitleiste deiner Gefühle.';
+  String get moodHistoryIntro => 'Deine letzten Check-ins.';
+
+  @override
+  String get moodHistoryScreenSubtitle =>
+      'Stimmungs-Check-ins und Notizen, neueste zuerst.';
 
   @override
   String get moodHistorySectionRecent => 'Kürzlich';
@@ -1472,7 +1480,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get moodHistoryEmptyBody =>
-      'Check-in über Moody Hub oder Mein Tag—deine Momente erscheinen darunter.';
+      'Logg eine Stimmung über Moody oder Mein Tag, um deine Serie aufzubauen.';
 
   @override
   String get moodHistoryLoginRequired =>
@@ -1545,7 +1553,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileSectionPreferencesSubtitle =>
-      'Die Details, die WanderMood persönlicher und intelligenter machen.';
+      'Stil, Tempo und wie du am liebsten reist.';
 
   @override
   String get profileSavedPlacesSubtitle =>
@@ -1583,8 +1591,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Diese Vibes helfen WanderMood zu bestimmen, welche Orte und Pläne am besten zu dir passen.';
 
   @override
-  String get profileFavoriteVibesEmptyHint =>
-      'Füge deinen ersten Vibe hinzu und gib deinem Profil sofort mehr Persönlichkeit.';
+  String get profileFavoriteVibesEmptyHint => 'Vibes hinzufügen';
 
   @override
   String get profileVibesProTipsTitle => '💡 Profi-Tipps';
@@ -3723,6 +3730,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get moodyIdleTapMoodySub =>
       'Du musst auf das Gesicht oben tippen — es gibt keinen anderen Weg.';
+
+  @override
+  String get moodyIdleTapMoodyContinueShort =>
+      'Tippe auf Moody, um fortzufahren';
 
   @override
   String get moodyIdleWelcomeBack => 'Willkommen zurück!';

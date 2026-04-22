@@ -1334,7 +1334,11 @@ class _PlanSavedPlaceSheetState extends ConsumerState<_PlanSavedPlaceSheet> {
 
       await ref
           .read(scheduledActivityServiceProvider)
-          .saveScheduledActivities([activity], isConfirmed: false);
+          .saveScheduledActivities(
+            [activity],
+            isConfirmed: false,
+            streakRefreshRef: ref,
+          );
 
       final selectedDay = DateTime(startTime.year, startTime.month, startTime.day);
       ref.read(selectedMyDayDateProvider.notifier).state = selectedDay;

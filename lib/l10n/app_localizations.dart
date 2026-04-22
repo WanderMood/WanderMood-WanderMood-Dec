@@ -2648,6 +2648,12 @@ abstract class AppLocalizations {
   /// **'Your Favorite Vibes'**
   String get profileFavoriteVibesTitle;
 
+  /// No description provided for @profileFavoriteVibesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps Moody tune suggestions to how you like to feel when you’re out.'**
+  String get profileFavoriteVibesSubtitle;
+
   /// No description provided for @profileFavoriteVibesEdit.
   ///
   /// In en, this message translates to:
@@ -2675,8 +2681,14 @@ abstract class AppLocalizations {
   /// No description provided for @moodHistoryIntro.
   ///
   /// In en, this message translates to:
-  /// **'A calm timeline of how you\'ve been feeling.'**
+  /// **'Your recent check-ins.'**
   String get moodHistoryIntro;
+
+  /// No description provided for @moodHistoryScreenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood check-ins and notes, newest first.'**
+  String get moodHistoryScreenSubtitle;
 
   /// No description provided for @moodHistorySectionRecent.
   ///
@@ -2699,7 +2711,7 @@ abstract class AppLocalizations {
   /// No description provided for @moodHistoryEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Check in from Moody Hub or My Day—your moments will line up below.'**
+  /// **'Log a mood from Moody or My Day to build your streak.'**
   String get moodHistoryEmptyBody;
 
   /// No description provided for @moodHistoryLoginRequired.
@@ -2831,7 +2843,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileSectionPreferencesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'The details that make WanderMood more personal and smarter.'**
+  /// **'Style, pace, and how you like to travel.'**
   String get profileSectionPreferencesSubtitle;
 
   /// No description provided for @profileSavedPlacesSubtitle.
@@ -2891,7 +2903,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileFavoriteVibesEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'Add your first vibe and give your profile more personality right away.'**
+  /// **'Add vibes'**
   String get profileFavoriteVibesEmptyHint;
 
   /// No description provided for @profileVibesProTipsTitle.
@@ -6727,6 +6739,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You have to tap the face above — there\'s no other way in.'**
   String get moodyIdleTapMoodySub;
+
+  /// No description provided for @moodyIdleTapMoodyContinueShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Moody to continue'**
+  String get moodyIdleTapMoodyContinueShort;
 
   /// No description provided for @moodyIdleWelcomeBack.
   ///

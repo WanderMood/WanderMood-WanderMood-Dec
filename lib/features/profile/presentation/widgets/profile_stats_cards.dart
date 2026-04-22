@@ -10,17 +10,14 @@ import 'package:wandermood/l10n/app_localizations.dart';
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
-const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
-const Color _wmSunset = Color(0xFFE8784A);
-const Color _wmSunsetTint = Color(0xFFFDF0E8);
 const Color _wmForest = Color(0xFF2A6049);
 
 List<BoxShadow> _profileStatsShadow() {
   return [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.035),
-      blurRadius: 18,
+      color: Colors.black.withValues(alpha: 0.06),
+      blurRadius: 20,
       offset: const Offset(0, 8),
     ),
   ];
@@ -64,68 +61,44 @@ class ProfileStatsCards extends ConsumerWidget {
     AppLocalizations l10n,
     int moodStreak,
   ) {
+    final streakLabel = l10n.myDayMoodStreakBadge(moodStreak);
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _wmWhite,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: _wmParchment, width: 1),
         boxShadow: _profileStatsShadow(),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           onTap: () => context.push('/moods/history'),
-          child: Ink(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _wmSunsetTint,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _wmParchment, width: 1),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
             child: Row(
               children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.local_fire_department_outlined,
-                    color: _wmSunset,
-                    size: 26,
-                  ),
+                Text(
+                  '🔥',
+                  style: const TextStyle(fontSize: 30, height: 1),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$moodStreak',
-                        style: GoogleFonts.poppins(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: _wmCharcoal,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.profileStatsStreakSubtitle(moodStreak),
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: _wmDusk,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    streakLabel,
+                    style: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: _wmCharcoal,
+                      height: 1.2,
+                    ),
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: _wmStone, size: 22),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: _wmStone.withValues(alpha: 0.85),
+                  size: 26,
+                ),
               ],
             ),
           ),

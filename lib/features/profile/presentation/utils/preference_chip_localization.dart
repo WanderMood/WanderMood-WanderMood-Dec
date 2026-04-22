@@ -2,7 +2,7 @@ import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Maps stored [user_preferences] English values to localized chip labels on Profile.
 String localizedPreferenceChip(AppLocalizations l10n, String stored) {
-  switch (stored) {
+  switch (stored.trim()) {
     case 'Friendly':
       return l10n.prefCommFriendly;
     case 'Playful':
@@ -44,6 +44,7 @@ String localizedPreferenceChip(AppLocalizations l10n, String stored) {
     case 'Romantic':
       return l10n.prefSelRomantic;
     case 'Energetic':
+    case 'energetic':
       return l10n.prefSelEnergetic;
     case 'Creative':
       return l10n.prefSelCreative;

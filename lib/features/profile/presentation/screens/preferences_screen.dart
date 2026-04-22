@@ -9,8 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/constants/inclusion_preference_options.dart';
 import 'package:wandermood/features/profile/presentation/widgets/inclusion_dietary_preference_field.dart';
-import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
-import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 
 class PreferencesScreen extends ConsumerStatefulWidget {
   const PreferencesScreen({super.key});
@@ -267,36 +265,20 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                       children: [
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFFFFF),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: const Color(0xFFE8E2D8)),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(
-                                width: 44,
-                                height: 44,
-                                child: MoodyCharacter(
-                                  size: 44,
-                                  mood: 'happy',
-                                  currentFeature: MoodyFeature.none,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  l10n.prefSectionInterestsSub,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    color: const Color(0xFF4A4640),
-                                    height: 1.35,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            l10n.prefSectionInterestsSub,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: const Color(0xFF4A4640),
+                              height: 1.35,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -455,24 +437,26 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options
-          .map(
-            (o) => FilterChip(
-              label: Text(labelFor(l10n, o)),
-              selected: selected.contains(o),
-              selectedColor: const Color(0xFFEBF3EE),
-              checkmarkColor: const Color(0xFF2A6049),
-              labelStyle: GoogleFonts.poppins(
-                color: selected.contains(o)
-                    ? const Color(0xFF2A6049)
-                    : const Color(0xFF1E1C18),
-                fontSize: 12,
-              ),
-              side: const BorderSide(color: Color(0xFFE8E2D8)),
-              onSelected: (_) => onTap(o),
-            ),
-          )
-          .toList(),
+      children: options.map((o) {
+        final sel = selected.contains(o);
+        return FilterChip(
+          showCheckmark: false,
+          label: Text(labelFor(l10n, o)),
+          selected: sel,
+          selectedColor: const Color(0xFF2A6049),
+          backgroundColor: Colors.white,
+          labelStyle: GoogleFonts.poppins(
+            color: sel ? Colors.white : const Color(0xFF1E1C18),
+            fontSize: 12,
+            fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
+          ),
+          side: BorderSide(
+            color: sel ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
+            width: sel ? 1.5 : 1,
+          ),
+          onSelected: (_) => onTap(o),
+        );
+      }).toList(),
     );
   }
 }

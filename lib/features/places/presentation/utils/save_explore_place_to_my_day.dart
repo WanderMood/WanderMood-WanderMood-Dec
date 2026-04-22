@@ -97,6 +97,7 @@ Future<bool> saveExplorePlaceToMyDay({
     final inserted = await scheduledActivityService.saveScheduledActivities(
       [activity],
       isConfirmed: false,
+      streakRefreshRef: ref,
     );
     if (inserted == 0) {
       if (context.mounted) {

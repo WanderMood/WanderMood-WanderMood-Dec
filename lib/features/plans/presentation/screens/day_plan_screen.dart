@@ -90,7 +90,11 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
       final didSave = remaining.isNotEmpty;
       if (didSave) {
         final service = ref.read(scheduledActivityServiceProvider);
-        await service.saveScheduledActivities(remaining, isConfirmed: false);
+        await service.saveScheduledActivities(
+          remaining,
+          isConfirmed: false,
+          streakRefreshRef: ref,
+        );
       }
       _refreshMyDayProviders(ref);
       if (!mounted) return;

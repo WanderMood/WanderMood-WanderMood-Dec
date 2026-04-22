@@ -198,6 +198,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     if (!mounted) return;
 
     if (showIdle) {
+      await MoodyIdleChecker.ensureFirstInstallLocalDayIfMissing();
       final idleState = MoodyIdleChecker.getIdleState();
       final l10n = AppLocalizations.of(context)!;
       var hasPlan = false;

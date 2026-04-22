@@ -1396,6 +1396,7 @@ class PlaceCard extends ConsumerWidget {
       final inserted = await scheduledActivityService.saveScheduledActivities(
         [activity],
         isConfirmed: false,
+        streakRefreshRef: ref,
       );
       if (inserted == 0 && context.mounted) {
         final l10nDup = AppLocalizations.of(context)!;

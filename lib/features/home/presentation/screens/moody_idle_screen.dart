@@ -91,6 +91,7 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
   late final Animation<double> _exitFade;
 
   bool _hintVisible = false;
+  bool _verboseTapHint = false;
   bool _woken = false;
   bool _showWakeLine = false;
 
@@ -155,10 +156,16 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     _exitFade =
         CurvedAnimation(parent: _exitFadeController, curve: Curves.easeOut);
 
-    // Show "tap Moody" on the next frame so users aren't waiting ~2.5s for a hint
-    // (the main line is instant via localized fallback, not a network call).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _hintVisible = true);
+    // After prefs: day 1 = full teaching CTA; day 2+ = one short line.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _revealTapHint());
+  }
+
+  Future<void> _revealTapHint() async {
+    final verbose = await MoodyIdleChecker.shouldShowVerboseIdleTapHint();
+    if (!mounted) return;
+    setState(() {
+      _verboseTapHint = verbose;
+      _hintVisible = true;
     });
   }
 
@@ -209,62 +216,80 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
         color: Colors.white.withValues(alpha: 0.7),
       );
 
-  /// Prominent CTA: icon + two lines so users notice they must tap the character.
+  /// Prominent CTA on install day; one line afterward.
   Widget _buildTapToContinueCta() {
     final l10n = AppLocalizations.of(context)!;
+    final titleStyle = GoogleFonts.poppins(
+      fontSize: 16,
+      height: 1.25,
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    );
+    final shortStyle = GoogleFonts.poppins(
+      fontSize: 14,
+      height: 1.3,
+      fontWeight: FontWeight.w500,
+      color: Colors.white.withValues(alpha: 0.9),
+    );
+
     return AnimatedOpacity(
       opacity: _hintVisible && !_woken ? 1 : 0,
       duration: const Duration(milliseconds: 400),
       child: ScaleTransition(
         scale: _tapCtaScale,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.45),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.touch_app_rounded,
-                size: 28,
-                color: Colors.white.withValues(alpha: 0.95),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+        child: _verboseTapHint
+            ? Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      l10n.moodyIdleTapMoodyHint,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        height: 1.25,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                    Icon(
+                      Icons.touch_app_rounded,
+                      size: 28,
+                      color: Colors.white.withValues(alpha: 0.95),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.moodyIdleTapMoodySub,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12.5,
-                        height: 1.3,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.8),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.moodyIdleTapMoodyHint,
+                            style: titleStyle,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.moodyIdleTapMoodySub,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12.5,
+                              height: 1.3,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
+              )
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  l10n.moodyIdleTapMoodyContinueShort,
+                  textAlign: TextAlign.center,
+                  style: shortStyle,
+                ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }

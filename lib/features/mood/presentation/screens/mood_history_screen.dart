@@ -32,13 +32,28 @@ class MoodHistoryScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_rounded, color: _wmDusk, size: 22),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: Text(
-          l10n.profileMoodJourneyTitle,
-          style: GoogleFonts.poppins(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: _wmCharcoal,
-          ),
+        toolbarHeight: 72,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.profileMoodJourneyTitle,
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: _wmCharcoal,
+              ),
+            ),
+            Text(
+              l10n.moodHistoryScreenSubtitle,
+              style: GoogleFonts.poppins(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: _wmDusk.withValues(alpha: 0.85),
+                height: 1.2,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
       ),

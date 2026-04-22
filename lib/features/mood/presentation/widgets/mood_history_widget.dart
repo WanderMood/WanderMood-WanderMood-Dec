@@ -17,7 +17,6 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmCharcoal = Color(0xFF1E1C18);
 const Color _wmStone = Color(0xFF8C8780);
-const Color _wmSunsetTint = Color(0xFFFDF0E8);
 
 class MoodHistoryWidget extends ConsumerWidget {
   const MoodHistoryWidget({
@@ -94,7 +93,6 @@ class MoodHistoryWidget extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildIntro(context, l10n),
               Expanded(child: _buildV2EmptyState(context, ref, l10n)),
             ],
           );
@@ -185,47 +183,41 @@ class MoodHistoryWidget extends ConsumerWidget {
     AppLocalizations l10n,
   ) {
     final streakAsync = ref.watch(effectiveMoodStreakProvider);
-    return Center(
+    return Align(
+      alignment: Alignment.topCenter,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
         child: Container(
           width: double.infinity,
           constraints: const BoxConstraints(maxWidth: 400),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
           decoration: BoxDecoration(
             color: _wmWhite,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _wmParchment, width: 0.5),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _wmParchment, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(
-                  color: _wmSunsetTint,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.local_fire_department_rounded,
-                  color: _wmForest,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(height: 12),
               streakAsync.when(
                 data: (streak) => Text(
                   '🔥 ${l10n.myDayMoodStreakBadge(streak)}',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                     color: _wmCharcoal,
                   ),
                 ),
                 loading: () => const SizedBox(
-                  height: 20,
+                  height: 22,
                   child: Center(
                     child: SizedBox(
                       width: 20,
@@ -239,24 +231,26 @@ class MoodHistoryWidget extends ConsumerWidget {
                 ),
                 error: (_, __) => const SizedBox.shrink(),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               Text(
                 l10n.moodHistoryEmptyTitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: _wmCharcoal,
+                  letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
                 l10n.moodHistoryEmptyBody,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  height: 1.5,
+                  fontSize: 13,
+                  height: 1.4,
                   color: _wmStone,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 22),
@@ -267,9 +261,9 @@ class MoodHistoryWidget extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _wmForest,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                     elevation: 0,
                   ),
@@ -289,10 +283,10 @@ class MoodHistoryWidget extends ConsumerWidget {
                   onPressed: () => context.goNamed('main', extra: {'tab': 1}),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: _wmForest,
-                    side: const BorderSide(color: _wmForest, width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: _wmForest, width: 1.25),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                   child: Text(

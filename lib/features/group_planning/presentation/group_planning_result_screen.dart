@@ -483,6 +483,11 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     if (swapBy == null) return;
     final guestIsResponder = swapBy == ownerId;
     final ownerIsResponder = swapBy != ownerId;
+    // Owner resolve + guest push need the guest's auth id. `_guestMember()` can
+    // be null briefly or if member rows are out of sync; `requestedBy` on the
+    // swap is still the guest when they initiated the request.
+    final guestUserIdForSheet =
+        guestId ?? (swapBy != ownerId ? swapBy : null);
     _swapDecisionSheetsShown.add(key);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -494,7 +499,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         slot: slot!,
         planData: _planData!,
         ownerUserId: ownerId,
-        guestUserId: guestId,
+        guestUserId: guestUserIdForSheet,
         guestIsResponder: guestIsResponder,
         ownerIsResponder: ownerIsResponder,
       );

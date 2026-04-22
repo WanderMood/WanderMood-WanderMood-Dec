@@ -431,7 +431,11 @@ class MoodBasedCarousel extends ConsumerWidget {
       );
       
       // Save to database
-      await scheduledActivityService.saveScheduledActivities([activity], isConfirmed: false);
+      await scheduledActivityService.saveScheduledActivities(
+        [activity],
+        isConfirmed: false,
+        streakRefreshRef: ref,
+      );
       
       // Invalidate providers to refresh My Day screen
       ref.invalidate(scheduledActivityServiceProvider);

@@ -242,7 +242,6 @@ class FavoriteVibesCard extends StatelessWidget {
     const wmCharcoal = Color(0xFF1E1C18);
     const wmForest = Color(0xFF2A6049);
     const wmForestTint = Color(0xFFEBF3EE);
-    const wmStone = Color(0xFF8C8780);
     final resolvedVibes = selectedVibes
         .map(_resolveVibe)
         .whereType<VibeData>()
@@ -265,20 +264,6 @@ class FavoriteVibesCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: wmForestTint,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: wmForest,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,33 +271,32 @@ class FavoriteVibesCard extends StatelessWidget {
                     Text(
                       l10n.profileFavoriteVibesTitle,
                       style: GoogleFonts.poppins(
-                        fontSize: 19,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: wmCharcoal,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      resolvedVibes.isEmpty
-                          ? l10n.profileFavoriteVibesEmptyDescription
-                          : l10n.profileFavoriteVibesFilledDescription,
+                      l10n.profileFavoriteVibesSubtitle,
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: wmStone,
-                        height: 1.45,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF8C8780),
+                        height: 1.35,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
               TextButton(
                 onPressed: onEditTap,
                 style: TextButton.styleFrom(
                   foregroundColor: wmForest,
                   backgroundColor: wmForestTint,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
@@ -322,51 +306,55 @@ class FavoriteVibesCard extends StatelessWidget {
                 child: Text(
                   l10n.profileFavoriteVibesEdit,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
+                    letterSpacing: 0.15,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           if (resolvedVibes.isEmpty)
-            InkWell(
-              onTap: onEditTap,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8EE),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: wmParchment, width: 1),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: wmWhite,
-                        borderRadius: BorderRadius.circular(12),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onEditTap,
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: wmForest,
+                    borderRadius: BorderRadius.circular(999),
+                    boxShadow: [
+                      BoxShadow(
+                        color: wmForest.withValues(alpha: 0.22),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                      child: const Icon(Icons.add_rounded, color: wmForest),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l10n.profileFavoriteVibesEmptyHint,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: wmCharcoal,
-                          height: 1.45,
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          l10n.profileFavoriteVibesEmptyHint,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            height: 1.25,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             )
@@ -427,20 +415,13 @@ class FavoriteVibesCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: wmParchment, width: 1),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add_rounded, size: 16, color: wmForest),
-                        const SizedBox(width: 6),
-                        Text(
-                          l10n.profileFavoriteVibesAdd,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: wmForest,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      l10n.profileFavoriteVibesAdd,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: wmForest,
+                      ),
                     ),
                   ),
                 ),
@@ -765,7 +746,7 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isSelected
-                  ? _fvWmForestTint
+                  ? _fvWmForest
                   : (isMaxed ? _fvWmCream : _fvWmWhite),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
@@ -775,8 +756,8 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: _fvWmForest.withValues(alpha: 0.18),
-                        blurRadius: 8,
+                        color: _fvWmForest.withValues(alpha: 0.22),
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ]
@@ -788,61 +769,37 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
                       ),
                     ],
             ),
-            child: Stack(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vibe.emoji,
-                      style: const TextStyle(fontSize: 30),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      localizedVibeName(l10nGrid, vibe.id),
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: isSelected ? _fvWmForest : _fvWmCharcoal,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Expanded(
-                      child: Text(
-                        localizedVibeDescription(l10nGrid, vibe.id),
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: isSelected
-                              ? _fvWmDusk
-                              : _fvWmStone,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                Text(
+                  vibe.emoji,
+                  style: const TextStyle(fontSize: 30),
                 ),
-                // Selection indicator
-                if (isSelected)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: _fvWmWhite,
-                        shape: BoxShape.circle,
-                        boxShadow: const [],
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: _fvWmForest,
-                        size: 20,
-                      ),
-                    ),
+                const SizedBox(height: 10),
+                Text(
+                  localizedVibeName(l10nGrid, vibe.id),
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : _fvWmCharcoal,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Text(
+                    localizedVibeDescription(l10nGrid, vibe.id),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.88)
+                          : _fvWmStone,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
           ),
