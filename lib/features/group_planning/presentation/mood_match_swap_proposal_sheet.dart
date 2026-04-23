@@ -389,9 +389,23 @@ class _ActivityPreviewSheet extends ConsumerWidget {
       'explanation',
     ]) {
       final v = activity[k]?.toString().trim();
-      if (v != null && v.isNotEmpty) return v;
+      if (v != null && v.isNotEmpty) return _sanitizePreviewText(v);
     }
     return '';
+  }
+
+  String _sanitizePreviewText(String raw) {
+    return raw
+        .replaceAll(RegExp(r'```[\s\S]*?```', multiLine: true), ' ')
+        .replaceAll(RegExp(r'`([^`]*)`'), r'$1')
+        .replaceAll(RegExp(r'\[(.*?)\]\((.*?)\)'), r'$1')
+        .replaceAll(RegExp(r'(^|\s)#{1,6}\s*', multiLine: true), ' ')
+        .replaceAll(RegExp(r'(^|\s)[*_~>]+', multiLine: true), ' ')
+        .replaceAll(RegExp(r'(^|\n)\s*[-*]\s+', multiLine: true), ' ')
+        .replaceAll('---', ' ')
+        .replaceAll('|', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   String? get _address {

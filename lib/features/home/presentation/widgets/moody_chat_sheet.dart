@@ -217,6 +217,67 @@ _ChatMsg _chatMsgFromJson(Map<String, dynamic> j) {
   );
 }
 
+String _dailyStarterMessage({
+  required String languageCode,
+  required DateTime now,
+  required bool hasSelectedMood,
+}) {
+  final isDutch = languageCode == 'nl';
+  final hour = now.hour;
+  if (isDutch) {
+    if (hour < 12) {
+      return hasSelectedMood
+          ? 'Goedemorgen! Zin om je dag nog verder af te stemmen?'
+          : 'Goedemorgen! Hoe voel je je vandaag?';
+    }
+    if (hour < 18) {
+      return hasSelectedMood
+          ? 'Hoi! Hoe gaat je dag tot nu toe? Wil je iets aanpassen?'
+          : 'Hoi! Hoe voel je je nu?';
+    }
+    return hasSelectedMood
+        ? 'Goedenavond! Hoe was je dag?'
+        : 'Goedenavond! Hoe voel je je vanavond?';
+  }
+  if (hour < 12) {
+    return hasSelectedMood
+        ? 'Good morning! Want to fine-tune your day?'
+        : 'Good morning! How are you feeling today?';
+  }
+  if (hour < 18) {
+    return hasSelectedMood
+        ? 'Hey! How is your day going so far? Want to tweak anything?'
+        : 'Hey! How are you feeling right now?';
+  }
+  return hasSelectedMood
+      ? 'Good evening! How was your day?'
+      : 'Good evening! How are you feeling tonight?';
+}
+
+void _seedDailyStarterIfNeeded({
+  required BuildContext context,
+  required SharedPreferences prefs,
+  required DateTime now,
+  required List<_ChatMsg> chatMessages,
+  required List<String> moods,
+}) {
+  if (chatMessages.isNotEmpty) return;
+  final l10n = AppLocalizations.of(context);
+  if (l10n == null) return;
+  chatMessages.add(
+    _ChatMsg(
+      message: _dailyStarterMessage(
+        languageCode: Localizations.localeOf(context).languageCode,
+        now: now,
+        hasSelectedMood: moods.isNotEmpty,
+      ),
+      isUser: false,
+      timestamp: now,
+    ),
+  );
+  unawaited(_DailyMoodyChatCache.persistToPrefs(prefs, now));
+}
+
 /// Fixes chat scroll getting "stuck" after relayout when [pixels] drifts past
 /// [maxScrollExtent] (common with nested horizontal lists + dynamic height).
 void _clampMoodyChatScrollPastEnd(ScrollController c) {
@@ -309,6 +370,13 @@ Future<void> showMoodyChatSheet(BuildContext context, WidgetRef ref) {
 
   final conversationId = _DailyMoodyChatCache.getConversationId(now);
   final chatMessages = _DailyMoodyChatCache.getMessages(now);
+  _seedDailyStarterIfNeeded(
+    context: context,
+    prefs: prefs,
+    now: now,
+    chatMessages: chatMessages,
+    moods: moods,
+  );
 
   return showModalBottomSheet<void>(
     context: context,
@@ -359,6 +427,13 @@ class _MoodyChatTabViewState extends ConsumerState<MoodyChatTabView>
     _DailyMoodyChatCache.hydrateFromPrefsSync(prefs, now);
     final conversationId = _DailyMoodyChatCache.getConversationId(now);
     final chatMessages = _DailyMoodyChatCache.getMessages(now);
+    _seedDailyStarterIfNeeded(
+      context: context,
+      prefs: prefs,
+      now: now,
+      chatMessages: chatMessages,
+      moods: moods,
+    );
 
     return _MoodyChatSheetContent(
       chatMessages: chatMessages,
@@ -446,6 +521,9 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   /// focused, so [onTap] is required).
   void _collapseHubForChat() {
     final hasThread = widget.chatMessages.isNotEmpty;
+    if (_composerFocusNode.canRequestFocus) {
+      _composerFocusNode.requestFocus();
+    }
     if (!hasThread || !_hubPeekOpen) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_hubPeekOpen) return;
@@ -667,6 +745,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     await _persistChat();
     _scheduleMoodyChatScroll(_scrollController);
     _chatController.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       final loc = await _getLocation();
@@ -887,9 +966,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                       controller: _chatController,
                                       focusNode: _composerFocusNode,
                                       isLoading: _isAILoading,
+                                      hasSelectedMood: widget.moods.isNotEmpty,
                                       onSend: _sendMessage,
-                                      onMicTap: _toggleListening,
-                                      isListening: _isListening,
                                       onComposerTap: _collapseHubForChat,
                                     );
                                   },
@@ -1200,24 +1278,23 @@ class _MoodyChatInput extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool isLoading;
+  final bool hasSelectedMood;
   final ValueChanged<String> onSend;
-  final VoidCallback onMicTap;
-  final bool isListening;
   final VoidCallback onComposerTap;
 
   const _MoodyChatInput({
     required this.controller,
     required this.focusNode,
     required this.isLoading,
+    required this.hasSelectedMood,
     required this.onSend,
-    required this.onMicTap,
-    required this.isListening,
     required this.onComposerTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final isDutch = Localizations.localeOf(context).languageCode == 'nl';
     final kb = MediaQuery.viewInsetsOf(context).bottom;
     return Container(
       padding: EdgeInsets.only(
@@ -1245,16 +1322,15 @@ class _MoodyChatInput extends StatelessWidget {
                   scrollPadding: const EdgeInsets.only(bottom: 80, top: 48),
                   onTap: onComposerTap,
                   decoration: InputDecoration(
-                    hintText: isListening
-                        ? 'Listening…'
+                    hintText: hasSelectedMood
+                        ? (isDutch
+                            ? 'Praat met Moody over je dag...'
+                            : 'Talk to Moody about your day...')
                         : (l10n?.chatSheetInputHint ?? "What's your mood today?"),
                     hintStyle: GoogleFonts.poppins(
-                      color: isListening
-                          ? const Color(0xFFDC2626)
-                          : Colors.grey[500],
+                      color: Colors.grey[500],
                       fontSize: 15,
-                      fontWeight:
-                          isListening ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: FontWeight.w400,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 12),
@@ -1282,10 +1358,6 @@ class _MoodyChatInput extends StatelessWidget {
                         color: _wmForest.withValues(alpha: 0.75),
                         size: 22,
                       ),
-                    ),
-                    suffixIcon: _MicButton(
-                      isListening: isListening,
-                      onTap: onMicTap,
                     ),
                   ),
                   style: GoogleFonts.poppins(

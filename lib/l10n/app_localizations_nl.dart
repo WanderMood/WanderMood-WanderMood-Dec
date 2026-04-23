@@ -12437,248 +12437,247 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodyHubHeroBodyEmptyFriendly =>
-      'Hey, your day is still open. What are you in the mood for? 🤔';
+      'Hey, je dag is nog open. Waar heb je vandaag zin in? 🤔';
 
   @override
   String get moodyHubHeroBodyEmptyFriendly2 =>
-      'Nothing planned yet — and that\'s exciting! What do you feel like doing today? ✨';
+      'Nog niets gepland - en dat is juist fijn! Waar heb je vandaag zin in? ✨';
 
   @override
   String get moodyHubHeroBodyEmptyFriendly3 =>
-      'Blank canvas today. We could go anywhere with this! What\'s calling you? 🎨';
+      'Leeg canvas vandaag. We kunnen alle kanten op! Wat trekt je nu? 🎨';
 
   @override
   String get moodyHubHeroBodyEmptyFriendly4 =>
-      'Your day is wide open. Want me to build something around your mood? 🪄';
+      'Je dag is nog helemaal open. Zal ik iets bouwen rond je mood? 🪄';
 
   @override
   String get moodyHubHeroBodyEmptyProfessional =>
-      'Your schedule is open. I can outline a clear, focused day plan—or we can keep this concise and practical. 📋';
+      'Je planning is nog leeg. Ik kan een helder dagplan maken, of we houden het kort en praktisch. 📋';
 
   @override
   String get moodyHubHeroBodyEmptyProfessional2 =>
-      'Nothing locked in yet. Tell me your priorities and I\'ll structure the day. 🎯';
+      'Nog niets vastgezet. Vertel je prioriteiten en ik structureer de dag. 🎯';
 
   @override
   String get moodyHubHeroBodyEmptyProfessional3 =>
-      'Open day ahead. Where do you want to focus your energy? ⚡';
+      'Open dag voor je. Waar wil je je energie op richten? ⚡';
 
   @override
   String get moodyHubHeroBodyEmptyProfessional4 =>
-      'Your calendar is clear. Ready to put together a sharp plan when you are. 📅';
+      'Je agenda is nog leeg. Klaar om samen een scherp plan te maken. 📅';
 
   @override
   String get moodyHubHeroBodyEmptyEnergetic =>
-      'Okay let\'s GO! 🚀 Your day is wide open and anything is possible right now!';
+      'Oké, let\'s go! 🚀 Je dag is nog helemaal open en alles kan nog.';
 
   @override
   String get moodyHubHeroBodyEmptyEnergetic2 =>
-      'Nothing on the agenda yet — honestly? Perfect. Let\'s make it legendary! 🌟';
+      'Nog niets op de agenda - eerlijk? Perfect. Laten we er iets moois van maken! 🌟';
 
   @override
   String get moodyHubHeroBodyEmptyEnergetic3 =>
-      'Fresh start, full energy, zero plans. That\'s literally my favourite combo! What are we doing? ⚡';
+      'Frisse start, veel energie, nul plannen. Mijn favoriete combo. Wat gaan we doen? ⚡';
 
   @override
   String get moodyHubHeroBodyEmptyEnergetic4 =>
-      'The day is yours and it\'s still untouched. Tell me what you\'re feeling and let\'s build something real! 🔥';
+      'De dag is van jou en nog open. Zeg hoe je je voelt en we bouwen iets dat klopt! 🔥';
 
   @override
   String get moodyHubHeroBodyEmptyDirect =>
-      'Your day is open. Plan something, or chat—your call. 📍';
+      'Je dag is nog open. Plan iets, of chat even. 📍';
 
   @override
   String get moodyHubHeroBodyEmptyDirect2 =>
-      'Nothing scheduled. What do you want to do? 🗺️';
+      'Nog niets gepland. Wat wil je doen? 🗺️';
 
   @override
   String get moodyHubHeroBodyEmptyDirect3 =>
-      'Open day. I can plan it or you can — just say the word. ✌️';
+      'Open dag. Ik kan \'m plannen, of jij - zeg het maar. ✌️';
 
   @override
   String get moodyHubHeroBodyEmptyDirect4 =>
-      'No plans yet. Drop a mood or an idea and we move. 🚀';
+      'Nog geen plannen. Geef een mood of idee en we gaan. 🚀';
 
   @override
   String get moodyHubHeroBodyActiveFriendly =>
-      'Your day is already rolling! I\'m here if you want to add something or just talk. 🎈';
+      'Je dag loopt al lekker! Ik ben er als je iets wilt toevoegen of even wilt praten. 🎈';
 
   @override
   String get moodyHubHeroBodyActiveFriendly2 =>
-      'You\'ve got things lined up — love that for you. Need anything tweaked? 🛠️';
+      'Je hebt al dingen staan - lekker bezig. Wil je iets aanpassen? 🛠️';
 
   @override
   String get moodyHubHeroBodyActiveFriendly3 =>
-      'Day\'s in motion. Want to add a little something extra, or just check in? 💫';
+      'Je dag loopt al. Iets extra toevoegen, of gewoon even inchecken? 💫';
 
   @override
   String get moodyHubHeroBodyActiveFriendly4 =>
-      'Looking good on the plan front! Let me know if anything needs adjusting. ✨';
+      'Je planning ziet er goed uit! Zeg het als je iets wilt veranderen. ✨';
 
   @override
   String get moodyHubHeroBodyActiveProfessional =>
-      'Your day is underway. I can help refine timing or priorities—or keep this brief. ⏱️';
+      'Je dag is in gang. Ik kan timing of prioriteiten aanscherpen, of het kort houden. ⏱️';
 
   @override
   String get moodyHubHeroBodyActiveProfessional2 =>
-      'Schedule is set. Let me know if you want to optimise anything. 📈';
+      'Planning staat. Laat het weten als je iets wilt optimaliseren. 📈';
 
   @override
   String get moodyHubHeroBodyActiveProfessional3 =>
-      'You have a plan in place. I\'m available if adjustments come up. 🔄';
+      'Je hebt een plan klaarstaan. Ik ben er als je iets wilt bijsturen. 🔄';
 
   @override
   String get moodyHubHeroBodyActiveProfessional4 =>
-      'Day is structured. Ready to adapt if needed. 📋';
+      'Je dag is gestructureerd. Klaar om aan te passen als dat nodig is. 📋';
 
   @override
   String get moodyHubHeroBodyActiveEnergetic =>
-      'You\'re already moving — let\'s keep that momentum going! Anything to add? 🔥';
+      'Je bent al bezig - hou die flow vast! Nog iets toevoegen? 🔥';
 
   @override
   String get moodyHubHeroBodyActiveEnergetic2 =>
-      'Look at you with a plan! Want to level it up or just vibe with what you have? 🚀';
+      'Je hebt al een plan staan! Wil je \'m upgraden of gewoon doorpakken? 🚀';
 
   @override
   String get moodyHubHeroBodyActiveEnergetic3 =>
-      'Day is set and you\'re ready — I love the energy! Tweak anything or just crush it? 💥';
+      'Je dag staat en je bent ready - love die energie! Iets tweaken of gewoon gaan? 💥';
 
   @override
   String get moodyHubHeroBodyActiveEnergetic4 =>
-      'You\'ve got something going already! Want to stack on more or just ride the wave? 🌊';
+      'Je bent al goed op weg! Nog iets erbij of zo laten? 🌊';
 
   @override
   String get moodyHubHeroBodyActiveDirect =>
-      'Day\'s in motion. Tweak something, or chat. 📍';
+      'Je dag is al in beweging. Pas iets aan, of chat. 📍';
 
   @override
-  String get moodyHubHeroBodyActiveDirect2 =>
-      'Plan\'s set. Need anything changed? 🔄';
+  String get moodyHubHeroBodyActiveDirect2 => 'Plan staat. Iets wijzigen? 🔄';
 
   @override
   String get moodyHubHeroBodyActiveDirect3 =>
-      'You\'ve got a day. Add something or leave it. ✌️';
+      'Je hebt al een dagplan. Iets toevoegen of laten zo. ✌️';
 
   @override
   String get moodyHubHeroBodyActiveDirect4 =>
-      'Moving already. I\'m here if it needs a change. ⚡';
+      'Je bent al onderweg. Ik ben er als je iets wilt aanpassen. ⚡';
 
   @override
   String get moodyHubHeroBodySharedReadyFriendly =>
-      'Your shared plan is waiting — open it and let\'s make the day official! 🎉';
+      'Jullie gedeelde plan staat klaar - open het en maak de dag officieel! 🎉';
 
   @override
   String get moodyHubHeroBodySharedReadyProfessional =>
-      'Your shared plan is ready. Open it when you\'re ready, or continue our conversation here. 📋';
+      'Jullie gedeelde plan staat klaar. Open het wanneer je wilt, of praat hier verder. 📋';
 
   @override
   String get moodyHubHeroBodySharedReadyEnergetic =>
-      'The collab plan is ready — open it right now because this one is going to be so good! 🔥';
+      'Het gezamenlijke plan staat klaar - open nu, dit wordt echt goed! 🔥';
 
   @override
   String get moodyHubHeroBodySharedReadyDirect =>
-      'Shared plan is ready. Open it, or stay here. 📍';
+      'Gedeeld plan staat klaar. Openen, of hier blijven. 📍';
 
   @override
   String get moodyHubHeroBodySharedReadyDayEmptyFriendly =>
-      'You and your friend have a shared plan ready — open it to add everything to your day! ✨';
+      'Jij en je vriend hebben een gedeeld plan klaar - open het om alles aan je dag toe te voegen! ✨';
 
   @override
   String get moodyHubHeroBodySharedReadyDayEmptyProfessional =>
-      'A collaborative plan is ready in Mood Match. Open it to add activities to your day, or continue our conversation here. 🤝';
+      'Er staat een gezamenlijk plan klaar in Mood Match. Open het om activiteiten aan je dag toe te voegen, of chat hier verder. 🤝';
 
   @override
   String get moodyHubHeroBodySharedReadyDayEmptyEnergetic =>
-      'The Mood Match plan is ready and it\'s good — open it and load your day! 🚀';
+      'Het Mood Match plan staat klaar en is top - open het en vul je dag! 🚀';
 
   @override
   String get moodyHubHeroBodySharedReadyDayEmptyDirect =>
-      'Shared plan in Mood Match. Open it to add to your day, or stay here. 📍';
+      'Gedeeld plan in Mood Match. Open om aan je dag toe te voegen, of blijf hier. 📍';
 
   @override
   String get moodyHubHeroBodyInviteFriendly =>
-      'Your last Mood Match is already on your plan. Ready to do it again with someone? 👯‍♀️';
+      'Je laatste Mood Match staat al op je planning. Klaar om er nog een te doen met iemand? 👯‍♀️';
 
   @override
   String get moodyHubHeroBodyInviteFriendly2 =>
-      'That Mood Match was a moment! Who are you feeling like exploring with next? 🗺️';
+      'Die Mood Match was leuk! Met wie wil je de volgende doen? 🗺️';
 
   @override
   String get moodyHubHeroBodyInviteFriendly3 =>
-      'Last plan is locked in. Want to set up a new Mood Match with a friend? ✌️';
+      'Laatste plan staat vast. Nieuwe Mood Match met een vriend starten? ✌️';
 
   @override
   String get moodyHubHeroBodyInviteFriendly4 =>
-      'Your shared day is on your plan. Another one? Tell me who you want to go out with. 💫';
+      'Je gedeelde dag staat op je planning. Nog eentje? Zeg met wie. 💫';
 
   @override
   String get moodyHubHeroBodyInviteProfessional =>
-      'Your previous Mood Match is on your schedule. When you\'re ready, start a new match to plan another day together. 🤝';
+      'Je vorige Mood Match staat op je planning. Start een nieuwe match wanneer je samen een nieuwe dag wilt plannen. 🤝';
 
   @override
   String get moodyHubHeroBodyInviteProfessional2 =>
-      'Last collaborative plan is confirmed. Initiate a new Mood Match when it suits you. 📅';
+      'Laatste gezamenlijke plan is bevestigd. Start een nieuwe Mood Match wanneer het uitkomt. 📅';
 
   @override
   String get moodyHubHeroBodyInviteProfessional3 =>
-      'Previous session is complete. Ready to schedule the next collaborative day? 🗓️';
+      'Vorige sessie is afgerond. Klaar om de volgende gezamenlijke dag te plannen? 🗓️';
 
   @override
   String get moodyHubHeroBodyInviteProfessional4 =>
-      'Your shared plan is in the books. Start a new match to plan ahead. 📋';
+      'Je gedeelde plan staat vast. Start een nieuwe match om vooruit te plannen. 📋';
 
   @override
   String get moodyHubHeroBodyInviteEnergetic =>
-      'That Mood Match is on your plan and I love it! Who\'s next? Let\'s match again! 🔥';
+      'Die Mood Match staat op je plan en ik hou ervan! Wie is de volgende? Nog een match? 🔥';
 
   @override
   String get moodyHubHeroBodyInviteEnergetic2 =>
-      'You did a Mood Match and it\'s on your plan — okay iconic! Who are we dragging into the next one? 🚀';
+      'Je Mood Match staat op je planning - iconic. Wie nemen we mee in de volgende? 🚀';
 
   @override
   String get moodyHubHeroBodyInviteEnergetic3 =>
-      'Last match: done. Next match: waiting for you! Let\'s go again! ⚡';
+      'Laatste match: done. Volgende match: wacht op jou! ⚡';
 
   @override
   String get moodyHubHeroBodyInviteEnergetic4 =>
-      'Your shared day is locked in — love that! Ready to plan another one? I\'ll make it even better. 🌟';
+      'Je gedeelde dag staat vast - love dat! Klaar om nog een te plannen? 🌟';
 
   @override
   String get moodyHubHeroBodyInviteDirect =>
-      'Last Mood Match is on your plan. Start a new one when you want. 📍';
+      'Laatste Mood Match staat op je planning. Start een nieuwe wanneer je wilt. 📍';
 
   @override
   String get moodyHubHeroBodyInviteDirect2 =>
-      'Done with last match. Start the next one. ✌️';
+      'Klaar met de laatste match. Start de volgende. ✌️';
 
   @override
   String get moodyHubHeroBodyInviteDirect3 =>
-      'Plan saved. New Mood Match when you\'re ready. 🔄';
+      'Plan opgeslagen. Nieuwe Mood Match wanneer je wilt. 🔄';
 
   @override
   String get moodyHubHeroBodyInviteDirect4 =>
-      'Last one\'s on your plan. Match again? 🤝';
+      'Laatste staat op je planning. Nog een match? 🤝';
 
   @override
-  String get moodyHubMoodMatchInviteCta => 'Start a Mood Match';
+  String get moodyHubMoodMatchInviteCta => 'Start een Mood Match';
 
   @override
   String get moodyHubInviteCardBody =>
       'Match met een vriend en plan samen een dag—koffie, een wandeling, een date, wat jullie maar past. 👯‍♀️🗺️';
 
   @override
-  String get moodyHubPlanYourDayCardTitle => 'Plan your day';
+  String get moodyHubPlanYourDayCardTitle => 'Plan je dag';
 
   @override
   String get moodyHubPlanYourDayCardBody =>
-      'Tell me your mood and I’ll build a full solo day—places, timing, and vibes that fit just you. ✨🧳';
+      'Vertel me je mood en ik bouw een complete solo-dag - plekken, timing en vibes die bij jou passen. ✨🧳';
 
   @override
-  String get moodyHubContinueDayCardTitle => 'Continue your day';
+  String get moodyHubContinueDayCardTitle => 'Ga verder met je dag';
 
   @override
   String get moodyHubContinueDayCardBody =>
-      'You’ve got things on your timeline. Jump back to My Day or chat with me to tweak the flow. 🔄';
+      'Je hebt al dingen op je tijdlijn. Ga terug naar Mijn Dag of chat met me om de flow aan te passen. 🔄';
 
   @override
   String get moodyHubChangeMoodCardTitle => 'Stemming wijzigen';
@@ -12692,8 +12691,8 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodyHubCollapsedActionsSubtitle =>
-      'Plan your day, Mood Match, and more.';
+      'Plan je dag, Mood Match en meer.';
 
   @override
-  String get moodMatchAlreadyOnYourPlan => 'Already on your plan';
+  String get moodMatchAlreadyOnYourPlan => 'Staat al op je planning';
 }

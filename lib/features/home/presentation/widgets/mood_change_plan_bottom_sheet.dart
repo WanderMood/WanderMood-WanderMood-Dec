@@ -145,10 +145,16 @@ Future<void> _commitMoodAndOpenLoading({
   required WidgetRef ref,
   required String label,
 }) async {
+  // Read everything we need up-front so async gaps after sheet close do not
+  // touch a disposed Consumer ref.
+  final connectivity = ref.read(connectivityServiceProvider);
+  final moodNotifier = ref.read(dailyMoodStateNotifierProvider.notifier);
+  final planDate = ref.read(selectedMyDayDateProvider);
+
   Navigator.of(sheetContext).pop();
   await Future.delayed(const Duration(milliseconds: 220));
 
-  final online = await ref.read(connectivityServiceProvider).isConnected;
+  final online = await connectivity.isConnected;
   if (!navigatorContext.mounted) return;
   if (!online) {
     showOfflineSnackBar(navigatorContext);
@@ -156,13 +162,11 @@ Future<void> _commitMoodAndOpenLoading({
   }
 
   final conv = const Uuid().v4();
-  await ref.read(dailyMoodStateNotifierProvider.notifier).setMoodSelection(
+  await moodNotifier.setMoodSelection(
         mood: label,
         selectedMoods: [label],
         conversationId: conv,
       );
-
-  final planDate = ref.read(selectedMyDayDateProvider);
   if (!navigatorContext.mounted) return;
 
   await Navigator.of(navigatorContext).push<void>(

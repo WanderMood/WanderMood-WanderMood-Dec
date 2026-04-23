@@ -150,6 +150,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
     // Keep loading visible long enough for the progress bar behavior.
     final minimumLoadingDuration = const Duration(seconds: 6);
     final loadingStartTime = DateTime.now();
+    final allowedSlots = _allowedPlanSlotsForCurrentContext();
     
     List<Activity> activities = [];
     String moodyMessage = '';
@@ -169,6 +170,9 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       }
 
       debugPrint('🔗 Calling moody Edge Function: create_day_plan...');
+      debugPrint(
+        '🕒 Allowed slots for this generation: ${allowedSlots.map(_timeSlotApiValue).join(', ')}',
+      );
       
       // Location and coordinates are required by the Edge Function.
       // Don't hard-block when GPS is denied (App Review / first run / privacy-conscious users):
@@ -231,6 +235,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
             'lat': lat,
             'lng': lng,
           },
+          'allowed_slots': allowedSlots.map(_timeSlotApiValue).toList(),
           if (widget.quickPick == DayPlanQuickPick.coffee)
             'quick_pick': 'coffee',
           if (widget.targetDate != null)
@@ -365,45 +370,42 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       await Future.delayed(remainingTime);
     }
 
-    // Filter activities based on current time to avoid suggesting past slots
-    final now = DateTime.now();
-    final hour = now.hour;
-    
-    // Create a new list with unique time slots
-    List<Activity> validActivities = [];
-    Set<TimeSlot> seenSlots = {};
-    
-    for (var a in activities) {
-      // Time filtering
-      if (hour >= 13 && a.timeSlotEnum == TimeSlot.morning) continue;
-      if (hour >= 18 && a.timeSlotEnum == TimeSlot.afternoon) continue;
-      
-      // Deduplicate by time slot (only keep one activity per period)
-      if (!seenSlots.contains(a.timeSlotEnum)) {
-        seenSlots.add(a.timeSlotEnum);
-        validActivities.add(a);
-      }
+    // Keep generation aligned with day progression:
+    // - morning: morning+afternoon+evening
+    // - afternoon: afternoon+evening
+    // - evening: evening only
+    // For dates other than today, keep morning+afternoon+evening.
+    final bySlot = <TimeSlot, Activity>{};
+    for (final a in activities) {
+      if (!allowedSlots.contains(a.timeSlotEnum)) continue;
+      bySlot.putIfAbsent(a.timeSlotEnum, () => a);
     }
-    
-    // If filtering removed everything, fallback to one activity per unique time slot from original list
-    if (validActivities.isEmpty) {
-      seenSlots.clear();
-      for (var a in activities) {
-        if (!seenSlots.contains(a.timeSlotEnum)) {
-          seenSlots.add(a.timeSlotEnum);
-          validActivities.add(a);
+
+    var finalActivities = <Activity>[
+      for (final s in allowedSlots)
+        if (bySlot.containsKey(s)) bySlot[s]!,
+    ];
+
+    // Fallback: if backend misses one of the expected slots, keep at least one
+    // unique morning/afternoon/evening suggestion so user is never blocked.
+    if (finalActivities.isEmpty) {
+      final fallbackBySlot = <TimeSlot, Activity>{};
+      for (final a in activities) {
+        if (a.timeSlotEnum == TimeSlot.morning ||
+            a.timeSlotEnum == TimeSlot.afternoon ||
+            a.timeSlotEnum == TimeSlot.evening) {
+          fallbackBySlot.putIfAbsent(a.timeSlotEnum, () => a);
         }
       }
+      finalActivities = [
+        if (fallbackBySlot.containsKey(TimeSlot.morning))
+          fallbackBySlot[TimeSlot.morning]!,
+        if (fallbackBySlot.containsKey(TimeSlot.afternoon))
+          fallbackBySlot[TimeSlot.afternoon]!,
+        if (fallbackBySlot.containsKey(TimeSlot.evening))
+          fallbackBySlot[TimeSlot.evening]!,
+      ];
     }
-    
-    // Sort by time slot index (morning -> afternoon -> evening -> night)
-    validActivities.sort((a, b) => a.timeSlotEnum.index.compareTo(b.timeSlotEnum.index));
-    
-    // Take up to 3 activities
-    final finalActivities = validActivities.take(3).toList();
-    
-    // Sort final activities by time slot index to ensure correct visual order (morning -> afternoon -> evening -> night)
-    finalActivities.sort((a, b) => a.timeSlotEnum.index.compareTo(b.timeSlotEnum.index));
 
     debugPrint('✅ Loading complete! Navigating to day plan with ${finalActivities.length} activities');
     if (!mounted) return;
@@ -427,6 +429,35 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
         l10n.planLoadingRotating2,
         l10n.planLoadingRotating3,
       ];
+
+  List<TimeSlot> _allowedPlanSlotsForCurrentContext() {
+    final now = DateTime.now();
+    final targetDay = widget.targetDate == null
+        ? DateTime(now.year, now.month, now.day)
+        : DateTime(
+            widget.targetDate!.year,
+            widget.targetDate!.month,
+            widget.targetDate!.day,
+          );
+    final today = DateTime(now.year, now.month, now.day);
+    final isTodayPlan = targetDay == today;
+    if (!isTodayPlan || now.hour < 12) {
+      return const [TimeSlot.morning, TimeSlot.afternoon, TimeSlot.evening];
+    }
+    if (now.hour < 17) {
+      return const [TimeSlot.afternoon, TimeSlot.evening];
+    }
+    return const [TimeSlot.evening];
+  }
+
+  String _timeSlotApiValue(TimeSlot slot) {
+    return switch (slot) {
+      TimeSlot.morning => 'morning',
+      TimeSlot.afternoon => 'afternoon',
+      TimeSlot.evening => 'evening',
+      TimeSlot.night => 'night',
+    };
+  }
 
   String _getErrorMessage(BuildContext context, dynamic error) {
     final l10n = AppLocalizations.of(context)!;

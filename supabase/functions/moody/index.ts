@@ -175,10 +175,60 @@ function getTimeOfDayContext(): { timeSlot: 'morning' | 'afternoon' | 'evening';
 }
 
 function getBroadExploreQueries(isLocalMode: boolean, interests: string[]): string[] {
-  const base = isLocalMode ? ['neighbourhood restaurant hidden gem','local cafe specialty coffee','new opening restaurant','local market','afterwork bar local','neighbourhood bakery','wine bar local','cozy bistro neighbourhood','hidden bar local','neighbourhood terrace'] : ['best restaurant city','rooftop bar city views','scenic viewpoint','art museum','street food market','iconic cafe','cocktail bar','waterfront restaurant','cultural attraction','local market','hidden gem restaurant','popular bar city']
+  const base = isLocalMode ? ['neighbourhood restaurant hidden gem','local cafe specialty coffee','new opening restaurant','local market','afterwork bar local','neighbourhood bakery','wine bar local','cozy bistro neighbourhood','hidden bar local','neighbourhood terrace','pottery workshop local','ceramic painting studio','urban farm visit','petting farm family','bookstore cafe local','indie gallery opening'] : ['best restaurant city','rooftop bar city views','scenic viewpoint','art museum','street food market','iconic cafe','cocktail bar','waterfront restaurant','cultural attraction','local market','hidden gem restaurant','popular bar city','pottery workshop city','ceramic painting cafe','urban farm experience','creative workshop city']
   const iq: string[] = []
   for (const interest of interests.slice(0, 3)) { const i = interest.toLowerCase(); if (i.includes('food') || i.includes('eat')) iq.push('artisan food market','specialty restaurant'); else if (i.includes('culture') || i.includes('art')) iq.push('art gallery contemporary','cultural museum'); else if (i.includes('nightlife') || i.includes('bar')) iq.push('cocktail bar rooftop','live music bar'); else if (i.includes('outdoor') || i.includes('nature')) iq.push('park waterfront','outdoor terrace scenic'); else if (i.includes('coffee')) iq.push('specialty coffee roastery','concept cafe') }
   return [...new Set([...iq, ...base])].slice(0, 16)
+}
+
+function getSeasonalTrendQueries(now: Date, isLocalMode: boolean): string[] {
+  const month = now.getUTCMonth() + 1
+  const spring = ['flower garden seasonal', 'baby animal farm visit', 'outdoor brunch terrace']
+  const summer = ['sunset rooftop event', 'outdoor cinema city', 'urban beach club']
+  const autumn = ['cozy pottery workshop', 'wine tasting evening', 'bookstore cafe rainy day']
+  const winter = ['indoor food hall warm', 'light festival city', 'museum late opening']
+  const seasonal = month >= 3 && month <= 5
+    ? spring
+    : month >= 6 && month <= 8
+      ? summer
+      : month >= 9 && month <= 11
+        ? autumn
+        : winter
+  const localBoost = isLocalMode
+    ? ['new opening neighbourhood', 'locals favorite cafe new', 'creative studio local']
+    : ['city must-try this month', 'best new spot city', 'popular city experience']
+  return [...seasonal, ...localBoost]
+}
+
+async function fetchExternalTrendQueries(
+  supabase: any,
+  location: string,
+  languageCode: string,
+  limit = 6,
+): Promise<string[]> {
+  try {
+    const city = location.toLowerCase().trim()
+    const lang = languageCode.toLowerCase().trim()
+    const nowIso = new Date().toISOString()
+    const { data } = await supabase
+      .from('moody_trend_queries')
+      .select('query,city,language_code,score,active_until')
+      .or(`city.ilike.%${city}%,city.is.null`)
+      .or(`language_code.eq.${lang},language_code.is.null`)
+      .or(`active_until.is.null,active_until.gte.${nowIso}`)
+      .order('score', { ascending: false })
+      .limit(30)
+    const out: string[] = []
+    for (const row of data || []) {
+      const q = String((row as any)?.query || '').trim()
+      if (!q) continue
+      out.push(q)
+      if (out.length >= limit) break
+    }
+    return [...new Set(out)]
+  } catch {
+    return []
+  }
 }
 
 function getFilterSearchQueries(filterName: string): string[] {
@@ -251,6 +301,12 @@ function classifyPlaceBucket(place: PlaceCard): PlaceBucket {
 
 function qualityScore(place: PlaceCard): number { return clamp(place.rating || 0, 0, 5) * 1.7 + clamp(Math.log10((place.user_ratings_total || 0) + 1) / 3, 0, 1.1) * 2 + (place.photo_url?.trim() ? 0.35 : 0) + ((place.address || place.vicinity || '').trim() ? 0.2 : 0) + (place.editorial_summary?.trim() ? 0.25 : 0) }
 
+function chainPenalty(place: PlaceCard): number {
+  const name = (place.name || '').toLowerCase()
+  const chainHints = ['starbucks', 'mcdonald', 'burger king', 'kfc', 'subway', 'domino', 'pizza hut', 'dunkin', 'taco bell', 'five guys', 'new york pizza', 'bagels & beans']
+  return chainHints.some((c) => name.includes(c)) ? 0.9 : 0
+}
+
 function moodBucketWeight(rawMood: string, bucket: PlaceBucket): number {
   const m = normaliseMood(rawMood)
   const tables: Record<string, Record<PlaceBucket, number>> = { relaxed: { cafe_bakery:2.5, scenic_calm:2.0, food:1.2, culture:0.8, wellness:0.3, fitness:-2.5, nightlife:-0.5, shopping:0.4, tourist:0.2, misc:0.3 }, energetic: { cafe_bakery:0.5, scenic_calm:0.2, food:1.5, culture:0.5, wellness:-1.0, fitness:-2.5, nightlife:1.8, shopping:0.4, tourist:1.0, misc:0.8 }, romantic: { cafe_bakery:1.0, scenic_calm:2.2, food:2.0, culture:0.7, wellness:-1.0, fitness:-2.0, nightlife:1.2, shopping:0.1, tourist:0.4, misc:0.2 }, adventurous: { cafe_bakery:0.3, scenic_calm:0.8, food:1.0, culture:0.8, wellness:-0.5, fitness:0.5, nightlife:1.0, shopping:0.3, tourist:1.5, misc:1.8 }, foodie: { cafe_bakery:2.0, scenic_calm:0.2, food:2.5, culture:0.1, wellness:-1.0, fitness:-1.5, nightlife:0.8, shopping:0.2, tourist:0.2, misc:0.1 }, cultural: { cafe_bakery:0.5, scenic_calm:1.0, food:0.4, culture:3.0, wellness:-0.5, fitness:-1.5, nightlife:0.1, shopping:0.4, tourist:1.5, misc:0.2 }, social: { cafe_bakery:0.8, scenic_calm:0.1, food:1.3, culture:0.3, wellness:-0.5, fitness:0.3, nightlife:2.5, shopping:0.5, tourist:0.5, misc:0.3 }, excited: { cafe_bakery:0.5, scenic_calm:1.0, food:1.0, culture:0.5, wellness:-0.5, fitness:-0.5, nightlife:2.0, shopping:0.5, tourist:1.5, misc:1.0 }, curious: { cafe_bakery:0.8, scenic_calm:0.8, food:0.8, culture:2.0, wellness:0.0, fitness:-1.0, nightlife:0.5, shopping:1.0, tourist:1.5, misc:1.5 }, cozy: { cafe_bakery:3.0, scenic_calm:1.5, food:1.0, culture:0.5, wellness:0.5, fitness:-2.5, nightlife:-0.5, shopping:0.3, tourist:0.1, misc:0.3 }, happy: { cafe_bakery:1.5, scenic_calm:1.2, food:1.5, culture:0.5, wellness:0.3, fitness:0.0, nightlife:1.0, shopping:0.8, tourist:1.0, misc:0.5 }, surprise: { cafe_bakery:1.0, scenic_calm:1.0, food:1.0, culture:1.0, wellness:0.0, fitness:-1.0, nightlife:1.0, shopping:0.5, tourist:1.0, misc:1.5 } }
@@ -296,12 +352,42 @@ function rankPlaces(places: PlaceCard[], mood: string, isLocalMode: boolean, int
   const scored = places.map(place => {
     const bucket = classifyPlaceBucket(place)
     let score = qualityScore(place) + moodBucketWeight(mood, bucket) + localTravelWeight(bucket, isLocalMode) + atmosphereBonus(place, mood) + reviewCountBonus(place, isLocalMode)
+    score -= chainPenalty(place)
     if (tasteProfile) score += tasteProfileBonus(place, tasteProfile)
     if (interestLower.length > 0) { const text = (place.types || []).join(' ').toLowerCase() + ' ' + (place.name || '').toLowerCase() + ' ' + (place.editorial_summary || '').toLowerCase(); for (const i of interestLower) { if (i && text.includes(i)) score += 0.4 } }
     if (isLocalMode && (place.price_level || 0) >= 4) score -= 0.5
     return { place, score, bucket }
   })
   return diversifyRanked(scored)
+}
+
+function interleaveByBucket(places: PlaceCard[]): PlaceCard[] {
+  const buckets = new Map<PlaceBucket, PlaceCard[]>()
+  for (const p of places) {
+    const b = classifyPlaceBucket(p)
+    const list = buckets.get(b) ?? []
+    list.push(p)
+    buckets.set(b, list)
+  }
+  const out: PlaceCard[] = []
+  let lastBucket: PlaceBucket | null = null
+  while (true) {
+    let bestBucket: PlaceBucket | null = null
+    let bestCount = -1
+    for (const [bucket, list] of buckets.entries()) {
+      if (list.length <= 0) continue
+      const score = list.length - (bucket === lastBucket ? 2 : 0)
+      if (score > bestCount) {
+        bestCount = score
+        bestBucket = bucket
+      }
+    }
+    if (!bestBucket) break
+    const picked = buckets.get(bestBucket)!.shift()
+    if (picked) out.push(picked)
+    lastBucket = bestBucket
+  }
+  return out
 }
 
 function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minReviews: number }): boolean { const rawId = place.id?.replace('google_', '').trim(); return !!rawId && !!place.name?.trim() && !!(place.address?.trim() || place.vicinity?.trim()) && Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) && (place.location.lat !== 0 || place.location.lng !== 0) && !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews }
@@ -517,6 +603,89 @@ async function cacheExplore(supabase: any, cacheKey: string, places: PlaceCard[]
   } catch (e) { console.error('❌ cacheExplore:', e) }
 }
 
+async function getExposureMemory(supabase: any, userId: string): Promise<Set<string>> {
+  try {
+    const key = `moody_exposure_${userId}`
+    const { data } = await supabase
+      .from('places_cache')
+      .select('data,expires_at')
+      .eq('cache_key', key)
+      .eq('user_id', userId)
+      .eq('request_type', 'moody_exposure')
+      .is('place_id', null)
+      .maybeSingle()
+    if (!data || new Date(data.expires_at) < new Date()) return new Set<string>()
+    const ids = Array.isArray(data.data?.place_ids) ? data.data.place_ids : []
+    return new Set<string>(ids.map((v: unknown) => String(v).trim().toLowerCase()).filter(Boolean))
+  } catch {
+    return new Set<string>()
+  }
+}
+
+async function getExposureOrder(supabase: any, userId: string): Promise<Map<string, number>> {
+  try {
+    const key = `moody_exposure_${userId}`
+    const { data } = await supabase
+      .from('places_cache')
+      .select('data,expires_at')
+      .eq('cache_key', key)
+      .eq('user_id', userId)
+      .eq('request_type', 'moody_exposure')
+      .is('place_id', null)
+      .maybeSingle()
+    if (!data || new Date(data.expires_at) < new Date()) return new Map<string, number>()
+    const ids = Array.isArray(data.data?.place_ids) ? data.data.place_ids : []
+    const out = new Map<string, number>()
+    ids.forEach((v: unknown, i: number) => {
+      const id = String(v).trim().toLowerCase()
+      if (id && !out.has(id)) out.set(id, i)
+    })
+    return out
+  } catch {
+    return new Map<string, number>()
+  }
+}
+
+function applyExposureDecay(places: PlaceCard[], exposureOrder: Map<string, number>): PlaceCard[] {
+  const penaltyFor = (p: PlaceCard): number => {
+    const id = p.id.replace('google_', '').toLowerCase()
+    const idx = exposureOrder.get(id)
+    if (idx == null) return 0
+    if (idx < 15) return 2.2
+    if (idx < 40) return 1.1
+    if (idx < 80) return 0.5
+    return 0.2
+  }
+  return [...places].sort((a, b) => penaltyFor(a) - penaltyFor(b))
+}
+
+async function updateExposureMemory(supabase: any, userId: string, places: PlaceCard[]): Promise<void> {
+  try {
+    const key = `moody_exposure_${userId}`
+    const existing = await getExposureMemory(supabase, userId)
+    const latest = places
+      .slice(0, 30)
+      .map((p) => p.id.replace('google_', '').trim().toLowerCase())
+      .filter(Boolean)
+    const merged = [...latest, ...Array.from(existing)].slice(0, 120)
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 14)
+    await supabase.from('places_cache').upsert(
+      {
+        cache_key: key,
+        data: { place_ids: merged },
+        place_id: null,
+        user_id: userId,
+        request_type: 'moody_exposure',
+        expires_at: expiresAt.toISOString(),
+      },
+      { onConflict: 'cache_key' },
+    )
+  } catch (e) {
+    console.error('❌ updateExposureMemory:', e)
+  }
+}
+
 function applyFilters(places: PlaceCard[], filters: any): PlaceCard[] {
   if (!filters || Object.keys(filters).length === 0) return places
   const kwList = Array.isArray(filters.requiredKeywords) ? filters.requiredKeywords.filter((x: any) => typeof x === 'string' && x.trim()) : []
@@ -565,15 +734,18 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const timeCtx = getTimeOfDayContext()
     const lang = googlePlacesLanguageFromRequest(params)
     const cacheKey = lang === 'en' ? `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
-    if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const enriched = enrichWithSignals(applyFilters(reranked, filters), userContext.isLocalMode); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
+    if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const exposureOrder = await getExposureOrder(supabase, userId); const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const decayed = applyExposureDecay(reranked, exposureOrder); const mixed = interleaveByBucket(decayed); const enriched = enrichWithSignals(applyFilters(mixed, filters), userContext.isLocalMode); await updateExposureMemory(supabase, userId, enriched); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
+    const externalTrendQueries = await fetchExternalTrendQueries(supabase, location, lang, 6)
+    const seasonalTrendQueries = getSeasonalTrendQueries(new Date(), !!userContext.isLocalMode)
+    const trendLayer = [...externalTrendQueries, ...seasonalTrendQueries]
     if (hasNamedFilters) exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 16)
     else if (section === 'food') exploreQueries = userContext.isLocalMode ? ['neighbourhood restaurant','local food market','artisan bakery','specialty coffee','local bistro','neighbourhood cafe','local restaurant hidden gem'] : ['best restaurant city','food market artisan','famous bakery','specialty coffee','local cuisine','chef restaurant','food hall']
-    else if (section === 'trending') exploreQueries = ['trending restaurant new opening','popular rooftop bar','new cafe opening','buzzing food spot','viral restaurant','popular new bar','hottest restaurant city']
+    else if (section === 'trending') exploreQueries = [...trendLayer, 'trending restaurant new opening','popular rooftop bar','new cafe opening','buzzing food spot','viral restaurant','popular new bar','hottest restaurant city','pottery workshop trending','ceramic painting cafe popular','urban farm visit trending','bookshop cafe trending','creative studio class city']
     else if (section === 'solo' || section === 'social') { const vibe = userContext.socialVibe?.[0]?.toLowerCase() || ''; exploreQueries = vibe.includes('solo') || vibe.includes('alone') ? ['quiet museum','solo cafe reading','bookstore cafe','gallery solo visit','peaceful park','cozy cafe solo','museum hidden gem'] : vibe.includes('group') || vibe.includes('friends') ? ['group restaurant lively','rooftop bar groups','food hall social','live music bar','cocktail bar','fun bar groups','lively terrace'] : ['cafe cozy','restaurant casual','bar relaxed','park','museum','gallery','terrace'] }
     else if (section === 'different') exploreQueries = ['hidden gem restaurant','unusual cafe','underground bar','unique experience','street art neighbourhood','concept store cafe','unusual venue city']
-    else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || []); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...base].slice(0, 16) }
+    else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || []); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...trendLayer, ...base].slice(0, 16) }
     else { const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang); exploreQueries = aiQ ?? getMoodQueries(mood) }
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
     if (!hasNamedFilters && places.length < 15) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
@@ -597,9 +769,13 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const thresholds = hasNamedFilters ? { minRating: 4.0, minReviews: 12 } : { minRating: 4.0, minReviews: 8 }
     let qualified = await enrichAndFilter(places, thresholds)
     if (!hasNamedFilters && qualified.length < 8) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 5 })
+    const exposureOrder = await getExposureOrder(supabase, userId)
     const ranked = rankPlaces(qualified, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
+    const decayed = applyExposureDecay(ranked, exposureOrder)
     if (!hasNamedFilters && !groupMatch) { await cacheExplore(supabase, cacheKey, ranked) }
-    const enriched = enrichWithSignals(applyFilters(shuffleArray(ranked), filters), userContext.isLocalMode)
+    const mixed = interleaveByBucket(decayed)
+    const enriched = enrichWithSignals(applyFilters(mixed, filters), userContext.isLocalMode)
+    await updateExposureMemory(supabase, userId, enriched)
     return new Response(JSON.stringify({ cards: enriched, cached: false, total_found: enriched.length, unfiltered_total: ranked.length, named_filters_applied: namedFilters, section: section || 'all', time_slot: timeCtx.timeSlot }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) { console.error('❌ handleGetExplore:', error); return new Response(JSON.stringify({ cards: [], cached: false, total_found: 0, error: 'explore_fetch_failed' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
@@ -676,11 +852,62 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     if (qualified.length === 0) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 8 })
     if (qualified.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No places found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const ranked = rankPlaces(qualified, moods[0] || 'adventurous', !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
-    const activities = convertPlacesToActivities(ranked, moods, location, coordinates, lang)
+    const recentPlaceIds = await fetchRecentlyScheduledPlaceIds(supabase, userId)
+    const exposureOrder = await getExposureOrder(supabase, userId)
+    const deRepeatedRanked = ranked.filter((p) => {
+      const pid = p.id.replace('google_', '').toLowerCase()
+      return !recentPlaceIds.has(pid)
+    })
+    const decayedRanked = applyExposureDecay(deRepeatedRanked, exposureOrder)
+    const candidatePlaces =
+      decayedRanked.length >= 9
+        ? decayedRanked
+        : (decayedRanked.length >= 4 ? [...decayedRanked, ...ranked] : ranked)
+    const activities = convertPlacesToActivities(candidatePlaces, moods, location, coordinates, lang)
     if (activities.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No activities generated' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, activities, location, userContext, lang)
-    return new Response(JSON.stringify({ success: true, activities, location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: activities.length, moodyMessage, reasoning }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const requestedSlots = Array.isArray(params.allowed_slots)
+      ? (params.allowed_slots as unknown[])
+          .filter((slot): slot is string => typeof slot === 'string')
+          .map((slot) => slot.toLowerCase().trim())
+          .filter((slot) => slot === 'morning' || slot === 'afternoon' || slot === 'evening')
+      : []
+    const allowedSlotSet = new Set(requestedSlots)
+    const filteredActivities =
+      allowedSlotSet.size > 0
+        ? activities.filter((a) => allowedSlotSet.has(String(a.timeSlot || '').toLowerCase().trim()))
+        : activities
+    const finalActivities = filteredActivities.length > 0 ? filteredActivities : activities
+    const servedAsPlaces: PlaceCard[] = finalActivities.map((a) => ({
+      id: `google_${a.placeId || a.id}`,
+      name: a.name,
+      rating: a.rating,
+      types: [],
+      location: { lat: a.location.latitude, lng: a.location.longitude },
+    }))
+    await updateExposureMemory(supabase, userId, servedAsPlaces)
+    const { moodyMessage, reasoning } = await getMoodyPersonalityResponse(moods, finalActivities, location, userContext, lang)
+    return new Response(JSON.stringify({ success: true, activities: finalActivities, location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: finalActivities.length, moodyMessage, reasoning }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) { console.error('❌ handleCreateDayPlan:', error); return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error), activities: [], total_found: 0 }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+}
+
+async function fetchRecentlyScheduledPlaceIds(supabase: any, userId: string): Promise<Set<string>> {
+  try {
+    const { data } = await supabase
+      .from('scheduled_activities')
+      .select('place_id')
+      .eq('user_id', userId)
+      .not('place_id', 'is', null)
+      .order('start_time', { ascending: false })
+      .limit(80)
+    const set = new Set<string>()
+    for (const row of data || []) {
+      const raw = String((row as any)?.place_id || '').trim().toLowerCase()
+      if (raw) set.add(raw)
+    }
+    return set
+  } catch {
+    return new Set<string>()
+  }
 }
 
 async function handleGroupMatchMoodyMessage(supabase: any, userId: string, params: any): Promise<Response> {
@@ -941,28 +1168,123 @@ async function handleGenerateHubMessage(supabase: any, userId: string, params: R
   return new Response(JSON.stringify({ message: fallbackMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 }
 
-function convertPlacesToActivities(places: PlaceCard[], moods: string[], location: string, coordinates: { lat: number; lng: number }, lang: 'nl' | 'en'): Activity[] {
-  const activities: Activity[] = [], used = new Set<string>(), morning: PlaceCard[] = [], afternoon: PlaceCard[] = [], evening: PlaceCard[] = []
-  for (const p of places) { if (used.has(p.id)) continue; const slots = getTimeSlotsForPlace(p); if (slots.includes('morning')) morning.push(p); if (slots.includes('afternoon')) afternoon.push(p); if (slots.includes('evening')) evening.push(p) }
-  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const add = (pool: PlaceCard[], slot: string, h1: number, h2: number, count: number, pastH: number) => { let added = 0; for (const p of pool) { if (added >= count) break; if (used.has(p.id)) continue; used.add(p.id); const h = h1 + Math.floor(Math.random() * (h2 - h1)), mm = [0,15,30,45][Math.floor(Math.random() * 4)]; const st = new Date(today.getTime()); st.setHours(h, mm, 0, 0); if (now.getHours() >= pastH) st.setDate(st.getDate() + 1); activities.push(createActivity(p, slot, st, moods, lang)); added++ } }
-  add(morning,'morning',7,10,3,11); add(afternoon,'afternoon',12,16,3,17); add(evening,'evening',17,20,3,21)
-  return activities.sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+function placeKinds(place: PlaceCard): Set<string> {
+  const slots: string[] = [], types = (place.types||[]).map(t=>t.toLowerCase()), name = place.name.toLowerCase(), primary = (place.primaryType||'').toLowerCase()
+  const kinds = new Set<string>()
+  if (['restaurant','food','meal_takeaway','food_court'].some(t=>types.includes(t)||primary===t) || name.includes('dinner') || name.includes('lunch') || name.includes('restaurant')) kinds.add('food')
+  if (['cafe','bakery','coffee_shop','patisserie'].some(t=>types.includes(t)||primary===t) || name.includes('coffee') || name.includes('espresso') || name.includes('brunch')) kinds.add('coffee')
+  if (['museum','art_gallery','library','cultural_center','historical_landmark','tourist_attraction'].some(t=>types.includes(t)||primary===t)) kinds.add('culture')
+  if (['park','natural_feature','botanical_garden'].some(t=>types.includes(t)||primary===t)) kinds.add('outdoor')
+  if (['bar','night_club','pub','cocktail_bar'].some(t=>types.includes(t)||primary===t) || name.includes('bar')) kinds.add('nightlife')
+  if (['spa','beauty_salon'].some(t=>types.includes(t)||primary===t)) kinds.add('wellness')
+  if (['amusement_park','zoo','aquarium','bowling_alley','movie_theater'].some(t=>types.includes(t)||primary===t)) kinds.add('activity')
+  return kinds
 }
 
 function getTimeSlotsForPlace(place: PlaceCard): string[] {
-  const slots: string[] = [], types = (place.types||[]).map(t=>t.toLowerCase()), name = place.name.toLowerCase(), primary = (place.primaryType||'').toLowerCase()
-  if (['cafe','bakery','park','museum','art_gallery','library'].some(t=>types.includes(t)||primary===t) || name.includes('coffee')||name.includes('breakfast')||name.includes('brunch')) slots.push('morning')
-  if (['restaurant','museum','art_gallery','tourist_attraction','food','cafe','park','shopping_mall'].some(t=>types.includes(t)||primary===t)) slots.push('afternoon')
-  if (['restaurant','bar','night_club'].some(t=>types.includes(t)||primary===t) || name.includes('dinner')||name.includes('bar')||name.includes('bistro')) slots.push('evening')
+  const slots: string[] = []
+  const kinds = placeKinds(place)
+  const types = (place.types || []).map(t => t.toLowerCase())
+  const primary = (place.primaryType || '').toLowerCase()
+  const name = place.name.toLowerCase()
+  if (
+    kinds.has('coffee') ||
+    kinds.has('outdoor') ||
+    kinds.has('culture') ||
+    name.includes('breakfast')
+  ) slots.push('morning')
+  if (
+    kinds.has('activity') ||
+    kinds.has('culture') ||
+    kinds.has('outdoor') ||
+    kinds.has('food') ||
+    kinds.has('coffee') ||
+    ['shopping_mall','point_of_interest'].some(t => types.includes(t) || primary === t)
+  ) slots.push('afternoon')
+  if (kinds.has('food') || kinds.has('nightlife') || kinds.has('activity')) slots.push('evening')
   if (!slots.length) slots.push('afternoon')
   return slots
 }
 
+function convertPlacesToActivities(places: PlaceCard[], moods: string[], location: string, coordinates: { lat: number; lng: number }, lang: 'nl' | 'en'): Activity[] {
+  const activities: Activity[] = []
+  const used = new Set<string>()
+  const morning: PlaceCard[] = []
+  const afternoon: PlaceCard[] = []
+  const evening: PlaceCard[] = []
+  for (const p of places) {
+    if (used.has(p.id)) continue
+    const slots = getTimeSlotsForPlace(p)
+    if (slots.includes('morning')) morning.push(p)
+    if (slots.includes('afternoon')) afternoon.push(p)
+    if (slots.includes('evening')) evening.push(p)
+  }
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const addSlot = (pool: PlaceCard[], slot: 'morning' | 'afternoon' | 'evening', h1: number, h2: number, count: number, pastH: number) => {
+    const priorities: Record<'morning' | 'afternoon' | 'evening', string[]> = {
+      morning: ['coffee', 'outdoor', 'culture', 'activity', 'food', 'wellness', 'nightlife'],
+      afternoon: ['activity', 'culture', 'outdoor', 'wellness', 'food', 'coffee', 'nightlife'],
+      evening: ['food', 'nightlife', 'activity', 'culture', 'outdoor', 'wellness', 'coffee'],
+    }
+    let added = 0
+    const pickedKinds = new Set<string>()
+    for (const kind of priorities[slot]) {
+      if (added >= count) break
+      const candidate = pool.find((p) => {
+        if (used.has(p.id)) return false
+        const kinds = placeKinds(p)
+        if (!kinds.has(kind)) return false
+        // Avoid repeated food-style picks in the same slot when possible.
+        if ((kind === 'food' || kind === 'coffee') && pickedKinds.has('foodLike')) return false
+        return true
+      })
+      if (!candidate) continue
+      used.add(candidate.id)
+      const h = h1 + Math.floor(Math.random() * (h2 - h1))
+      const mm = [0, 15, 30, 45][Math.floor(Math.random() * 4)]
+      const st = new Date(today.getTime())
+      st.setHours(h, mm, 0, 0)
+      if (now.getHours() >= pastH) st.setDate(st.getDate() + 1)
+      activities.push(createActivity(candidate, slot, st, moods, lang))
+      added++
+      pickedKinds.add(kind)
+      if (kind === 'food' || kind === 'coffee') pickedKinds.add('foodLike')
+    }
+    if (added >= count) return
+    for (const p of pool) {
+      if (added >= count) break
+      if (used.has(p.id)) continue
+      used.add(p.id)
+      const h = h1 + Math.floor(Math.random() * (h2 - h1))
+      const mm = [0, 15, 30, 45][Math.floor(Math.random() * 4)]
+      const st = new Date(today.getTime())
+      st.setHours(h, mm, 0, 0)
+      if (now.getHours() >= pastH) st.setDate(st.getDate() + 1)
+      activities.push(createActivity(p, slot, st, moods, lang))
+      added++
+    }
+  }
+  addSlot(morning, 'morning', 7, 10, 3, 11)
+  addSlot(afternoon, 'afternoon', 12, 16, 3, 17)
+  addSlot(evening, 'evening', 17, 20, 3, 21)
+  return activities.sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+}
+
 function createActivity(place: PlaceCard, timeSlot: string, startTime: Date, moods: string[], lang: 'nl' | 'en'): Activity {
   const placeId = place.id.replace('google_', ''), desc = place.editorial_summary || place.description || (lang==='nl' ? `${place.name} — een goede keuze voor je ${moods.join(' en ').toLowerCase()} dag.` : `${place.name} — a solid pick for your ${moods.join(' & ').toLowerCase()} day.`)
-  const types = place.types || [], tags: string[] = []
-  if (types.some(t=>['restaurant','food','food_court'].includes(t))) tags.push('Food'); if (types.some(t=>['spa','beauty_salon'].includes(t))) tags.push('Wellness'); if (types.some(t=>['museum','art_gallery'].includes(t))) tags.push(lang==='nl'?'Cultuur':'Culture'); if (types.some(t=>['park','natural_feature'].includes(t))) tags.push(lang==='nl'?'Buiten':'Outdoors'); if (types.some(t=>['bar','night_club'].includes(t))) tags.push('Nightlife'); if (types.some(t=>['cafe','bakery','coffee_shop'].includes(t))) tags.push('Cafe'); if (types.some(t=>['tourist_attraction','landmark'].includes(t))) tags.push(lang==='nl'?'Bezienswaardigheid':'Attraction')
+  const types = (place.types || []).map(t => t.toLowerCase())
+  const kinds = placeKinds(place)
+  const tags: string[] = []
+  if (kinds.has('culture')) tags.push(lang === 'nl' ? 'Cultuur' : 'Culture')
+  if (kinds.has('outdoor')) tags.push(lang === 'nl' ? 'Buiten' : 'Outdoors')
+  if (kinds.has('nightlife')) tags.push('Nightlife')
+  if (kinds.has('wellness')) tags.push('Wellness')
+  if (kinds.has('activity')) tags.push(lang === 'nl' ? 'Activiteit' : 'Activity')
+  // Keep taxonomy precise: coffee/bakery -> Cafe, sit-down dining -> Food.
+  if (kinds.has('coffee')) tags.push('Cafe')
+  if (kinds.has('food')) tags.push('Food')
+  if (!tags.length) tags.push(lang === 'nl' ? 'Activiteit' : 'Activity')
   let duration = 60; if (types.includes('restaurant')) duration=90; else if (types.includes('museum')||types.includes('art_gallery')) duration=120; else if (types.includes('spa')) duration=90; else if (types.includes('cafe')||types.includes('bakery')) duration=45; else if (types.includes('bar')||types.includes('night_club')) duration=120
   let paymentType = 'free'; if (types.includes('museum')) paymentType='ticket'; else if (types.includes('restaurant')||types.includes('bar')||types.includes('spa')) paymentType='reservation'; else if (place.price_level) paymentType='reservation'
   return { id: `activity_${Date.now()}_${place.id}`, name: place.name, description: desc, timeSlot, duration, location: { latitude: place.location.lat, longitude: place.location.lng }, paymentType, imageUrl: place.photo_url||'', rating: place.rating, tags: tags.slice(0,2), startTime: startTime.toISOString(), priceLevel: place.price_level != null ? (['','€','€€','€€€','€€€€'][place.price_level]||'€€') : undefined, placeId }

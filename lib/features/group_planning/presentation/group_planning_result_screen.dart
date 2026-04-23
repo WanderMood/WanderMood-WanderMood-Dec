@@ -2329,6 +2329,24 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return l10n.moodMatchPlanV2ActivityMood(labels);
   }
 
+  String _sanitizeMoodMatchStoryText(String raw) {
+    var text = raw.trim();
+    if (text.isEmpty) return '';
+    // Mood Match should show plain teaser copy, not markdown/doc markup.
+    text = text
+        .replaceAll(RegExp(r'```[\s\S]*?```', multiLine: true), ' ')
+        .replaceAll(RegExp(r'`([^`]*)`'), r'$1')
+        .replaceAll(RegExp(r'\[(.*?)\]\((.*?)\)'), r'$1')
+        .replaceAll(RegExp(r'(^|\s)#{1,6}\s*', multiLine: true), ' ')
+        .replaceAll(RegExp(r'(^|\s)[*_~>]+', multiLine: true), ' ')
+        .replaceAll(RegExp(r'(^|\n)\s*[-*]\s+', multiLine: true), ' ')
+        .replaceAll('---', ' ')
+        .replaceAll('|', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    return text;
+  }
+
   Widget _slotCardBothInFooter(
     AppLocalizations l10n,
     GroupMemberView? ownerMv,
@@ -2439,8 +2457,6 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     final ownerMv = _ownerMember();
     final guestMv = _guestMember();
 
-    final moodRaw = (act['moodMatch'] ?? '').toString().trim();
-
     final sent = _sentToGuest(_planData);
     final draftSelected = _isOwner && !sent && _ownerSlotDraft.contains(slot);
 
@@ -2458,16 +2474,20 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             '')
         .toString()
         .trim();
-    final activityDesc = (act['description'] ?? '').toString().trim();
-    final placeBlurp =
-        (place.editorialSummary ?? place.description ?? '').toString().trim();
-    final primaryStory = moodyRaw.isNotEmpty
-        ? moodyRaw
+    final activityDesc = _sanitizeMoodMatchStoryText(
+      (act['description'] ?? '').toString().trim(),
+    );
+    final placeBlurp = _sanitizeMoodMatchStoryText(
+      (place.editorialSummary ?? place.description ?? '').toString().trim(),
+    );
+    final moodyStory = _sanitizeMoodMatchStoryText(moodyRaw);
+    final primaryStory = moodyStory.isNotEmpty
+        ? moodyStory
         : (activityDesc.isNotEmpty ? activityDesc : placeBlurp);
-    final secondaryStory = moodyRaw.isNotEmpty &&
+    final secondaryStory = moodyStory.isNotEmpty &&
             placeBlurp.isNotEmpty &&
-            placeBlurp != moodyRaw &&
-            !placeBlurp.startsWith(moodyRaw)
+            placeBlurp != moodyStory &&
+            !placeBlurp.startsWith(moodyStory)
         ? placeBlurp
         : '';
     final planFullySignedOff = _allGuestConfirmed(_planData) &&
@@ -2498,7 +2518,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     final url = (act['imageUrl'] ?? '').toString();
     final ownerLocks = _ownerLocksPlanWhileGuestReviews(_planData);
     final showHeroDraftCheck = draftSelected && !bothConfirmedOnSlot;
-    final moodLine = _activityMoodLine(l10n, moodRaw);
+    final moodLine = _activityMoodLine(l10n, moodyStory);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

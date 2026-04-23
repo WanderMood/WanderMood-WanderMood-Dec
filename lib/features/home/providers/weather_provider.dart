@@ -10,6 +10,54 @@ import 'package:wandermood/features/weather/domain/models/weather.dart';
 import 'package:wandermood/features/weather/domain/models/weather_forecast.dart';
 import 'package:wandermood/features/weather/domain/models/weather_location.dart';
 
+String? _weatherDisplaySettlementFromPlacemarks(List<Placemark> marks) {
+  bool isMacro(String value) {
+    final t = value.toLowerCase().trim();
+    const blocked = {
+      'zuid-holland',
+      'noord-holland',
+      'noord-brabant',
+      'gelderland',
+      'utrecht',
+      'overijssel',
+      'groningen',
+      'friesland',
+      'drenthe',
+      'limburg',
+      'zeeland',
+      'flevoland',
+      'the netherlands',
+      'netherlands',
+      'nederland',
+      'holland',
+      'europe',
+    };
+    return blocked.contains(t);
+  }
+
+  String? pick(String? raw) {
+    final t = raw?.trim();
+    if (t == null || t.length < 2) return null;
+    if (isMacro(t)) return null;
+    return t;
+  }
+
+  // Prefer municipality/city-level names over neighborhoods.
+  for (final p in marks) {
+    final city = pick(p.subAdministrativeArea);
+    if (city != null) return city;
+  }
+  for (final p in marks) {
+    final city = pick(p.locality);
+    if (city != null) return city;
+  }
+  for (final p in marks) {
+    final city = pick(p.administrativeArea);
+    if (city != null) return city;
+  }
+  return null;
+}
+
 /// Resolves coordinates for OpenWeather: prefer GPS ([userLocationProvider]), else geocode city ([locationNotifierProvider]).
 Future<WeatherLocation?> _resolveWeatherLocation(Ref ref) async {
   final pos = await ref.watch(userLocationProvider.future);
@@ -17,20 +65,13 @@ Future<WeatherLocation?> _resolveWeatherLocation(Ref ref) async {
 
   if (pos != null) {
     String label = (city != null && city.isNotEmpty) ? city : '';
-    if (label.isEmpty || label.toLowerCase() == 'rotterdam') {
-      try {
-        final marks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
-        final detected = marks.isNotEmpty
-            ? (marks.first.locality ??
-                marks.first.subAdministrativeArea ??
-                marks.first.administrativeArea ??
-                '')
-            : '';
-        if (detected.trim().isNotEmpty) {
-          label = detected.trim();
-        }
-      } catch (_) {}
-    }
+    try {
+      final marks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
+      final detected = _weatherDisplaySettlementFromPlacemarks(marks);
+      if (detected != null && detected.isNotEmpty) {
+        label = detected;
+      }
+    } catch (_) {}
     if (label.isEmpty) label = 'Current location';
     return WeatherLocation(
       id:

@@ -832,7 +832,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                                           width: 12),
                                                       Expanded(
                                                         child: Text(
-                                                          'Moody is crafting something special...',
+                                                          Localizations.localeOf(context).languageCode == 'nl'
+                                                              ? 'Moody maakt iets speciaals voor je...'
+                                                              : 'Moody is crafting something special...',
                                                           maxLines: 2,
                                                           overflow: TextOverflow
                                                               .ellipsis,
@@ -888,7 +890,11 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                   child: TextField(
                                     controller: _chatController,
                                     decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!.chatSheetInputHint,
+                                      hintText: _selectedMoods.isNotEmpty
+                                          ? (Localizations.localeOf(context).languageCode == 'nl'
+                                              ? 'Praat met Moody over je dag...'
+                                              : 'Talk to Moody about your day...')
+                                          : AppLocalizations.of(context)!.chatSheetInputHint,
                                       hintStyle: GoogleFonts.poppins(
                                         color: Colors.grey[500],
                                         fontSize: 16,
@@ -1193,6 +1199,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
     // Clear the input immediately
     _chatController.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       print('💬 Sending message to Moody AI: $message');
@@ -1278,6 +1285,7 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
     // Clear the input immediately
     _chatController.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       final loc = await _getUserLocation();
@@ -1348,29 +1356,53 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   void _updatePersonalizedGreeting() {
     final hour = MoodyClock.now().hour;
     final isWeekend = MoodyClock.now().weekday >= 6;
-    final dayOfWeek = MoodyClock.now().weekday;
+    final isDutch = Localizations.localeOf(context).languageCode == 'nl';
 
     setState(() {
       // Contextual greetings based on time and day
       if (hour >= 5 && hour < 10) {
-        _personalizedGreeting = "Rise and shine! ☀️";
+        _personalizedGreeting = isDutch
+            ? "Goedemorgen! ☀️"
+            : "Rise and shine! ☀️";
         _contextualSubtext = isWeekend
-            ? "Perfect weekend morning for adventures"
-            : "Ready to make today amazing?";
+            ? (isDutch
+                ? "Perfecte weekendochtend voor avontuur"
+                : "Perfect weekend morning for adventures")
+            : (isDutch
+                ? "Klaar om er een mooie dag van te maken?"
+                : "Ready to make today amazing?");
       } else if (hour >= 10 && hour < 14) {
-        _personalizedGreeting = "Hey there! 👋";
-        _contextualSubtext = "I've been thinking about your perfect day";
+        _personalizedGreeting = isDutch
+            ? "Hoi! 👋"
+            : "Hey there! 👋";
+        _contextualSubtext = isDutch
+            ? "Ik dacht al na over jouw perfecte dag"
+            : "I've been thinking about your perfect day";
       } else if (hour >= 14 && hour < 18) {
-        _personalizedGreeting = "Afternoon vibes! ✨";
-        _contextualSubtext = "What's on your mind for today?";
+        _personalizedGreeting = isDutch
+            ? "Middag vibes! ✨"
+            : "Afternoon vibes! ✨";
+        _contextualSubtext = isDutch
+            ? "Wat zit er vandaag in je hoofd?"
+            : "What's on your mind for today?";
       } else if (hour >= 18 && hour < 22) {
-        _personalizedGreeting = "Evening explorer! 🌆";
+        _personalizedGreeting = isDutch
+            ? "Avondontdekker! 🌆"
+            : "Evening explorer! 🌆";
         _contextualSubtext = isWeekend
-            ? "Weekend nights are the best for discoveries"
-            : "How did your day treat you?";
+            ? (isDutch
+                ? "Weekendavonden zijn perfect om te ontdekken"
+                : "Weekend nights are the best for discoveries")
+            : (isDutch
+                ? "Hoe was je dag voor je?"
+                : "How did your day treat you?");
       } else {
-        _personalizedGreeting = "Night owl! 🌙";
-        _contextualSubtext = "Late night adventures calling?";
+        _personalizedGreeting = isDutch
+            ? "Nachtuil! 🌙"
+            : "Night owl! 🌙";
+        _contextualSubtext = isDutch
+            ? "Nog zin in een laat avontuur?"
+            : "Late night adventures calling?";
       }
     });
   }
@@ -1807,9 +1839,9 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                             boxShadow: [
                               BoxShadow(
                                 color: const Color(0xFF2A6049)
-                                    .withOpacity(0.25), // wmForest glow
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                                    .withOpacity(_selectedMoods.isEmpty ? 0.10 : 0.28),
+                                blurRadius: _selectedMoods.isEmpty ? 6 : 14,
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
@@ -1828,8 +1860,14 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50),
+                                side: BorderSide(
+                                  color: _selectedMoods.isEmpty || _isAILoading
+                                      ? const Color(0xFFBEBEBE)
+                                      : const Color(0xFF1E4C39),
+                                  width: 1.2,
+                                ),
                               ),
-                              elevation: 0,
+                              elevation: _selectedMoods.isEmpty ? 0 : 1,
                             ),
                             child: _isAILoading
                                 ? Row(
@@ -1854,13 +1892,24 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                       ),
                                     ],
                                   )
-                                : Text(
-                                    AppLocalizations.of(context)!
-                                        .moodHubCreatePlan,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.auto_awesome_rounded,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        AppLocalizations.of(context)!.moodHubCreatePlan,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                           ),
                         ),
@@ -2023,7 +2072,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final liveActivities = ref
         .read(scheduledActivitiesForTodayProvider)
         .maybeWhen(data: (list) => list, orElse: () => <Map<String, dynamic>>[]);
-    if (liveActivities.isNotEmpty) return true;
+    if (liveActivities.isNotEmpty) {
+      return liveActivities.any((a) {
+        final dt = _activityStartForDateCheck(a);
+        return dt != null && _isSameDay(dt, _selectedPlanningDate);
+      });
+    }
     // Fallback to stale state while the provider is still loading.
     if (state.plannedActivities.isEmpty) return false;
     return state.plannedActivities.any((activity) =>
@@ -2034,11 +2088,24 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
     final liveActivities = ref
         .read(scheduledActivitiesForTodayProvider)
         .maybeWhen(data: (list) => list, orElse: () => <Map<String, dynamic>>[]);
-    if (liveActivities.isNotEmpty) return liveActivities.length;
+    if (liveActivities.isNotEmpty) {
+      return liveActivities.where((a) {
+        final dt = _activityStartForDateCheck(a);
+        return dt != null && _isSameDay(dt, _selectedPlanningDate);
+      }).length;
+    }
     if (state.plannedActivities.isEmpty) return 0;
     return state.plannedActivities
         .where((activity) => _isSameDay(activity.startTime, _selectedPlanningDate))
         .length;
+  }
+
+  DateTime? _activityStartForDateCheck(Map<String, dynamic> raw) {
+    final direct = raw['startTime'] ?? raw['start_time'] ?? raw['date'];
+    if (direct is DateTime) return direct;
+    final text = direct?.toString();
+    if (text == null || text.trim().isEmpty) return null;
+    return DateTime.tryParse(text.trim());
   }
 
   Widget _buildAlreadyPlannedState(DateTime date, int activityCount) {

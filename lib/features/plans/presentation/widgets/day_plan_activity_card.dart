@@ -256,30 +256,32 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
               bottom: 40,
               left: 0,
               right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(photos.length > 10 ? 10 : photos.length, (i) {
-                  final active = i == _currentImageIndex;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: active ? 14 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: active
-                          ? Colors.white.withOpacity(0.95)
-                          : Colors.white.withOpacity(0.55),
-                      borderRadius: BorderRadius.circular(999),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.20),
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(photos.length > 10 ? 10 : photos.length, (i) {
+                    final active = i == _currentImageIndex;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 14 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: active
+                            ? Colors.white.withOpacity(0.95)
+                            : Colors.white.withOpacity(0.55),
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.20),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+              ),
               ),
             ),
           ],
@@ -474,17 +476,19 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                   fit: StackFit.expand,
                   children: [
                     _buildCardImage(ref),
-                    // Gradient overlay
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.2),
-                            Colors.black.withOpacity(0.6),
-                          ],
+                    // Decorative layers should never steal swipe gestures.
+                    IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.2),
+                              Colors.black.withOpacity(0.6),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -492,26 +496,28 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                     Positioned(
                       bottom: 12,
                       left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _wmForest,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, size: 14, color: Colors.white),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.activity.rating.toStringAsFixed(1),
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _wmForest,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star, size: 14, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.activity.rating.toStringAsFixed(1),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

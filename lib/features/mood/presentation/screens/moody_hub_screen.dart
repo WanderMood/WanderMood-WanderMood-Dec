@@ -79,6 +79,8 @@ class MoodyHubScreen extends ConsumerStatefulWidget {
 
 class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     with TickerProviderStateMixin {
+  bool get _isDutchLocale => Localizations.localeOf(context).languageCode == 'nl';
+
   AnimationController? _fadeController;
   AnimationController? _slideController;
   AnimationController? _floatController;
@@ -372,36 +374,44 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     final dailyState = ref.read(dailyMoodStateNotifierProvider);
     final currentMood = dailyState.currentMood ?? 'exploring';
     final moodEmoji = _getMoodEmoji(currentMood);
-
-    return "Heyyy 👋\n\nYou're on a ${currentMood.capitalize()} wave today $moodEmoji\n\nWant to ride it or switch things up?";
+    if (_isDutchLocale) {
+      return "Goed dat je er bent 👋\n\nJe zit vandaag in een ${currentMood.capitalize()} vibe $moodEmoji\n\nWil je zo doorgaan of iets aanpassen?";
+    }
+    return "Glad you're here 👋\n\nYou're in a ${currentMood.capitalize()} vibe today $moodEmoji\n\nWant to keep it or switch it up?";
   }
 
   String _getContextualGreeting(TrendingActivity activity) {
     final dailyState = ref.read(dailyMoodStateNotifierProvider);
     final currentMood = dailyState.currentMood ?? 'exploring';
     final moodEmoji = _getMoodEmoji(currentMood);
-
-    return "This ${activity.title.toLowerCase()} fits your ${currentMood.capitalize()} + ${activity.moodTag.isNotEmpty ? activity.moodTag : 'Social'} mood perfectly $moodEmoji✨\n\nWanna add it to today, or just explore it?";
+    if (_isDutchLocale) {
+      return "Deze ${activity.title.toLowerCase()} past goed bij je ${currentMood.capitalize()} + ${activity.moodTag.isNotEmpty ? activity.moodTag : 'Social'} mood $moodEmoji✨\n\nWil je dit aan vandaag toevoegen of eerst bekijken?";
+    }
+    return "This ${activity.title.toLowerCase()} fits your ${currentMood.capitalize()} + ${activity.moodTag.isNotEmpty ? activity.moodTag : 'Social'} mood really well $moodEmoji✨\n\nWant to add it to today, or explore first?";
   }
 
   List<Map<String, String>> _getDefaultQuickReplies() {
     final dailyState = ref.read(dailyMoodStateNotifierProvider);
     final currentMood = dailyState.currentMood ?? 'exploring';
-
     return [
-      {'emoji': _getMoodEmoji(currentMood), 'text': 'Keep ${currentMood.capitalize()}'},
-      {'emoji': '⚡', 'text': 'Boost energy'},
-      {'emoji': '🧘', 'text': 'Slow it down'},
-      {'emoji': '💬', 'text': 'Tell you more'},
+      {
+        'emoji': _getMoodEmoji(currentMood),
+        'text': _isDutchLocale
+            ? '${currentMood.capitalize()} houden'
+            : 'Keep ${currentMood.capitalize()}'
+      },
+      {'emoji': '⚡', 'text': _isDutchLocale ? 'Meer energie' : 'Boost energy'},
+      {'emoji': '🧘', 'text': _isDutchLocale ? 'Rustiger' : 'Slow it down'},
+      {'emoji': '💬', 'text': _isDutchLocale ? 'Vertel meer' : 'Tell me more'},
     ];
   }
 
   List<Map<String, String>> _getContextualQuickReplies(TrendingActivity activity) {
     return [
-      {'emoji': '➕', 'text': 'Add to My Day'},
-      {'emoji': '👀', 'text': 'View details'},
-      {'emoji': '🔄', 'text': 'Show me something else'},
-      {'emoji': '💬', 'text': 'Why this?'},
+      {'emoji': '➕', 'text': _isDutchLocale ? 'Toevoegen aan Mijn Dag' : 'Add to My Day'},
+      {'emoji': '👀', 'text': _isDutchLocale ? 'Bekijk details' : 'View details'},
+      {'emoji': '🔄', 'text': _isDutchLocale ? 'Laat iets anders zien' : 'Show me something else'},
+      {'emoji': '💬', 'text': _isDutchLocale ? 'Waarom deze?' : 'Why this?'},
     ];
   }
 
@@ -501,7 +511,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Chat with Moody',
+                            Localizations.localeOf(context).languageCode == 'nl'
+                                ? 'Chat met Moody'
+                                : 'Chat with Moody',
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -511,8 +523,12 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                           const SizedBox(height: 2),
                             Text(
                             _contextualActivity != null 
-                                ? 'About ${_contextualActivity!.title}'
-                                : 'Your travel companion 🌟',
+                                ? (Localizations.localeOf(context).languageCode == 'nl'
+                                    ? 'Over ${_contextualActivity!.title}'
+                                    : 'About ${_contextualActivity!.title}')
+                                : (Localizations.localeOf(context).languageCode == 'nl'
+                                    ? 'Je reismaatje 🌟'
+                                    : 'Your travel companion 🌟'),
                               style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: const Color(0xFF2A6049),
@@ -607,7 +623,13 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                       child: TextField(
                         controller: _chatController,
                         decoration: InputDecoration(
-                            hintText: 'Message Moody...',
+                            hintText: ((ref.read(dailyMoodStateNotifierProvider).currentMood ?? '').isNotEmpty)
+                                ? (Localizations.localeOf(context).languageCode == 'nl'
+                                    ? 'Praat met Moody over je dag...'
+                                    : 'Talk to Moody about your day...')
+                                : (Localizations.localeOf(context).languageCode == 'nl'
+                                    ? 'Wat is jouw stemming vandaag?'
+                                    : 'What is your mood today?'),
                           hintStyle: GoogleFonts.poppins(
                               color: const Color(0xFF94A3B8),
                               fontSize: 15,
@@ -1069,6 +1091,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     });
 
     _chatController.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
     _scrollToBottom();
 
     try {
@@ -1137,7 +1160,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         setState(() {
           _chatMessages.add({
             'role': 'assistant',
-            'content': "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
+            'content': _isDutchLocale
+                ? "Oeps! Verbinden lukt nu even niet. Probeer je het nog eens? 🤔"
+                : "Oops! I'm having trouble connecting right now. Can you try again? 🤔",
             'timestamp': MoodyClock.now(),
           });
           _isAILoading = false;
@@ -1156,12 +1181,14 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       _chatMessages.last.remove('quickReplies');
     }
 
-    if (reply.contains('Add to My Day') && _contextualActivity != null) {
+    if ((reply.contains('Add to My Day') || reply.contains('Toevoegen aan Mijn Dag')) &&
+        _contextualActivity != null) {
       _addActivityToDay(_contextualActivity!, setModalState);
       return;
     }
 
-    if (reply.contains('View details') && _contextualActivity != null) {
+    if ((reply.contains('View details') || reply.contains('Bekijk details')) &&
+        _contextualActivity != null) {
       Navigator.of(context).pop();
       Navigator.push(
         context,
@@ -1174,7 +1201,8 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       return;
     }
 
-    if (reply.contains('Why this?') && _contextualActivity != null) {
+    if ((reply.contains('Why this?') || reply.contains('Waarom deze?')) &&
+        _contextualActivity != null) {
       _explainRecommendation(_contextualActivity!, setModalState);
       return;
     }
@@ -1186,7 +1214,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     setState(() {
       _chatMessages.add({
         'role': 'assistant',
-        'content': "Added 💚\n\nI'll remind you later if the vibe still matches.",
+        'content': _isDutchLocale
+            ? "Toegevoegd 💚\n\nIk herinner je er later aan als de vibe nog steeds klopt."
+            : "Added 💚\n\nI'll remind you later if the vibe still matches.",
         'timestamp': MoodyClock.now(),
       });
     });
@@ -1198,11 +1228,17 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     final dailyState = ref.read(dailyMoodStateNotifierProvider);
     final currentMood = dailyState.currentMood ?? 'exploring';
 
-    final explanation = "I picked this ${activity.title.toLowerCase()} because:\n\n"
-        "${_getMoodEmoji(currentMood)} Your ${currentMood.capitalize()} mood loves ${activity.moodTag.isNotEmpty ? activity.moodTag : 'new experiences'}\n"
-        "⭐ ${activity.popularityScore.toStringAsFixed(0)}% match with your vibe\n"
-        "🔥 ${activity.trend == 'hot' ? 'Hot right now' : 'Trending in your area'}\n\n"
-        "Your current energy is perfect for this!";
+    final explanation = _isDutchLocale
+        ? "Ik koos deze ${activity.title.toLowerCase()} omdat:\n\n"
+            "${_getMoodEmoji(currentMood)} je ${currentMood.capitalize()} mood goed past bij ${activity.moodTag.isNotEmpty ? activity.moodTag : 'nieuwe ervaringen'}\n"
+            "⭐ ${activity.popularityScore.toStringAsFixed(0)}% match met je vibe\n"
+            "🔥 ${activity.trend == 'hot' ? 'Nu populair' : 'Trending bij jou in de buurt'}\n\n"
+            "Je energie van nu past hier heel goed bij!"
+        : "I picked this ${activity.title.toLowerCase()} because:\n\n"
+            "${_getMoodEmoji(currentMood)} Your ${currentMood.capitalize()} mood loves ${activity.moodTag.isNotEmpty ? activity.moodTag : 'new experiences'}\n"
+            "⭐ ${activity.popularityScore.toStringAsFixed(0)}% match with your vibe\n"
+            "🔥 ${activity.trend == 'hot' ? 'Hot right now' : 'Trending in your area'}\n\n"
+            "Your current energy is perfect for this!";
 
     setState(() {
       _chatMessages.add({
@@ -1401,21 +1437,23 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   // Header with greeting (personalized based on check-ins)
   Widget _buildHeader() {
     final hour = MoodyClock.now().hour;
-    String greeting = 'Hey there!';
+    String greeting = _isDutchLocale ? 'Hoi!' : 'Hey there!';
     String emoji = '👋';
-    String subtitle = 'Welcome back to your mood journey 🎭';
+    String subtitle = _isDutchLocale
+        ? 'Welkom terug in je mood journey 🎭'
+        : 'Welcome back to your mood journey 🎭';
     
     if (hour < 12) {
-      greeting = 'Good morning!';
+      greeting = _isDutchLocale ? 'Goedemorgen!' : 'Good morning!';
       emoji = '☀️';
     } else if (hour < 17) {
-      greeting = 'Good afternoon!';
+      greeting = _isDutchLocale ? 'Goedemiddag!' : 'Good afternoon!';
       emoji = '🌤️';
     } else if (hour < 21) {
-      greeting = 'Good evening!';
+      greeting = _isDutchLocale ? 'Goedenavond!' : 'Good evening!';
       emoji = '✨';
     } else {
-      greeting = 'Hey night owl!';
+      greeting = _isDutchLocale ? 'Nog op? 🌙' : 'Hey night owl!';
       emoji = '🌙';
     }
 
@@ -1428,7 +1466,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         if (isFirstTime) {
           // First-time user - they've already seen the intro overlay, so use a natural greeting
           // Keep the time-based greeting but with a friendly subtitle
-          subtitle = 'Ready to create your first amazing day?';
+          subtitle = _isDutchLocale
+              ? 'Klaar om je eerste mooie dag te maken?'
+              : 'Ready to create your first amazing day?';
         }
 
         // Load previous check-in to personalize greeting (for returning users)
@@ -1570,33 +1610,48 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
       final yesterdayCheckIn = await checkInService.getYesterdayCheckIn();
       final lastCheckIn = await checkInService.getLastCheckIn();
       
-      String greeting = 'Hey there!';
-      String subtitle = 'Welcome back to your mood journey 🎭';
+      String greeting = _isDutchLocale ? 'Hoi!' : 'Hey there!';
+      String subtitle = _isDutchLocale
+          ? 'Welkom terug in je mood journey 🎭'
+          : 'Welcome back to your mood journey 🎭';
       
       if (hour < 12 && yesterdayCheckIn != null) {
         // Morning greeting referencing yesterday
         if (yesterdayCheckIn.mood == 'tired') {
-          greeting = 'Good morning!';
-          subtitle = 'Did you sleep well? Hope you feel refreshed! 🌅';
+          greeting = _isDutchLocale ? 'Goedemorgen!' : 'Good morning!';
+          subtitle = _isDutchLocale
+              ? 'Lekker geslapen? Hopelijk voel je je fris! 🌅'
+              : 'Did you sleep well? Hope you feel refreshed! 🌅';
         } else if (yesterdayCheckIn.metadata?['bought_clothes'] == true) {
-          greeting = 'Good morning!';
-          subtitle = 'Ready to try on those new clothes today? 👗';
+          greeting = _isDutchLocale ? 'Goedemorgen!' : 'Good morning!';
+          subtitle = _isDutchLocale
+              ? 'Klaar om je nieuwe kleren vandaag te dragen? 👗'
+              : 'Ready to try on those new clothes today? 👗';
         } else {
-          greeting = 'Good morning!';
-          subtitle = 'Ready for a new day? Let\'s make it great! ☀️';
+          greeting = _isDutchLocale ? 'Goedemorgen!' : 'Good morning!';
+          subtitle = _isDutchLocale
+              ? 'Klaar voor een nieuwe dag? Laten we er iets moois van maken! ☀️'
+              : 'Ready for a new day? Let\'s make it great! ☀️';
         }
       } else if (lastCheckIn != null) {
         // Reference most recent check-in
         final lastText = (lastCheckIn.text ?? '').toLowerCase();
         if (lastCheckIn.metadata?['bought_clothes'] == true && !lastText.contains('tried') && !lastText.contains('wore')) {
-          subtitle = 'How are those new clothes working out? 👕';
+          subtitle = _isDutchLocale
+              ? 'Hoe bevallen je nieuwe kleren? 👕'
+              : 'How are those new clothes working out? 👕';
         }
       }
       
       return {'greeting': greeting, 'subtitle': subtitle};
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Error loading personalized greeting: $e');
-      return {'greeting': 'Hey there!', 'subtitle': 'Welcome back to your mood journey 🎭'};
+      return {
+        'greeting': _isDutchLocale ? 'Hoi!' : 'Hey there!',
+        'subtitle': _isDutchLocale
+            ? 'Welkom terug in je mood journey 🎭'
+            : 'Welcome back to your mood journey 🎭',
+      };
     }
   }
 
@@ -2273,7 +2328,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     
     switch (momentCard.pillar) {
       case ContentPillar.tripIdea:
-        buttonText = 'Show me this';
+        buttonText = _isDutchLocale ? 'Laat me dit zien' : 'Show me this';
         onTap = () {
           // TODO: Navigate to explore or place detail
           unawaited(_showChatBottomSheet(context,
@@ -2281,7 +2336,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         };
         break;
       case ContentPillar.eventFestival:
-        buttonText = "Talk to me";
+        buttonText = _isDutchLocale ? 'Praat met me' : "Talk to me";
         onTap = () {
           unawaited(_showChatBottomSheet(context,
               contextualGreeting: null, // Don't pre-fill, just open chat
@@ -2289,21 +2344,21 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         };
         break;
       case ContentPillar.softReflection:
-        buttonText = "Let's talk about it";
+        buttonText = _isDutchLocale ? 'Laten we erover praten' : "Let's talk about it";
         onTap = () {
           unawaited(_showChatBottomSheet(context,
               contextualGreeting: _getContextualChatStarter(momentCard)));
         };
         break;
       case ContentPillar.packingPrep:
-        buttonText = 'See checklist';
+        buttonText = _isDutchLocale ? 'Bekijk checklist' : 'See checklist';
         onTap = () {
           unawaited(_showChatBottomSheet(context,
               contextualGreeting: _getContextualChatStarter(momentCard)));
         };
         break;
       case ContentPillar.socialNudge:
-        buttonText = 'Tell me more';
+        buttonText = _isDutchLocale ? 'Vertel me meer' : 'Tell me more';
         onTap = () {
           unawaited(_showChatBottomSheet(context,
               contextualGreeting: _getContextualChatStarter(momentCard)));
@@ -2360,13 +2415,19 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
   String _getContextualChatStarter(MomentCard momentCard) {
     switch (momentCard.pillar) {
       case ContentPillar.tripIdea:
-        return "Tell me more about ${momentCard.title}";
+        return _isDutchLocale
+            ? "Vertel me meer over ${momentCard.title}"
+            : "Tell me more about ${momentCard.title}";
       case ContentPillar.eventFestival:
-        return "What's happening? ${momentCard.title}";
+        return _isDutchLocale
+            ? "Wat speelt er? ${momentCard.title}"
+            : "What's happening? ${momentCard.title}";
       case ContentPillar.softReflection:
         return momentCard.title;
       case ContentPillar.packingPrep:
-        return "Help me prepare! ${momentCard.title}";
+        return _isDutchLocale
+            ? "Help me voorbereiden! ${momentCard.title}"
+            : "Help me prepare! ${momentCard.title}";
       case ContentPillar.socialNudge:
         return momentCard.title;
     }
@@ -2486,7 +2547,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      "You're feeling ${currentMood.capitalize()}",
+                      _isDutchLocale
+                          ? "Je voelt je ${currentMood.capitalize()}"
+                          : "You're feeling ${currentMood.capitalize()}",
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -2552,7 +2615,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               const Text("✨", style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
-                "Today's Adventure",
+                _isDutchLocale ? "Avontuur van vandaag" : "Today's Adventure",
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -2760,7 +2823,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             const Text("🎯", style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(
-              "Moody is finding something perfect for you...",
+              _isDutchLocale
+                  ? "Moody zoekt iets perfects voor jou..."
+                  : "Moody is finding something perfect for you...",
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -2807,7 +2872,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
             const SizedBox(height: 24),
             Text(
-              "How are we feeling today?",
+              _isDutchLocale ? "Hoe voel je je vandaag?" : "How are we feeling today?",
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -2817,7 +2882,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
             const SizedBox(height: 12),
             Text(
-              "30 seconds to better recommendations",
+              _isDutchLocale
+                  ? "30 seconden voor betere aanbevelingen"
+                  : "30 seconds to better recommendations",
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: const Color(0xFF4A5568),
@@ -2832,7 +2899,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 color: Color(0xFF2A6049),
               ),
               error: (_, __) => Text(
-                "Couldn't load moods",
+                _isDutchLocale ? "Moods laden lukte niet" : "Couldn't load moods",
                 style: GoogleFonts.poppins(
                   color: Colors.grey[600],
                 ),
@@ -2841,7 +2908,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             const SizedBox(height: 32),
             // Optional voice input hint
             Text(
-              "💬 Tap to select • Swipe for more",
+              _isDutchLocale
+                  ? "💬 Tik om te kiezen • Swipe voor meer"
+                  : "💬 Tap to select • Swipe for more",
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Colors.grey[500],
@@ -2871,7 +2940,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   ref.read(dailyMoodStateNotifierProvider.notifier).updateMood(mood.id);
                   showWanderMoodToast(
                     context,
-                    message: "Feeling ${mood.label} today! ✨",
+                    message: _isDutchLocale
+                        ? "Vandaag voel je ${mood.label}! ✨"
+                        : "Feeling ${mood.label} today! ✨",
                   );
                 },
               child: Container(
@@ -2932,7 +3003,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             const Text("☁️", style: TextStyle(fontSize: 20)),
             const SizedBox(width: 8),
             Text(
-              "Moody thinks you'd love...",
+              _isDutchLocale
+                  ? "Moody denkt dat je dit leuk vindt..."
+                  : "Moody thinks you'd love...",
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -2958,7 +3031,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   const Text("😅", style: TextStyle(fontSize: 48)),
                   const SizedBox(height: 16),
                   Text(
-                    "Couldn't load suggestions",
+                    _isDutchLocale
+                        ? "Suggesties laden lukte niet"
+                        : "Couldn't load suggestions",
                     style: GoogleFonts.poppins(
                       color: Colors.grey[600],
                     ),
@@ -3008,7 +3083,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               const Text("🔥", style: TextStyle(fontSize: 20)),
               const SizedBox(width: 8),
               Text(
-                "$streak ${streak == 1 ? 'day' : 'days'} checked in with Moody",
+                _isDutchLocale
+                    ? "$streak ${streak == 1 ? 'dag' : 'dagen'} ingecheckt met Moody"
+                    : "$streak ${streak == 1 ? 'day' : 'days'} checked in with Moody",
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -3109,7 +3186,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         Row(
           children: [
             Text(
-              "Your Day's Flow",
+              _isDutchLocale ? "De flow van je dag" : "Your Day's Flow",
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -3704,18 +3781,24 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
     final hour = now.hour;
     
     // Determine current phase
-    String phaseTitle = "Your Journey";
-    String phaseSubtitle = "Let's see what's happening today";
+    String phaseTitle = _isDutchLocale ? "Jouw journey" : "Your Journey";
+    String phaseSubtitle = _isDutchLocale
+        ? "Laten we kijken wat er vandaag speelt"
+        : "Let's see what's happening today";
     
     if (hour < 12) {
-      phaseTitle = "Morning Journey";
-      phaseSubtitle = "Starting your day right";
+      phaseTitle = _isDutchLocale ? "Ochtend journey" : "Morning Journey";
+      phaseSubtitle = _isDutchLocale
+          ? "Je dag goed starten"
+          : "Starting your day right";
     } else if (hour < 18) {
-      phaseTitle = "Afternoon Journey";
-      phaseSubtitle = "Your adventure continues";
+      phaseTitle = _isDutchLocale ? "Middag journey" : "Afternoon Journey";
+      phaseSubtitle = _isDutchLocale
+          ? "Je avontuur gaat verder"
+          : "Your adventure continues";
     } else {
-      phaseTitle = "Evening Journey";
-      phaseSubtitle = "How was your day?";
+      phaseTitle = _isDutchLocale ? "Avond journey" : "Evening Journey";
+      phaseSubtitle = _isDutchLocale ? "Hoe was je dag?" : "How was your day?";
     }
 
     return Column(
@@ -3876,7 +3959,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             const Text("🌟", style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(
-              "Your journey starts here",
+              _isDutchLocale
+                  ? "Jouw journey begint hier"
+                  : "Your journey starts here",
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -3885,7 +3970,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              "Tap 'Chat with Moody' to plan your day",
+              _isDutchLocale
+                  ? "Tik op 'Chat met Moody' om je dag te plannen"
+                  : "Tap 'Chat with Moody' to plan your day",
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -3924,7 +4011,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Change your vibe?",
+                    _isDutchLocale ? "Vibe aanpassen?" : "Change your vibe?",
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -3934,7 +4021,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   GestureDetector(
                     onTap: () => _showMoodChangeSheet(context),
                     child: Text(
-                      "See all",
+                      _isDutchLocale ? "Bekijk alles" : "See all",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: const Color(0xFF2A6049),
@@ -3961,7 +4048,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                           ref.read(dailyMoodStateNotifierProvider.notifier).updateMood(mood.id);
                           showWanderMoodToast(
                             context,
-                            message: "Switched to ${mood.label} vibe! ✨",
+                            message: _isDutchLocale
+                                ? "Vibe gewijzigd naar ${mood.label}! ✨"
+                                : "Switched to ${mood.label} vibe! ✨",
                           );
                         },
                         child: Container(
@@ -4058,7 +4147,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                "Change your mood?",
+                _isDutchLocale ? "Stemming wijzigen?" : "Change your mood?",
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -4069,7 +4158,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           ],
         ),
         content: Text(
-          "Do you want to continue to change mood? This will take you to the mood selection screen.",
+          _isDutchLocale
+              ? "Wil je doorgaan met je stemming wijzigen? Je gaat dan naar het mood-selectiescherm."
+              : "Do you want to continue to change mood? This will take you to the mood selection screen.",
           style: GoogleFonts.poppins(
             fontSize: 14,
             color: Colors.grey[700],
@@ -4079,7 +4170,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              "Cancel",
+              _isDutchLocale ? "Annuleren" : "Cancel",
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -4106,7 +4197,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: Text(
-              "Continue",
+              _isDutchLocale ? "Doorgaan" : "Continue",
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -4153,7 +4244,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Change your vibe",
+                      _isDutchLocale ? "Pas je vibe aan" : "Change your vibe",
                     style: GoogleFonts.poppins(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -4237,7 +4328,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    "Current",
+                                    _isDutchLocale ? "Nu" : "Current",
               style: GoogleFonts.poppins(
                 fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -4259,7 +4350,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 ),
                 error: (_, __) => Center(
                     child: Text(
-                      "Couldn't load moods",
+                      _isDutchLocale ? "Moods laden lukte niet" : "Couldn't load moods",
                       style: GoogleFonts.poppins(
                         color: Colors.grey[600],
                       ),
@@ -4594,7 +4685,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Your Day's Flow",
+            _isDutchLocale ? "De flow van je dag" : "Your Day's Flow",
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -4719,7 +4810,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
             const Text("🔥", style: TextStyle(fontSize: 20)),
             const SizedBox(width: 8),
             Text(
-              "Trending in Rotterdam",
+              _isDutchLocale ? "Trending in Rotterdam" : "Trending in Rotterdam",
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -4744,7 +4835,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                     const Text("😅", style: TextStyle(fontSize: 48)),
                     const SizedBox(height: 16),
                     Text(
-                      "No trending activities right now",
+                      _isDutchLocale
+                          ? "Nu zijn er even geen trending activiteiten"
+                          : "No trending activities right now",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                           color: Colors.grey[600],
@@ -4784,7 +4877,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                 const Text("😅", style: TextStyle(fontSize: 48)),
                       const SizedBox(height: 16),
                       Text(
-                  "Couldn't load trending activities",
+                  _isDutchLocale
+                      ? "Trending activiteiten laden lukte niet"
+                      : "Couldn't load trending activities",
                         style: GoogleFonts.poppins(
                     fontSize: 14,
                           color: Colors.grey[600],
@@ -4819,33 +4914,39 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
         .toList()
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
     
-    String nextActivityTitle = 'No upcoming activities';
+    String nextActivityTitle =
+        _isDutchLocale ? 'Geen aankomende activiteiten' : 'No upcoming activities';
     String nextActivityTime = '';
     String nextActivityWalk = '';
     
     if (nextActivity.isNotEmpty) {
       final next = nextActivity.first;
-      nextActivityTitle = next.rawData['title'] ?? 'Next activity';
+      nextActivityTitle = next.rawData['title'] ??
+          (_isDutchLocale ? 'Volgende activiteit' : 'Next activity');
       final now = MoodyClock.now();
       final timeUntil = next.startTime.difference(now);
       if (timeUntil.inHours > 0) {
-        nextActivityTime = 'In ${timeUntil.inHours} hours';
+        nextActivityTime = _isDutchLocale
+            ? 'Over ${timeUntil.inHours} uur'
+            : 'In ${timeUntil.inHours} hours';
       } else if (timeUntil.inMinutes > 0) {
-        nextActivityTime = 'In ${timeUntil.inMinutes} min';
+        nextActivityTime = _isDutchLocale
+            ? 'Over ${timeUntil.inMinutes} min'
+            : 'In ${timeUntil.inMinutes} min';
       } else {
-        nextActivityTime = 'Starting soon';
+        nextActivityTime = _isDutchLocale ? 'Start bijna' : 'Starting soon';
       }
       // Mock walk time - you can get this from activity data
-      nextActivityWalk = '15 min walk';
+      nextActivityWalk = _isDutchLocale ? '15 min lopen' : '15 min walk';
     }
     
     // Determine focus time
     final now = MoodyClock.now();
-    String focusTime = 'Evening focused';
+    String focusTime = _isDutchLocale ? 'Avond focus' : 'Evening focused';
     if (now.hour < 12) {
-      focusTime = 'Morning focused';
+      focusTime = _isDutchLocale ? 'Ochtend focus' : 'Morning focused';
     } else if (now.hour < 18) {
-      focusTime = 'Afternoon focused';
+      focusTime = _isDutchLocale ? 'Middag focus' : 'Afternoon focused';
     }
 
     return Container(
@@ -4869,7 +4970,7 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               const Icon(Icons.bar_chart, color: Color(0xFF2A6049), size: 20),
               const SizedBox(width: 8),
               Text(
-                "Today's Insights",
+                _isDutchLocale ? "Inzichten van vandaag" : "Today's Insights",
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -4885,7 +4986,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
               const Icon(Icons.flag, size: 16, color: Color(0xFF4A5568)),
               const SizedBox(width: 8),
               Text(
-                "$total activities planned",
+                _isDutchLocale
+                    ? "$total activiteiten gepland"
+                    : "$total activities planned",
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: const Color(0xFF1A202C),
@@ -4896,7 +4999,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
           const SizedBox(height: 12),
           // Focus time and total hours
           Text(
-            "$focusTime • $totalHours hours total",
+            _isDutchLocale
+                ? "$focusTime • $totalHours uur totaal"
+                : "$focusTime • $totalHours hours total",
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color(0xFF4A5568),
@@ -4915,7 +5020,9 @@ class _MoodyHubScreenState extends ConsumerState<MoodyHubScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Next: $nextActivityTitle",
+                      _isDutchLocale
+                          ? "Volgende: $nextActivityTitle"
+                          : "Next: $nextActivityTitle",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

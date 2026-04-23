@@ -8,14 +8,16 @@ import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/features/weather/providers/weather_forecast_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-// WanderMood v2 — Modal matches Moody Hub cream / forest (mood_home_screen)
+// WanderMood v2 — iOS-weather-inspired palette for cleaner, modern weather UI.
 const Color _wmModalCharcoal = Color(0xFF1E1C18);
 const Color _wmHubCream = Color(0xFFF5F0E8);
 const Color _wmHubForest = Color(0xFF2A6049);
 const Color _wmHubForestTint = Color(0xFFEBF3EE);
 const Color _wmHubInkMuted = Color(0xFF5C574E);
-const Color _weatherMintBg = Color(0xFFD1E9DE);
-const Color _weatherMintText = Color(0xFF5F7A73);
+const Color _weatherMintBg = Color(0xFFE8F1FF);
+const Color _weatherMintText = Color(0xFF2F4E7A);
+const Color _weatherSkyTop = Color(0xFFCCE0FF);
+const Color _weatherSkyBottom = Color(0xFFF2F7FF);
 
 DateTime _wmStartOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -66,6 +68,13 @@ class WeatherDetailScreen extends ConsumerWidget {
     final body = Container(
       decoration: BoxDecoration(
         color: isModal ? _wmHubCream : _weatherMintBg,
+        gradient: isModal
+            ? null
+            : const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [_weatherSkyTop, _weatherSkyBottom],
+              ),
       ),
       child: SafeArea(
         child: CustomScrollView(
@@ -101,8 +110,8 @@ class WeatherDetailScreen extends ConsumerWidget {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              _weatherMintBg,
-                              _weatherMintBg.withOpacity(0),
+                              _weatherSkyTop.withValues(alpha: 0.8),
+                              _weatherSkyBottom.withValues(alpha: 0.0),
                             ],
                           ),
                   ),
@@ -152,10 +161,24 @@ class WeatherDetailScreen extends ConsumerWidget {
             
             // Hourly Forecast Section
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isModal ? 12.0 : 16.0,
+              child: Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: isModal ? 10.0 : 16.0,
                   vertical: isModal ? 4.0 : 8.0,
+                ),
+                padding: EdgeInsets.fromLTRB(
+                  isModal ? 10.0 : 14.0,
+                  isModal ? 8.0 : 12.0,
+                  isModal ? 10.0 : 14.0,
+                  isModal ? 10.0 : 14.0,
+                ),
+                decoration: BoxDecoration(
+                  color: isModal ? Colors.white.withValues(alpha: 0.92) : Colors.white.withValues(alpha: 0.48),
+                  borderRadius: BorderRadius.circular(isModal ? 14 : 18),
+                  border: Border.all(
+                    color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
+                    width: 1,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,8 +212,22 @@ class WeatherDetailScreen extends ConsumerWidget {
             
             // 3-Day Forecast Section
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(isModal ? 12.0 : 16.0),
+              child: Container(
+                margin: EdgeInsets.fromLTRB(isModal ? 10 : 16, isModal ? 6 : 8, isModal ? 10 : 16, 0),
+                padding: EdgeInsets.fromLTRB(
+                  isModal ? 10.0 : 14.0,
+                  isModal ? 8.0 : 12.0,
+                  isModal ? 10.0 : 14.0,
+                  isModal ? 10.0 : 14.0,
+                ),
+                decoration: BoxDecoration(
+                  color: isModal ? Colors.white.withValues(alpha: 0.92) : Colors.white.withValues(alpha: 0.48),
+                  borderRadius: BorderRadius.circular(isModal ? 14 : 18),
+                  border: Border.all(
+                    color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
+                    width: 1,
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -268,14 +305,17 @@ class WeatherDetailScreen extends ConsumerWidget {
         horizontal: isModal ? 12 : 16,
       ),
       decoration: BoxDecoration(
-        color: isModal ? _wmHubForestTint : Colors.white.withOpacity(0.7),
+        color: isModal ? _wmHubForestTint : Colors.white.withOpacity(0.55),
         borderRadius: BorderRadius.circular(isModal ? 16 : 20),
         border: isModal
             ? Border.all(
                 color: _wmHubForest.withValues(alpha: 0.20),
                 width: 1,
               )
-            : null,
+            : Border.all(
+                color: Colors.white.withValues(alpha: 0.48),
+                width: 1,
+              ),
         boxShadow: isModal
             ? [
                 BoxShadow(
@@ -284,7 +324,13 @@ class WeatherDetailScreen extends ConsumerWidget {
                   offset: const Offset(0, 3),
                 ),
               ]
-            : null,
+            : [
+                BoxShadow(
+                  color: const Color(0x1A446AA4),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
       ),
       child: Column(
         children: [

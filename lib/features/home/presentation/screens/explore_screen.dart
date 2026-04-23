@@ -4440,12 +4440,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             padding: EdgeInsets.zero,
             onMapCreated: (GoogleMapController controller) {
               _mapController = controller;
-              if (kDebugMode) {
-                debugPrint('✅ Google Map created successfully');
-                debugPrint(
-                    '📍 Initial position: ${initialPosition.latitude}, ${initialPosition.longitude}');
-                debugPrint('📍 Markers count: ${markers.length}');
-              }
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (!mounted || _mapController != controller) return;
                 try {
@@ -4454,22 +4448,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   );
                 } catch (_) {}
               });
-            },
-            onCameraMoveStarted: () {
-              if (kDebugMode) {
-                debugPrint('🗺️ Camera move started');
-              }
-            },
-            onTap: (LatLng position) {
-              if (kDebugMode) {
-                debugPrint(
-                    '🗺️ Map tapped at: ${position.latitude}, ${position.longitude}');
-              }
-            },
-            onCameraIdle: () {
-              if (kDebugMode) {
-                debugPrint('🗺️ Camera idle - map should be fully loaded');
-              }
             },
             myLocationEnabled: userLocation != null &&
                 (userLocation.latitude - 37.785834).abs() > 0.1,
