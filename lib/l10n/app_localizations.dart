@@ -11504,6 +11504,30 @@ abstract class AppLocalizations {
   /// **'What\'s your mood today?'**
   String get chatSheetInputHint;
 
+  /// No description provided for @chatSheetMessageCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get chatSheetMessageCopy;
+
+  /// No description provided for @chatSheetMessageReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get chatSheetMessageReply;
+
+  /// No description provided for @chatSheetCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get chatSheetCopied;
+
+  /// No description provided for @chatSheetReplyLabelYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get chatSheetReplyLabelYou;
+
   /// No description provided for @moodyConversationGreeting.
   ///
   /// In en, this message translates to:
@@ -14766,7 +14790,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifReEngagementFriendlyV0Body.
   ///
   /// In en, this message translates to:
-  /// **'Come back and let Moody help plan your next adventure.'**
+  /// **'Come back and I will help plan your next adventure.'**
   String get notifReEngagementFriendlyV0Body;
 
   /// No description provided for @notifReEngagementFriendlyV1Title.
@@ -14928,7 +14952,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifDailyMoodCheckInEnergeticV0Body.
   ///
   /// In en, this message translates to:
-  /// **'Log your mood and let Moody find your perfect match.'**
+  /// **'Log your mood and I will find your perfect match.'**
   String get notifDailyMoodCheckInEnergeticV0Body;
 
   /// No description provided for @notifDailyMoodCheckInEnergeticV1Title.
@@ -14976,7 +15000,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifDailyMoodCheckInFriendlyV1Body.
   ///
   /// In en, this message translates to:
-  /// **'A quick tap to let Moody know how your day\'s going.'**
+  /// **'A quick tap so I know how your day is going.'**
   String get notifDailyMoodCheckInFriendlyV1Body;
 
   /// No description provided for @notifDailyMoodCheckInFriendlyV2Title.
@@ -15564,7 +15588,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifSavedActivityReminderFriendlyV2Body.
   ///
   /// In en, this message translates to:
-  /// **'You picked these for a reason — let Moody help you go.'**
+  /// **'You picked these for a reason — let me help you go.'**
   String get notifSavedActivityReminderFriendlyV2Body;
 
   /// No description provided for @notifSavedActivityReminderProfessionalV0Title.
@@ -17673,6 +17697,12 @@ abstract class AppLocalizations {
   /// **'Microphone access is needed for voice input.'**
   String get moodyChatMicrophoneRequired;
 
+  /// No description provided for @chatSheetMicrophoneOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get chatSheetMicrophoneOpenSettings;
+
   /// No description provided for @devAdminScreenDisabled.
   ///
   /// In en, this message translates to:
@@ -18432,8 +18462,14 @@ abstract class AppLocalizations {
   /// No description provided for @weatherMainHaze.
   ///
   /// In en, this message translates to:
-  /// **'Haze'**
+  /// **'Slight haze'**
   String get weatherMainHaze;
+
+  /// No description provided for @weatherMainHazeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduced visibility because the air is hazy'**
+  String get weatherMainHazeDescription;
 
   /// No description provided for @weatherMainSmoke.
   ///
@@ -21903,6 +21939,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already on your plan'**
   String get moodMatchAlreadyOnYourPlan;
+
+  /// No description provided for @weatherModalNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get weatherModalNow;
+
+  /// No description provided for @weatherModalTipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My tip for today'**
+  String get weatherModalTipTitle;
+
+  /// No description provided for @weatherModalTipRain.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain is expected today. Bring an umbrella and consider an indoor activity.'**
+  String get weatherModalTipRain;
+
+  /// No description provided for @weatherModalTipSunnyHighUv.
+  ///
+  /// In en, this message translates to:
+  /// **'It is sunny and UV is high today. Use sunscreen, bring water, and plan a few shade breaks.'**
+  String get weatherModalTipSunnyHighUv;
+
+  /// No description provided for @weatherModalTipSunny.
+  ///
+  /// In en, this message translates to:
+  /// **'Mild and dry weather today. Great for a walk or a terrace stop.'**
+  String get weatherModalTipSunny;
+
+  /// No description provided for @weatherModalTipCloudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudy and likely cooler. Bring one extra layer to stay comfortable.'**
+  String get weatherModalTipCloudy;
+
+  /// No description provided for @weatherModalTipDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditions may change today. Dress in layers and check the forecast again later.'**
+  String get weatherModalTipDefault;
 }
 
 class _AppLocalizationsDelegate

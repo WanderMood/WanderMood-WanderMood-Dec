@@ -6484,6 +6484,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chatSheetInputHint => '¿Cuál es tu mood hoy?';
 
   @override
+  String get chatSheetMessageCopy => 'Copiar';
+
+  @override
+  String get chatSheetMessageReply => 'Responder';
+
+  @override
+  String get chatSheetCopied => 'Copiado al portapapeles';
+
+  @override
+  String get chatSheetReplyLabelYou => 'Tú';
+
+  @override
   String get moodyConversationGreeting =>
       '¡Hola! ¿Cómo te sientes hoy? Puedo sugerirte actividades según tu mood.';
 
@@ -10137,6 +10149,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Hace falta acceso al micrófono para el dictado por voz.';
 
   @override
+  String get chatSheetMicrophoneOpenSettings => 'Abrir Ajustes';
+
+  @override
   String get devAdminScreenDisabled =>
       'La pantalla de administración está desactivada en compilar para producción.';
 
@@ -10558,7 +10573,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get weatherMainFog => 'Niebla';
 
   @override
-  String get weatherMainHaze => 'Calima';
+  String get weatherMainHaze => 'Bruma ligera';
+
+  @override
+  String get weatherMainHazeDescription =>
+      'Visibilidad reducida por bruma en el aire';
 
   @override
   String get weatherMainSmoke => 'Humo';
@@ -12763,4 +12782,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get moodMatchAlreadyOnYourPlan => 'Already on your plan';
+
+  @override
+  String get weatherModalNow => 'Ahora';
+
+  @override
+  String get weatherModalTipTitle => 'Mi consejo de hoy';
+
+  @override
+  String get weatherModalTipRain =>
+      'Se espera lluvia hoy. Lleva paraguas y prioriza una actividad en interior.';
+
+  @override
+  String get weatherModalTipSunnyHighUv =>
+      'Hace sol y el UV está alto hoy. Usa protector solar, lleva agua y busca sombra por momentos.';
+
+  @override
+  String get weatherModalTipSunny =>
+      'Tiempo suave y seco hoy. Ideal para un paseo o una parada en terraza.';
+
+  @override
+  String get weatherModalTipCloudy =>
+      'Cielo nublado y probablemente más fresco. Lleva una capa extra para ir cómodo.';
+
+  @override
+  String get weatherModalTipDefault =>
+      'El tiempo puede cambiar hoy. Vístete en capas y revisa el pronóstico más tarde.';
 }

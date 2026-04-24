@@ -70,30 +70,30 @@ function planBody(nl: boolean, event: string, d: Record<string, unknown>): strin
   const n = String(d.n ?? '').trim()
   switch (event) {
     case 'mood_match_invite':
-      return sub(nl ? '[name] wil een dag plannen met je 👀 Doe je mee?' : '[name] wants to plan a day with you 👀 You in?', { name })
+      return sub(nl ? 'Ik zag dat [name] met je wil plannen 👀 Zal ik jullie op weg helpen?' : 'I saw [name] wants to plan with you 👀 Want me to kick this off?', { name })
     case 'guest_joined':
       return sub(
-        nl ? '[name] is erbij. Jullie kiezen allebei een vibe — jij eerst.' : '[name] joined. You both pick a mood — go first.',
+        nl ? '[name] is erbij. Ik help jullie stap voor stap — jij mag eerst je vibe kiezen.' : '[name] joined. I will guide both of you — you pick your vibe first.',
         { name },
       )
     case 'mood_locked':
       return sub(
-        nl ? '[name] heeft gekozen. Jouw beurt — wat is jouw vibe?' : "[name] locked in their mood. Your turn — what's yours?",
+        nl ? '[name] heeft gekozen. Jouw beurt nu — wat voel je?' : "[name] locked their mood. Your turn now — what are you feeling?",
         { name },
       )
     case 'plan_ready':
       return sub(
-        nl ? 'Jullie dag staat klaar. [name] heeft 3 plekken gekozen — kijk maar.' : 'Your day is ready. [name] picked 3 spots — take a look.',
+        nl ? 'Jullie plan staat klaar. Ik heb alles netjes voor je klaargezet — check het even.' : "Your plan is ready. I lined everything up for you — take a look.",
         { name },
       )
     case 'day_proposed':
       return sub(
-        nl ? '[name] stelt [day] voor. Komt dat uit?' : '[name] suggested [day] for your day out. Works for you?',
+        nl ? '[name] stelt [day] voor. Past dat voor jou?' : '[name] suggested [day]. Does that work for you?',
         { name, day },
       )
     case 'day_accepted':
       return sub(
-        nl ? '[name] bevestigde [day]. Kies nu jouw starttijd.' : '[name] confirmed [day]. Now pick your start time.',
+        nl ? '[name] bevestigde [day]. Kies nu je starttijd en ik regel de rest.' : '[name] confirmed [day]. Pick your start time and I will handle the rest.',
         { name, day },
       )
     case 'day_counter_proposed': {
@@ -101,71 +101,71 @@ function planBody(nl: boolean, event: string, d: Record<string, unknown>): strin
       const newDay = String(d.new_day ?? d.proposed_date ?? d.day ?? '').trim()
       return sub(
         nl
-          ? '[name] kan niet op [previous_day]. Ze stellen [new_day] voor — komt dat uit?'
-          : "[name] can't do [previous_day]. They suggested [new_day] instead — works for you?",
+          ? '[name] kan niet op [previous_day]. Ze stellen [new_day] voor — past dat voor jou?'
+          : "[name] can't do [previous_day]. They suggested [new_day] instead — does that work for you?",
         { name, previous_day: previousDay, new_day: newDay },
       )
     }
     case 'swap_counter_proposed':
       return sub(
-        nl ? '[name] heeft een ander idee voor de [slot]. Kijk maar — jij beslist.' : '[name] suggested a different activity for the [slot]. Take a look — your call.',
+        nl ? '[name] heeft een ander idee voor de [slot]. Ik heb het klaarstaan — jij beslist.' : '[name] suggested a different idea for the [slot]. I have it ready — your call.',
         { name, slot },
       )
     case 'swap_requested':
       return sub(
-        nl ? '[name] wil de [slot] omwisselen. Ze hebben een idee — jij beslist.' : '[name] wants to swap the [slot]. They have an idea — your call.',
+        nl ? '[name] wil de [slot] omwisselen. Ik heb hun voorstel voor je klaar.' : '[name] wants to swap the [slot]. I have their proposal ready for you.',
         { name, slot },
       )
     case 'swap_accepted':
       return sub(
-        nl ? '[name] accepteerde jouw wissel. [slot] is geregeld ✓' : '[name] said yes to your swap. [slot] is sorted ✓',
+        nl ? '[name] accepteerde je wissel. [slot] staat nu vast ✓' : '[name] accepted your swap. [slot] is now set ✓',
         { name, slot },
       )
     case 'swap_declined':
       return sub(
-        nl ? '[name] hield de originele keuze voor de [slot]. Prima.' : '[name] kept the original for the [slot]. Fair enough.',
+        nl ? '[name] houdt de originele keuze voor de [slot]. Ik laat het zo staan.' : '[name] kept the original for the [slot]. I will keep it as is.',
         { name, slot },
       )
     case 'both_confirmed':
       return nl
-        ? 'Jullie dag is bevestigd. Kies je starttijd en je bent klaar 🗓️'
-        : "Your day is locked. Pick your start time and you're ready 🗓️"
+        ? 'Jullie dag is bevestigd. Kies je starttijd en ik ben klaar om je te begeleiden 🗓️'
+        : "Your day is confirmed. Pick your start time and I am ready to guide you 🗓️"
     case 'guest_left_session':
       return sub(
-        nl ? '[name] heeft de Mood Match verlaten.' : '[name] left this Mood Match.',
+        nl ? '[name] is uit deze Mood Match gegaan. Ik help je met de volgende stap.' : '[name] left this Mood Match. I can help you with the next step.',
         { name },
       )
     case 'host_ended_session':
       return sub(
-        nl ? '[name] heeft deze Mood Match geannuleerd.' : '[name] ended this Mood Match.',
+        nl ? '[name] heeft deze Mood Match gestopt. Ik sta voor je klaar als je opnieuw wilt plannen.' : '[name] ended this Mood Match. I am here when you want to plan again.',
         { name },
       )
     case 'leaving_soon':
       return sub(
-        nl ? '[place] is [minutes] minuten rijden. Het kan slim zijn om nu te gaan.' : '[place] is [minutes] minutes away. Might be worth leaving now.',
+        nl ? '[place] is [minutes] minuten rijden. Ik zou nu vertrekken zodat je relaxed aankomt.' : '[place] is [minutes] minutes away. I would leave now so you arrive relaxed.',
         { place, minutes },
       )
     case 'confirm_tonight':
-      return sub(nl ? '[place] om [time] — ga je nog?' : '[place] at [time] — still on for tonight?', { place, time })
+      return sub(nl ? '[place] om [time] — ga je nog? Ik kan je helpen voorbereiden.' : '[place] at [time] — still on tonight? I can help you prep.', { place, time })
     case 'rate_activity':
       return sub(
-        nl ? 'Hoe was [place]? Een snelle beoordeling helpt me beter plannen.' : 'How was [place]? Quick rating helps me plan better for you.',
+        nl ? 'Hoe was [place]? Als je me snel beoordeelt, plan ik morgen nog beter voor je.' : 'How was [place]? If you rate it quickly, I can plan even better for you tomorrow.',
         { place },
       )
     case 'morning_summary':
       return sub(
-        nl ? 'Goedemorgen. [n] dingen gepland vandaag. Eerst [firstActivity].' : 'Good morning. [n] things planned today. [firstActivity] first.',
+        nl ? 'Goedemorgen ☀️ Ik heb [n] dingen voor je vandaag. We starten met [firstActivity].' : 'Good morning ☀️ I lined up [n] things for today. We start with [firstActivity].',
         { n, firstActivity },
       )
     case 'weekend_nudge':
       return sub(
-        nl ? 'Nog niks gepland voor het weekend. [day] is nog vrij — zal ik iets zoeken?' : "Nothing planned for the weekend yet. [day]'s wide open — want me to find something?",
+        nl ? '[day] is nog vrij. Zal ik iets leuks voor je weekend zoeken?' : "[day] is still open. Want me to find something fun for your weekend?",
         { day },
       )
     case 'milestone':
       return nl ? String(d.message_nl ?? d.message ?? '') : String(d.message_en ?? d.message ?? '')
     default:
-      return nl ? 'Er is een update voor je Mood Match.' : "There's a Mood Match update."
+      return nl ? 'Ik heb een update voor je klaargezet.' : 'I have an update ready for you.'
   }
 }
 
@@ -173,13 +173,13 @@ function socialBody(nl: boolean, event: string, d: Record<string, unknown>): str
   const name = String(d.sender_username ?? '').trim()
   switch (event) {
     case 'post_reaction':
-      return sub(nl ? '[name] reageerde op je post.' : '[name] reacted to your post.', { name })
+      return sub(nl ? 'Ik zag dat [name] op je post reageerde.' : 'I saw [name] reacted to your post.', { name })
     case 'post_comment':
-      return sub(nl ? '[name] reageerde op je bericht.' : '[name] commented on your post.', { name })
+      return sub(nl ? 'Ik zag dat [name] een reactie achterliet op je bericht.' : 'I saw [name] commented on your post.', { name })
     case 'new_follower':
-      return sub(nl ? '[name] volgt je nu.' : '[name] started following you.', { name })
+      return sub(nl ? '[name] volgt je nu. Ik dacht dat je dit meteen wilde weten.' : '[name] started following you. Thought you would want to know right away.', { name })
     default:
-      return nl ? 'Je hebt een melding.' : 'You have an update.'
+      return nl ? 'Ik heb een update voor je.' : 'I have an update for you.'
   }
 }
 
@@ -189,11 +189,11 @@ function notificationCopy(
   data: Record<string, unknown>,
 ): { title: string; body: string } {
   const isSocial = event === 'post_reaction' || event === 'post_comment' || event === 'new_follower'
-  if (isSocial) return { title: 'WanderMood', body: socialBody(nl, event, data) }
+  if (isSocial) return { title: 'Moody', body: socialBody(nl, event, data) }
   if (event === 'morning_summary' || event === 'weekend_nudge' || event === 'milestone') {
-    return { title: nl ? 'Moody' : 'Moody', body: planBody(nl, event, data) }
+    return { title: 'Moody', body: planBody(nl, event, data) }
   }
-  return { title: 'Mood Match', body: planBody(nl, event, data) }
+  return { title: 'Moody', body: planBody(nl, event, data) }
 }
 
 function parseServiceAccount(raw: string | undefined): ServiceAccount {

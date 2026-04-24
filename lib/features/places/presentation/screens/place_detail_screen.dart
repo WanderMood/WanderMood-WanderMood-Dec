@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
+import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -42,6 +44,28 @@ const bool kWmPlaceDetailHeroPhotoDebug = bool.fromEnvironment(
   'WM_PLACE_DETAIL_HERO_DEBUG',
   defaultValue: false,
 );
+
+void _agentLogPlaceDetail(
+  String hypothesisId,
+  String message, {
+  Map<String, dynamic>? data,
+  String runId = 'run1',
+  String location = 'place_detail_screen.dart',
+}) {
+  try {
+    final entry = {
+      'sessionId': '9a3a3b',
+      'runId': runId,
+      'hypothesisId': hypothesisId,
+      'location': location,
+      'message': message,
+      'data': data ?? <String, dynamic>{},
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+    File('/Users/edviennemerencia/WanderMood-WanderMood-Dec/.cursor/debug-9a3a3b.log')
+        .writeAsStringSync('${jsonEncode(entry)}\n', mode: FileMode.append, flush: true);
+  } catch (_) {}
+}
 
 String _wmHeroDebugClipUrl(String u) {
   final t = u.trim();
@@ -268,6 +292,20 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     try {
       // 1. Card / cache order first (legacy /place/photo URLs that already work).
       var photos = place.photos.take(10).toList();
+      // #region agent log
+      _agentLogPlaceDetail(
+        'H1',
+        'resolve unified start',
+        location: 'place_detail_screen.dart:_resolveUnifiedDetailPhotos:start',
+        data: {
+          'placeId': place.id,
+          'initialCount': photos.length,
+          'firstPhoto': photos.isNotEmpty ? _wmHeroDebugClipUrl(photos.first) : '',
+          'hasV1Media': photos.any(isPlacesApiNewPhotoMediaUrl),
+          'isGoogleBacked': _isGoogleBackedPlace(place.id),
+        },
+      );
+      // #endregion
 
       // 2. Append legacy Details photo URLs only when the card did not already ship
       // a multi-image Places v1 gallery. Merging v1 + legacy repeats the same frames
@@ -279,6 +317,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           final urls = await ref
               .read(placesServiceProvider.notifier)
               .fetchPhotoUrlsForGooglePlace(place.id);
+          // #region agent log
+          _agentLogPlaceDetail(
+            'H2',
+            'fetched google place photo urls',
+            location: 'place_detail_screen.dart:_resolveUnifiedDetailPhotos:fetchPhotoUrls',
+            data: {
+              'placeId': place.id,
+              'fetchedCount': urls.length,
+              'firstFetched': urls.isNotEmpty ? _wmHeroDebugClipUrl(urls.first) : '',
+            },
+          );
+          // #endregion
           if (urls.isNotEmpty) {
             photos = PlacesService.mergeUniquePhotoUrls(
               photos,
@@ -325,6 +375,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       // CachedNetworkImage never follow redirects (iOS release hang on `/media`).
       merged = await resolvePlacesNewPhotoUrlList(merged);
       merged = dedupeRepeatedHeroIdentity(merged);
+      // #region agent log
+      _agentLogPlaceDetail(
+        'H3',
+        'resolved unified done',
+        location: 'place_detail_screen.dart:_resolveUnifiedDetailPhotos:done',
+        data: {
+          'placeId': place.id,
+          'finalCount': merged.length,
+          'finalFirst': merged.isNotEmpty ? _wmHeroDebugClipUrl(merged.first) : '',
+        },
+      );
+      // #endregion
       return PlacesService.mergeUniquePhotoUrls(merged, [], maxPhotos: 10);
     } catch (e) {
       debugPrint('📷 place_detail: error resolving unified detail photos: $e');

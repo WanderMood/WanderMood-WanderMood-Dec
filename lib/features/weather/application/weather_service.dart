@@ -266,7 +266,7 @@ class WeatherService extends _$WeatherService {
     }
   }
 
-  // Get daily forecast for next 3 days
+  // Get daily forecast for next days (up to 7, depending on API horizon)
   Future<List<WeatherForecast>> getDailyForecast(WeatherLocation location) async {
     try {
       if (_apiKey.isEmpty) {
@@ -276,7 +276,7 @@ class WeatherService extends _$WeatherService {
       print('Getting daily forecast for ${location.name} at ${location.latitude}, ${location.longitude}');
       
       // For daily forecasts, we need to use a different endpoint
-      final url = 'https://api.openweathermap.org/data/2.5/forecast/daily?lat=${location.latitude}&lon=${location.longitude}&cnt=3&appid=$_apiKey&units=metric';
+      final url = 'https://api.openweathermap.org/data/2.5/forecast/daily?lat=${location.latitude}&lon=${location.longitude}&cnt=7&appid=$_apiKey&units=metric';
       
       // Since free API doesn't have daily endpoint, we'll use the standard forecast and aggregate by day
       final hourlyUrl = '$_baseUrl/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=$_apiKey&units=metric';
@@ -291,12 +291,12 @@ class WeatherService extends _$WeatherService {
         // Extract the hourly forecasts list
         final List<dynamic> hourlyList = data['list'];
         
-        // Group forecasts by day
-        final Map<String, List<dynamic>> forecastsByDay = {};
+        // Group forecasts by day (DateTime keys avoid string parse/sort issues).
+        final Map<DateTime, List<dynamic>> forecastsByDay = {};
         
         for (var item in hourlyList) {
           final date = DateTime.fromMillisecondsSinceEpoch(item['dt'] * 1000);
-          final dateKey = '${date.year}-${date.month}-${date.day}';
+          final dateKey = DateTime(date.year, date.month, date.day);
           
           if (!forecastsByDay.containsKey(dateKey)) {
             forecastsByDay[dateKey] = [];
@@ -308,13 +308,13 @@ class WeatherService extends _$WeatherService {
         // Create daily forecasts (excluding today)
         final List<WeatherForecast> dailyForecasts = [];
         final now = DateTime.now();
-        final today = '${now.year}-${now.month}-${now.day}';
+        final today = DateTime(now.year, now.month, now.day);
         
         // Sort days
         final sortedDays = forecastsByDay.keys.toList()..sort();
         
-        // Skip today and take next 3 days
-        for (final day in sortedDays.where((d) => d != today).take(3)) {
+        // Skip today and take the next available days (target up to 7).
+        for (final day in sortedDays.where((d) => d != today).take(7)) {
           final forecasts = forecastsByDay[day]!;
           
           // Calculate max and min temperatures for the day
@@ -339,12 +339,11 @@ class WeatherService extends _$WeatherService {
             }
           }
           
-          // Create forecast for this day
-          final dateTime = DateTime.parse(day);
-          final dayOfWeek = _getDayOfWeek(dateTime.weekday);
+          // Create forecast for this day.
+          final dayOfWeek = _getDayOfWeek(day.weekday);
           
           dailyForecasts.add(WeatherForecast(
-            date: dateTime,
+            date: day,
             maxTemperature: maxTemp,
             minTemperature: minTemp,
             time: dayOfWeek,

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
 import 'package:wandermood/core/errors/explore_location_exception.dart';
@@ -20,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
+import 'package:wandermood/core/utils/reverse_geocode_settlement.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'dart:async';
 
@@ -179,15 +181,29 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       // fall back to the app default city + coords so we can still generate a plan.
       final locationAsync = ref.read(locationNotifierProvider);
       final rawCity = locationAsync.value?.trim();
-      final city = (rawCity != null && rawCity.isNotEmpty)
-          ? rawCity
-          : (wm_location.LocationService.defaultLocation['name'] as String);
-
       final position = await ref.read(userLocationProvider.future);
       final lat = position?.latitude ??
           (wm_location.LocationService.defaultLocation['latitude'] as double);
       final lng = position?.longitude ??
           (wm_location.LocationService.defaultLocation['longitude'] as double);
+
+      // Keep city + coordinates in sync: if we have GPS coordinates, derive the
+      // city from those coordinates first. This prevents mismatches like
+      // "Rotterdam" paired with simulator coordinates in another country.
+      String city = (rawCity != null && rawCity.isNotEmpty)
+          ? rawCity
+          : (wm_location.LocationService.defaultLocation['name'] as String);
+      if (position != null) {
+        try {
+          final placemarks = await placemarkFromCoordinates(lat, lng);
+          final detectedCity = settlementNameFromPlacemarks(placemarks)?.trim();
+          if (detectedCity != null && detectedCity.isNotEmpty) {
+            city = detectedCity;
+          }
+        } catch (_) {
+          // Keep existing city fallback if reverse-geocoding fails.
+        }
+      }
 
       if (rawCity == null || rawCity.isEmpty || position == null) {
         debugPrint('📍 Location unavailable; using default city: $city at ($lat, $lng)');

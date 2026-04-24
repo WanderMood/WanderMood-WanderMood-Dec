@@ -172,6 +172,17 @@ class InAppNotificationCopy {
     required String event,
     required Map<String, dynamic> data,
   }) {
+    if (event == 'moody_chat_reminder') {
+      final when = (data['when_label'] ?? '').toString().trim();
+      if (when.isEmpty) {
+        return nl
+            ? 'Moody heeft een herinnering voor je klaargezet.'
+            : 'Moody set a reminder for you.';
+      }
+      return nl
+          ? 'Herinnering gepland voor $when.'
+          : 'Reminder set for $when.';
+    }
     if (event == 'morning_summary') {
       return sub(
         nl

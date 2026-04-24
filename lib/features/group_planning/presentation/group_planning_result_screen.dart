@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +61,28 @@ const _creamInk = GroupPlanningUi.charcoal;
 const _creamInkSoft = GroupPlanningUi.stone;
 
 class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultScreen> {
+  void _agentLogMoodMatch(
+    String hypothesisId,
+    String message, {
+    Map<String, dynamic>? data,
+    String runId = 'run1',
+    String location = 'group_planning_result_screen.dart',
+  }) {
+    try {
+      final entry = {
+        'sessionId': '9a3a3b',
+        'runId': runId,
+        'hypothesisId': hypothesisId,
+        'location': location,
+        'message': message,
+        'data': data ?? <String, dynamic>{},
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+      File('/Users/edviennemerencia/WanderMood-WanderMood-Dec/.cursor/debug-9a3a3b.log')
+          .writeAsStringSync('${jsonEncode(entry)}\n', mode: FileMode.append, flush: true);
+    } catch (_) {}
+  }
+
   Map<String, dynamic>? _planData;
   List<GroupMemberView> _members = [];
   GroupSessionRow? _session;
@@ -634,8 +658,76 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   /// Explorer screen does.
   void _openPlaceDetail(Map<String, dynamic> activity) {
     final raw = _placeIdForDetailNavigation(activity);
-    if (raw == null || raw.isEmpty) return;
+    if (raw == null || raw.isEmpty) {
+      showWanderMoodToast(
+        context,
+        message: AppLocalizations.of(context)!.placeDetailUnavailableName,
+      );
+      return;
+    }
     context.push('/place/${Uri.encodeComponent(raw)}');
+  }
+
+  String _activityImageUrl(Map<String, dynamic> activity) {
+    String pick(dynamic v) {
+      final s = v?.toString().trim() ?? '';
+      return s;
+    }
+
+    final direct = <dynamic>[
+      activity['imageUrl'],
+      activity['image_url'],
+      activity['photo_url'],
+      activity['photoUrl'],
+      activity['heroPhoto'],
+      activity['hero_photo'],
+    ];
+    for (final v in direct) {
+      final s = pick(v);
+      if (s.isNotEmpty) return s;
+    }
+
+    final resolved = GroupPlanV2.resolveActivityImageUrl(activity).trim();
+    if (resolved.isNotEmpty) {
+      // #region agent log
+      _agentLogMoodMatch(
+        'H5',
+        'mood match image resolved via GroupPlanV2',
+        location: 'group_planning_result_screen.dart:_activityImageUrl',
+        data: {
+          'placeId': GroupPlanV2.resolvePlaceId(activity) ?? '',
+          'resolved': resolved,
+        },
+      );
+      // #endregion
+      return resolved;
+    }
+
+    final photos = activity['photos'];
+    if (photos is List) {
+      for (final p in photos) {
+        if (p is String) {
+          final s = p.trim();
+          if (s.isNotEmpty) return s;
+        } else if (p is Map) {
+          final s = pick(
+            p['url'] ??
+                p['photo_url'] ??
+                p['photoUrl'] ??
+                p['name'] ??
+                p['uri'],
+          );
+          if (s.isNotEmpty) return s;
+        }
+      }
+    }
+
+    final place = activity['place'];
+    if (place is Map) {
+      final nested = _activityImageUrl(Map<String, dynamic>.from(place));
+      if (nested.isNotEmpty) return nested;
+    }
+    return '';
   }
 
   Future<String?> _resolvePlannedDateString() async {
@@ -1140,7 +1232,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                       final name =
                           (o['name'] ?? o['title'] ?? 'Place').toString();
                       final rating = (o['rating'] as num?)?.toDouble() ?? 0;
-                      final url = (o['imageUrl'] ?? '').toString();
+                      final url = _activityImageUrl(Map<String, dynamic>.from(o));
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Material(
@@ -2515,7 +2607,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       statusColor = _wmSunset;
     }
 
-    final url = (act['imageUrl'] ?? '').toString();
+    final url = _activityImageUrl(act);
     final ownerLocks = _ownerLocksPlanWhileGuestReviews(_planData);
     final showHeroDraftCheck = draftSelected && !bothConfirmedOnSlot;
     final moodLine = _activityMoodLine(l10n, moodyStory);

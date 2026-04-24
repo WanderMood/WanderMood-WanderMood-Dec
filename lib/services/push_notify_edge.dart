@@ -44,6 +44,7 @@ void schedulePushNotify({
   required String event,
   required Map<String, dynamic> data,
   String? lang,
+  bool persistInApp = true,
 }) {
   unawaited(() async {
     try {
@@ -55,9 +56,7 @@ void schedulePushNotify({
         'event': event,
         'lang': langCode,
         'data': data,
-        // App-side Mood Match flows already persist to realtime_events before
-        // calling push. Prevent duplicate bell entries from the edge fallback.
-        'persist_in_app': false,
+        'persist_in_app': persistInApp,
       };
       final res = await _invokePushNotifyWithRetry(client, payload);
       if (kDebugMode) {

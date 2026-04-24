@@ -6505,6 +6505,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chatSheetInputHint => 'Quel est ton mood aujourd\'hui ?';
 
   @override
+  String get chatSheetMessageCopy => 'Copier';
+
+  @override
+  String get chatSheetMessageReply => 'Répondre';
+
+  @override
+  String get chatSheetCopied => 'Copié dans le presse-papiers';
+
+  @override
+  String get chatSheetReplyLabelYou => 'Toi';
+
+  @override
   String get moodyConversationGreeting =>
       'Salut ! Comment tu te sens aujourd\'hui ? Je peux te suggérer des activités selon ton mood.';
 
@@ -10181,6 +10193,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'L’accès au micro est nécessaire pour la saisie vocale.';
 
   @override
+  String get chatSheetMicrophoneOpenSettings => 'Ouvrir Réglages';
+
+  @override
   String get devAdminScreenDisabled =>
       'L’écran d’administration est désactivé en production.';
 
@@ -10604,7 +10619,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get weatherMainFog => 'Brouillard';
 
   @override
-  String get weatherMainHaze => 'Brume sèche';
+  String get weatherMainHaze => 'Légère brume';
+
+  @override
+  String get weatherMainHazeDescription =>
+      'Visibilité réduite à cause d\'une brume dans l\'air';
 
   @override
   String get weatherMainSmoke => 'Fumée';
@@ -12815,4 +12834,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get moodMatchAlreadyOnYourPlan => 'Already on your plan';
+
+  @override
+  String get weatherModalNow => 'Maintenant';
+
+  @override
+  String get weatherModalTipTitle => 'Mon conseil du jour';
+
+  @override
+  String get weatherModalTipRain =>
+      'De la pluie est prévue aujourd\'hui. Prends un parapluie et privilégie une activité en intérieur.';
+
+  @override
+  String get weatherModalTipSunnyHighUv =>
+      'Il fait soleil et l\'indice UV est élevé aujourd\'hui. Mets de la crème solaire, prends de l\'eau et prévois des pauses à l\'ombre.';
+
+  @override
+  String get weatherModalTipSunny =>
+      'Temps doux et sec aujourd\'hui. Idéal pour une promenade ou une pause en terrasse.';
+
+  @override
+  String get weatherModalTipCloudy =>
+      'Ciel nuageux et probablement plus frais. Prends une couche supplémentaire pour rester à l\'aise.';
+
+  @override
+  String get weatherModalTipDefault =>
+      'La météo peut changer aujourd\'hui. Habille-toi en couches et vérifie la prévision plus tard.';
 }

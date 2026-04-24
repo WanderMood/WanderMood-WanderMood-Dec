@@ -16,17 +16,16 @@ import 'package:wandermood/features/mood/services/mood_options_service.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// Change mood from Moody Hub: bottom sheet mood grid → [PlanLoadingScreen].
+/// Change mood from Moody Hub: modal mood grid → [PlanLoadingScreen].
 Future<void> showMoodChangePlanBottomSheet(BuildContext navigatorContext) async {
   await Future.delayed(const Duration(milliseconds: 280));
   if (!navigatorContext.mounted) return;
 
   final l10n = AppLocalizations.of(navigatorContext)!;
 
-  await showModalBottomSheet<void>(
+  await showDialog<void>(
     context: navigatorContext,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.30),
     builder: (sheetCtx) {
       // Modal builders are not Riverpod build methods: [ref.watch] here never
       // triggers a rebuild when [moodOptionsProvider] completes — wrap in
@@ -34,104 +33,105 @@ Future<void> showMoodChangePlanBottomSheet(BuildContext navigatorContext) async 
       return Consumer(
         builder: (context, sheetRef, _) {
           final moodsAsync = sheetRef.watch(moodOptionsProvider);
-          return DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.62,
-            minChildSize: 0.4,
-            maxChildSize: 0.92,
-            builder: (_, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF5F0E8),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: moodsAsync.when(
-                  loading: () => const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator(),
-                    ),
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: SizedBox(
+                height: MediaQuery.of(sheetCtx).size.height * 0.86,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F0E8),
                   ),
-                  error: (_, __) => Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(l10n.homeChatErrorRetry),
+                  child: moodsAsync.when(
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                  data: (List<MoodOption> options) {
-                    final sorted = [...options]
-                      ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
-                    var active = sorted.where((o) => o.isActive).toList();
-                    if (active.isEmpty) {
-                      active = MoodOptionsService.fallbackMoodOptions()
-                          .where((o) => o.isActive)
-                          .toList();
-                    }
-                    return Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade400,
-                            borderRadius: BorderRadius.circular(99),
+                    error: (_, __) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(l10n.homeChatErrorRetry),
+                      ),
+                    ),
+                    data: (List<MoodOption> options) {
+                      final sorted = [...options]
+                        ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+                      var active = sorted.where((o) => o.isActive).toList();
+                      if (active.isEmpty) {
+                        active = MoodOptionsService.fallbackMoodOptions()
+                            .where((o) => o.isActive)
+                            .toList();
+                      }
+                      return Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade400,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              l10n.moodyHubChangeMood,
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1E1C18),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                l10n.moodyHubChangeMood,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1E1C18),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: GridView.builder(
-                            controller: scrollController,
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
-                              childAspectRatio: 1.32,
+                          Expanded(
+                            child: GridView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                                childAspectRatio: 1.32,
+                              ),
+                              itemCount: active.length,
+                              itemBuilder: (_, i) {
+                                final o = active[i];
+                                return MoodHubStyleMoodTile(
+                                  emoji: o.emoji,
+                                  pastelBase: o.color,
+                                  title: localizedMoodDisplayLabel(l10n, o.label),
+                                  isSelected: false,
+                                  dimmed: false,
+                                  emojiSize: 26,
+                                  titleSize: 10,
+                                  tileRadius: 16,
+                                  showCheckBadge: false,
+                                  onTap: () => unawaited(_commitMoodAndOpenLoading(
+                                        navigatorContext: navigatorContext,
+                                        sheetContext: sheetCtx,
+                                        ref: sheetRef,
+                                        label: o.label,
+                                      )),
+                                );
+                              },
                             ),
-                            itemCount: active.length,
-                            itemBuilder: (_, i) {
-                              final o = active[i];
-                              return MoodHubStyleMoodTile(
-                                emoji: o.emoji,
-                                pastelBase: o.color,
-                                title: localizedMoodDisplayLabel(l10n, o.label),
-                                isSelected: false,
-                                dimmed: false,
-                                emojiSize: 26,
-                                titleSize: 10,
-                                tileRadius: 16,
-                                showCheckBadge: false,
-                                onTap: () => unawaited(_commitMoodAndOpenLoading(
-                                      navigatorContext: navigatorContext,
-                                      sheetContext: sheetCtx,
-                                      ref: sheetRef,
-                                      label: o.label,
-                                    )),
-                              );
-                            },
                           ),
-                        ),
-                      ],
-                    );
-                  },
+                        ],
+                      );
+                    },
+                  ),
                 ),
-              );
-            },
+              ),
+            ),
           );
         },
       );

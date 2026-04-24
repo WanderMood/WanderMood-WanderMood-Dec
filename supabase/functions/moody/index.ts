@@ -175,7 +175,7 @@ function getTimeOfDayContext(): { timeSlot: 'morning' | 'afternoon' | 'evening';
 }
 
 function getBroadExploreQueries(isLocalMode: boolean, interests: string[]): string[] {
-  const base = isLocalMode ? ['neighbourhood restaurant hidden gem','local cafe specialty coffee','new opening restaurant','local market','afterwork bar local','neighbourhood bakery','wine bar local','cozy bistro neighbourhood','hidden bar local','neighbourhood terrace','pottery workshop local','ceramic painting studio','urban farm visit','petting farm family','bookstore cafe local','indie gallery opening'] : ['best restaurant city','rooftop bar city views','scenic viewpoint','art museum','street food market','iconic cafe','cocktail bar','waterfront restaurant','cultural attraction','local market','hidden gem restaurant','popular bar city','pottery workshop city','ceramic painting cafe','urban farm experience','creative workshop city']
+  const base = isLocalMode ? ['neighbourhood restaurant hidden gem','local market','new opening neighbourhood','indie gallery opening','pottery workshop local','ceramic painting studio','urban farm visit','petting farm family','vintage boutique local','bookstore design concept','creative studio class local','architecture walk local','small theater performance local','cozy bookstore event','local craft market weekend','community workshop city'] : ['best restaurant city','scenic viewpoint','art museum','cultural attraction','local market','pottery workshop city','urban farm experience','creative workshop city','independent boutique district','design store concept','architecture landmark route','photo exhibition city','bookstore event city','craft market city center','boat tour city harbor','immersive experience city']
   const iq: string[] = []
   for (const interest of interests.slice(0, 3)) { const i = interest.toLowerCase(); if (i.includes('food') || i.includes('eat')) iq.push('artisan food market','specialty restaurant'); else if (i.includes('culture') || i.includes('art')) iq.push('art gallery contemporary','cultural museum'); else if (i.includes('nightlife') || i.includes('bar')) iq.push('cocktail bar rooftop','live music bar'); else if (i.includes('outdoor') || i.includes('nature')) iq.push('park waterfront','outdoor terrace scenic'); else if (i.includes('coffee')) iq.push('specialty coffee roastery','concept cafe') }
   return [...new Set([...iq, ...base])].slice(0, 16)
@@ -386,6 +386,47 @@ function interleaveByBucket(places: PlaceCard[]): PlaceCard[] {
     const picked = buckets.get(bestBucket)!.shift()
     if (picked) out.push(picked)
     lastBucket = bestBucket
+  }
+  return out
+}
+
+function enforceExploreVariety(places: PlaceCard[]): PlaceCard[] {
+  if (places.length <= 4) return places
+  const dominant = new Set<PlaceBucket>(['food', 'cafe_bakery', 'nightlife'])
+  const source = [...places]
+  const headSize = Math.min(12, source.length)
+  const targetNonDominantInHead = Math.min(4, headSize)
+
+  // Pass 1: strengthen first-page category mix.
+  for (let i = 0; i < headSize; i++) {
+    const head = source.slice(0, headSize)
+    const nonDominant = head.filter((p) => !dominant.has(classifyPlaceBucket(p))).length
+    if (nonDominant >= targetNonDominantInHead) break
+    if (!dominant.has(classifyPlaceBucket(source[i]))) continue
+    const swapIdx = source.findIndex(
+      (p, idx) => idx >= headSize && !dominant.has(classifyPlaceBucket(p)),
+    )
+    if (swapIdx < 0) break
+    const tmp = source[i]
+    source[i] = source[swapIdx]
+    source[swapIdx] = tmp
+  }
+
+  // Pass 2: avoid long dominant streaks (food/cafe/nightlife).
+  const out: PlaceCard[] = []
+  const queue = [...source]
+  while (queue.length > 0) {
+    const recent = out.slice(-2)
+    const recentDominantStreak =
+      recent.length == 2 &&
+      dominant.has(classifyPlaceBucket(recent[0])) &&
+      dominant.has(classifyPlaceBucket(recent[1]))
+    let pickIdx = 0
+    if (recentDominantStreak) {
+      const alt = queue.findIndex((p) => !dominant.has(classifyPlaceBucket(p)))
+      if (alt >= 0) pickIdx = alt
+    }
+    out.push(queue.splice(pickIdx, 1)[0])
   }
   return out
 }
@@ -734,7 +775,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const timeCtx = getTimeOfDayContext()
     const lang = googlePlacesLanguageFromRequest(params)
     const cacheKey = lang === 'en' ? `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
-    if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const exposureOrder = await getExposureOrder(supabase, userId); const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const decayed = applyExposureDecay(reranked, exposureOrder); const mixed = interleaveByBucket(decayed); const enriched = enrichWithSignals(applyFilters(mixed, filters), userContext.isLocalMode); await updateExposureMemory(supabase, userId, enriched); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
+    if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const exposureOrder = await getExposureOrder(supabase, userId); const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const decayed = applyExposureDecay(reranked, exposureOrder); const mixed = interleaveByBucket(decayed); const balanced = enforceExploreVariety(mixed); const enriched = enrichWithSignals(applyFilters(balanced, filters), userContext.isLocalMode); await updateExposureMemory(supabase, userId, enriched); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
     const externalTrendQueries = await fetchExternalTrendQueries(supabase, location, lang, 6)
@@ -742,9 +783,9 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const trendLayer = [...externalTrendQueries, ...seasonalTrendQueries]
     if (hasNamedFilters) exploreQueries = namedFilters.flatMap(f => getFilterSearchQueries(f)).slice(0, 16)
     else if (section === 'food') exploreQueries = userContext.isLocalMode ? ['neighbourhood restaurant','local food market','artisan bakery','specialty coffee','local bistro','neighbourhood cafe','local restaurant hidden gem'] : ['best restaurant city','food market artisan','famous bakery','specialty coffee','local cuisine','chef restaurant','food hall']
-    else if (section === 'trending') exploreQueries = [...trendLayer, 'trending restaurant new opening','popular rooftop bar','new cafe opening','buzzing food spot','viral restaurant','popular new bar','hottest restaurant city','pottery workshop trending','ceramic painting cafe popular','urban farm visit trending','bookshop cafe trending','creative studio class city']
+    else if (section === 'trending') exploreQueries = [...trendLayer, 'trending city workshop','popular rooftop bar','new opening gallery city','buzzing city event tonight','creative studio class city','pottery workshop trending','ceramic painting studio popular','urban farm visit trending','bookshop event trending','independent boutique opening city','immersive exhibition city popular','architecture route trending']
     else if (section === 'solo' || section === 'social') { const vibe = userContext.socialVibe?.[0]?.toLowerCase() || ''; exploreQueries = vibe.includes('solo') || vibe.includes('alone') ? ['quiet museum','solo cafe reading','bookstore cafe','gallery solo visit','peaceful park','cozy cafe solo','museum hidden gem'] : vibe.includes('group') || vibe.includes('friends') ? ['group restaurant lively','rooftop bar groups','food hall social','live music bar','cocktail bar','fun bar groups','lively terrace'] : ['cafe cozy','restaurant casual','bar relaxed','park','museum','gallery','terrace'] }
-    else if (section === 'different') exploreQueries = ['hidden gem restaurant','unusual cafe','underground bar','unique experience','street art neighbourhood','concept store cafe','unusual venue city']
+    else if (section === 'different') exploreQueries = ['unique experience city','street art neighbourhood','concept store design city','indie boutique hidden gem','experimental workshop city','gallery night opening','craft market hidden gem','bookstore event unusual','pottery workshop unusual','urban farm volunteer visit']
     else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || []); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...trendLayer, ...base].slice(0, 16) }
     else { const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang); exploreQueries = aiQ ?? getMoodQueries(mood) }
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
@@ -774,7 +815,8 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const decayed = applyExposureDecay(ranked, exposureOrder)
     if (!hasNamedFilters && !groupMatch) { await cacheExplore(supabase, cacheKey, ranked) }
     const mixed = interleaveByBucket(decayed)
-    const enriched = enrichWithSignals(applyFilters(mixed, filters), userContext.isLocalMode)
+    const balanced = enforceExploreVariety(mixed)
+    const enriched = enrichWithSignals(applyFilters(balanced, filters), userContext.isLocalMode)
     await updateExposureMemory(supabase, userId, enriched)
     return new Response(JSON.stringify({ cards: enriched, cached: false, total_found: enriched.length, unfiltered_total: ranked.length, named_filters_applied: namedFilters, section: section || 'all', time_slot: timeCtx.timeSlot }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) { console.error('❌ handleGetExplore:', error); return new Response(JSON.stringify({ cards: [], cached: false, total_found: 0, error: 'explore_fetch_failed' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
@@ -850,6 +892,37 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, aiQueries, false, placesLang)
     let qualified = await enrichAndFilter(places, { minRating: 3.8, minReviews: 20 })
     if (qualified.length === 0) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 8 })
+    if (qualified.length === 0) {
+      const fallbackPlaces = await fetchFallbackPlaces(location, coordinates, placesLang)
+      if (fallbackPlaces.length > 0) {
+        const seen = new Set<string>()
+        places = [...places, ...fallbackPlaces].filter((p) => {
+          const id = String(p.id || '').trim().toLowerCase()
+          if (!id || seen.has(id)) return false
+          seen.add(id)
+          return true
+        })
+        qualified = await enrichAndFilter(places, { minRating: 3.2, minReviews: 3 })
+      }
+    }
+    if (qualified.length === 0) {
+      // Last-resort recovery for sparse/strict-result areas:
+      // allow valid coordinate-bearing places even without photo/strong review counts.
+      qualified = places
+        .filter((p) => {
+          const rawId = p.id?.replace('google_', '').trim()
+          return (
+            !!rawId &&
+            !!p.name?.trim() &&
+            Number.isFinite(p.location?.lat) &&
+            Number.isFinite(p.location?.lng) &&
+            (p.location.lat !== 0 || p.location.lng !== 0) &&
+            (p.rating || 0) >= 3.0
+          )
+        })
+        .sort((a, b) => ((b.rating || 0) - (a.rating || 0)) || ((b.user_ratings_total || 0) - (a.user_ratings_total || 0)))
+        .slice(0, 40)
+    }
     if (qualified.length === 0) return new Response(JSON.stringify({ success: false, activities: [], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 0, error: 'No places found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const ranked = rankPlaces(qualified, moods[0] || 'adventurous', !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
     const recentPlaceIds = await fetchRecentlyScheduledPlaceIds(supabase, userId)
@@ -1103,7 +1176,7 @@ function resolveClientClockForChat(params: any): { clockBlock: string; timeSlot:
 
 async function getMoodyPersonalityResponse(moods: string[], activities: Activity[], location: string, userContext: any, lang: 'nl' | 'en'): Promise<{ moodyMessage: string; reasoning: string }> {
   const style = String(userContext?.communicationStyle || 'friendly'), n = activities.length, m = moods.join(' & ')
-  const fb: Record<string, Record<string, any>> = { nl: { energetic: { moodyMessage: `YO ik heb je dag gepland 🔥 ${n} activiteiten`, reasoning: 'Energie-mix.' }, professional: { moodyMessage: `Ik heb ${n} activiteiten voor je klaarstaan in ${location}.`, reasoning: 'Geselecteerd.' }, direct: { moodyMessage: `${n} activiteiten. Klaar.`, reasoning: 'Match.' }, calm: { moodyMessage: `Ik heb iets rustig voor je gepland ☀️`, reasoning: 'Rustige mix.' }, friendly: { moodyMessage: `Hey! Ik heb je ${m} dag gepland in ${location} 😊`, reasoning: 'Mooie mix.' } }, en: { energetic: { moodyMessage: `YO I planned your whole day 🔥 ${n} things, ${m} mode activated`, reasoning: 'High-energy picks.' }, professional: { moodyMessage: `I've lined up ${n} activities for you in ${location}.`, reasoning: 'Chosen for fit.' }, direct: { moodyMessage: `${n} activities. You're welcome.`, reasoning: 'Mood match.' }, calm: { moodyMessage: `I found something easy and good for you today ☀️`, reasoning: 'Calm mix.' }, friendly: { moodyMessage: `Hey! I planned your ${m} day in ${location} 😊`, reasoning: 'Nice mix.' } } }
+  const fb: Record<string, Record<string, any>> = { nl: { energetic: { moodyMessage: `Ik heb je dag gepland 🔥 ${n} activiteiten`, reasoning: 'Energie-mix.' }, professional: { moodyMessage: `Ik heb ${n} activiteiten voor je klaarstaan in ${location}.`, reasoning: 'Geselecteerd.' }, direct: { moodyMessage: `${n} activiteiten. Klaar.`, reasoning: 'Match.' }, calm: { moodyMessage: `Ik heb iets rustig voor je gepland ☀️`, reasoning: 'Rustige mix.' }, friendly: { moodyMessage: `Hey! Ik heb je ${m} dag gepland in ${location} 😊`, reasoning: 'Mooie mix.' } }, en: { energetic: { moodyMessage: `I planned your day 🔥 ${n} things, ${m} mode activated`, reasoning: 'High-energy picks.' }, professional: { moodyMessage: `I've lined up ${n} activities for you in ${location}.`, reasoning: 'Chosen for fit.' }, direct: { moodyMessage: `${n} activities. You're welcome.`, reasoning: 'Mood match.' }, calm: { moodyMessage: `I found something easy and good for you today ☀️`, reasoning: 'Calm mix.' }, friendly: { moodyMessage: `Hey! I planned your ${m} day in ${location} 😊`, reasoning: 'Nice mix.' } } }
   const fallback = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly, openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return fallback
   try {
@@ -1145,11 +1218,151 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
 
 function getFallbackChat(style: string, lang: 'nl' | 'en'): string { if (lang === 'nl') { switch (style) { case 'energetic': return 'YO even geduld! 🔥'; case 'professional': return 'Momenteel niet beschikbaar.'; case 'direct': return 'Even wachten.'; default: return 'Hey! Probeer het zo nog eens 😊' } }; switch (style) { case 'energetic': return 'YO hang on! 🔥'; case 'professional': return 'Currently unavailable.'; case 'direct': return 'Try again in a moment.'; default: return 'Hey! Try again in a sec 😊' } }
 
+function relatedSearchOptions(query: string): string[] {
+  const q = query.toLowerCase().trim().replace(/\s+/g, ' ')
+  if (!q) return []
+  const tokenAlias: Record<string, string> = {
+    italan: 'italian',
+    italanl: 'italian',
+    italians: 'italian',
+    italiaans: 'italian',
+    italiaanse: 'italian',
+    jamaicaan: 'jamaican',
+    jamaicaanse: 'jamaican',
+    japans: 'japanese',
+    japanees: 'japanese',
+    mexicaans: 'mexican',
+    turks: 'turkish',
+    indisch: 'indian',
+    chinees: 'chinese',
+    thais: 'thai',
+    koreaans: 'korean',
+    surinaams: 'surinamese',
+    halalfood: 'halal',
+    vega: 'vegetarian',
+  }
+  const cuisineMap: Record<string, string[]> = {
+    jamaican: ['caribbean restaurant', 'jerk chicken restaurant', 'island food'],
+    italian: ['pasta restaurant', 'pizza restaurant', 'trattoria'],
+    japanese: ['sushi restaurant', 'ramen restaurant', 'izakaya'],
+    mexican: ['taco restaurant', 'taqueria', 'latin restaurant'],
+    turkish: ['kebab restaurant', 'middle eastern restaurant', 'doner restaurant'],
+    indian: ['curry restaurant', 'tandoori restaurant', 'south asian restaurant'],
+    chinese: ['dim sum restaurant', 'szechuan restaurant', 'asian restaurant'],
+    thai: ['thai street food', 'asian restaurant', 'thai curry restaurant'],
+    korean: ['korean bbq', 'kimchi restaurant', 'asian restaurant'],
+    lebanese: ['middle eastern restaurant', 'mezze restaurant', 'levant restaurant'],
+    ethiopian: ['east african restaurant', 'eritrean restaurant', 'injera restaurant'],
+    surinamese: ['caribbean restaurant', 'indo-caribbean restaurant', 'roti restaurant'],
+    halal: ['halal restaurant', 'turkish restaurant', 'middle eastern restaurant'],
+    vegan: ['plant based restaurant', 'vegan cafe', 'vegetarian restaurant'],
+    brunch: ['breakfast restaurant', 'specialty coffee', 'bakery with seating'],
+  }
+  const tokens = q
+    .split(' ')
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((t) => tokenAlias[t] || t)
+  const out = new Set<string>()
+  for (const t of tokens) {
+    const matches = cuisineMap[t]
+    if (matches) {
+      for (const m of matches) out.add(m)
+    }
+  }
+  // Keep user intent and add broader alternates if no direct cuisine match.
+  if (out.size === 0) {
+    if (q.includes('restaurant')) {
+      out.add(q.replace('restaurant', 'food'))
+      out.add(q.replace('restaurant', 'dining'))
+      out.add('top rated restaurants')
+    } else if (q.includes('cafe') || q.includes('coffee')) {
+      out.add('specialty coffee')
+      out.add('brunch cafe')
+      out.add('bakery with seating')
+    } else {
+      out.add(`${q} near me`)
+      out.add(`${q} popular`)
+      out.add(`${q} local`)
+    }
+  }
+  return [...out].slice(0, 6)
+}
+
+function normalizeSearchQuery(query: string): string {
+  const tokenAlias: Record<string, string> = {
+    italan: 'italian',
+    italanl: 'italian',
+    italians: 'italian',
+    italiaans: 'italian',
+    italiaanse: 'italian',
+    jamaicaan: 'jamaican',
+    jamaicaanse: 'jamaican',
+    japans: 'japanese',
+    japanees: 'japanese',
+    mexicaans: 'mexican',
+    turks: 'turkish',
+    indisch: 'indian',
+    chinees: 'chinese',
+    thais: 'thai',
+    koreaans: 'korean',
+    surinaams: 'surinamese',
+    halalfood: 'halal',
+    vega: 'vegetarian',
+  }
+  return query
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map((t) => tokenAlias[t] || t)
+    .join(' ')
+}
+
 async function handleSearch(supabase: any, userId: string, params: any): Promise<Response> {
   const query = (params.query || '').trim(), location = (params.location || '').trim(), coordinates = params.coordinates
   if (!query) return new Response(JSON.stringify({ error: 'Query required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   if (!location || !coordinates?.lat || !coordinates?.lng) return new Response(JSON.stringify({ error: 'Location and coordinates required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  try { const results = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20, googlePlacesLanguageFromRequest(params)); const qualified = await enrichAndFilter(results, { minRating: 3.5, minReviews: 5 }); return new Response(JSON.stringify({ cards: qualified, total_found: qualified.length }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } catch { return new Response(JSON.stringify({ cards: [], total_found: 0 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+  try {
+    const lang = googlePlacesLanguageFromRequest(params)
+    const normalizedQuery = normalizeSearchQuery(query)
+    const related = relatedSearchOptions(query)
+    const primary = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20, lang)
+    let qualified = await enrichAndFilter(primary, { minRating: 3.5, minReviews: 5 })
+
+    // Fallback 1: loosen quality threshold while keeping basic place validity.
+    if (qualified.length === 0) {
+      qualified = await enrichAndFilter(primary, { minRating: 3.0, minReviews: 0 })
+    }
+
+    // Fallback 1.5: retry with typo/alias-normalized query (e.g. italan -> italian).
+    if (qualified.length === 0 && normalizedQuery && normalizedQuery !== query.toLowerCase().trim().replace(/\s+/g, ' ')) {
+      const normalizedPrimary = await searchPlacesV1(`${normalizedQuery} in ${location}`, coordinates, 22000, false, 20, lang)
+      qualified = await enrichAndFilter(normalizedPrimary, { minRating: 3.0, minReviews: 0 })
+    }
+
+    // Fallback 2: try related intent queries (e.g. jamaican -> caribbean).
+    if (qualified.length === 0 && related.length > 0) {
+      const expanded: PlaceCard[] = []
+      for (const rq of related.slice(0, 4)) {
+        const res = await searchPlacesV1(`${rq} in ${location}`, coordinates, 26000, false, 12, lang)
+        expanded.push(...res)
+      }
+      const deduped = Array.from(new Map(expanded.map((p) => [p.id, p])).values())
+      qualified = await enrichAndFilter(deduped, { minRating: 3.0, minReviews: 0 })
+    }
+
+    return new Response(
+      JSON.stringify({
+        cards: qualified,
+        total_found: qualified.length,
+        related_searches: related,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
+  } catch {
+    return new Response(JSON.stringify({ cards: [], total_found: 0, related_searches: relatedSearchOptions(query) }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
 }
 
 async function handleGenerateHubMessage(supabase: any, userId: string, params: Record<string, unknown>): Promise<Response> {

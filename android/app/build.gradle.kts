@@ -12,6 +12,11 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 }
+val defaultGoogleMapsApiKey = "AIzaSyDFqiRdkEvgQUZisLAgm97aJyFBGznkg0k"
+val googleMapsApiKey = (project.findProperty("GOOGLE_MAPS_API_KEY") as String?)
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?: defaultGoogleMapsApiKey
 
 android {
     namespace = "com.edviennemer.wandermood"
@@ -48,6 +53,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
     }
 
     buildTypes {

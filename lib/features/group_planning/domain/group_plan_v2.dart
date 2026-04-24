@@ -293,7 +293,7 @@ class GroupPlanV2 {
 
     for (final v in [m['place_id'], m['placeId']]) {
       final id = pick(v);
-      if (id != null) return id;
+      if (id != null && looksLikeGooglePlacesRef(id)) return id;
     }
     // Skip synthetic `activity_*` rows and short slugs — they are not Google ids
     // and break `/place/:id` + photo resolution (wrong hero / "mock" images).

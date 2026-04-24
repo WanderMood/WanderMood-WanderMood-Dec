@@ -1,5 +1,7 @@
 import 'dart:math' show Random;
 import 'dart:ui' as ui;
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show Locale;
@@ -34,6 +36,28 @@ class ExplorePlacesCacheHit {
 /// Cache keys must stay aligned with `supabase/functions/moody` (aggregate explore row).
 class PlacesCacheUtils {
   PlacesCacheUtils._();
+
+  static void _agentLogCache(
+    String hypothesisId,
+    String message, {
+    Map<String, dynamic>? data,
+    String runId = 'run1',
+    String location = 'places_cache_utils.dart',
+  }) {
+    try {
+      final entry = {
+        'sessionId': '9a3a3b',
+        'runId': runId,
+        'hypothesisId': hypothesisId,
+        'location': location,
+        'message': message,
+        'data': data ?? <String, dynamic>{},
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+      File('/Users/edviennemerencia/WanderMood-WanderMood-Dec/.cursor/debug-9a3a3b.log')
+          .writeAsStringSync('${jsonEncode(entry)}\n', mode: FileMode.append, flush: true);
+    } catch (_) {}
+  }
 
   /// Same as aggregate explore cache prefix in `moody` (`explore_v8_…`).
   static const String exploreCacheSchemaVersion = 'v8';
@@ -357,9 +381,47 @@ class PlacesCacheUtils {
   /// Maps a Moody `get_explore` card to [Place] (same shape as Edge Function JSON).
   static Place placeFromMoodyExploreCard(Map<String, dynamic> card) {
     final locationData = card['location'] as Map<String, dynamic>? ?? {};
+    bool looksLikeGooglePlaceRef(String id) {
+      final t = id.trim();
+      if (t.isEmpty) return false;
+      return t.startsWith('google_') || t.startsWith('ChIJ') || t.startsWith('EhIJ');
+    }
 
-    final photoUrl = card['photo_url'] as String?;
-    final photos = photoUrl != null && photoUrl.isNotEmpty ? <String>[photoUrl] : <String>[];
+    String normalizePlaceId(String raw) {
+      final t = raw.trim();
+      if (t.isEmpty) return '';
+      if (t.startsWith('google_')) return t;
+      if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return 'google_$t';
+      return t;
+    }
+
+    String pickPhoto(dynamic v) {
+      final s = v?.toString().trim() ?? '';
+      return s;
+    }
+
+    final photos = <String>[];
+    void add(dynamic v) {
+      final s = pickPhoto(v);
+      if (s.isEmpty) return;
+      if (!photos.contains(s)) photos.add(s);
+    }
+
+    add(card['photo_url']);
+    add(card['image_url']);
+    add(card['imageUrl']);
+    add(card['photoUrl']);
+
+    final cardPhotos = card['photos'];
+    if (cardPhotos is List) {
+      for (final p in cardPhotos) {
+        if (p is String) {
+          add(p);
+        } else if (p is Map) {
+          add(p['url'] ?? p['photo_url'] ?? p['photoUrl'] ?? p['uri'] ?? p['name']);
+        }
+      }
+    }
 
     final address = card['address'] as String? ??
         card['vicinity'] as String? ??
@@ -397,12 +459,33 @@ class PlacesCacheUtils {
       );
     }
 
+    final rawId = (card['id'] as String?)?.trim() ?? '';
+    final rawPlaceId = (card['place_id'] as String?)?.trim() ?? '';
+    final resolvedId = looksLikeGooglePlaceRef(rawPlaceId)
+        ? normalizePlaceId(rawPlaceId)
+        : (looksLikeGooglePlaceRef(rawId) ? normalizePlaceId(rawId) : rawId);
+    // #region agent log
+    _agentLogCache(
+      'H4',
+      'mapped moody explore card to place',
+      location: 'places_cache_utils.dart:placeFromMoodyExploreCard',
+      data: {
+        'rawId': rawId,
+        'rawPlaceId': rawPlaceId,
+        'resolvedId': resolvedId,
+        'photoCount': photos.length,
+        'firstPhoto': photos.isNotEmpty ? photos.first : '',
+        'hasPhotosArray': card['photos'] is List,
+      },
+    );
+    // #endregion
+
     return Place(
-      id: card['id'] as String? ?? '',
+      id: resolvedId,
       name: card['name'] as String? ?? 'Unknown Place',
       address: address,
       rating: (card['rating'] as num?)?.toDouble() ?? 0.0,
-      photos: photos,
+      photos: photos.take(10).toList(),
       types: types,
       location: PlaceLocation(
         lat: (locationData['lat'] as num?)?.toDouble() ?? 0.0,

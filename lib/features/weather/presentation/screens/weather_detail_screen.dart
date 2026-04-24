@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/weather/domain/models/weather_forecast.dart';
 import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/features/weather/providers/weather_forecast_provider.dart';
@@ -18,11 +19,57 @@ const Color _weatherMintBg = Color(0xFFE8F1FF);
 const Color _weatherMintText = Color(0xFF2F4E7A);
 const Color _weatherSkyTop = Color(0xFFCCE0FF);
 const Color _weatherSkyBottom = Color(0xFFF2F7FF);
+const Color _weatherGlassTop = Color(0xCCFFFFFF);
+const Color _weatherGlassBottom = Color(0x99EAF2FF);
+const Color _weatherAccent = Color(0xFF6AA8FF);
 
 DateTime _wmStartOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
 
 String _wmLocaleTag(BuildContext context) =>
     Localizations.localeOf(context).toString();
+
+String _friendlyWeatherLabel(AppLocalizations l10n, String raw) {
+  final v = raw.trim().toLowerCase();
+  switch (v) {
+    case 'clear':
+      return l10n.weatherMainClear;
+    case 'clouds':
+      return l10n.weatherMainClouds;
+    case 'rain':
+      return l10n.weatherMainRain;
+    case 'drizzle':
+      return l10n.weatherMainDrizzle;
+    case 'thunderstorm':
+      return l10n.weatherMainThunderstorm;
+    case 'snow':
+      return l10n.weatherMainSnow;
+    case 'mist':
+    case 'fog':
+      return l10n.weatherMainFog;
+    case 'haze':
+      return l10n.weatherMainHaze;
+    default:
+      return raw;
+  }
+}
+
+String _friendlyWeatherDescription(AppLocalizations l10n, String raw) {
+  final v = raw.trim().toLowerCase();
+  if (v == 'haze') return l10n.weatherMainHazeDescription;
+  return raw;
+}
+
+class _WeatherTip {
+  final String emoji;
+  final String title;
+  final String body;
+
+  const _WeatherTip({
+    required this.emoji,
+    required this.title,
+    required this.body,
+  });
+}
 
 /// Modal: short weekday (fits narrow dialog). Full screen: API label or full name.
 String _wmDailyDayLabel(
@@ -67,9 +114,13 @@ class WeatherDetailScreen extends ConsumerWidget {
 
     final body = Container(
       decoration: BoxDecoration(
-        color: isModal ? _wmHubCream : _weatherMintBg,
+        color: isModal ? const Color(0xFFF2F4FA) : _weatherMintBg,
         gradient: isModal
-            ? null
+            ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFF8FAFF), Color(0xFFEFF4FF), Color(0xFFE9F0FF)],
+              )
             : const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -103,9 +154,16 @@ class WeatherDetailScreen extends ConsumerWidget {
                 centerTitle: true,
                 background: Container(
                   decoration: BoxDecoration(
-                    color: isModal ? _wmHubCream : null,
+                    color: Colors.transparent,
                     gradient: isModal
-                        ? null
+                        ? const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0x66FFFFFF),
+                              Color(0x00FFFFFF),
+                            ],
+                          )
                         : LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -173,12 +231,21 @@ class WeatherDetailScreen extends ConsumerWidget {
                   isModal ? 10.0 : 14.0,
                 ),
                 decoration: BoxDecoration(
-                  color: isModal ? Colors.white.withValues(alpha: 0.92) : Colors.white.withValues(alpha: 0.48),
+                  color: isModal ? Colors.white.withValues(alpha: 0.86) : Colors.white.withValues(alpha: 0.48),
                   borderRadius: BorderRadius.circular(isModal ? 14 : 18),
                   border: Border.all(
                     color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
                     width: 1,
                   ),
+                  boxShadow: isModal
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF6E8FC8).withValues(alpha: 0.16),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,12 +288,21 @@ class WeatherDetailScreen extends ConsumerWidget {
                   isModal ? 10.0 : 14.0,
                 ),
                 decoration: BoxDecoration(
-                  color: isModal ? Colors.white.withValues(alpha: 0.92) : Colors.white.withValues(alpha: 0.48),
+                  color: isModal ? Colors.white.withValues(alpha: 0.86) : Colors.white.withValues(alpha: 0.48),
                   borderRadius: BorderRadius.circular(isModal ? 14 : 18),
                   border: Border.all(
                     color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
                     width: 1,
                   ),
+                  boxShadow: isModal
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF6E8FC8).withValues(alpha: 0.16),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,6 +336,15 @@ class WeatherDetailScreen extends ConsumerWidget {
             ),
             
             // Bottom Padding
+            SliverToBoxAdapter(
+              child: weatherAsync.when(
+                data: (weather) =>
+                    _buildMoodyWeatherTipCard(context, weather, isModal: isModal),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ),
+
             SliverToBoxAdapter(
               child: SizedBox(height: isModal ? 20 : 40),
             ),
@@ -297,6 +382,11 @@ class WeatherDetailScreen extends ConsumerWidget {
     final iconBox = isModal ? 72.0 : 120.0;
     final iconPx = isModal ? 52.0 : 100.0;
     final gapAfterRow = isModal ? 12.0 : 20.0;
+    final friendlyCondition = _friendlyWeatherLabel(l10n, weather.condition);
+    final friendlyDescription = _friendlyWeatherDescription(
+      l10n,
+      weather.details['description']?.toString() ?? friendlyCondition,
+    );
 
     return Container(
       margin: EdgeInsets.all(isModal ? 10 : 16),
@@ -305,7 +395,14 @@ class WeatherDetailScreen extends ConsumerWidget {
         horizontal: isModal ? 12 : 16,
       ),
       decoration: BoxDecoration(
-        color: isModal ? _wmHubForestTint : Colors.white.withOpacity(0.55),
+        color: isModal ? _wmHubForestTint : Colors.white.withOpacity(0.45),
+        gradient: isModal
+            ? null
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_weatherGlassTop, _weatherGlassBottom],
+              ),
         borderRadius: BorderRadius.circular(isModal ? 16 : 20),
         border: isModal
             ? Border.all(
@@ -353,7 +450,7 @@ class WeatherDetailScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: isModal ? 2 : 4),
                     Text(
-                      weather.condition,
+                      friendlyCondition,
                       style: GoogleFonts.poppins(
                         fontSize: conditionFs,
                         fontWeight: FontWeight.w600,
@@ -364,7 +461,7 @@ class WeatherDetailScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
-                          weather.details['description'] as String,
+                          friendlyDescription,
                           maxLines: isModal ? 1 : 3,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
@@ -415,6 +512,133 @@ class WeatherDetailScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildMoodyWeatherTipCard(
+    BuildContext context,
+    WeatherData? weather, {
+    bool isModal = false,
+  }) {
+    if (weather == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final tip = _weatherTipFor(l10n, weather);
+    final titleColor = isModal ? _wmModalCharcoal : _weatherMintText;
+    final bodyColor = isModal ? _wmHubInkMuted : _weatherMintText.withValues(alpha: 0.86);
+    final weatherMood = _moodyMoodForWeather(weather);
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(isModal ? 10 : 16, isModal ? 8 : 10, isModal ? 10 : 16, 0),
+      padding: EdgeInsets.symmetric(
+        horizontal: isModal ? 12 : 16,
+        vertical: isModal ? 12 : 14,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: isModal ? 0.9 : 0.62),
+        borderRadius: BorderRadius.circular(isModal ? 16 : 20),
+        border: Border.all(
+          color: _weatherAccent.withValues(alpha: 0.25),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _weatherAccent.withValues(alpha: 0.16),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(
+            child: MoodyCharacter(
+              size: isModal ? 76 : 92,
+              mood: weatherMood,
+              glowOpacityScale: 0.65,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${tip.emoji} ${tip.title}',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: isModal ? 13.5 : 16,
+              fontWeight: FontWeight.w700,
+              color: titleColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            tip.body,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: isModal ? 11.8 : 14,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+              color: bodyColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _WeatherTip _weatherTipFor(AppLocalizations l10n, WeatherData weather) {
+    final cond = weather.condition.toLowerCase();
+    final description = (weather.details['description']?.toString() ?? '').toLowerCase();
+    final uv = (weather.details['uv'] as num?)?.toDouble() ?? 0.0;
+    final rainy = cond.contains('rain') || cond.contains('drizzle') || description.contains('rain');
+    final cloudy = cond.contains('cloud') || cond.contains('mist') || cond.contains('fog');
+    final sunny = cond.contains('clear') || cond.contains('sun');
+
+    if (rainy) {
+      return _WeatherTip(
+        emoji: '🌧️',
+        title: l10n.weatherModalTipTitle,
+        body: l10n.weatherModalTipRain,
+      );
+    }
+    if (sunny && uv >= 6) {
+      return _WeatherTip(
+        emoji: '☀️',
+        title: l10n.weatherModalTipTitle,
+        body: l10n.weatherModalTipSunnyHighUv,
+      );
+    }
+    if (sunny) {
+      return _WeatherTip(
+        emoji: '🌤️',
+        title: l10n.weatherModalTipTitle,
+        body: l10n.weatherModalTipSunny,
+      );
+    }
+    if (cloudy) {
+      return _WeatherTip(
+        emoji: '☁️',
+        title: l10n.weatherModalTipTitle,
+        body: l10n.weatherModalTipCloudy,
+      );
+    }
+    return _WeatherTip(
+      emoji: '✨',
+      title: l10n.weatherModalTipTitle,
+      body: l10n.weatherModalTipDefault,
+    );
+  }
+
+  String _moodyMoodForWeather(WeatherData weather) {
+    final cond = weather.condition.toLowerCase();
+    final description = (weather.details['description']?.toString() ?? '').toLowerCase();
+    if (cond.contains('rain') || cond.contains('drizzle') || description.contains('rain')) {
+      return 'calm';
+    }
+    if (cond.contains('clear') || cond.contains('sun')) {
+      return 'happy';
+    }
+    if (cond.contains('cloud') || cond.contains('mist') || cond.contains('fog')) {
+      return 'thoughtful';
+    }
+    return 'idle';
   }
   
   Widget _buildWeatherInfoItem({
@@ -482,20 +706,26 @@ class WeatherDetailScreen extends ConsumerWidget {
 
           final pc = isModal ? _wmModalCharcoal : _weatherMintText;
           final sc = isModal ? _wmHubInkMuted : _weatherMintText;
-          return Container(
+          final isNow = index == 0;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 240),
             width: cellW,
             margin: EdgeInsets.symmetric(horizontal: isModal ? 3 : 4),
             decoration: BoxDecoration(
               color: isModal
                   ? Colors.white.withValues(alpha: 0.95)
-                  : Colors.white.withOpacity(0.7),
+                  : (isNow
+                      ? Colors.white.withOpacity(0.95)
+                      : Colors.white.withOpacity(0.72)),
               borderRadius: BorderRadius.circular(cellR),
-              border: isModal
-                  ? Border.all(
-                      color: _wmHubForest.withValues(alpha: 0.16),
-                      width: 1,
-                    )
-                  : null,
+              border: Border.all(
+                color: isNow
+                    ? _weatherAccent.withValues(alpha: 0.55)
+                    : (isModal
+                        ? _wmHubForest.withValues(alpha: 0.16)
+                        : Colors.white.withValues(alpha: 0.45)),
+                width: isNow ? 1.4 : 1,
+              ),
               boxShadow: isModal
                   ? [
                       BoxShadow(
@@ -504,7 +734,16 @@ class WeatherDetailScreen extends ConsumerWidget {
                         offset: const Offset(0, 1),
                       ),
                     ]
-                  : null,
+                  : [
+                      BoxShadow(
+                        color: (isNow
+                                ? _weatherAccent
+                                : const Color(0xFF6C86A8))
+                            .withValues(alpha: isNow ? 0.22 : 0.10),
+                        blurRadius: isNow ? 12 : 7,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -512,12 +751,12 @@ class WeatherDetailScreen extends ConsumerWidget {
                 Padding(
                   padding: EdgeInsets.only(top: isModal ? 4 : 6),
                   child: Text(
-                    forecast.time ?? '',
+                    isNow ? AppLocalizations.of(context)!.weatherModalNow : (forecast.time ?? ''),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       fontSize: timeFs,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: isNow ? FontWeight.w700 : FontWeight.w600,
                       color: pc,
                     ),
                   ),
@@ -651,27 +890,36 @@ class WeatherDetailScreen extends ConsumerWidget {
           final forecast = forecasts[index];
           final pc = isModal ? _wmModalCharcoal : _weatherMintText;
           final sc = isModal ? _wmHubInkMuted : _weatherMintText;
+          final isNow = index == 0;
 
-          return Container(
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
             width: cellW,
             margin: EdgeInsets.symmetric(horizontal: isModal ? 3 : 4),
             decoration: BoxDecoration(
               color: isModal
-                  ? Colors.white.withValues(alpha: 0.95)
+                  ? (isNow
+                      ? const Color(0xFFF0F6FF)
+                      : Colors.white.withValues(alpha: 0.95))
                   : Colors.white.withOpacity(0.7),
               borderRadius: BorderRadius.circular(cellR),
-              border: isModal
-                  ? Border.all(
-                      color: _wmHubForest.withValues(alpha: 0.16),
-                      width: 1,
-                    )
-                  : null,
+              border: Border.all(
+                color: isNow
+                    ? _weatherAccent.withValues(alpha: 0.55)
+                    : (isModal
+                        ? _wmHubForest.withValues(alpha: 0.16)
+                        : Colors.transparent),
+                width: isNow ? 1.4 : 1,
+              ),
               boxShadow: isModal
                   ? [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 5,
-                        offset: const Offset(0, 1),
+                        color: (isNow
+                                ? _weatherAccent
+                                : Colors.black)
+                            .withValues(alpha: isNow ? 0.20 : 0.03),
+                        blurRadius: isNow ? 10 : 5,
+                        offset: const Offset(0, 2),
                       ),
                     ]
                   : null,
@@ -682,12 +930,12 @@ class WeatherDetailScreen extends ConsumerWidget {
                 Padding(
                   padding: EdgeInsets.only(top: isModal ? 4 : 6),
                   child: Text(
-                    forecast['time'] as String,
+                    isNow ? AppLocalizations.of(context)!.weatherModalNow : (forecast['time'] as String),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       fontSize: timeFs,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: isNow ? FontWeight.w700 : FontWeight.w600,
                       color: pc,
                     ),
                   ),
@@ -749,12 +997,19 @@ class WeatherDetailScreen extends ConsumerWidget {
       return _buildMockDailyForecast(context, isModal: isModal);
     }
     
+    final mins = forecasts.map((f) => f.minTemperature).toList();
+    final maxs = forecasts.map((f) => f.maxTemperature).toList();
+    final chartMin = mins.reduce((a, b) => a < b ? a : b);
+    final chartMax = maxs.reduce((a, b) => a > b ? a : b);
+
     return Column(
       children: forecasts
           .map(
             (forecast) => _buildDailyForecastItem(
               context,
               forecast,
+              chartMin: chartMin,
+              chartMax: chartMax,
               isModal: isModal,
             ),
           )
@@ -802,6 +1057,8 @@ class WeatherDetailScreen extends ConsumerWidget {
   Widget _buildDailyForecastItem(
     BuildContext context,
     WeatherForecast forecast, {
+    required double chartMin,
+    required double chartMax,
     bool isModal = false,
   }) {
     final dayLabel = _wmDailyDayLabel(context, forecast, isModal: isModal);
@@ -811,6 +1068,13 @@ class WeatherDetailScreen extends ConsumerWidget {
     final tempFs = isModal ? 13.0 : 16.0;
     final iconBox = isModal ? 38.0 : 50.0;
     final iconPx = isModal ? 32.0 : 45.0;
+
+    final range = (chartMax - chartMin).abs() < 0.01 ? 1.0 : (chartMax - chartMin);
+    final minPos = ((forecast.minTemperature - chartMin) / range).clamp(0.0, 1.0);
+    final maxPos = ((forecast.maxTemperature - chartMin) / range).clamp(0.0, 1.0);
+    const railW = 84.0;
+    final railLeft = railW * minPos;
+    final railRight = railW * maxPos;
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: isModal ? 3 : 4),
@@ -862,26 +1126,68 @@ class WeatherDetailScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(width: isModal ? 6 : 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${forecast.minTemperature.round()}° ',
-                style: GoogleFonts.poppins(
-                  fontSize: tempFs,
-                  fontWeight: FontWeight.w500,
-                  color: sc.withOpacity(0.92),
+          SizedBox(
+            width: 132,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: railW,
+                  height: 10,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          height: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _weatherMintText.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: railLeft,
+                        width: (railRight - railLeft).clamp(6.0, railW),
+                        top: 2,
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF8BB8FF), Color(0xFF4F95FF)],
+                            ),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Text(
-                '${forecast.maxTemperature.round()}°',
-                style: GoogleFonts.poppins(
-                  fontSize: tempFs,
-                  fontWeight: FontWeight.w700,
-                  color: pc,
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${forecast.minTemperature.round()}° ',
+                      style: GoogleFonts.poppins(
+                        fontSize: tempFs,
+                        fontWeight: FontWeight.w500,
+                        color: sc.withOpacity(0.92),
+                      ),
+                    ),
+                    Text(
+                      '${forecast.maxTemperature.round()}°',
+                      style: GoogleFonts.poppins(
+                        fontSize: tempFs,
+                        fontWeight: FontWeight.w700,
+                        color: pc,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -902,6 +1208,11 @@ class WeatherDetailScreen extends ConsumerWidget {
     final tempFs = isModal ? 13.0 : 16.0;
     final iconBox = isModal ? 38.0 : 50.0;
     final iconPx = isModal ? 32.0 : 45.0;
+    const railW = 84.0;
+    final minT = (day['min'] as num).toDouble();
+    final maxT = (day['max'] as num).toDouble();
+    final left = 18.0;
+    final right = railW - 4;
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: isModal ? 3 : 4),
@@ -959,26 +1270,68 @@ class WeatherDetailScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(width: isModal ? 6 : 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${day['min']}° ',
-                style: GoogleFonts.poppins(
-                  fontSize: tempFs,
-                  fontWeight: FontWeight.w500,
-                  color: sc.withOpacity(0.92),
+          SizedBox(
+            width: 132,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: railW,
+                  height: 10,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          height: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _weatherMintText.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: left,
+                        width: right - left,
+                        top: 2,
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF8BB8FF), Color(0xFF4F95FF)],
+                            ),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Text(
-                '${day['max']}°',
-                style: GoogleFonts.poppins(
-                  fontSize: tempFs,
-                  fontWeight: FontWeight.w700,
-                  color: pc,
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${minT.round()}° ',
+                      style: GoogleFonts.poppins(
+                        fontSize: tempFs,
+                        fontWeight: FontWeight.w500,
+                        color: sc.withOpacity(0.92),
+                      ),
+                    ),
+                    Text(
+                      '${maxT.round()}°',
+                      style: GoogleFonts.poppins(
+                        fontSize: tempFs,
+                        fontWeight: FontWeight.w700,
+                        color: pc,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -1063,6 +1416,7 @@ class WeatherDetailScreen extends ConsumerWidget {
   Widget _getFallbackIcon(String condition, String dayOrNight, double size, {bool isMain = false}) {
     final lowercaseCondition = condition.toLowerCase();
     final actualSize = isMain ? size * 1.2 : size * 1.1;
+    final contrast = const Color(0xFF2A6049);
     
     if (lowercaseCondition.contains('scattered cloud') || 
         lowercaseCondition.contains('few cloud') || 
@@ -1070,7 +1424,7 @@ class WeatherDetailScreen extends ConsumerWidget {
         lowercaseCondition.contains('cloud')) {
       return Icon(
         Icons.cloud, 
-        color: Colors.white,
+        color: contrast,
         size: actualSize,
         shadows: [
           Shadow(
@@ -1084,12 +1438,12 @@ class WeatherDetailScreen extends ConsumerWidget {
       if (dayOrNight.contains('d') || dayOrNight == 'day') {
         return Icon(Icons.wb_sunny_outlined, color: const Color(0xFFFFD700), size: actualSize);
       } else {
-        return Icon(Icons.nightlight_round, color: Colors.white.withOpacity(0.9), size: actualSize);
+        return Icon(Icons.nightlight_round, color: contrast.withValues(alpha: 0.92), size: actualSize);
       }
     } else if (lowercaseCondition.contains('rain') || lowercaseCondition.contains('shower')) {
       return Icon(
         Icons.grain,
-        color: Colors.white, 
+        color: contrast, 
         size: actualSize,
         shadows: [
           Shadow(
@@ -1104,7 +1458,7 @@ class WeatherDetailScreen extends ConsumerWidget {
     } else if (lowercaseCondition.contains('snow')) {
       return Icon(
         Icons.ac_unit,
-        color: Colors.white, 
+        color: contrast, 
         size: actualSize,
         shadows: [
           Shadow(
@@ -1115,13 +1469,13 @@ class WeatherDetailScreen extends ConsumerWidget {
         ],
       );
     } else if (lowercaseCondition.contains('mist') || lowercaseCondition.contains('fog')) {
-      return Icon(Icons.blur_on, color: Colors.white.withOpacity(0.9), size: actualSize);
+      return Icon(Icons.blur_on, color: contrast.withValues(alpha: 0.92), size: actualSize);
     } else {
       // Default case
       if (dayOrNight.contains('d') || dayOrNight == 'day') {
         return Icon(Icons.wb_sunny_outlined, color: const Color(0xFFFFD700), size: actualSize);
       } else {
-        return Icon(Icons.nightlight_round, color: Colors.white.withOpacity(0.9), size: actualSize);
+        return Icon(Icons.nightlight_round, color: contrast.withValues(alpha: 0.92), size: actualSize);
       }
     }
   }

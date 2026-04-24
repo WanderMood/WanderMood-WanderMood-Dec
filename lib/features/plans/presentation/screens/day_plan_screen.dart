@@ -65,15 +65,18 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return formatter.format(now);
   }
 
-  void _refreshMyDayProviders(WidgetRef ref) {
+  Future<void> _refreshMyDayProviders(WidgetRef ref) async {
     ref.invalidate(scheduledActivityServiceProvider);
     ref.invalidate(scheduledActivitiesForTodayProvider);
     ref.invalidate(todayActivitiesProvider);
+    // Pull-to-refresh should wait for a real data roundtrip.
+    await ref.read(scheduledActivitiesForTodayProvider.future);
+    await ref.read(todayActivitiesProvider.future);
   }
 
   /// Opens My Day without inserting new rows (per-card adds stay the only new items).
   Future<void> _navigateToMyDayOnly(WidgetRef ref) async {
-    _refreshMyDayProviders(ref);
+    await _refreshMyDayProviders(ref);
     if (!mounted) return;
     ref.read(mainTabProvider.notifier).state = 0;
     context.goNamed('main', extra: {'tab': 0});
@@ -96,7 +99,7 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
           streakRefreshRef: ref,
         );
       }
-      _refreshMyDayProviders(ref);
+      await _refreshMyDayProviders(ref);
       if (!mounted) return;
       ref.read(mainTabProvider.notifier).state = 0;
       context.goNamed('main', extra: {'tab': 0});
@@ -255,12 +258,39 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
     return normalized;
   }
 
-  Widget _buildMoodyMessageCard(BuildContext context) {
+  String _normalizedMoodyPrimaryMessage() {
+    String pick() {
+      final primary = widget.moodyMessage.trim();
+      final secondary = widget.moodyReasoning.trim();
+      final isLowQuality = RegExp(r'^(yo[.!]?)$', caseSensitive: false).hasMatch(primary) ||
+          RegExp(r'^yo\b', caseSensitive: false).hasMatch(primary);
+      if (primary.isNotEmpty && !isLowQuality) return primary;
+      if (secondary.isNotEmpty) return secondary;
+      return primary;
+    }
+
+    final first = _firstSentence(pick()).trim();
+    if (first.length < 14) return '';
+    return first;
+  }
+
+  String? _activityLocationLabel(Activity activity) {
+    final raw = activity.description.trim();
+    if (raw.isEmpty) return null;
+    final lower = raw.toLowerCase();
+    final hasDigit = RegExp(r'\d').hasMatch(raw);
+    final addressWord = RegExp(
+      r'\b(straat|street|laan|road|weg|plein|avenue|boulevard|plaza)\b',
+      caseSensitive: false,
+    ).hasMatch(lower);
+    final likelyAddress = hasDigit && (raw.contains(',') || addressWord);
+    if (!likelyAddress) return null;
+    return raw.length > 80 ? '${raw.substring(0, 80)}...' : raw;
+  }
+
+  Widget _buildMoodyMessageCard(BuildContext context, String primaryMessage) {
     const wmSky = Color(0xFFA8C8DC);
     const wmSkyTint = Color(0xFFEDF5F9);
-    final primaryMessage = _firstSentence(
-      widget.moodyMessage.isNotEmpty ? widget.moodyMessage : widget.moodyReasoning,
-    );
 
     // Demo-style: character on the canvas + speech bubble (no name label / white card).
     return Padding(
@@ -584,37 +614,42 @@ class _DayPlanScreenState extends ConsumerState<DayPlanScreen> {
             builder: (context, ref, _) {
               final userLocationAsync = ref.watch(userLocationProvider);
               final position = userLocationAsync.valueOrNull;
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                children: [
-                  if (widget.moodyMessage.isNotEmpty) ...[
-                    _buildMoodyMessageCard(context),
-                    const SizedBox(height: 16),
+              final moodyPrimaryMessage = _normalizedMoodyPrimaryMessage();
+              final showMoodyCard = moodyPrimaryMessage.isNotEmpty;
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await _refreshMyDayProviders(ref);
+                  if (mounted) setState(() {});
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(16, showMoodyCard ? 10 : 24, 16, 0),
+                  children: [
+                    if (showMoodyCard) ...[
+                      _buildMoodyMessageCard(context, moodyPrimaryMessage),
+                      const SizedBox(height: 10),
+                    ],
+                    for (int i = 0; i < _activities.length; i++) ...[
+                      _buildSectionHeader(context, _activities[i], i),
+                      _buildActivityCard(
+                        _activities[i],
+                        distanceKm: position != null
+                            ? DistanceService.formatDistance(
+                                DistanceService.calculateDistance(
+                                  position.latitude,
+                                  position.longitude,
+                                  _activities[i].location.latitude,
+                                  _activities[i].location.longitude,
+                                ),
+                              )
+                            : null,
+                        locationLabel: _activityLocationLabel(_activities[i]),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    const SizedBox(height: 100),
                   ],
-                  for (int i = 0; i < _activities.length; i++) ...[
-                    _buildSectionHeader(context, _activities[i], i),
-                    _buildActivityCard(
-                      _activities[i],
-                      distanceKm: position != null
-                          ? DistanceService.formatDistance(
-                              DistanceService.calculateDistance(
-                                position.latitude,
-                                position.longitude,
-                                _activities[i].location.latitude,
-                                _activities[i].location.longitude,
-                              ),
-                            )
-                          : null,
-                      locationLabel: _activities[i].description.isEmpty
-                          ? null
-                          : (_activities[i].description.length > 80
-                              ? '${_activities[i].description.substring(0, 80)}...'
-                              : _activities[i].description),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  const SizedBox(height: 100),
-                ],
+                ),
               );
             },
           ),

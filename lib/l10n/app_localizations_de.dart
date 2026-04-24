@@ -6477,6 +6477,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chatSheetInputHint => 'Wie ist deine Stimmung heute?';
 
   @override
+  String get chatSheetMessageCopy => 'Kopieren';
+
+  @override
+  String get chatSheetMessageReply => 'Antworten';
+
+  @override
+  String get chatSheetCopied => 'In die Zwischenablage kopiert';
+
+  @override
+  String get chatSheetReplyLabelYou => 'Du';
+
+  @override
   String get moodyConversationGreeting =>
       'Hey! Wie geht es dir heute? Ich kann Aktivitäten basierend auf deiner Stimmung vorschlagen.';
 
@@ -10128,6 +10140,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Mikrofonzugriff wird für die Spracheingabe benötigt.';
 
   @override
+  String get chatSheetMicrophoneOpenSettings => 'Einstellungen öffnen';
+
+  @override
   String get devAdminScreenDisabled =>
       'Admin-Panel ist in Produktions-Builds deaktiviert.';
 
@@ -10551,7 +10566,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get weatherMainFog => 'Dichter Nebel';
 
   @override
-  String get weatherMainHaze => 'Dunst';
+  String get weatherMainHaze => 'Leichter Dunst';
+
+  @override
+  String get weatherMainHazeDescription =>
+      'Eingeschränkte Sicht durch dunstige Luft';
 
   @override
   String get weatherMainSmoke => 'Rauch';
@@ -12759,4 +12778,30 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get moodMatchAlreadyOnYourPlan => 'Already on your plan';
+
+  @override
+  String get weatherModalNow => 'Jetzt';
+
+  @override
+  String get weatherModalTipTitle => 'Mein Tipp für heute';
+
+  @override
+  String get weatherModalTipRain =>
+      'Heute ist Regen angesagt. Nimm einen Regenschirm mit und plane eher eine Aktivität drinnen.';
+
+  @override
+  String get weatherModalTipSunnyHighUv =>
+      'Es ist sonnig und die UV-Belastung ist heute hoch. Nutze Sonnencreme, nimm Wasser mit und plane Schattenpausen ein.';
+
+  @override
+  String get weatherModalTipSunny =>
+      'Mildes und trockenes Wetter heute. Perfekt für einen Spaziergang oder eine Pause auf der Terrasse.';
+
+  @override
+  String get weatherModalTipCloudy =>
+      'Bewölkt und wahrscheinlich kühler. Nimm eine zusätzliche Schicht für mehr Komfort mit.';
+
+  @override
+  String get weatherModalTipDefault =>
+      'Das Wetter kann sich heute ändern. Zieh dich im Zwiebellook an und prüfe später nochmal die Vorhersage.';
 }

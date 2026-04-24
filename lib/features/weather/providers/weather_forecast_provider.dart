@@ -34,7 +34,7 @@ Future<List<WeatherForecast>> hourlyForecast(HourlyForecastRef ref) async {
   }
 }
 
-// Provider for daily forecasts (3 days)
+// Provider for daily forecasts (up to 7 days; API may return fewer)
 @riverpod
 Future<List<WeatherForecast>> dailyForecast(DailyForecastRef ref) async {
   final locationState = await ref.watch(locationNotifierProvider.future);

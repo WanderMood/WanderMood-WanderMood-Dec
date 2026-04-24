@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -19,6 +20,9 @@ import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/core/utils/wandermood_tts_presentation.dart';
+import 'package:wandermood/core/services/notification_service.dart';
+import 'package:wandermood/core/notifications/moody_chat_reminder_in_app_mirror.dart';
+import 'package:wandermood/core/notifications/notification_copy.dart';
 
 // WanderMood v2 — Moody conversation overlay (aligned with moody_chat_sheet / Screen 9)
 const Color _wmSkyTint = Color(0xFFEDF5F9);
@@ -28,6 +32,29 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
+
+/// Composer-only: quoted message for the next outgoing line (same idea as Moody Hub).
+class _ReplyDraft {
+  const _ReplyDraft({required this.quotedText, required this.quotedIsUser});
+  final String quotedText;
+  final bool quotedIsUser;
+}
+
+String _userMessageWithReplyForModel(
+  String userText,
+  String? replyToText,
+  bool? replyToIsUser,
+) {
+  final body = userText.trim();
+  final q = replyToText?.trim();
+  if (q == null || q.isEmpty) return body;
+  final safeQuote = q.length > 600 ? '${q.substring(0, 600)}…' : q;
+  final replyingToSelf = replyToIsUser == true;
+  final header = replyingToSelf
+      ? '(The user is replying to their own earlier message: """$safeQuote""")'
+      : '(The user is replying to this earlier Moody message: """$safeQuote""")';
+  return '$header\n\n$body';
+}
 
 class MoodyConversationScreen extends ConsumerStatefulWidget {
   final VoidCallback onClose;
@@ -77,6 +104,8 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   
   List<ChatMessage> _chatMessages = [];
   final ScrollController _scrollController = ScrollController();
+  _PendingReminder? _pendingReminder;
+  _ReplyDraft? _replyDraft;
   
   // Detected moods based on conversation
   Set<String> _detectedMoods = {};
@@ -243,22 +272,22 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     if (status.isGranted) {
       var available = await _speech.initialize(
         onStatus: (status) {
-          if (status == 'done') {
-            setState(() {
-              _isListening = false;
-            });
-            
-            // If in continuous mode and we have input, process it automatically
-            if (_continuousMode && _userInput.isNotEmpty) {
-              _handleUserInput(_userInput);
-              
-              // After processing, if still in continuous mode, restart listening
-              // after Moody finishes speaking
-              if (_continuousMode && !_conversationCompleted) {
-                // Wait for Moody to finish speaking before listening again
-                _waitForMoodyAndListen();
-              }
-            }
+          if (status != 'done') return;
+          if (!mounted) return;
+          _silenceTimer?.cancel();
+          setState(() {
+            _isListening = false;
+          });
+
+          // One-shot STT: whenever the listen session ends (silence, timeout, or
+          // user tapped stop), submit the transcript — same path as Moody Hub UX.
+          final toSend = _userInput.trim();
+          if (toSend.isEmpty || _conversationCompleted) return;
+
+          _handleUserInput(toSend);
+
+          if (_continuousMode && !_conversationCompleted) {
+            _waitForMoodyAndListen();
           }
         },
         onError: (error) {
@@ -337,18 +366,24 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       _isListening = true;
       _userInput = '';
     });
-    
+    _textController.value = const TextEditingValue();
+
     try {
       await _speech.listen(
         onResult: (result) {
+          final text = result.recognizedWords;
           setState(() {
-            _userInput = result.recognizedWords;
+            _userInput = text;
           });
-          
+          _textController.value = TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: text.length),
+          );
+
           // Reset silence timer on each result
           _silenceTimer?.cancel();
           _silenceTimer = Timer(const Duration(seconds: 2), () {
-            if (_isListening && _userInput.isNotEmpty) {
+            if (_isListening && _userInput.trim().isNotEmpty) {
               _speech.stop();
             }
           });
@@ -388,14 +423,8 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     if (!_isListening) {
       _startListening();
     } else {
-      setState(() {
-        _isListening = false;
-      });
       _speech.stop();
-      
-      if (_userInput.isNotEmpty) {
-        _handleUserInput(_userInput);
-      }
+      // Submit happens in [onStatus] when status is `done` (single code path).
     }
   }
   
@@ -489,22 +518,38 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   // Modify _handleUserInput to include context analysis
   void _handleUserInput(String input) {
     if (input.isEmpty || _conversationCompleted) return;
-    
+
+    final replySnap = _replyDraft;
     setState(() {
       _isProcessing = true;
-    });
-    
-    // Add user message to chat
-    _addUserMessage(input);
-    
-    // Clear input field
-    setState(() {
+      _replyDraft = null;
       _userInput = '';
       _textController.clear();
     });
-    
+
+    // Add user message to chat (optional reply metadata)
+    _addUserMessage(input, replyDraft: replySnap);
+
     // Analyze conversation context
     _analyzeConversationContext(input);
+
+    final reminder = _parseReminderIntent(input);
+    if (reminder != null) {
+      final inMinutes = reminder.fireAt
+          .difference(MoodyClock.now())
+          .inMinutes
+          .clamp(0, 10080);
+      setState(() {
+        _pendingReminder = reminder;
+        _isProcessing = false;
+      });
+      final response = _langCode == 'nl'
+          ? 'Top, ik kan je hierover herinneren. Zal ik een reminder zetten voor over $inMinutes minuten?'
+          : 'Got it. I can remind you about this. Want me to set a reminder in $inMinutes minutes?';
+      _addMoodyMessage(response);
+      _speakMoodyResponse(response);
+      return;
+    }
     
     // Detect mood keywords from input
     _detectMoods(input);
@@ -516,7 +561,12 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     }
     
     // Generate response (in real app, this would call an API/model)
-    _generateMoodyResponse(input);
+    final modelInput = _userMessageWithReplyForModel(
+      input,
+      replySnap?.quotedText,
+      replySnap?.quotedIsUser,
+    );
+    _generateMoodyResponse(modelInput, input);
   }
   
   void _detectMoods(String input) {
@@ -597,6 +647,76 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       _detectedMoods = sortedMoods.take(3).toSet();
     }
   }
+
+  _PendingReminder? _parseReminderIntent(String input) {
+    final t = input.toLowerCase().trim();
+    final asksReminder = t.contains('herinner') ||
+        t.contains('remind me') ||
+        t.contains('remember me') ||
+        t.contains('reminder');
+    if (!asksReminder) return null;
+
+    final minuteMatch = RegExp(
+      r'(\d+)\s*(min|mins|minute|minutes|minuut|minuten)\b',
+    ).firstMatch(t);
+    if (minuteMatch != null) {
+      final m = int.tryParse(minuteMatch.group(1) ?? '');
+      if (m != null && m > 0) {
+        return _PendingReminder(
+          fireAt: MoodyClock.now().add(Duration(minutes: m)),
+          body: _langCode == 'nl'
+              ? 'Ik herinner je aan wat je net met mij besprak.'
+              : 'I am reminding you about what we just discussed.',
+        );
+      }
+    }
+
+    if (t.contains('morgen') || t.contains('tomorrow')) {
+      final now = MoodyClock.now();
+      final tomorrow = DateTime(now.year, now.month, now.day).add(
+        const Duration(days: 1),
+      );
+      return _PendingReminder(
+        fireAt: tomorrow.add(const Duration(hours: 9)),
+        body: _langCode == 'nl'
+            ? 'Hoe ging het met wat je mij gisteren vertelde?'
+            : 'How did it go with what you told me yesterday?',
+      );
+    }
+
+    return null;
+  }
+
+  Future<void> _confirmPendingReminder() async {
+    final pending = _pendingReminder;
+    if (pending == null) return;
+    final id = pending.fireAt.millisecondsSinceEpoch.remainder(1 << 30);
+    try {
+      await NotificationService.instance.scheduleAt(
+        id,
+        NotificationCopy(title: 'Moody', body: pending.body),
+        pending.fireAt,
+      );
+      mirrorMoodyChatReminderToInAppNotification(
+        fireAt: pending.fireAt,
+        localNotificationId: id,
+      );
+    } catch (_) {
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _pendingReminder = null);
+    final msg = _langCode == 'nl'
+        ? 'Klaar. Ik heb je reminder gezet.'
+        : 'Done. I set your reminder.';
+    _addMoodyMessage(msg);
+    showWanderMoodToast(context, message: msg);
+  }
+
+  void _dismissPendingReminder() {
+    if (!mounted) return;
+    setState(() => _pendingReminder = null);
+  }
   
   // Calculate confidence based on conversation turns and mood strengths
   double _calculateConfidence() {
@@ -626,7 +746,11 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     return confidence.clamp(0.0, 1.0);
   }
   
-  Future<void> _generateMoodyResponse(String userInput) async {
+  /// [modelInput] may include a reply-to prefix for context; [rawUserInput] is what the user typed.
+  Future<void> _generateMoodyResponse(
+    String modelInput,
+    String rawUserInput,
+  ) async {
     // Increment conversation turns
     _conversationTurns++;
     
@@ -635,16 +759,17 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     
     // Simple responses based on user input keywords
     String response = '';
-    final String lowercaseInput = userInput.toLowerCase();
+    final lowercaseModel = modelInput.toLowerCase();
+    final lowercaseRaw = rawUserInput.toLowerCase();
     
     // ANY form of "yes" response should trigger plan suggestion after initial turns
     if (_conversationTurns >= 2 && (
-        lowercaseInput.contains('yes') || 
-        lowercaseInput.contains('sure') || 
-        lowercaseInput.contains('okay') || 
-        lowercaseInput.contains('ok') || 
-        lowercaseInput.contains('yeah') || 
-        lowercaseInput.contains('yep'))) {
+        lowercaseRaw.contains('yes') || 
+        lowercaseRaw.contains('sure') || 
+        lowercaseRaw.contains('okay') || 
+        lowercaseRaw.contains('ok') || 
+        lowercaseRaw.contains('yeah') || 
+        lowercaseRaw.contains('yep'))) {
       _suggestPlan();
       return;
     }
@@ -678,9 +803,9 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     }
     
     // Handle "I don't know" or uncertain responses
-    if (lowercaseInput.contains("don't know") || 
-        lowercaseInput.contains("not sure") || 
-        lowercaseInput.contains("uncertain")) {
+    if (lowercaseModel.contains("don't know") || 
+        lowercaseModel.contains("not sure") || 
+        lowercaseModel.contains("uncertain")) {
       // Try to guide the conversation
       response = "That's okay! Let me ask another way - are you looking for something relaxing, exciting, or perhaps romantic?";
       
@@ -696,25 +821,25 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
       return;
     }
     
-    if (lowercaseInput.contains('hello') || lowercaseInput.contains('hi')) {
+    if (lowercaseModel.contains('hello') || lowercaseModel.contains('hi')) {
       response = "Hello! How can I assist you with your travel plans today?";
-    } else if (lowercaseInput.contains('weather')) {
+    } else if (lowercaseModel.contains('weather')) {
               response = "It's a beautiful day in Rotterdam! Currently 22°C and sunny.";
-    } else if (lowercaseInput.contains('restaurant') || lowercaseInput.contains('food') || lowercaseInput.contains('eat')) {
+    } else if (lowercaseModel.contains('restaurant') || lowercaseModel.contains('food') || lowercaseModel.contains('eat')) {
       response = "I can suggest some great restaurants based on your mood! Are you looking for something romantic or adventurous?";
-    } else if (lowercaseInput.contains('activity') || lowercaseInput.contains('do')) {
+    } else if (lowercaseModel.contains('activity') || lowercaseModel.contains('do')) {
       response = "There are lots of activities nearby! Would you like outdoor adventures or cultural experiences?";
-    } else if (lowercaseInput.contains('happy') || lowercaseInput.contains('glad')) {
+    } else if (lowercaseModel.contains('happy') || lowercaseModel.contains('glad')) {
       response = "I'm so glad you're happy! When you're in a good mood, I recommend exploring the vibrant markets or taking a scenic hike.";
-    } else if (lowercaseInput.contains('sad') || lowercaseInput.contains('tired')) {
+    } else if (lowercaseModel.contains('sad') || lowercaseModel.contains('tired')) {
       response = "I'm sorry to hear that. How about a relaxing day at a spa or a calm walk along the coast to help lift your spirits?";
-    } else if (lowercaseInput.contains('romantic')) {
+    } else if (lowercaseModel.contains('romantic')) {
       response = "For a romantic experience, I suggest a sunset cruise in the bay or dinner at a cozy restaurant with ocean views.";
-    } else if (lowercaseInput.contains('adventure')) {
+    } else if (lowercaseModel.contains('adventure')) {
       response = "If you're feeling adventurous, try hiking at Land's End or taking a bike ride across the Golden Gate Bridge!";
-    } else if (lowercaseInput.contains('thank')) {
+    } else if (lowercaseModel.contains('thank')) {
       response = "You're welcome! I'm always here to help make your travels more enjoyable.";
-    } else if (lowercaseInput.contains('bye')) {
+    } else if (lowercaseModel.contains('bye')) {
       response = "Goodbye! Have a wonderful day. Feel free to talk to me anytime you need travel suggestions!";
     } else if (_conversationTurns == 1) {
       // First response should ask more about their mood
@@ -923,12 +1048,14 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     });
   }
   
-  void _addUserMessage(String message) {
+  void _addUserMessage(String message, {_ReplyDraft? replyDraft}) {
     setState(() {
       _chatMessages.add(ChatMessage(
         text: message,
         isUser: true,
         timestamp: MoodyClock.now(),
+        replyToText: replyDraft?.quotedText,
+        replyToIsUser: replyDraft?.quotedIsUser,
       ));
     });
     _scrollToBottom();
@@ -1025,8 +1152,62 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                       // Header with title and close button
                       Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Row(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (_pendingReminder != null) ...[
+                              Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _wmForestTint,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: _wmParchment.withOpacity(0.8),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _langCode == 'nl'
+                                            ? 'Reminder klaar om te zetten'
+                                            : 'Reminder ready to set',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          color: _wmCharcoal,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: _dismissPendingReminder,
+                                      child: Text(
+                                        _langCode == 'nl' ? 'Nee' : 'No',
+                                      ),
+                                    ),
+                                    FilledButton(
+                                      onPressed: _confirmPendingReminder,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: _wmForest,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: Text(
+                                        _langCode == 'nl'
+                                            ? 'Zet reminder'
+                                            : 'Set reminder',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            Row(
+                              children: [
                             Text(
                               AppLocalizations.of(context)!.moodyConversationTalkToMoody,
                               style: GoogleFonts.poppins(
@@ -1040,6 +1221,8 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                               onPressed: _conversationCompleted ? null : widget.onClose,
                               icon: const Icon(Icons.close),
                               color: Colors.black54,
+                            ),
+                              ],
                             ),
                           ],
                         ),
@@ -1195,7 +1378,12 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                             ),
                           ],
                         ),
-                        child: Row(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildReplyComposerBanner(),
+                            Row(
                           children: [
                             // Text input field
                             Expanded(
@@ -1307,6 +1495,8 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                             ),
                           ],
                         ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -1321,13 +1511,226 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
     );
   }
   
+  void _openMessageActions(ChatMessage msg) {
+    HapticFeedback.mediumImpact();
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Material(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.copy_rounded, color: _wmForest),
+                    title: Text(
+                      l10n.chatSheetMessageCopy,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: _wmCharcoal,
+                      ),
+                    ),
+                    onTap: () async {
+                      await Clipboard.setData(
+                        ClipboardData(text: msg.copyableText),
+                      );
+                      if (ctx.mounted) Navigator.of(ctx).pop();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.chatSheetCopied),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.reply_rounded, color: _wmForest),
+                    title: Text(
+                      l10n.chatSheetMessageReply,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: _wmCharcoal,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      if (!mounted) return;
+                      setState(() {
+                        _replyDraft = _ReplyDraft(
+                          quotedText: msg.text,
+                          quotedIsUser: msg.isUser,
+                        );
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReplyComposerBanner() {
+    final d = _replyDraft;
+    if (d == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    final label = d.quotedIsUser
+        ? (l10n?.chatSheetReplyLabelYou ?? 'You')
+        : (l10n?.chatSheetMoodyName ?? 'Moody');
+    final snippet = d.quotedText.trim();
+    if (snippet.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Material(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 3,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _wmForest,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _wmForest,
+                      ),
+                    ),
+                    Text(
+                      snippet,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        height: 1.3,
+                        color: const Color(0xFF4A5568),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                icon: Icon(
+                  Icons.close_rounded,
+                  size: 22,
+                  color: _wmCharcoal.withOpacity(0.55),
+                ),
+                onPressed: () => setState(() => _replyDraft = null),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildChatMessage(ChatMessage message) {
     final isUser = message.isUser;
-    
+    final l10n = AppLocalizations.of(context);
+    final moodyName = l10n?.chatSheetMoodyName ?? 'Moody';
+    final youLabel = l10n?.chatSheetReplyLabelYou ?? 'You';
+    final quote = message.replyToText?.trim();
+    final showQuote = quote != null && quote.isNotEmpty;
+    final quoteAuthor =
+        message.replyToIsUser == true ? youLabel : moodyName;
+
+    final bubbleBody = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showQuote) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 3,
+                constraints: const BoxConstraints(minHeight: 28),
+                decoration: BoxDecoration(
+                  color: isUser
+                      ? Colors.white.withValues(alpha: 0.55)
+                      : _wmForest,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      quoteAuthor,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isUser
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : _wmForest,
+                      ),
+                    ),
+                    Text(
+                      quote,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: isUser
+                            ? Colors.white.withValues(alpha: 0.88)
+                            : const Color(0xFF4A5568),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
+        Text(
+          message.text,
+          style: GoogleFonts.poppins(
+            color: isUser ? Colors.white : _wmCharcoal,
+            fontSize: 14,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -1358,35 +1761,31 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
             ),
             const SizedBox(width: 8),
           ],
-          
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: isUser
-                    ? const LinearGradient(
-                        colors: [_wmForest, Color(0xFF347558)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : const LinearGradient(
-                        colors: [_wmForestTint, _wmSkyTint],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                message.text,
-                style: GoogleFonts.poppins(
-                  color: isUser ? Colors.white : _wmCharcoal,
-                  fontSize: 14,
-                  height: 1.35,
+            child: GestureDetector(
+              onLongPress: () => _openMessageActions(message),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: isUser
+                      ? const LinearGradient(
+                          colors: [_wmForest, Color(0xFF347558)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : const LinearGradient(
+                          colors: [_wmForestTint, _wmSkyTint],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  borderRadius: BorderRadius.circular(18),
                 ),
+                child: bubbleBody,
               ),
             ),
           ),
-          
           if (isUser) ...[
             const SizedBox(width: 8),
             Container(
@@ -1419,10 +1818,30 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
-  
+  final String? replyToText;
+  final bool? replyToIsUser;
+
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
+    this.replyToText,
+    this.replyToIsUser,
   });
+
+  String get copyableText {
+    final q = replyToText?.trim();
+    if (q == null || q.isEmpty) return text;
+    return '> $q\n\n$text';
+  }
 } 
+
+class _PendingReminder {
+  final DateTime fireAt;
+  final String body;
+
+  _PendingReminder({
+    required this.fireAt,
+    required this.body,
+  });
+}

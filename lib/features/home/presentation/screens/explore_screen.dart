@@ -90,6 +90,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   // Backend search results — null means show normal explore feed
   List<Place>? _searchResults;
+  List<String> _relatedSearchOptions = const [];
   Timer? _searchDebounce;
 
   // Scroll detection for content
@@ -814,6 +815,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final cards = (data['cards'] as List<dynamic>?) ?? [];
+        final related = (data['related_searches'] as List<dynamic>?)
+                ?.whereType<String>()
+                .map((s) => s.trim())
+                .where((s) => s.isNotEmpty)
+                .toList() ??
+            const <String>[];
         final places = cards.map((c) {
           final m = c is Map<String, dynamic>
               ? c
@@ -822,12 +829,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         }).toList();
         setState(() {
           _searchResults = places;
+          _relatedSearchOptions = related;
           _isSearching = false;
           _exploreVisiblePlaceCount = _kExplorePageSize;
         });
       } else {
         setState(() {
           _searchResults = [];
+          _relatedSearchOptions = const [];
           _isSearching = false;
           _exploreVisiblePlaceCount = _kExplorePageSize;
         });
@@ -846,8 +855,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       _isSearching = false;
       _searchFilter = 'all';
       _searchResults = null;
+      _relatedSearchOptions = const [];
       _exploreVisiblePlaceCount = _kExplorePageSize;
     });
+  }
+
+  void _applyRelatedSearchOption(String option) {
+    _searchDebounce?.cancel();
+    _searchController.text = option;
+    _searchController.selection = TextSelection.collapsed(offset: option.length);
+    setState(() {
+      _searchQuery = option;
+      _isSearching = true;
+      _searchResults = null;
+      _exploreVisiblePlaceCount = _kExplorePageSize;
+    });
+    _performBackendSearch(option);
   }
 
   void _updateActiveFiltersCount() {
@@ -1128,10 +1151,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   /// Opens place detail with light haptic — same cache + route as before.
   void _openPlaceFromExplore(Place place) {
+    String normalizedId(String raw) {
+      final t = raw.trim();
+      if (t.startsWith('google_')) return t;
+      if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return 'google_$t';
+      return t;
+    }
+    final targetId = normalizedId(place.id);
     HapticFeedback.lightImpact();
     unawaited(_trackExploreTasteInteraction(place, 'tapped'));
-    ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
-    context.push('/place/${place.id}');
+    if (targetId != place.id) {
+      ref.read(placesServiceProvider.notifier).cachePlaceObject(
+            place.copyWith(id: targetId),
+          );
+    } else {
+      ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
+    }
+    context.push('/place/$targetId');
   }
 
   Future<void> _trackExploreTasteInteraction(
@@ -2493,7 +2529,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 setState(() => _explorePlacePhotoRefreshSeed++);
               }
               ref.invalidate(moodyExploreAutoProvider);
-              await _loadAllSections();
+              await _loadAllSections(forceNetwork: true);
               if (isLocationError) {
                 ref
                     .read(locationNotifierProvider.notifier)
@@ -2669,6 +2705,51 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                                   ),
                                 ),
                               ),
+                              if (_searchQuery.trim().isNotEmpty &&
+                                  _relatedSearchOptions.isNotEmpty) ...[
+                                const SizedBox(height: 16),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: _relatedSearchOptions
+                                        .take(4)
+                                        .map(
+                                          (option) => InkWell(
+                                            onTap: () =>
+                                                _applyRelatedSearchOption(option),
+                                            borderRadius: BorderRadius.circular(20),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 8,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFEAF5EE),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: const Color(0xFF2A6049)
+                                                      .withValues(alpha: 0.28),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                option,
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: const Color(0xFF2A6049),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                              ],
                             ],
                           ).animate().fadeIn(
                                 duration: 320.ms,
@@ -3314,7 +3395,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                                 )
                                 .state = namedFilters;
                             ref.invalidate(moodyExploreAutoProvider);
-                            unawaited(_loadAllSections());
+                            await _loadAllSections(forceNetwork: true);
                             // Force a rebuild to apply filters
                             setState(() {
                               _exploreVisiblePlaceCount = _kExplorePageSize;

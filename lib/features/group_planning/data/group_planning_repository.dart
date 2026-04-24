@@ -450,6 +450,7 @@ class GroupPlanningRepository {
             'sender_username': username,
             'session_id': sessionId,
           },
+          persistInApp: false,
         );
       }
     } catch (e, st) {
@@ -559,6 +560,7 @@ class GroupPlanningRepository {
             'sender_username': username,
             'session_id': sessionId,
           },
+          persistInApp: false,
         );
       }
     } catch (e, st) {
@@ -901,6 +903,7 @@ class GroupPlanningRepository {
             if (merged['proposed_slot'] != null)
               'proposed_slot': merged['proposed_slot'].toString(),
           },
+          persistInApp: false,
         );
       }
     } catch (e) {
@@ -1007,6 +1010,7 @@ class GroupPlanningRepository {
           recipientId: m.member.userId,
           event: 'both_confirmed',
           data: {'session_id': sessionId},
+          persistInApp: false,
         );
       }
     } catch (e, st) {
@@ -1054,6 +1058,7 @@ class GroupPlanningRepository {
           'sender_username': username,
           'session_id': sessionId,
         },
+        persistInApp: false,
       );
     } catch (e, st) {
       debugPrint('notifyOwnerGuestJoined: $e\n$st');
@@ -2187,6 +2192,7 @@ class GroupPlanningRepository {
           'session_id': sessionId,
           'join_code': joinCode.trim().toUpperCase(),
         },
+        persistInApp: false,
       );
       return MoodMatchInAppInviteResult.delivered;
     } on PostgrestException catch (e, st) {

@@ -1911,6 +1911,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 ref.invalidate(cachedActivitySuggestionsProvider);
                 ref.invalidate(scheduledActivitiesForTodayProvider);
                 ref.invalidate(todayActivitiesProvider);
+                await ref.read(scheduledActivitiesForTodayProvider.future);
+                await ref.read(todayActivitiesProvider.future);
                 if (mounted) {
                   showWanderMoodToast(
                     context,

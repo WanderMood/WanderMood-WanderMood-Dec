@@ -6421,6 +6421,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatSheetInputHint => 'What\'s your mood today?';
 
   @override
+  String get chatSheetMessageCopy => 'Copy';
+
+  @override
+  String get chatSheetMessageReply => 'Reply';
+
+  @override
+  String get chatSheetCopied => 'Copied to clipboard';
+
+  @override
+  String get chatSheetReplyLabelYou => 'You';
+
+  @override
   String get moodyConversationGreeting =>
       'Hi there! How are you feeling today? I can suggest activities based on your mood.';
 
@@ -8223,7 +8235,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifReEngagementFriendlyV0Body =>
-      'Come back and let Moody help plan your next adventure.';
+      'Come back and I will help plan your next adventure.';
 
   @override
   String get notifReEngagementFriendlyV1Title =>
@@ -8329,7 +8341,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifDailyMoodCheckInEnergeticV0Body =>
-      'Log your mood and let Moody find your perfect match.';
+      'Log your mood and I will find your perfect match.';
 
   @override
   String get notifDailyMoodCheckInEnergeticV1Title => 'Mood check! Go.';
@@ -8359,7 +8371,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifDailyMoodCheckInFriendlyV1Body =>
-      'A quick tap to let Moody know how your day\'s going.';
+      'A quick tap so I know how your day is going.';
 
   @override
   String get notifDailyMoodCheckInFriendlyV2Title =>
@@ -8716,7 +8728,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifSavedActivityReminderFriendlyV2Body =>
-      'You picked these for a reason — let Moody help you go.';
+      'You picked these for a reason — let me help you go.';
 
   @override
   String get notifSavedActivityReminderProfessionalV0Title =>
@@ -10027,6 +10039,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Microphone access is needed for voice input.';
 
   @override
+  String get chatSheetMicrophoneOpenSettings => 'Open Settings';
+
+  @override
   String get devAdminScreenDisabled =>
       'Admin screen is disabled in production builds.';
 
@@ -10450,7 +10465,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weatherMainFog => 'Fog';
 
   @override
-  String get weatherMainHaze => 'Haze';
+  String get weatherMainHaze => 'Slight haze';
+
+  @override
+  String get weatherMainHazeDescription =>
+      'Reduced visibility because the air is hazy';
 
   @override
   String get weatherMainSmoke => 'Smoke';
@@ -12652,4 +12671,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moodMatchAlreadyOnYourPlan => 'Already on your plan';
+
+  @override
+  String get weatherModalNow => 'Now';
+
+  @override
+  String get weatherModalTipTitle => 'My tip for today';
+
+  @override
+  String get weatherModalTipRain =>
+      'Rain is expected today. Bring an umbrella and consider an indoor activity.';
+
+  @override
+  String get weatherModalTipSunnyHighUv =>
+      'It is sunny and UV is high today. Use sunscreen, bring water, and plan a few shade breaks.';
+
+  @override
+  String get weatherModalTipSunny =>
+      'Mild and dry weather today. Great for a walk or a terrace stop.';
+
+  @override
+  String get weatherModalTipCloudy =>
+      'Cloudy and likely cooler. Bring one extra layer to stay comfortable.';
+
+  @override
+  String get weatherModalTipDefault =>
+      'Conditions may change today. Dress in layers and check the forecast again later.';
 }

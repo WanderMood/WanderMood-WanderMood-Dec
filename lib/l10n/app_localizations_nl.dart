@@ -6453,6 +6453,18 @@ class AppLocalizationsNl extends AppLocalizations {
   String get chatSheetInputHint => 'Wat is jouw stemming vandaag?';
 
   @override
+  String get chatSheetMessageCopy => 'Kopiëren';
+
+  @override
+  String get chatSheetMessageReply => 'Beantwoorden';
+
+  @override
+  String get chatSheetCopied => 'Gekopieerd naar het klembord';
+
+  @override
+  String get chatSheetReplyLabelYou => 'Jij';
+
+  @override
   String get moodyConversationGreeting =>
       'Hé! Hoe voel je je vandaag? Ik kan activiteiten voorstellen op basis van jouw stemming.';
 
@@ -8570,7 +8582,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get notifWeatherNudgeFriendlyV2Body =>
-      'Een mooie dag vraagt om een mooi avontuur. Moody helpt je.';
+      'Mooie dag ervoor. Ik help je iets leuks te kiezen.';
 
   @override
   String get notifWeatherNudgeProfessionalV0Title =>
@@ -9848,7 +9860,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get notifWeekendPlanningNudgeFriendlyV2Body =>
-      'Een fijn weekend begint met goede planning. Moody helpt je.';
+      'Je weekend ligt open. Zal ik iets leuks voor je plannen?';
 
   @override
   String get notifWeekendPlanningNudgeProfessionalV0Title =>
@@ -10069,6 +10081,9 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get moodyChatMicrophoneRequired =>
       'Microfoontoegang is nodig voor spraak.';
+
+  @override
+  String get chatSheetMicrophoneOpenSettings => 'Open Instellingen';
 
   @override
   String get devAdminScreenDisabled =>
@@ -10493,7 +10508,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get weatherMainFog => 'Dichte mist';
 
   @override
-  String get weatherMainHaze => 'Nevel';
+  String get weatherMainHaze => 'Lichte nevel';
+
+  @override
+  String get weatherMainHazeDescription =>
+      'Minder zicht door nevel in de lucht';
 
   @override
   String get weatherMainSmoke => 'Rook';
@@ -12695,4 +12714,30 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get moodMatchAlreadyOnYourPlan => 'Staat al op je planning';
+
+  @override
+  String get weatherModalNow => 'Nu';
+
+  @override
+  String get weatherModalTipTitle => 'Mijn tip voor vandaag';
+
+  @override
+  String get weatherModalTipRain =>
+      'Er is regen verwacht vandaag. Neem een paraplu mee en kies bij voorkeur een binnenactiviteit.';
+
+  @override
+  String get weatherModalTipSunnyHighUv =>
+      'Het is zonnig en de UV is vandaag hoog. Gebruik zonnebrand, neem water mee en plan af en toe schaduw.';
+
+  @override
+  String get weatherModalTipSunny =>
+      'Zacht en droog weer vandaag. Perfect voor een wandeling of een terrasmoment.';
+
+  @override
+  String get weatherModalTipCloudy =>
+      'Bewolkt en waarschijnlijk frisser. Neem een extra laag mee voor comfort.';
+
+  @override
+  String get weatherModalTipDefault =>
+      'Het weer kan vandaag wisselen. Kleed je in laagjes en check later nog eens de voorspelling.';
 }

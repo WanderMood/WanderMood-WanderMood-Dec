@@ -14,7 +14,11 @@ String? _photoGalleryDedupeKey(String raw) {
     final m = RegExp(r'/places/([^/]+)/photos/([^/]+)').firstMatch(u.path);
     if (m != null) return 'pnew:${m[1]}:${m[2]}';
   }
-  final pr = u.queryParameters['photoreference']?.trim();
+  // Support both legacy param names used across app/API payloads.
+  final pr = (u.queryParameters['photoreference'] ??
+          u.queryParameters['photo_reference'] ??
+          u.queryParameters['photoReference'])
+      ?.trim();
   if (pr != null && pr.isNotEmpty) return 'pref:$pr';
   return raw.trim();
 }
@@ -40,8 +44,13 @@ List<String> dedupeRepeatedHeroIdentity(List<String> urls) {
 /// `photoUri` first (same as [WmPlacePhotoNetworkImage]).
 void prefetchPlacePhotos(Iterable<String> urls) {
   for (final raw in urls) {
+    final rawTrimmed = raw.trim();
+    if (rawTrimmed.startsWith('assets/')) continue;
     final accessible = deviceAccessibleGooglePlacePhotoUrl(raw).trim();
     if (accessible.isEmpty) continue;
+    final parsed = Uri.tryParse(accessible);
+    final scheme = parsed?.scheme.toLowerCase() ?? '';
+    if (!(scheme == 'http' || scheme == 'https')) continue;
     if (isPlacesApiNewPhotoUrl(accessible)) {
       unawaited(
         resolvePlacesNewPhotoUri(accessible).then((resolved) {

@@ -406,19 +406,32 @@ class PlacesService extends _$PlacesService {
       await build();
     }
 
+    String normalizeGooglePlaceId(String raw) {
+      final t = raw.trim();
+      if (t.isEmpty) return t;
+      if (t.startsWith('google_')) return t;
+      if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return 'google_$t';
+      return t;
+    }
+    final normalizedPlaceId = normalizeGooglePlaceId(placeId);
+
     try {
+      if (normalizedPlaceId != placeId && kDebugMode) {
+        debugPrint('🔧 getPlaceById normalized id: $placeId -> $normalizedPlaceId');
+      }
+
       // First, check if we have this place cached from search results
-      final cachedPlace = getCachedPlace(placeId);
+      final cachedPlace = getCachedPlace(normalizedPlaceId) ?? getCachedPlace(placeId);
       if (cachedPlace != null) {
         debugPrint('✅ Using cached place data for: ${cachedPlace.name}');
         return cachedPlace;
       }
       
       // Check if this is a Google Place ID or our internal ID
-      if (placeId.startsWith('google_')) {
+      if (normalizedPlaceId.startsWith('google_')) {
         // It's a Google Place ID - fetch from API as fallback
-        debugPrint('🔄 Place not cached, fetching from Google API: $placeId');
-        final googlePlaceId = placeId.substring('google_'.length);
+        debugPrint('🔄 Place not cached, fetching from Google API: $normalizedPlaceId');
+        final googlePlaceId = normalizedPlaceId.substring('google_'.length);
         final details = await getPlaceDetails(googlePlaceId);
         
         // Check if details are valid
@@ -491,7 +504,7 @@ class PlacesService extends _$PlacesService {
         debugPrint('✅ Successfully created Place object: $name with ${photoUrls.length} photos, priceLevel=$priceLevel, isFree=$isFree');
         
         return Place(
-          id: placeId,
+          id: normalizedPlaceId,
           name: name,
           address: address,
           description: description.isNotEmpty ? description : null,
@@ -519,7 +532,7 @@ class PlacesService extends _$PlacesService {
       debugPrint('❌ Error getting place by ID: $e');
       // Keep the requested id so navigation, share, and cache keys stay consistent.
       return Place(
-        id: placeId,
+        id: normalizedPlaceId,
         name: 'Place details unavailable',
         address: 'We could not load full details. Enable Maps billing or open this spot from Explore after it is cached.',
         location: const PlaceLocation(lat: 0, lng: 0),

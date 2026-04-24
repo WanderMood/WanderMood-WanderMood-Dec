@@ -19,12 +19,13 @@ import '../../../profile/presentation/widgets/profile_drawer.dart';
 import '../../../profile/domain/providers/current_user_profile_provider.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
+import 'package:wandermood/features/weather/providers/weather_forecast_provider.dart';
 import '../widgets/day_execution_hero_card.dart';
 import '../widgets/my_day_free_time_carousel.dart';
 import '../widgets/my_day_get_ready_sheet.dart';
 import '../widgets/my_day_timeline_section.dart';
 import '../widgets/my_day_updates_bell.dart';
-import '../widgets/my_day_weather_dialog.dart';
+import 'package:wandermood/features/weather/presentation/screens/weather_detail_screen.dart';
 import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
@@ -175,8 +176,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.invalidate(effectiveMoodStreakProvider);
+        _preloadWeatherData();
       }
     });
+  }
+
+  void _preloadWeatherData() {
+    unawaited(ref.read(weatherProvider.future).catchError((_) => null));
+    unawaited(ref.read(hourlyForecastProvider.future).catchError((_) => <dynamic>[]));
+    unawaited(ref.read(dailyForecastProvider.future).catchError((_) => <dynamic>[]));
   }
 
   Future<void> _refreshStreakProviders() async {
@@ -618,7 +626,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   data: (weather) {
                     if (weather == null) {
                       return GestureDetector(
-                        onTap: () => _showWeatherDialog(context, null),
+                        onTap: () => _showWeatherDialog(context),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
@@ -688,7 +696,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     }
                     
                     return GestureDetector(
-                      onTap: () => _showWeatherDialog(context, weather),
+                      onTap: () => _showWeatherDialog(context),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
@@ -1811,9 +1819,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               ),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   ref.invalidate(scheduledActivitiesForTodayProvider);
                   ref.invalidate(cachedActivitySuggestionsProvider);
+                  ref.invalidate(todayActivitiesProvider);
+                  await ref.read(scheduledActivitiesForTodayProvider.future);
+                  await ref.read(todayActivitiesProvider.future);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2A6049),
@@ -2835,12 +2846,23 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  void _showWeatherDialog(BuildContext context, dynamic weather) {
-    showDialog(
+  void _showWeatherDialog(BuildContext context) {
+    _preloadWeatherData();
+    showDialog<void>(
       context: context,
-      builder: (BuildContext context) {
-        return MyDayWeatherDialog(weather: weather);
-      },
+      barrierColor: Colors.black.withValues(alpha: 0.30),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: SizedBox(
+            height: MediaQuery.of(dialogContext).size.height * 0.86,
+            child: const WeatherDetailScreen(isModal: true),
+          ),
+        ),
+      ),
     );
   }
 
@@ -2982,6 +3004,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       ref.invalidate(todayActivitiesProvider);
       ref.invalidate(currentActivityStatusProvider);
       ref.invalidate(timelineCategorizedActivitiesProvider);
+      await ref.read(scheduledActivitiesForTodayProvider.future);
+      await ref.read(todayActivitiesProvider.future);
 
       if (!mounted) return;
       showWanderMoodToast(
