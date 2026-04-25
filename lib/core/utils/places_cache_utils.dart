@@ -147,17 +147,9 @@ class PlacesCacheUtils {
     if (broadDiscovery) addKey(v7AllLang);
     addKey(v7NoLang);
     if (broadDiscovery) addKey(v7AllNoLang);
-    // Legacy keys are English-era aggregates; using them for nl/de/fr/es returns
-    // stale English copy and small sets (~14) while blocking a fresh Edge call.
+    // Keep only same-schema candidates to avoid pulling stale legacy datasets.
     if (lang == 'en') {
       addKey('explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_${loc}_en');
-      primary.addAll([
-        'explore_v6_${modeKey}_adventurous_$loc',
-        'explore_v6_${modeKey}_relaxed_$loc',
-        'explore_v6_${modeKey}_cultural_$loc',
-        'explore_v3_quality_adventurous_$loc',
-        'explore_adventurous_$loc',
-      ]);
     }
     return primary;
   }

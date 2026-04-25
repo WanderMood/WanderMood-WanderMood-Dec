@@ -96,7 +96,7 @@ String _wmMockDailyLabel(
   return DateFormat.EEEE(loc).format(d);
 }
 
-class WeatherDetailScreen extends ConsumerWidget {
+class WeatherDetailScreen extends ConsumerStatefulWidget {
   final bool isModal;
   
   const WeatherDetailScreen({
@@ -105,7 +105,15 @@ class WeatherDetailScreen extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WeatherDetailScreen> createState() => _WeatherDetailScreenState();
+}
+
+class _WeatherDetailScreenState extends ConsumerState<WeatherDetailScreen> {
+  bool _daysExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isModal = widget.isModal;
     final l10n = AppLocalizations.of(context)!;
     final location = ref.watch(locationNotifierProvider);
     final weatherAsync = ref.watch(weatherProvider);
@@ -277,60 +285,92 @@ class WeatherDetailScreen extends ConsumerWidget {
               ),
             ),
             
-            // 3-Day Forecast Section
+            // "Next few days" toggle button
             SliverToBoxAdapter(
-              child: Container(
-                margin: EdgeInsets.fromLTRB(isModal ? 10 : 16, isModal ? 6 : 8, isModal ? 10 : 16, 0),
-                padding: EdgeInsets.fromLTRB(
-                  isModal ? 10.0 : 14.0,
-                  isModal ? 8.0 : 12.0,
-                  isModal ? 10.0 : 14.0,
-                  isModal ? 10.0 : 14.0,
-                ),
-                decoration: BoxDecoration(
-                  color: isModal ? Colors.white.withValues(alpha: 0.86) : Colors.white.withValues(alpha: 0.48),
-                  borderRadius: BorderRadius.circular(isModal ? 14 : 18),
-                  border: Border.all(
-                    color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
-                    width: 1,
-                  ),
-                  boxShadow: isModal
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFF6E8FC8).withValues(alpha: 0.16),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.weatherDetail3Day,
-                      style: GoogleFonts.poppins(
-                        fontSize: isModal ? 14 : 20,
-                        fontWeight: FontWeight.w600,
-                        color: isModal ? _wmModalCharcoal : _weatherMintText,
-                      ),
+              child: GestureDetector(
+                onTap: () => setState(() => _daysExpanded = !_daysExpanded),
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(isModal ? 10 : 16, isModal ? 6 : 8, isModal ? 10 : 16, 0),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isModal ? Colors.white.withValues(alpha: 0.86) : Colors.white.withValues(alpha: 0.48),
+                    borderRadius: BorderRadius.circular(isModal ? 14 : 18),
+                    border: Border.all(
+                      color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
+                      width: 1,
                     ),
-                    SizedBox(height: isModal ? 8 : 12),
-                    dailyForecastAsync.when(
-                      data: (forecasts) =>
-                          _buildDailyForecast(context, forecasts, isModal: isModal),
-                      loading: () => Center(
-                        child: SizedBox(
-                          height: 150,
-                          child: CircularProgressIndicator(
-                            color: isModal ? _wmHubForest : _weatherMintText,
-                          ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        l10n.weatherDetail3Day,
+                        style: GoogleFonts.poppins(
+                          fontSize: isModal ? 14 : 18,
+                          fontWeight: FontWeight.w600,
+                          color: isModal ? _wmModalCharcoal : _weatherMintText,
                         ),
                       ),
-                      error: (_, __) =>
-                          _buildMockDailyForecast(context, isModal: isModal),
+                      const Spacer(),
+                      AnimatedRotation(
+                        turns: _daysExpanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 250),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: isModal ? _wmHubForest : _weatherMintText,
+                          size: 22,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // 3-Day Forecast Section — slides open on tap
+            SliverToBoxAdapter(
+              child: AnimatedCrossFade(
+                duration: const Duration(milliseconds: 250),
+                crossFadeState: _daysExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                firstChild: const SizedBox(width: double.infinity),
+                secondChild: Container(
+                  margin: EdgeInsets.fromLTRB(isModal ? 10 : 16, isModal ? 4 : 6, isModal ? 10 : 16, 0),
+                  padding: EdgeInsets.fromLTRB(
+                    isModal ? 10.0 : 14.0,
+                    isModal ? 8.0 : 12.0,
+                    isModal ? 10.0 : 14.0,
+                    isModal ? 10.0 : 14.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isModal ? Colors.white.withValues(alpha: 0.86) : Colors.white.withValues(alpha: 0.48),
+                    borderRadius: BorderRadius.circular(isModal ? 14 : 18),
+                    border: Border.all(
+                      color: isModal ? _wmHubForest.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.55),
+                      width: 1,
                     ),
-                  ],
+                    boxShadow: isModal
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF6E8FC8).withValues(alpha: 0.16),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: dailyForecastAsync.when(
+                    data: (forecasts) =>
+                        _buildDailyForecast(context, forecasts, isModal: isModal),
+                    loading: () => Center(
+                      child: SizedBox(
+                        height: 150,
+                        child: CircularProgressIndicator(
+                          color: isModal ? _wmHubForest : _weatherMintText,
+                        ),
+                      ),
+                    ),
+                    error: (_, __) =>
+                        _buildMockDailyForecast(context, isModal: isModal),
+                  ),
                 ),
               ),
             ),
@@ -521,7 +561,7 @@ class WeatherDetailScreen extends ConsumerWidget {
   }) {
     if (weather == null) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
-    final tip = _weatherTipFor(l10n, weather);
+    final tip = _weatherTipFor(weather);
     final titleColor = isModal ? _wmModalCharcoal : _weatherMintText;
     final bodyColor = isModal ? _wmHubInkMuted : _weatherMintText.withValues(alpha: 0.86);
     final weatherMood = _moodyMoodForWeather(weather);
@@ -583,7 +623,7 @@ class WeatherDetailScreen extends ConsumerWidget {
     );
   }
 
-  _WeatherTip _weatherTipFor(AppLocalizations l10n, WeatherData weather) {
+  _WeatherTip _weatherTipFor(WeatherData weather) {
     final cond = weather.condition.toLowerCase();
     final description = (weather.details['description']?.toString() ?? '').toLowerCase();
     final uv = (weather.details['uv'] as num?)?.toDouble() ?? 0.0;
@@ -591,39 +631,41 @@ class WeatherDetailScreen extends ConsumerWidget {
     final cloudy = cond.contains('cloud') || cond.contains('mist') || cond.contains('fog');
     final sunny = cond.contains('clear') || cond.contains('sun');
 
+    final hour = MoodyClock.now().hour;
+    final isMorning = hour >= 6 && hour < 12;
+    final isAfternoon = hour >= 12 && hour < 18;
+    final isEvening = hour >= 18 && hour < 22;
+    // night: 22-5
+
     if (rainy) {
-      return _WeatherTip(
-        emoji: '🌧️',
-        title: l10n.weatherModalTipTitle,
-        body: l10n.weatherModalTipRain,
-      );
+      if (isMorning) return const _WeatherTip(emoji: '☔', title: 'Good morning', body: 'Rain this morning — grab your umbrella before heading out.');
+      if (isAfternoon) return const _WeatherTip(emoji: '🌧️', title: 'This afternoon', body: "It's raining outside. A café or museum visit hits different on a day like this.");
+      if (isEvening) return const _WeatherTip(emoji: '🌧️', title: 'This evening', body: 'Rain tonight — the perfect excuse to find a cosy spot inside.');
+      return const _WeatherTip(emoji: '🌧️', title: 'Tonight', body: "It's raining and dark out. Stay cosy — outdoor plans can wait till tomorrow.");
     }
     if (sunny && uv >= 6) {
-      return _WeatherTip(
-        emoji: '☀️',
-        title: l10n.weatherModalTipTitle,
-        body: l10n.weatherModalTipSunnyHighUv,
-      );
+      if (isMorning) return const _WeatherTip(emoji: '☀️', title: 'Good morning', body: 'Great start! Apply sunscreen — UV builds fast once the sun is up.');
+      if (isAfternoon) return const _WeatherTip(emoji: '☀️', title: 'This afternoon', body: 'UV is high right now. Find shade for a break and keep your water bottle close.');
+      if (isEvening) return const _WeatherTip(emoji: '🌅', title: 'This evening', body: "The sun is lower now — a perfect time for a walk or terrace visit.");
+      return const _WeatherTip(emoji: '✨', title: 'Tonight', body: 'Clear skies tonight — a great evening for a stroll under the stars.');
     }
     if (sunny) {
-      return _WeatherTip(
-        emoji: '🌤️',
-        title: l10n.weatherModalTipTitle,
-        body: l10n.weatherModalTipSunny,
-      );
+      if (isMorning) return const _WeatherTip(emoji: '🌤️', title: 'Good morning', body: 'Mild and dry — a great morning for a walk or breakfast outside.');
+      if (isAfternoon) return const _WeatherTip(emoji: '🌤️', title: 'This afternoon', body: 'Dry and comfortable out there. Terraces and parks are calling.');
+      if (isEvening) return const _WeatherTip(emoji: '🌇', title: 'This evening', body: 'A lovely evening for a walk, a bite outside, or just some fresh air.');
+      return const _WeatherTip(emoji: '🌙', title: 'Tonight', body: 'Nice and calm out there. A quiet evening walk might be just what you need.');
     }
     if (cloudy) {
-      return _WeatherTip(
-        emoji: '☁️',
-        title: l10n.weatherModalTipTitle,
-        body: l10n.weatherModalTipCloudy,
-      );
+      if (isMorning) return const _WeatherTip(emoji: '☁️', title: 'Good morning', body: 'Grey skies this morning — bring an extra layer and maybe a warm coffee.');
+      if (isAfternoon) return const _WeatherTip(emoji: '☁️', title: 'This afternoon', body: 'Cloudy and a bit cool. Good day for indoor spots or a museum.');
+      if (isEvening) return const _WeatherTip(emoji: '☁️', title: 'This evening', body: 'The clouds are in for the evening. A cosy dinner inside sounds perfect.');
+      return const _WeatherTip(emoji: '☁️', title: 'Tonight', body: 'Overcast and still. Wrap up if you\'re heading out — it feels cooler than it looks.');
     }
-    return _WeatherTip(
-      emoji: '✨',
-      title: l10n.weatherModalTipTitle,
-      body: l10n.weatherModalTipDefault,
-    );
+    // default
+    if (isMorning) return const _WeatherTip(emoji: '🌅', title: 'Good morning', body: 'Mixed conditions today — layer up so you\'re ready for anything.');
+    if (isAfternoon) return const _WeatherTip(emoji: '✨', title: 'This afternoon', body: 'Conditions may shift this afternoon. Keep an eye on the forecast.');
+    if (isEvening) return const _WeatherTip(emoji: '🌆', title: 'This evening', body: 'The evening is here — check the latest forecast before heading out.');
+    return const _WeatherTip(emoji: '🌙', title: 'Tonight', body: "Quiet outside for now. Check tomorrow's forecast in the morning.");
   }
 
   String _moodyMoodForWeather(WeatherData weather) {

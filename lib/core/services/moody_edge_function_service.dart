@@ -127,8 +127,7 @@ class MoodyEdgeFunctionService {
 
       // Use Dio to explicitly send Authorization header
       final dio = Dio();
-      final supabaseUrl = SupabaseConfig.url;
-      final functionUrl = '$supabaseUrl/functions/v1/moody';
+      final functionUrl = SupabaseConfig.moodyFunctionUrl;
 
       final payload = <String, dynamic>{
         'action': 'get_explore',
@@ -173,6 +172,28 @@ class MoodyEdgeFunctionService {
         final errorData = response.data;
         if (kDebugMode) {
           debugPrint('❌ Edge Function error: Status ${response.statusCode}, Data: $errorData');
+        }
+        if (response.statusCode == 503) {
+          // Edge cold start / transient outage: fail soft for Explore UI.
+          final fallback = await PlacesCacheUtils.tryLoadExplorePlacesHit(
+            _supabase,
+            section ?? 'discovery',
+            location,
+            isLocalMode: isLocal,
+            languageCode: effectiveLang,
+          );
+          if (fallback != null && fallback.places.isNotEmpty) {
+            if (kDebugMode) {
+              debugPrint(
+                '⚠️ moody 503 -> using cached explore fallback (${fallback.places.length} places)',
+              );
+            }
+            return fallback.places;
+          }
+          if (kDebugMode) {
+            debugPrint('⚠️ moody 503 -> returning empty explore list (no cache fallback)');
+          }
+          return const <Place>[];
         }
         throw Exception('Edge Function returned status ${response.statusCode}: ${errorData ?? 'Unknown error'}');
       }
@@ -235,6 +256,29 @@ class MoodyEdgeFunctionService {
       if (kDebugMode) {
         debugPrint('❌ Error calling moody Edge Function: $e');
       }
+      if (e is DioException && e.response?.statusCode == 503) {
+        final effectiveLangForFallback =
+            (languageCode != null && languageCode.isNotEmpty)
+                ? languageCode.toLowerCase().split(RegExp(r'[-_]')).first
+                : null;
+        final isLocalForFallback = await _readIsLocalMode();
+        final fallback = await PlacesCacheUtils.tryLoadExplorePlacesHit(
+          _supabase,
+          section ?? 'discovery',
+          location,
+          isLocalMode: isLocalForFallback,
+          languageCode: effectiveLangForFallback,
+        );
+        if (fallback != null && fallback.places.isNotEmpty) {
+          if (kDebugMode) {
+            debugPrint(
+              '⚠️ moody Dio 503 -> cached explore fallback (${fallback.places.length} places)',
+            );
+          }
+          return fallback.places;
+        }
+        return const <Place>[];
+      }
       rethrow;
     }
   }
@@ -270,7 +314,7 @@ class MoodyEdgeFunctionService {
     }
 
     final dio = Dio();
-    final functionUrl = '${SupabaseConfig.url}/functions/v1/moody';
+    final functionUrl = SupabaseConfig.moodyFunctionUrl;
 
     final isLocal = await _readIsLocalMode();
     final response = await dio.post<Map<String, dynamic>>(

@@ -39,50 +39,68 @@ class _InteractiveWeatherWidgetState extends ConsumerState<InteractiveWeatherWid
       ),
       child: Column(
         children: [
-          // Current Weather
+          // Current Weather — always visible
           currentWeather.when(
             data: (weather) => _buildCurrentWeather(context, weather),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (_, __) => Center(child: Text(l10n.weatherFailedLoadCurrent)),
-            ),
+          ),
 
-          // Hourly Forecast
-          if (_isDetailExpanded) ...[
-            const Divider(),
-            hourlyForecast.when(
-              data: (forecast) => _buildHourlyForecast(forecast),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => Center(child: Text(l10n.weatherFailedLoadForecast)),
+          // 24-hour outlook — always visible
+          const Divider(height: 1),
+          hourlyForecast.when(
+            data: (forecast) => _buildHourlyForecast(forecast),
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
             ),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
 
-            // Daily Forecast
-            const Divider(),
-            dailyForecast.when(
-              data: (forecast) => _buildDailyForecast(forecast),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => Center(child: Text(l10n.weatherFailedLoadForecast)),
+          // "Next few days" — hidden behind tap
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 250),
+            crossFadeState: _isDetailExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: const SizedBox(width: double.infinity),
+            secondChild: Column(
+              children: [
+                const Divider(height: 1),
+                dailyForecast.when(
+                  data: (forecast) => _buildDailyForecast(forecast),
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+              ],
             ),
-          ],
+          ),
 
-          // Expand/Collapse Button
+          // See more / hide button
           InkWell(
             onTap: () => setState(() => _isDetailExpanded = !_isDetailExpanded),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    _isDetailExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
                   Text(
                     _isDetailExpanded ? l10n.weatherShowLess : l10n.weatherShowMore,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
+                      fontWeight: FontWeight.w500,
                       color: Colors.grey[600],
-                ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    _isDetailExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: Colors.grey[600],
                   ),
                 ],
               ),

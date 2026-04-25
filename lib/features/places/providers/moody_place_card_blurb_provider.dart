@@ -13,18 +13,7 @@ import 'package:wandermood/features/places/data/moody_place_blurb_facts.dart';
 import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
 import 'package:wandermood/features/places/data/place_card_ui_description.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-
-String _googleDetailsId(Place place) {
-  final id = place.id.trim();
-  if (id.startsWith('google_')) {
-    final raw = id.substring('google_'.length);
-    return raw.isNotEmpty ? raw : '';
-  }
-  if (id.isNotEmpty && !id.startsWith('asset_')) return id;
-  return '';
-}
 
 AppLocalizations _l10nFor(ui.Locale locale) {
   try {
@@ -52,50 +41,20 @@ class _PlaceBlurbContext {
   final String? editorial;
 }
 
-Future<_PlaceBlurbContext> _loadPlaceBlurbContext(
-  Ref ref,
+_PlaceBlurbContext _loadPlaceBlurbContext(
   Place place,
   ui.Locale locale,
-) async {
+) {
   final l10n = _l10nFor(locale);
   final lang = locale.languageCode;
-
-  final places = ref.read(placesServiceProvider.notifier);
-  String? editorial;
-  final snippets = <String>[];
-  var reviewCount = place.reviewCount;
-
-  final gid = _googleDetailsId(place);
-  if (gid.isNotEmpty) {
-    try {
-      final details = await places.getPlaceDetails(gid);
-      if (details.isNotEmpty) {
-        editorial = details['description'] as String?;
-        final rawReviews = details['reviews'];
-        if (rawReviews is List<dynamic>) {
-          for (final r in rawReviews) {
-            if (snippets.length >= 6) break;
-            if (r is Map<String, dynamic> && r['text'] is String) {
-              var t = (r['text'] as String).trim();
-              if (t.length < 20) continue;
-              if (t.length > 220) t = '${t.substring(0, 217)}…';
-              snippets.add(t);
-            }
-          }
-        }
-        final urt = details['user_ratings_total'];
-        if (urt is int && urt > reviewCount) reviewCount = urt;
-        if (urt is num && urt.toInt() > reviewCount) reviewCount = urt.toInt();
-      }
-    } catch (_) {}
-  }
+  final editorial = place.editorialSummary?.trim();
 
   final facts = buildMoodyPlaceBlurbFactsBlock(
     l10n,
     place,
-    editorialOverride: editorial,
-    reviewSnippets: snippets.isNotEmpty ? snippets : null,
-    reviewCountOverride: reviewCount > 0 ? reviewCount : null,
+    editorialOverride:
+        (editorial != null && editorial.isNotEmpty) ? editorial : null,
+    reviewCountOverride: place.reviewCount > 0 ? place.reviewCount : null,
   );
 
   return _PlaceBlurbContext(
@@ -106,7 +65,7 @@ Future<_PlaceBlurbContext> _loadPlaceBlurbContext(
   );
 }
 
-/// Explore card line from on-model editorial or Google `description` after details fetch.
+/// Explore card line from already-available place editorial fields only.
 String? _editorialLineFromPlaceOrGoogle(
   Place place,
   AppLocalizations l10n,
@@ -154,7 +113,7 @@ final moodyPlaceCardUiDescriptionProvider =
     return stableHit;
   }
 
-  final ctx = await _loadPlaceBlurbContext(ref, place, locale);
+  final ctx = _loadPlaceBlurbContext(place, locale);
   final factsForModel = clampMoodyPlaceBlurbFactsForEdge(ctx.facts);
 
   final uiKey = MoodyPlaceCardUiCache.cacheKey(
@@ -277,7 +236,7 @@ final moodyPlaceDetailBlurbProvider =
   await MoodyPlaceBlurbCache.ensureHydrated();
   final appLocale = ref.watch(localeProvider);
   final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
-  final ctx = await _loadPlaceBlurbContext(ref, place, locale);
+  final ctx = _loadPlaceBlurbContext(place, locale);
 
   String? editorialBase =
       ExplorePlaceCardCopy.usableEditorialExcludingTypeFallback(place);

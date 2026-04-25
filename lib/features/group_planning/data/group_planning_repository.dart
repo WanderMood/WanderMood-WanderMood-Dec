@@ -13,6 +13,8 @@ import 'package:wandermood/features/group_planning/data/mood_match_invite_inbox_
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
 import 'package:wandermood/features/group_planning/domain/mood_match_in_app_invite_result.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
+import 'package:wandermood/features/group_planning/domain/group_planning_mode.dart';
+import 'package:wandermood/features/places/models/place.dart';
 
 /// Extracts Mood Match in-app invite fields from a `realtime_events` row.
 /// Supports `data` (RPC / older schema) and `payload` / `payload.data` shapes.
@@ -169,6 +171,121 @@ class GroupPlanningRepository {
       sessionId: row['session_id'].toString(),
       joinCode: row['join_code'].toString(),
     );
+  }
+
+  static String _placeTogetherSeedSlot(Place place) {
+    final bt = place.bestTime?.toLowerCase().trim();
+    if (bt == 'morning' || bt == 'afternoon' || bt == 'evening') {
+      return bt!;
+    }
+    return 'afternoon';
+  }
+
+  /// Explore → **Plan together**: new session, seed [group_plans] with one place
+  /// and [GroupPlanningMode.placeTogether] (no Mood Match grid / no AI day plan).
+  Future<({String sessionId, String joinCode})> createPlaceTogetherSessionFromExplorePlace(
+    Place place,
+  ) async {
+    final r = await createSession(
+      title: place.name.length > 120 ? '${place.name.substring(0, 120)}…' : place.name,
+    );
+    final slot = _placeTogetherSeedSlot(place);
+    final image = place.photos.isNotEmpty ? place.photos.first : '';
+    final act = <String, dynamic>{
+      'name': place.name,
+      'type': place.primaryType ??
+          (place.types.isNotEmpty ? place.types.first : 'point_of_interest'),
+      'rating': place.rating,
+      'timeSlot': slot,
+      'moodMatch': true,
+      'place_id': place.id,
+      'imageUrl': image,
+      'location': {
+        'lat': place.location.lat,
+        'lng': place.location.lng,
+      },
+      'description': place.editorialSummary ?? place.description ?? '',
+      'duration': '1h',
+    };
+    final v2 = GroupPlanV2.buildPlanPayloadFromRawMaps(
+      [act],
+      singleSlot: slot,
+    );
+    final planData = <String, dynamic>{
+      'planVersion': 2,
+      'version': 2,
+      kPlanDataPlanningModeKey: GroupPlanningMode.placeTogether.planDataValue,
+      'placeTogether': {
+        'name': place.name,
+        'placeId': place.id,
+        'imageUrl': image,
+        'bestTime': place.bestTime,
+      },
+      'activities': v2['activities'],
+      'swapPool': v2['swapPool'],
+      'ownerConfirmed': v2['ownerConfirmed'],
+      'guestConfirmed': v2['guestConfirmed'],
+      'swapRequests': v2['swapRequests'],
+      'swapProposals': v2['swapProposals'] ?? <String, dynamic>{},
+      'sentToGuest': false,
+    };
+    try {
+      await _client.from('group_plans').insert({
+        'session_id': r.sessionId,
+        'plan_data': planData,
+      });
+    } on PostgrestException catch (e) {
+      if (e.code != '23505') rethrow;
+    }
+    return r;
+  }
+
+  /// After the shared day + slot flow, merge prefs into the seeded
+  /// place-together plan (no OpenAI). Safe no-op if not [placeTogether].
+  Future<void> finalizePlaceTogetherPlanForMatchLoading(
+    String sessionId,
+  ) async {
+    final id = sessionId.trim();
+    if (id.isEmpty) return;
+    final plan = await fetchPlan(id);
+    if (plan == null) return;
+    if (groupPlanningModeFromPlanData(plan.planData) !=
+        GroupPlanningMode.placeTogether) {
+      return;
+    }
+    final session = await fetchSession(id);
+    var planned = session.plannedDate?.trim() ?? '';
+    if (planned.isEmpty) {
+      planned = (await MoodMatchSessionPrefs.readPlannedDate(id))?.trim() ?? '';
+    }
+    final rawSlot = await MoodMatchSessionPrefs.readPendingTimeSlot(id);
+    var normalizedSlot = 'afternoon';
+    if (rawSlot == 'morning' ||
+        rawSlot == 'afternoon' ||
+        rawSlot == 'evening') {
+      normalizedSlot = rawSlot!;
+    }
+
+    await mergePlanData(id, (d) {
+      d[kPlanDataPlanningModeKey] = GroupPlanningMode.placeTogether.planDataValue;
+      if (planned.isNotEmpty) d['planned_date'] = planned;
+      d['time_slot'] = normalizedSlot;
+      final activities = d['activities'];
+      if (activities is List) {
+        for (var i = 0; i < activities.length; i++) {
+          final a = activities[i];
+          if (a is Map) {
+            final m = Map<String, dynamic>.from(a);
+            m['timeSlot'] = normalizedSlot;
+            m['slot'] = normalizedSlot;
+            activities[i] = m;
+          }
+        }
+      }
+      d['generated_at'] = MoodyClock.now().toUtc().toIso8601String();
+      return d;
+    });
+    await writeSessionStatus(id, 'ready');
   }
 
   Future<String> joinSession(String joinCode) async {

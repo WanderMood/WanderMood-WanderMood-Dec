@@ -13,6 +13,7 @@ import 'package:wandermood/features/group_planning/data/mood_match_invited_profi
 import 'package:wandermood/features/group_planning/domain/mood_match_copy.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
+import 'package:wandermood/features/group_planning/domain/group_planning_mode.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_mood_labels.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_mood_match_grid.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
@@ -89,6 +90,7 @@ class _GroupPlanningLobbyScreenState
   bool _lockingAnimation = false;
   String? _error;
   bool _planExists = false;
+  GroupPlanRow? _planRow;
   List<MoodMatchInvitedProfile> _invitedProfiles = const [];
   final GlobalKey _shareLinkKey = GlobalKey();
 
@@ -227,8 +229,12 @@ class _GroupPlanningLobbyScreenState
       }
       _lastMemberCount = count;
 
+      final isPlaceTogether = plan != null &&
+          groupPlanningModeFromPlanData(plan.planData) ==
+              GroupPlanningMode.placeTogether;
       final allSubmittedNow = members.length >= 2 &&
-          members.every((m) => m.member.hasSubmittedMood);
+          (isPlaceTogether ||
+              members.every((m) => m.member.hasSubmittedMood));
       if (allSubmittedNow && _bothLockedAt == null) {
         _bothLockedAt = DateTime.now();
       }
@@ -243,6 +249,7 @@ class _GroupPlanningLobbyScreenState
         _joinCodeDisplay ??= session.joinCode;
         _error = null;
         _planExists = plan != null;
+        _planRow = plan;
       });
 
       if (_navigatedToNextStep || !mounted) return;
@@ -257,7 +264,9 @@ class _GroupPlanningLobbyScreenState
       }
 
       // Resume where the user left off (cold start resets in-memory flags).
-      if (plan != null) {
+      // Place-together keeps a seeded plan in `group_plans` from the start;
+      // do not jump to result until the shared day flow has run.
+      if (plan != null && !isPlaceTogether) {
         resumeGo('/group-planning/result/${widget.sessionId}');
         return;
       }
@@ -265,11 +274,25 @@ class _GroupPlanningLobbyScreenState
       if (session.status == 'generating' ||
           session.status == 'ready' ||
           session.status == 'day_confirmed') {
-        resumeGo('/group-planning/match-loading/${widget.sessionId}');
-        return;
+        if (!isPlaceTogether) {
+          resumeGo('/group-planning/match-loading/${widget.sessionId}');
+          return;
+        }
       }
 
       if (session.status == 'day_proposed') {
+        resumeGo('/group-planning/day-picker/${widget.sessionId}');
+        return;
+      }
+
+      if (isPlaceTogether &&
+          allSubmittedNow &&
+          session.status == 'waiting') {
+        if (!revealDone) {
+          unawaited(
+            MoodMatchSessionPrefs.markRevealCompleted(widget.sessionId),
+          );
+        }
         resumeGo('/group-planning/day-picker/${widget.sessionId}');
         return;
       }
@@ -281,7 +304,7 @@ class _GroupPlanningLobbyScreenState
 
       // First time both moods are in → compatibility reveal; not again after
       // [MoodMatchSessionPrefs.markRevealCompleted].
-      if (allSubmittedNow && !revealDone) {
+      if (allSubmittedNow && !revealDone && !isPlaceTogether) {
         _navigatedToNextStep = true;
         _poll?.cancel();
         _poll = null;
@@ -369,7 +392,15 @@ class _GroupPlanningLobbyScreenState
   }
 
   bool get _allSubmitted =>
-      _members.length >= 2 && _members.every((m) => m.member.hasSubmittedMood);
+      _members.length >= 2 &&
+      (_isPlaceTogetherSession ||
+          _members.every((m) => m.member.hasSubmittedMood));
+
+  bool get _isPlaceTogetherSession {
+    if (_planRow == null) return false;
+    return groupPlanningModeFromPlanData(_planRow!.planData) ==
+        GroupPlanningMode.placeTogether;
+  }
 
   String? _waitingOtherDisplayName() {
     final uid = Supabase.instance.client.auth.currentUser?.id;
@@ -973,7 +1004,7 @@ class _GroupPlanningLobbyScreenState
                           ),
                         ),
                       ),
-                    if (!_currentUserLocked()) ...[
+                    if (!_currentUserLocked() && !_isPlaceTogetherSession) ...[
                       // No more white card wrapper around the grid — that was
                       // pushing the final row of moods below the fold. We now
                       // render the caps tag + big title inline on cream, then
@@ -1017,7 +1048,29 @@ class _GroupPlanningLobbyScreenState
                         enabled: !_submitting,
                       ),
                     ],
-                    if (_currentUserLocked() && !_allSubmitted) ...[
+                    if (!_currentUserLocked() && _isPlaceTogetherSession) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.groupPlanTogetherTitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: GroupPlanningUi.charcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.moodMatchLobbyWaitingSubtitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: GroupPlanningUi.stone,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                    if (_currentUserLocked() && !_allSubmitted && !_isPlaceTogetherSession) ...[
                       const SizedBox(height: 14),
                       _WaitingPreviewCard(
                         l10n: l10n,

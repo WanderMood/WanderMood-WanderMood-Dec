@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/config/supabase_config.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/services/ai_chat_quota_service.dart';
@@ -8,22 +9,14 @@ import 'package:wandermood/core/services/moody_edge_function_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/places/models/place.dart';
 
-/// @deprecated - All methods now route through the moody
-/// edge function. This class will be removed in a future
-/// cleanup pass.
-///
-/// TODO: Remove this class once createDayPlan, optimizeItinerary,
-/// and isAIServiceAvailable are confirmed unused or migrated.
+/// Orchestration layer for all AI interactions in WanderMood.
+/// All methods route through the `moody` Edge Function.
 ///
 /// The supabase_flutter client attaches `Authorization: Bearer <access_token>` when
 /// [auth.currentSession] is non-null.
-@Deprecated(
-  'Prefer direct moody edge integration; WanderMoodAIService will be removed.',
-)
 class WanderMoodAIService {
   static final SupabaseClient _supabase = Supabase.instance.client;
-  static const String _functionName = 'wandermood-ai';
-  static const String _moodyFunctionName = 'moody';
+  static String get _moodyFunctionName => SupabaseConfig.moodyFunction;
 
   /// Maps [preferences] into `moody` `get_explore` filter keys (`rating`, `priceLevel`).
   static Map<String, dynamic> _preferencesToExploreFilters(
@@ -729,97 +722,6 @@ class WanderMoodAIService {
     return "I'm here to help you discover amazing places! 🌟 Tell me more about what you're looking for, and I'll suggest the perfect spots for your ${mood} mood.";
   }
 
-  /// Create a complete day plan using AI with optional conversation context
-  static Future<AIPlanResponse> createDayPlan({
-    required List<String> moods,
-    required double latitude,
-    required double longitude,
-    String? city,
-    Map<String, dynamic>? preferences,
-    String? conversationId,
-    List<String>? conversationContext,
-  }) async {
-    debugPrint('📅 Creating AI day plan for moods: $moods');
-    
-    try {
-      final requestBody = {
-        'action': 'plan',
-        'moods': moods,
-        'location': {
-          'latitude': latitude,
-          'longitude': longitude,
-          'city': city ?? 'Unknown',
-        },
-        'preferences': preferences ?? {},
-      };
-
-      // Include conversation context if available
-      if (conversationId != null) {
-        requestBody['conversationId'] = conversationId;
-      }
-      if (conversationContext != null && conversationContext.isNotEmpty) {
-        requestBody['conversationContext'] = conversationContext;
-        debugPrint('📝 Including conversation context: ${conversationContext.length} messages');
-      }
-
-      final response = await _supabase.functions.invoke(
-        _functionName,
-        body: requestBody,
-      );
-
-      if (response.status != 200) {
-        throw Exception('AI planning error: ${response.status}');
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      debugPrint('✅ AI day plan created');
-      
-      return AIPlanResponse.fromJson(data);
-    } catch (e) {
-      debugPrint('❌ Error creating AI day plan: $e');
-      rethrow;
-    }
-  }
-
-  /// Optimize an existing itinerary using AI
-  static Future<AIOptimizationResponse> optimizeItinerary({
-    required List<Map<String, dynamic>> currentItinerary,
-    required double latitude,
-    required double longitude,
-    String? city,
-    Map<String, dynamic>? constraints,
-  }) async {
-    debugPrint('⚡ Optimizing itinerary with ${currentItinerary.length} activities');
-    
-    try {
-      final response = await _supabase.functions.invoke(
-        _functionName,
-        body: {
-          'action': 'optimize',
-          'currentItinerary': currentItinerary,
-          'location': {
-            'latitude': latitude,
-            'longitude': longitude,
-            'city': city ?? 'Unknown',
-          },
-          'constraints': constraints ?? {},
-        },
-      );
-
-      if (response.status != 200) {
-        throw Exception('AI optimization error: ${response.status}');
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      debugPrint('✅ Itinerary optimized');
-      
-      return AIOptimizationResponse.fromJson(data);
-    } catch (e) {
-      debugPrint('❌ Error optimizing itinerary: $e');
-      rethrow;
-    }
-  }
-
   /// Submit feedback for AI recommendations
   static Future<void> submitRecommendationFeedback({
     required String recommendationId,
@@ -983,19 +885,6 @@ class WanderMoodAIService {
     }
   }
 
-  /// Check if AI service is available
-  static Future<bool> isAIServiceAvailable() async {
-    try {
-      final response = await _supabase.functions.invoke(
-        _functionName,
-        body: {'action': 'ping'},
-      );
-      return response.status == 200;
-    } catch (e) {
-      debugPrint('⚠️ AI service not available: $e');
-      return false;
-    }
-  }
 }
 
 // Removed custom debugPrint function - using Flutter's debugPrint from foundation.dart instead 

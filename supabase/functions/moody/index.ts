@@ -1200,23 +1200,79 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
   let tasteContext = ''
   if (userContext.tasteProfile && userContext.tasteProfile.totalInteractions >= 3) { const topTypes = Object.entries(userContext.tasteProfile.savedPlaceTypes as Record<string,number>).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([type]) => type); if (topTypes.length > 0) tasteContext = `\nThis user tends to save/like: ${topTypes.join(', ')}.`; if (userContext.tasteProfile.topRatedPlaces?.length > 0) tasteContext += ` They've completed activities and rated them positively.` }
   const systemPrompt = `${MOODY_CORE_IDENTITY}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have specific spots for that right now — tap Explore to find real options nearby."\nReply in the same language the user writes in.`
+  const { hasIntent } = detectChatPlaceIntent(message)
+  const shouldSuggestPlaces = hasIntent && !!userCity && !!coordinates
+  const placesPromise: Promise<PlaceCard[]> = shouldSuggestPlaces
+    ? searchPlacesForChat(message, userCity as string, coordinates as { lat: number; lng: number }, userContext, placesLang)
+    : Promise.resolve([])
+  const conversationId = params.conversationId || `conv_${userId}_${Date.now()}`
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!openaiKey) return new Response(JSON.stringify({ reply: getFallbackChat(style, lang), conversationId: params.conversationId || `conv_${userId}_${Date.now()}`, suggested_places: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  if (!openaiKey) {
+    const suggestedPlaces = await placesPromise.catch(() => [])
+    return new Response(
+      JSON.stringify({
+        reply: getFallbackChat(style, lang, suggestedPlaces),
+        conversationId,
+        suggested_places: suggestedPlaces,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
+  }
   try {
     const historyMessages = chatHistory.length > 0 ? chatHistory : (params.history || []).slice(-10)
     const chatPromise = fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }, ...historyMessages.slice(-20), { role: 'user', content: message }], max_tokens: 400, temperature: style === 'energetic' ? 0.9 : 0.82 }) })
-    let placesPromise: Promise<PlaceCard[]> = Promise.resolve([])
-    const { hasIntent } = detectChatPlaceIntent(message)
-    if (hasIntent && userCity && coordinates) placesPromise = searchPlacesForChat(message, userCity, coordinates, userContext, placesLang)
     const [chatResp, suggestedPlaces] = await Promise.all([chatPromise, placesPromise])
     if (!chatResp.ok) throw new Error(`OpenAI ${chatResp.status}`)
-    const data = await chatResp.json(), reply = data.choices?.[0]?.message?.content || getFallbackChat(style, lang), conversationId = params.conversationId || `conv_${userId}_${Date.now()}`
+    const data = await chatResp.json(), reply = data.choices?.[0]?.message?.content || getFallbackChat(style, lang, suggestedPlaces)
     supabase.from('ai_conversations').insert([{ user_id: userId, conversation_id: conversationId, role: 'user', content: message }, { user_id: userId, conversation_id: conversationId, role: 'assistant', content: reply }]).then(() => {}).catch(() => {})
     return new Response(JSON.stringify({ reply, conversationId, suggested_places: suggestedPlaces }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch { return new Response(JSON.stringify({ reply: getFallbackChat(style, lang), conversationId: params.conversationId || `conv_${userId}_${Date.now()}`, suggested_places: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+  } catch {
+    const suggestedPlaces = await placesPromise.catch(() => [])
+    return new Response(
+      JSON.stringify({
+        reply: getFallbackChat(style, lang, suggestedPlaces),
+        conversationId,
+        suggested_places: suggestedPlaces,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    )
+  }
 }
 
-function getFallbackChat(style: string, lang: 'nl' | 'en'): string { if (lang === 'nl') { switch (style) { case 'energetic': return 'YO even geduld! 🔥'; case 'professional': return 'Momenteel niet beschikbaar.'; case 'direct': return 'Even wachten.'; default: return 'Hey! Probeer het zo nog eens 😊' } }; switch (style) { case 'energetic': return 'YO hang on! 🔥'; case 'professional': return 'Currently unavailable.'; case 'direct': return 'Try again in a moment.'; default: return 'Hey! Try again in a sec 😊' } }
+function getFallbackChat(style: string, lang: 'nl' | 'en', suggestedPlaces: PlaceCard[] = []): string {
+  const topNames = suggestedPlaces
+    .slice(0, 3)
+    .map((p) => p.name?.trim())
+    .filter((n): n is string => !!n && n.length > 0)
+  if (topNames.length > 0) {
+    if (lang === 'nl') {
+      return `Ik heb nu al een paar opties voor je: ${topNames.join(', ')}. Kies er een en ik werk het direct voor je uit.`
+    }
+    return `I already found a few nearby options: ${topNames.join(', ')}. Pick one and I'll tailor it for you right away.`
+  }
+  if (lang === 'nl') {
+    switch (style) {
+      case 'energetic':
+        return 'YO even geduld! 🔥'
+      case 'professional':
+        return 'Momenteel niet beschikbaar.'
+      case 'direct':
+        return 'Even wachten.'
+      default:
+        return 'Hey! Probeer het zo nog eens 😊'
+    }
+  }
+  switch (style) {
+    case 'energetic':
+      return 'YO hang on! 🔥'
+    case 'professional':
+      return 'Currently unavailable.'
+    case 'direct':
+      return 'Try again in a moment.'
+    default:
+      return 'Hey! Try again in a sec 😊'
+  }
+}
 
 function relatedSearchOptions(query: string): string[] {
   const q = query.toLowerCase().trim().replace(/\s+/g, ' ')

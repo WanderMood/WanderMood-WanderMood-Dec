@@ -43,6 +43,14 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
     with SingleTickerProviderStateMixin {
   late final AnimationController _tap;
 
+  Color _accentColor(Color base) {
+    final hsl = HSLColor.fromColor(base);
+    return hsl
+        .withSaturation((hsl.saturation + 0.22).clamp(0.0, 1.0))
+        .withLightness((hsl.lightness - 0.22).clamp(0.0, 1.0))
+        .toColor();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,146 +82,138 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
 
   @override
   Widget build(BuildContext context) {
+    final accent = _accentColor(widget.pastelBase);
+    final tileBackground = widget.isSelected
+        ? const Color(0xFFEFF7F2)
+        : const Color(0xFFFFFFFF);
     final borderColor = widget.isSelected
-        ? widget.pastelBase.withValues(alpha: 0.95)
-        : Colors.white.withValues(alpha: 0.6);
-    final borderWidth = widget.isSelected ? 2.8 : 1.2;
+        ? const Color(0xFF2A6049)
+        : const Color(0xFFE7E6E3);
+    final borderWidth = widget.isSelected ? 1.8 : 1.0;
     final titleWeight =
         widget.isSelected ? FontWeight.w600 : FontWeight.w500;
-    final elevation = widget.isSelected ? 10.0 : 6.0;
 
     return AnimatedBuilder(
       animation: _tap,
       builder: (context, child) {
         final bounce = _bounceScale();
         return Opacity(
-          opacity: widget.dimmed ? 0.6 : 1.0,
+          opacity: widget.dimmed ? 0.58 : 1.0,
           child: Transform.scale(
-            scale: (widget.isSelected ? 1.04 : 1.0) * bounce,
+            scale: (widget.isSelected ? 1.02 : 1.0) * bounce,
             child: child,
           ),
         );
       },
-      child: Material(
-        color: widget.pastelBase,
-        elevation: elevation,
-        shadowColor: Colors.black.withValues(alpha: 0.22),
-        shape: RoundedRectangleBorder(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: tileBackground,
           borderRadius: BorderRadius.circular(widget.tileRadius),
-          side: BorderSide(
+          border: Border.all(
             color: borderColor,
             width: borderWidth,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: widget.isSelected ? 0.08 : 0.04),
+              blurRadius: widget.isSelected ? 12 : 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: widget.onTap != null ? _handleTap : null,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.35),
-                        Colors.white.withValues(alpha: 0.08),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              if (widget.isSelected)
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(widget.tileRadius),
-                    ),
-                  ),
-                ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.emoji,
-                        style: TextStyle(fontSize: widget.emojiSize),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        widget.title,
-                        style: GoogleFonts.poppins(
-                          fontSize: widget.titleSize,
-                          fontWeight: titleWeight,
-                          color: Colors.black87,
-                          height: 1.1,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(widget.tileRadius),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: widget.onTap != null ? _handleTap : null,
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: widget.emojiSize * 1.75,
+                          height: widget.emojiSize * 1.75,
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: widget.isSelected ? 0.2 : 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.emoji,
+                              style: TextStyle(fontSize: widget.emojiSize * 0.82),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (widget.subtitle != null &&
-                          widget.subtitle!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 8),
                         Text(
-                          widget.subtitle!,
+                          widget.title,
                           style: GoogleFonts.poppins(
-                            fontSize: widget.subtitleSize,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black54,
+                            fontSize: widget.titleSize,
+                            fontWeight: titleWeight,
+                            color: const Color(0xFF1E1C18),
                             height: 1.1,
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (widget.subtitle != null && widget.subtitle!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.subtitle!,
+                            style: GoogleFonts.poppins(
+                              fontSize: widget.subtitleSize,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF6B6A67),
+                              height: 1.1,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              if (widget.isSelected && widget.showCheckBadge)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: widget.pastelBase.withValues(alpha: 0.8),
-                        width: 1.5,
+                if (widget.isSelected && widget.showCheckBadge)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A6049),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 2,
-                          offset: const Offset(0, 1),
+                      child: const Center(
+                        child: Icon(
+                          Icons.check_rounded,
+                          size: 12,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.check_rounded,
-                        size: 12,
-                        color: Color(0xFF2A6049),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

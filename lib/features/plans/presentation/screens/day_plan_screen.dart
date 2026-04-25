@@ -9,7 +9,6 @@ import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:intl/intl.dart';
 import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
-import 'package:wandermood/features/plans/services/activity_generator_service.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';

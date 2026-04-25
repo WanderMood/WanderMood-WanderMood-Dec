@@ -1,0 +1,33 @@
+---
+description: Protects working image display, card UI, and session caching from accidental changes
+alwaysApply: true
+---
+
+# Do Not Touch Working UI Systems
+
+## Images — FROZEN ✅
+
+The following are working correctly in production. **Never modify** them:
+
+- `lib/core/presentation/widgets/wm_network_image.dart` — `WmPlacePhotoNetworkImage` and `WmNetworkImage`
+- `lib/core/utils/google_place_photo_device_url.dart` — `deviceAccessibleGooglePlacePhotoUrl`
+- `lib/core/utils/places_new_photo_resolver.dart`
+- `lib/core/utils/place_gallery_merge.dart`
+- Any reference to `WanderMoodImageCacheManager` or `CachedNetworkImage` config
+
+Do **not** change image widget choices, URL rewriting logic, or cache manager setup.
+
+## Card Content Rendering — FROZEN ✅
+
+The following place card content pipeline is working. Do not restructure it:
+
+- `lib/features/places/data/moody_place_blurb_edge.dart`
+- `lib/core/presentation/widgets/guest_demo_about_sections.dart` — `GuestDemoAboutSectionsView`, section parsing
+- `lib/features/places/presentation/widgets/place_detail_about_block.dart`
+- `lib/features/places/presentation/widgets/place_card_moody_description.dart`
+- `lib/features/places/data/place_card_ui_description.dart`
+
+## Rule
+
+If a task doesn't explicitly require changing these files, **do not touch them**.
+If a change nearby risks affecting image loading or card rendering, **stop and flag it** before proceeding.

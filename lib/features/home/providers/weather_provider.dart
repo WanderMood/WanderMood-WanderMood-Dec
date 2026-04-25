@@ -1,6 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
@@ -98,31 +101,127 @@ Future<WeatherLocation?> _resolveWeatherLocation(Ref ref) async {
   }
 }
 
-/// Provider for current weather data (OpenWeather via [WeatherService]).
-final weatherProvider = FutureProvider.autoDispose<Weather?>((ref) async {
-  final loc = await _resolveWeatherLocation(ref);
-  if (loc == null) return null;
+const Duration _weatherCacheFreshWindow = Duration(minutes: 30);
+const String _weatherCacheDataPrefix = 'home_weather_cache_data_';
+const String _weatherCacheTimestampPrefix = 'home_weather_cache_ts_';
 
-  final edgeService = ref.watch(enhancedWeatherServiceProvider.notifier);
-  final fallbackService = ref.watch(weatherServiceProvider.notifier);
-  try {
-    final weather = await edgeService.getCurrentWeather(loc);
-    if (kDebugMode) {
-      debugPrint('🌦️ Home weather source=edge location=${loc.name}');
-    }
-    return weather;
-  } catch (_) {
-    try {
-      final weather = await fallbackService.getCurrentWeather(loc);
+class _CachedWeather {
+  final Weather weather;
+  final DateTime fetchedAt;
+
+  const _CachedWeather({
+    required this.weather,
+    required this.fetchedAt,
+  });
+}
+
+/// Provider for current weather data (OpenWeather via [WeatherService]).
+final weatherProvider =
+    AsyncNotifierProvider<WeatherProviderNotifier, Weather?>(
+      WeatherProviderNotifier.new,
+    );
+
+class WeatherProviderNotifier extends AsyncNotifier<Weather?> {
+  @override
+  Future<Weather?> build() async {
+    final loc = await _resolveWeatherLocation(ref);
+    if (loc == null) return null;
+
+    final cached = await _readCachedWeather(loc);
+    if (cached != null) {
+      final cacheAge = DateTime.now().difference(cached.fetchedAt);
+      final isFresh = cacheAge < _weatherCacheFreshWindow;
       if (kDebugMode) {
-        debugPrint('🌦️ Home weather source=fallback-direct location=${loc.name}');
+        debugPrint(
+          '🌦️ Home weather source=cache location=${loc.name} ageMinutes=${cacheAge.inMinutes}',
+        );
       }
+
+      if (!isFresh) {
+        unawaited(_refreshWeatherInBackground(loc));
+      }
+      return cached.weather;
+    }
+
+    return _fetchAndCacheWeather(loc);
+  }
+
+  Future<void> _refreshWeatherInBackground(WeatherLocation loc) async {
+    final refreshed = await _fetchAndCacheWeather(loc);
+    if (refreshed != null) {
+      try {
+        state = AsyncData(refreshed);
+      } catch (_) {}
+    }
+  }
+
+  Future<Weather?> _fetchAndCacheWeather(WeatherLocation loc) async {
+    final edgeService = ref.read(enhancedWeatherServiceProvider.notifier);
+    final fallbackService = ref.read(weatherServiceProvider.notifier);
+
+    try {
+      final weather = await edgeService.getCurrentWeather(loc);
+      if (kDebugMode) {
+        debugPrint('🌦️ Home weather source=edge location=${loc.name}');
+      }
+      await _writeCachedWeather(loc, weather);
       return weather;
+    } catch (_) {
+      try {
+        final weather = await fallbackService.getCurrentWeather(loc);
+        if (kDebugMode) {
+          debugPrint(
+            '🌦️ Home weather source=fallback-direct location=${loc.name}',
+          );
+        }
+        await _writeCachedWeather(loc, weather);
+        return weather;
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+
+  Future<_CachedWeather?> _readCachedWeather(WeatherLocation loc) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _cacheKeyForLocation(loc);
+      final weatherJson = prefs.getString('$_weatherCacheDataPrefix$key');
+      final timestampMs = prefs.getInt('$_weatherCacheTimestampPrefix$key');
+      if (weatherJson == null || timestampMs == null) return null;
+
+      final decoded = Weather.fromJson(
+        Map<String, dynamic>.from(
+          (jsonDecode(weatherJson) as Map).cast<String, dynamic>(),
+        ),
+      );
+      return _CachedWeather(
+        weather: decoded,
+        fetchedAt: DateTime.fromMillisecondsSinceEpoch(timestampMs),
+      );
     } catch (_) {
       return null;
     }
   }
-});
+
+  Future<void> _writeCachedWeather(WeatherLocation loc, Weather weather) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _cacheKeyForLocation(loc);
+      await prefs.setString(
+        '$_weatherCacheDataPrefix$key',
+        jsonEncode(weather.toJson()),
+      );
+      await prefs.setInt(
+        '$_weatherCacheTimestampPrefix$key',
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (_) {}
+  }
+
+  String _cacheKeyForLocation(WeatherLocation loc) =>
+      '${loc.latitude.toStringAsFixed(4)}_${loc.longitude.toStringAsFixed(4)}';
+}
 
 /// Hourly-style forecast rows (edge function first, direct API fallback).
 final hourlyForecastProvider =

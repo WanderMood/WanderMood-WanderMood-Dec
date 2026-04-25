@@ -37,6 +37,7 @@ import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/core/utils/moody_toast.dart';
+import 'package:wandermood/core/config/supabase_config.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
@@ -800,7 +801,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     setState(() => _isSearching = true);
 
     try {
-      final response = await supabase.functions.invoke('moody', body: {
+      final response =
+          await supabase.functions.invoke(SupabaseConfig.moodyFunction, body: {
         'action': 'search',
         'query': query,
         'location': city,

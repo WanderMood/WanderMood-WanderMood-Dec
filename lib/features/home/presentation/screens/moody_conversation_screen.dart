@@ -518,6 +518,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
   // Modify _handleUserInput to include context analysis
   void _handleUserInput(String input) {
     if (input.isEmpty || _conversationCompleted) return;
+    FocusManager.instance.primaryFocus?.unfocus();
 
     final replySnap = _replyDraft;
     setState(() {
@@ -1389,6 +1390,7 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                             Expanded(
                               child: TextField(
                                 controller: _textController,
+                                textInputAction: TextInputAction.send,
                                 decoration: InputDecoration(
                                   hintText: _isListening
                                       ? AppLocalizations.of(context)!.moodyConversationListening
@@ -1426,8 +1428,9 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
                                   });
                                 },
                                 onSubmitted: (value) {
-                                  if (value.isNotEmpty) {
-                                    _handleUserInput(value);
+                                  final trimmed = value.trim();
+                                  if (trimmed.isNotEmpty) {
+                                    _handleUserInput(trimmed);
                                   }
                                 },
                               ),

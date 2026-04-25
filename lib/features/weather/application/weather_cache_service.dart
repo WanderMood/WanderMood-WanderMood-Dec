@@ -22,8 +22,8 @@ class WeatherCacheService {
   Box<List<dynamic>>? _alertBox;
 
   Future<void> init() async {
+    final appDir = await getApplicationDocumentsDirectory();
     if (!Hive.isBoxOpen('forecasts')) {
-      final appDir = await getApplicationDocumentsDirectory();
       Hive.init(appDir.path);
       
       // Register adapters if not already registered
@@ -39,6 +39,8 @@ class WeatherCacheService {
       
       _forecastBox = await Hive.openBox<List<WeatherForecast>>(_forecastBoxName);
       _alertBox = await Hive.openBox<List<dynamic>>('alerts');
+    } else {
+      _forecastBox = Hive.box<List<WeatherForecast>>(_forecastBoxName);
     }
 
     _locationBox = await Hive.openBox<WeatherLocation>(_locationBoxName);

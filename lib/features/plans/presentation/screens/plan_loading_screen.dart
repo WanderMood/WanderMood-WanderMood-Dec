@@ -222,8 +222,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       
       // Use Dio to explicitly send Authorization header
       final dio = Dio();
-      final supabaseUrl = SupabaseConfig.url;
-      final functionUrl = '$supabaseUrl/functions/v1/moody';
+      final functionUrl = SupabaseConfig.moodyFunctionUrl;
       
       debugPrint('🔑 Calling Edge Function with explicit Authorization header');
       debugPrint('   Token preview: ${token.substring(0, 20)}...');

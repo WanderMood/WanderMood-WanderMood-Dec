@@ -42,4 +42,9 @@ class SupabaseConfig {
   // Functions
   static String get getCurrentWeatherFunction => EnvConfig.getCurrentWeatherFunction;
   static String get getRecommendationsFunction => EnvConfig.getRecommendationsFunction;
+  static String get moodyFunction => const String.fromEnvironment(
+        'WM_MOODY_FUNCTION',
+        defaultValue: 'moody',
+      );
+  static String get moodyFunctionUrl => '$url/functions/v1/$moodyFunction';
 } 

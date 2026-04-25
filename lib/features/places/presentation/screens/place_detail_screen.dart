@@ -251,12 +251,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         timeSlot:
             TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
       );
+      // Only schedule photo/description loading when the place actually changes —
+      // not on every rebuild — to prevent addPostFrameCallback accumulation.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _cachedPlace == null) return;
+        _ensureUnifiedDetailPhotos(_cachedPlace!);
+        _maybeEnrichDescription(_cachedPlace!);
+      });
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _cachedPlace == null) return;
-      _ensureUnifiedDetailPhotos(_cachedPlace!);
-      _maybeEnrichDescription(_cachedPlace!);
-    });
   }
 
   /// Prefer [_cachedPlace] when it matches the same id so photo merges / unified

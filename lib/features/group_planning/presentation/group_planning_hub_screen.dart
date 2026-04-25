@@ -10,6 +10,7 @@ import 'package:wandermood/features/group_planning/data/mood_match_invite_inbox_
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
 import 'package:wandermood/features/group_planning/domain/group_plan_v2.dart';
+import 'package:wandermood/features/group_planning/domain/group_planning_mode.dart';
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_ui.dart';
@@ -656,7 +657,12 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
 
   void _openSession(_HubSessionItem item) {
     final s = item.session;
-    if (item.hasPlan) {
+    final isPlaceTogether = item.planData != null &&
+        groupPlanningModeFromPlanData(item.planData!) ==
+            GroupPlanningMode.placeTogether;
+    // Explore "Plan together" seeds `group_plans` immediately; only Mood
+    // Match should jump straight to result when a plan row exists.
+    if (item.hasPlan && !isPlaceTogether) {
       context.go('/group-planning/result/${s.id}');
       return;
     }
@@ -664,10 +670,16 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
       context.go('/group-planning/day-picker/${s.id}');
       return;
     }
-    if (s.status == 'generating' ||
-        s.status == 'ready' ||
-        s.status == 'day_confirmed') {
+    if (!isPlaceTogether &&
+        (s.status == 'generating' ||
+            s.status == 'ready' ||
+            s.status == 'day_confirmed')) {
       context.go('/group-planning/match-loading/${s.id}');
+      return;
+    }
+    if (isPlaceTogether &&
+        (s.status == 'ready' || s.status == 'day_confirmed')) {
+      context.go('/group-planning/result/${s.id}');
       return;
     }
     context.go(
