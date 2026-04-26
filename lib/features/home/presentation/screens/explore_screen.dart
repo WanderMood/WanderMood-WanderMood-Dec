@@ -45,6 +45,7 @@ import 'package:wandermood/core/providers/explore_session_anchor_provider.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/config/explore_launch_config.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
+import 'package:wandermood/features/home/presentation/providers/explore_intent_provider.dart';
 class _ExploreSectionData {
   _ExploreSectionData({required this.id, List<Place>? cards})
       : cards = cards ?? [];
@@ -84,6 +85,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   ProviderSubscription<int>? _manualCityPickSubscription;
+  ProviderSubscription<String?>? _externalSearchIntentSubscription;
   String _selectedCategory = 'all';
   String _searchFilter = 'all';
   bool _isSearching = false;
@@ -236,17 +238,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         unawaited(_onManualCityChangedExplore());
       }
     });
+    _externalSearchIntentSubscription ??=
+        ref.listenManual<String?>(exploreSearchIntentProvider, (prev, next) {
+      final q = next?.trim();
+      if (q == null || q.isEmpty) return;
+      _applyExternalSearchIntent(q);
+      ref.read(exploreSearchIntentProvider.notifier).state = null;
+    });
   }
 
   @override
   void dispose() {
     _manualCityPickSubscription?.close();
+    _externalSearchIntentSubscription?.close();
     _searchDebounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _scrollController.dispose();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  void _applyExternalSearchIntent(String query) {
+    _searchDebounce?.cancel();
+    _searchController.text = query;
+    _searchController.selection = TextSelection.collapsed(offset: query.length);
+    setState(() {
+      _searchQuery = query;
+      _isSearching = true;
+      _searchResults = null;
+      _exploreVisiblePlaceCount = _kExplorePageSize;
+    });
+    _performBackendSearch(query);
   }
 
   void _onSearchChanged() {

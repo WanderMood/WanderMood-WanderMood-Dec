@@ -204,6 +204,44 @@ async function processPlacesBody(
     case 'details':
       if (!placeId) throw new Error('Place ID required for details')
       {
+        // Cache-first for Details to avoid repeat Google billable calls.
+        const cacheKey = `places_details_${placeId}`
+        try {
+          const { data: cachedRow } = await supabaseClient
+            .from('places_cache')
+            .select('data,expires_at')
+            .eq('cache_key', cacheKey)
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          const expiresAtRaw = cachedRow?.expires_at as string | undefined
+          const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null
+          const isFresh =
+            cachedRow?.data &&
+            expiresAt != null &&
+            !Number.isNaN(expiresAt.getTime()) &&
+            expiresAt.getTime() > Date.now()
+
+          if (isFresh) {
+            console.log(`places.details cache=HIT placeId=${placeId}`)
+            return new Response(
+              JSON.stringify({
+                success: true,
+                data: cachedRow.data,
+                cached_until: expiresAt.toISOString(),
+                cached: true,
+              }),
+              {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200,
+              },
+            )
+          }
+          console.log(`places.details cache=MISS placeId=${placeId}`)
+        } catch (cacheReadError) {
+          console.warn('places.details cache read failed:', cacheReadError)
+        }
+
         const r = await fetchPlaceDetailsWithFallback(placeId, language, GOOGLE_PLACES_API_KEY)
         data = r.data
         response = r.response

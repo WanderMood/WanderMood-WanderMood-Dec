@@ -1427,14 +1427,22 @@ async function handleGenerateHubMessage(supabase: any, userId: string, params: R
   const userContext = await fetchUserContext(supabase, userId), style = String(userContext.communicationStyle || 'friendly').toLowerCase(), moodStr = moods.join(' & ') || (lang === 'nl' ? 'jouw vibe' : 'your vibe')
   const fb: Record<string, Record<string, string>> = { nl: { energetic: activitiesCount > 0 ? `YO ik heb ${activitiesCount} ding${activitiesCount===1?'':'en'} voor je klaar 🔥` : `Nog niks? Ik zoek iets ${moodStr} voor je 🔥`, professional: activitiesCount > 0 ? `Ik heb ${activitiesCount} activiteit${activitiesCount===1?'':'en'} voor je gepland.` : 'Ik heb nog niets voor je gepland.', direct: activitiesCount > 0 ? `${activitiesCount} gepland.` : 'Geen plannen.', calm: activitiesCount > 0 ? `Ik heb iets leuks voor je klaar ☀️` : `Rustige dag? Ik zoek iets voor je ☀️`, friendly: activitiesCount > 0 ? `Hey! Ik heb ${activitiesCount} ding${activitiesCount===1?'':'en'} voor je klaarstaan 😊` : `Nog rustig? Ik zoek iets ${moodStr} voor je 😊` }, en: { energetic: activitiesCount > 0 ? `YO I got ${activitiesCount} thing${activitiesCount===1?'':'s'} lined up for you 🔥` : `Nothing yet? I'll find you something ${moodStr} 🔥`, professional: activitiesCount > 0 ? `I've planned ${activitiesCount} activit${activitiesCount===1?'y':'ies'} for you.` : "I haven't planned anything yet.", direct: activitiesCount > 0 ? `${activitiesCount} planned.` : 'No plans.', calm: activitiesCount > 0 ? `I found something good for you today ☀️` : `Quiet day? I'll find you something ☀️`, friendly: activitiesCount > 0 ? `Hey! I got ${activitiesCount} activit${activitiesCount===1?'y':'ies'} ready for you 😊` : `Quiet day? I'll find you something ${moodStr} 😊` } }
   const fallbackMessage = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly, openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!openaiKey?.trim()) return new Response(JSON.stringify({ message: fallbackMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  if (!openaiKey?.trim()) return new Response(JSON.stringify({ message: fallbackMessage, place_query: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE_IDENTITY}\n\nWrite ONE short home screen greeting in ${lang === 'nl' ? 'Dutch' : 'English'}. Communication style: ${style}. Use "I". Max 100 chars. Max 1 emoji. Activities planned: ${activitiesCount}. User mood: ${moodStr}. Time: ${timeOfDay}.` }, { role: 'user', content: JSON.stringify({ current_moods: moods, time_of_day: timeOfDay, activities_count: activitiesCount }) }], max_tokens: 80, temperature: 0.8 }) })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE_IDENTITY}\n\nWrite ONE short home screen greeting in ${lang === 'nl' ? 'Dutch' : 'English'}. Communication style: ${style}. Use "I". Never refer to Moody in third person. Max 100 chars. Max 1 emoji. Activities planned: ${activitiesCount}. User mood: ${moodStr}. Time: ${timeOfDay}. Return JSON only: {"message":"...","place_query":"..."}.\n- place_query must be a short place name/search phrase only when your message mentions a concrete real place the user should open in Explore.\n- If no specific place is mentioned, use place_query as empty string.` }, { role: 'user', content: JSON.stringify({ current_moods: moods, time_of_day: timeOfDay, activities_count: activitiesCount }) }], max_tokens: 120, temperature: 0.8, response_format: { type: 'json_object' } }) })
     if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
-    const data = await resp.json(), text = (data.choices?.[0]?.message?.content || '').trim().replace(/^["']|["']$/g, '')
-    if (text.length > 0 && text.length <= 280) return new Response(JSON.stringify({ message: text }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const data = await resp.json(), content = (data.choices?.[0]?.message?.content || '').trim()
+    let text = '', placeQuery = ''
+    try {
+      const parsed = JSON.parse(content)
+      text = String(parsed?.message || '').trim()
+      placeQuery = String(parsed?.place_query || '').trim()
+    } catch {
+      text = content.replace(/^["']|["']$/g, '')
+    }
+    if (text.length > 0 && text.length <= 280) return new Response(JSON.stringify({ message: text, place_query: placeQuery }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (e) { console.error('❌ handleGenerateHubMessage:', e) }
-  return new Response(JSON.stringify({ message: fallbackMessage }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  return new Response(JSON.stringify({ message: fallbackMessage, place_query: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 }
 
 function placeKinds(place: PlaceCard): Set<string> {

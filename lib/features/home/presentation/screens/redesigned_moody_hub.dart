@@ -13,6 +13,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_feedback_prompt_card.dart';
 import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
+import 'package:wandermood/features/home/presentation/providers/explore_intent_provider.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/core/localization/localized_mood_labels.dart';
@@ -330,6 +331,7 @@ class _MoodyHubAiMessageLine extends ConsumerStatefulWidget {
 class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
     with SingleTickerProviderStateMixin {
   String? _message;
+  String? _placeQuery;
   bool _loading = true;
   late final AnimationController _pulseController;
 
@@ -363,7 +365,8 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
     );
     if (!mounted) return;
     setState(() {
-      _message = result;
+      _message = result?.message;
+      _placeQuery = result?.placeQuery;
       _loading = false;
     });
   }
@@ -376,7 +379,7 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
     if (_loading) {
       return AnimatedBuilder(
         animation: _pulseController,
@@ -395,19 +398,57 @@ class _MoodyHubAiMessageLineState extends ConsumerState<_MoodyHubAiMessageLine>
         },
       );
     }
+    final fallback = nl
+        ? 'Ik ben hier en klaar om met je dag mee te bewegen.'
+        : 'I am here and ready to shape your day with you.';
+    final query = _placeQuery?.trim() ?? '';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-        _message ?? l10n.moodyHubFallbackAiMessage,
-        textAlign: TextAlign.center,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
+      child: Column(
+        children: [
+          Text(
+            _message ?? fallback,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.poppins(
               fontSize: 14,
-          height: 1.35,
-          fontWeight: FontWeight.w400,
-          color: _wmDusk,
-        ),
+              height: 1.35,
+              fontWeight: FontWeight.w400,
+              color: _wmDusk,
+            ),
+          ),
+          if (query.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () {
+                ref.read(exploreSearchIntentProvider.notifier).state = query;
+                ref.read(mainTabProvider.notifier).state = 1;
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _wmForest.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: _wmForest.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: Text(
+                  nl ? 'Toon in Explore: $query' : 'Show in Explore: $query',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _wmForest,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

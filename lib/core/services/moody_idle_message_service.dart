@@ -51,6 +51,6 @@ class MoodyIdleMessageService {
       activitiesCount: 0,
       languageCode: languageCode.trim().isEmpty ? 'en' : languageCode.trim(),
       userPreferences: userPreferences,
-    );
+    ).then((r) => r?.message);
   }
 }

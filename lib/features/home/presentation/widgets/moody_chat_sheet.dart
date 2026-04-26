@@ -689,11 +689,6 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     _refreshEarlierChatsAvailability();
   }
 
-  String _earlierChatsBannerLabel() {
-    final nl = Localizations.localeOf(context).languageCode == 'nl';
-    return nl ? 'Eerdere gesprekken' : 'Earlier chats';
-  }
-
   Future<void> _openArchiveCopyOnly(_ChatMsg msg) async {
     final l10n = AppLocalizations.of(context);
     await showModalBottomSheet<void>(
@@ -1212,6 +1207,55 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
       shouldAdjustScrollOnMetrics: _metricsDrivenUpdatesAllowed,
       child: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            child: Row(
+              children: [
+                const MoodyCharacter(size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n?.chatSheetMoodyName ?? 'Moody',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: _wmCharcoal,
+                    ),
+                  ),
+                ),
+                if (_hasEarlierChats)
+                  TextButton.icon(
+                    onPressed: _openEarlierChatsPicker,
+                    icon: const Icon(
+                      Icons.history_rounded,
+                      size: 18,
+                      color: _wmForest,
+                    ),
+                    label: Text(
+                      Localizations.localeOf(context).languageCode == 'nl'
+                          ? 'Eerder'
+                          : 'History',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _wmForest,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(0, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                        side: BorderSide(
+                          color: _wmForest.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      foregroundColor: _wmForest,
+                    ),
+                  ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -1219,54 +1263,9 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                 parent: BouncingScrollPhysics(),
               ),
               padding: const EdgeInsets.only(top: 12, bottom: 12),
-              itemCount:
-                  (_hasEarlierChats ? 1 : 0) + widget.chatMessages.length,
+              itemCount: widget.chatMessages.length,
               itemBuilder: (context, index) {
-                if (_hasEarlierChats && index == 0) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                    child: Material(
-                      color: Colors.white.withValues(alpha: 0.72),
-                      borderRadius: BorderRadius.circular(14),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
-                        onTap: _openEarlierChatsPicker,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 11,
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.history_rounded,
-                                size: 20,
-                                color: _wmForest,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _earlierChatsBannerLabel(),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: _wmCharcoal,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                color: _wmStone.withValues(alpha: 0.9),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                final msgIndex = index - (_hasEarlierChats ? 1 : 0);
-                final m = widget.chatMessages[msgIndex];
+                final m = widget.chatMessages[index];
                 return _MessageBubble(
                   msg: m,
                   moodyName: l10n?.chatSheetMoodyName ?? 'Moody',
@@ -1774,8 +1773,6 @@ class _MessageBubble extends StatelessWidget {
     required this.onLongPress,
   });
 
-  static const double _avatarBlockWidth = 36 + 10;
-
   @override
   Widget build(BuildContext context) {
     final places = msg.suggestedPlaces;
@@ -1855,7 +1852,7 @@ class _MessageBubble extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Container(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width * 0.72,
+          maxWidth: MediaQuery.sizeOf(context).width * 0.82,
           minWidth: 80,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
@@ -1881,6 +1878,12 @@ class _MessageBubble extends StatelessWidget {
                 ? const Radius.circular(4)
                 : const Radius.circular(20),
           ),
+          border: Border.all(
+            color: msg.isUser
+                ? Colors.white.withValues(alpha: 0.22)
+                : _wmForest.withValues(alpha: 0.16),
+            width: 1,
+          ),
           boxShadow: const [],
         ),
         child: bubbleBody,
@@ -1900,32 +1903,14 @@ class _MessageBubble extends StatelessWidget {
               child: bubble,
             )
           else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _wmSky,
-                    boxShadow: [],
-                  ),
-                  child: const Center(child: MoodyCharacter(size: 20)),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: bubble,
-                  ),
-                ),
-              ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: bubble,
             ),
           if (showPlaces)
             MoodySuggestedPlacesRow(
               places: places,
-              leftInset: 20 + _avatarBlockWidth,
+              leftInset: 20,
             ),
         ],
       ),

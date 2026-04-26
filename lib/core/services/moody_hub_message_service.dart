@@ -14,7 +14,7 @@ class MoodyHubMessageService {
   static const Duration _timeout = Duration(seconds: 8);
 
   /// Returns `null` on timeout, non-200, or missing `message` — caller shows fallback.
-  static Future<String?> fetchHubMessage({
+  static Future<MoodyHubMessageResult?> fetchHubMessage({
     required List<String> currentMoods,
     required String timeOfDay,
     required int activitiesCount,
@@ -52,7 +52,15 @@ class MoodyHubMessageService {
       final raw = response.data;
       if (raw is Map<String, dynamic>) {
         final m = raw['message'] as String?;
-        if (m != null && m.trim().isNotEmpty) return m.trim();
+        if (m != null && m.trim().isNotEmpty) {
+          final placeQuery =
+              (raw['place_query'] as String?)?.trim();
+          return MoodyHubMessageResult(
+            message: m.trim(),
+            placeQuery:
+                (placeQuery != null && placeQuery.isNotEmpty) ? placeQuery : null,
+          );
+        }
       }
       return null;
     } catch (e, st) {
@@ -62,4 +70,14 @@ class MoodyHubMessageService {
       return null;
     }
   }
+}
+
+class MoodyHubMessageResult {
+  final String message;
+  final String? placeQuery;
+
+  const MoodyHubMessageResult({
+    required this.message,
+    this.placeQuery,
+  });
 }

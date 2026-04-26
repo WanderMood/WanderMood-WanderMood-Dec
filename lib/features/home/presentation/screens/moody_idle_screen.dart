@@ -482,10 +482,13 @@ class _IdleCopy {
     MoodyIdleState s, {
     required String wakeMessage,
   }) {
+    final nl = l10n.localeName.toLowerCase().startsWith('nl');
     switch (s) {
       case MoodyIdleState.morning:
         return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackMorning,
+          fallbackMessage: nl
+              ? 'Sorry vriend, ik was even koffie halen ☕'
+              : 'Sorry friend, I was grabbing a coffee ☕',
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
@@ -494,7 +497,9 @@ class _IdleCopy {
         );
       case MoodyIdleState.day:
         return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackDay,
+          fallbackMessage: nl
+              ? 'Ik was even op pad — klaar voor wat jij nu nodig hebt ✨'
+              : 'I was out and about — ready for what you need now ✨',
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.1,
@@ -503,7 +508,9 @@ class _IdleCopy {
         );
       case MoodyIdleState.evening:
         return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackEvening,
+          fallbackMessage: nl
+              ? 'Ik was even aan het afbouwen, maar ik ben er weer 🌙'
+              : 'I was winding down, but I am back with you 🌙',
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'idle',
           preWakeMouthScale: 1.0,
@@ -512,7 +519,9 @@ class _IdleCopy {
         );
       case MoodyIdleState.night:
         return _IdleCopy(
-          fallbackMessage: l10n.moodyIdleFallbackNight,
+          fallbackMessage: nl
+              ? 'Bijna slaapmodus, maar ik ben wakker voor jou 😴'
+              : 'Almost in sleep mode, but I am up for you 😴',
           wakeMessage: wakeMessage,
           preWakeMoodLabel: 'sleeping',
           preWakeMouthScale: 1.0,
