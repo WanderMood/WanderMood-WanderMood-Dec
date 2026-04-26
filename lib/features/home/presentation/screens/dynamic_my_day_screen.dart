@@ -20,6 +20,7 @@ import '../../../profile/domain/providers/current_user_profile_provider.dart';
 import '../../../profile/domain/providers/profile_provider.dart';
 import '../../../weather/providers/weather_provider.dart';
 import 'package:wandermood/features/weather/providers/weather_forecast_provider.dart';
+import 'package:wandermood/features/weather/domain/models/weather_forecast.dart';
 import '../widgets/day_execution_hero_card.dart';
 import '../widgets/my_day_free_time_carousel.dart';
 import '../widgets/my_day_get_ready_sheet.dart';
@@ -183,8 +184,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _preloadWeatherData() {
     unawaited(ref.read(weatherProvider.future).catchError((_) => null));
-    unawaited(ref.read(hourlyForecastProvider.future).catchError((_) => <dynamic>[]));
-    unawaited(ref.read(dailyForecastProvider.future).catchError((_) => <dynamic>[]));
+    unawaited(ref.read(hourlyForecastProvider.future).catchError((_) => <WeatherForecast>[]));
+    unawaited(ref.read(dailyForecastProvider.future).catchError((_) => <WeatherForecast>[]));
   }
 
   Future<void> _refreshStreakProviders() async {
