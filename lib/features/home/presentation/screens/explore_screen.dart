@@ -30,6 +30,7 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/core/services/user_preferences_service.dart';
 
 import '../widgets/conversational_explore_header.dart';
+import '../widgets/explore_feed_loading_surface.dart';
 import '../widgets/explore_place_quick_peek_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -1324,59 +1325,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         debugPrint('⚠️ track interaction failed ($interactionType): $e');
       }
     }
-  }
-
-  Widget _buildExploreFeedLoadingSurface(AppLocalizations l10n) {
-    Widget skeletonBar({
-      required double height,
-      required double widthFactor,
-      int shimmerDelayMs = 0,
-    }) {
-      return Align(
-        alignment: Alignment.center,
-        child: FractionallySizedBox(
-          widthFactor: widthFactor,
-          child: Container(
-            height: height,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8E2D8),
-              borderRadius: BorderRadius.circular(14),
-            ),
-          )
-              .animate(
-                onPlay: (c) => c.repeat(reverse: true),
-              )
-              .shimmer(
-                delay: Duration(milliseconds: shimmerDelayMs),
-                duration: const Duration(milliseconds: 1800),
-                color: Colors.white.withValues(alpha: 0.55),
-              ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          skeletonBar(height: 14, widthFactor: 0.42, shimmerDelayMs: 0),
-          const SizedBox(height: 18),
-          skeletonBar(height: 112, widthFactor: 1, shimmerDelayMs: 120),
-          const SizedBox(height: 14),
-          skeletonBar(height: 112, widthFactor: 1, shimmerDelayMs: 240),
-          const SizedBox(height: 22),
-          Text(
-            l10n.exploreSearching,
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF8C8780),
-            ),
-          ).animate().fadeIn(duration: 420.ms, delay: 100.ms),
-        ],
-      ),
-    );
   }
 
   String _categoryLabel(String key) {
@@ -2771,7 +2719,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 Expanded(
                   child: Center(
                     child: showLoadingEmpty
-                        ? _buildExploreFeedLoadingSurface(l10n)
+                        ? ExploreFeedLoadingSurface(l10n: l10n)
                             .animate()
                             .fadeIn(duration: 280.ms, curve: Curves.easeOut)
                         : Column(
@@ -2937,7 +2885,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   userLocation: ul,
                   cityName: currentCity,
                   photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-                  allowVisibilityEnrichment: false,
+                  allowVisibilityEnrichment: true,
                   onTap: () => _openPlaceFromExplore(place),
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
                   onSavedTap: () => unawaited(
@@ -2961,7 +2909,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   userLocation: ul,
                   cityName: currentCity,
                   photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-                  allowVisibilityEnrichment: false,
+                  allowVisibilityEnrichment: true,
                   cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
                   showAddToMyDayButton: true,
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
@@ -3110,7 +3058,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               body: Builder(
                 builder: (context) {
                   final l10n = AppLocalizations.of(context)!;
-                  return _buildExploreFeedLoadingSurface(l10n);
+                  return ExploreFeedLoadingSurface(l10n: l10n);
                 },
               ),
             ),
