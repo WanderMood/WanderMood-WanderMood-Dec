@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +26,7 @@ import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/core/utils/place_card_photo_index.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 
 // WM v2 tokens (aligned with My Day cards)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -799,6 +802,20 @@ class PlaceCard extends ConsumerWidget {
                                 isError: true,
                               );
                             }
+                          },
+                        ),
+                        const SizedBox(height: 9),
+                        _CardIconButton(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          onTap: () {
+                            unawaited(
+                              showMoodyChatSheetWithSharedPlace(
+                                context,
+                                ref,
+                                sharedPlace:
+                                    moodySharedPlacePayloadForExplorePlace(place),
+                              ),
+                            );
                           },
                         ),
                         const SizedBox(height: 9),

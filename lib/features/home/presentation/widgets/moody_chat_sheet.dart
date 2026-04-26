@@ -27,6 +27,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_action_sheet.dart';
+import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:wandermood/core/services/notification_service.dart';
@@ -58,6 +59,69 @@ String _calendarDateOnlyIso(DateTime d) {
   return '${x.year.toString().padLeft(4, '0')}-'
       '${x.month.toString().padLeft(2, '0')}-'
       '${x.day.toString().padLeft(2, '0')}';
+}
+
+/// Facts from a My Day "free time" carousel map for [WanderMoodAIService.chat] / moody `shared_place`.
+Map<String, dynamic> moodySharedPlacePayloadForFreeTimeActivity(
+  Map<String, dynamic> activity,
+) {
+  final title = (activity['title'] as String?)?.trim() ?? '';
+  final category = (activity['category'] as String?)?.trim() ?? '';
+  final out = <String, dynamic>{
+    'source': 'my_day_free_time',
+    'title': title,
+    'category': category,
+  };
+  final desc = activity['description'] as String?;
+  if (desc != null && desc.trim().isNotEmpty) {
+    final t = desc.trim();
+    out['description'] = t.length > 600 ? '${t.substring(0, 600)}…' : t;
+  }
+  final p = activity['place'];
+  if (p is Place) {
+    out['placeId'] = p.id;
+    if (p.types.isNotEmpty) {
+      out['types'] = p.types.take(12).toList();
+    }
+    final addr = p.address.trim();
+    if (addr.isNotEmpty) out['address'] = addr;
+    if (p.photos.isNotEmpty) {
+      final u = p.photos.first.trim();
+      if (u.isNotEmpty) out['primaryPhotoUrl'] = u;
+    }
+    final ed = p.editorialSummary?.trim();
+    if (ed != null && ed.isNotEmpty) {
+      out['editorialSummary'] =
+          ed.length > 400 ? '${ed.substring(0, 400)}…' : ed;
+    }
+  } else {
+    final pid = activity['placeId']?.toString().trim();
+    if (pid != null && pid.isNotEmpty) out['placeId'] = pid;
+  }
+  return out;
+}
+
+/// Explore list/grid card → `shared_place` for Moody chat (same API as free-time).
+Map<String, dynamic> moodySharedPlacePayloadForExplorePlace(Place p) {
+  final out = <String, dynamic>{
+    'source': 'explore_place_card',
+    'placeId': p.id,
+    'title': p.name.trim(),
+    'address': p.address.trim(),
+  };
+  if (p.types.isNotEmpty) {
+    out['types'] = p.types.take(12).toList();
+  }
+  final ed = p.editorialSummary?.trim();
+  if (ed != null && ed.isNotEmpty) {
+    out['editorialSummary'] =
+        ed.length > 400 ? '${ed.substring(0, 400)}…' : ed;
+  }
+  if (p.photos.isNotEmpty) {
+    final u = p.photos.first.trim();
+    if (u.isNotEmpty) out['primaryPhotoUrl'] = u;
+  }
+  return out;
 }
 
 /// Host status bar / in-app browser chrome often overlaps when only [MediaQuery.padding]
@@ -387,6 +451,123 @@ void _seedDailyStarterIfNeeded({
   unawaited(_DailyMoodyChatCache.persistToPrefs(prefs, now));
 }
 
+void _seedModalSharedPlaceStarterIfNeeded({
+  required BuildContext context,
+  required SharedPreferences prefs,
+  required DateTime now,
+  required List<_ChatMsg> chatMessages,
+  required Map<String, dynamic> sharedPlace,
+}) {
+  if (chatMessages.isNotEmpty) return;
+  if (!context.mounted) return;
+  final nl = Localizations.localeOf(context).languageCode == 'nl';
+  final title = (sharedPlace['title'] as String?)?.trim() ?? '';
+  final source = sharedPlace['source'] as String? ?? '';
+  final String msg;
+  if (source == 'explore_place_card') {
+    if (nl) {
+      msg = title.isEmpty
+          ? 'Stel je vraag over deze plek — timing, sfeer of alternatieven.'
+          : 'Stel je vraag over $title — timing, sfeer of alternatieven.';
+    } else {
+      msg = title.isEmpty
+          ? 'Ask me anything about this spot—timing, vibe, or alternatives.'
+          : 'Ask me anything about $title—timing, vibe, or alternatives.';
+    }
+  } else {
+    if (nl) {
+      msg = title.isEmpty
+          ? 'Stel je vraag over dit vrije moment in je dag.'
+          : 'Stel je vraag over $title in je schema — alternatieven, timing of sfeer.';
+    } else {
+      msg = title.isEmpty
+          ? 'Ask me about this free slot in your day.'
+          : 'Ask me about $title in your day—alternatives, timing, or vibe.';
+    }
+  }
+  chatMessages.add(
+    _ChatMsg(
+      message: msg,
+      isUser: false,
+      timestamp: now,
+    ),
+  );
+}
+
+String _placeThreadPrefsKey(DateTime now, String placeId, String source) {
+  final uid = Supabase.instance.client.auth.currentUser?.id ?? 'guest';
+  final d = _calendarDateOnlyIso(now);
+  final pid = placeId.trim().isEmpty ? 'noid' : placeId.trim();
+  final src = source
+      .trim()
+      .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_')
+      .replaceAll(RegExp(r'_+'), '_');
+  return 'wm_moody_place_thread_v1_${uid}_${d}_${src}_$pid';
+}
+
+String _makePlaceThreadConversationId(DateTime now, String placeId) {
+  final uid = Supabase.instance.client.auth.currentUser?.id ?? 'guest';
+  final d = _calendarDateOnlyIso(now);
+  final pid = placeId.trim().isEmpty ? 'noid' : placeId.trim();
+  return 'conv_sp_${uid}_${d}_$pid';
+}
+
+/// Device-local thread for "Ask Moody" from Explore / My Day free time (not the hub daily list).
+void _hydratePlaceThreadFromPrefsSync({
+  required SharedPreferences prefs,
+  required DateTime now,
+  required String placeId,
+  required String source,
+  required List<_ChatMsg> outMessages,
+  required void Function(String conversationId) onConversationId,
+}) {
+  outMessages.clear();
+  final raw = prefs.getString(_placeThreadPrefsKey(now, placeId, source));
+  if (raw == null || raw.isEmpty) {
+    onConversationId('');
+    return;
+  }
+  try {
+    final o = jsonDecode(raw) as Map<String, dynamic>;
+    final cid = o['conversationId']?.toString().trim();
+    if (cid != null && cid.isNotEmpty) {
+      onConversationId(cid);
+    } else {
+      onConversationId('');
+    }
+    final arr = o['messages'] as List<dynamic>?;
+    if (arr == null) return;
+    for (final e in arr) {
+      if (e is! Map) continue;
+      outMessages.add(_chatMsgFromJson(Map<String, dynamic>.from(e)));
+    }
+  } catch (_) {
+    onConversationId('');
+  }
+}
+
+Future<void> _persistPlaceThreadToPrefs({
+  required SharedPreferences prefs,
+  required DateTime now,
+  required String placeId,
+  required String source,
+  required List<_ChatMsg> messages,
+  required String conversationId,
+}) async {
+  const maxMessages = 100;
+  final slice = messages.length > maxMessages
+      ? messages.sublist(messages.length - maxMessages)
+      : List<_ChatMsg>.from(messages);
+  final payload = <String, dynamic>{
+    'conversationId': conversationId,
+    'messages': slice.map(_chatMsgToJson).toList(),
+  };
+  await prefs.setString(
+    _placeThreadPrefsKey(now, placeId, source),
+    jsonEncode(payload),
+  );
+}
+
 /// Fixes chat scroll getting "stuck" after relayout when [pixels] drifts past
 /// [maxScrollExtent] (common with nested horizontal lists + dynamic height).
 void _clampMoodyChatScrollPastEnd(ScrollController c) {
@@ -502,7 +683,7 @@ Future<void> showMoodyChatSheet(BuildContext context, WidgetRef ref) {
     // Root route gets reliable viewInsets on iOS when the keyboard opens.
     useRootNavigator: true,
     useSafeArea: false,
-    enableDrag: false,
+    enableDrag: true,
     builder: (sheetContext) => _MoodyChatSheetModalEntrance(
       child: _MoodyChatSheetContent(
         chatMessages: chatMessages,
@@ -511,6 +692,105 @@ Future<void> showMoodyChatSheet(BuildContext context, WidgetRef ref) {
         embedded: false,
       ),
     ),
+  );
+}
+
+/// Opens the Moody chat sheet with [sharedPlace] sent on each message (`shared_place` on moody).
+Future<void> showMoodyChatSheetWithSharedPlace(
+  BuildContext context,
+  WidgetRef ref, {
+  required Map<String, dynamic> sharedPlace,
+}) {
+  HapticFeedback.lightImpact();
+  final moods = ref.read(dailyMoodStateNotifierProvider).selectedMoods;
+  final now = MoodyClock.now();
+  final prefs = ref.read(sharedPreferencesProvider);
+  if (!context.mounted) {
+    return Future<void>.value();
+  }
+
+  final placeId = (sharedPlace['placeId'] as String?)?.trim() ??
+      't${sharedPlace['title'].hashCode}';
+  final source = (sharedPlace['source'] as String?)?.trim() ?? 'ctx';
+  final chatMessages = <_ChatMsg>[];
+  var conversationId = '';
+  _hydratePlaceThreadFromPrefsSync(
+    prefs: prefs,
+    now: now,
+    placeId: placeId,
+    source: source,
+    outMessages: chatMessages,
+    onConversationId: (id) => conversationId = id,
+  );
+  if (conversationId.isEmpty) {
+    conversationId = _makePlaceThreadConversationId(now, placeId);
+  }
+  _seedModalSharedPlaceStarterIfNeeded(
+    context: context,
+    prefs: prefs,
+    now: now,
+    chatMessages: chatMessages,
+    sharedPlace: sharedPlace,
+  );
+  unawaited(
+    _persistPlaceThreadToPrefs(
+      prefs: prefs,
+      now: now,
+      placeId: placeId,
+      source: source,
+      messages: chatMessages,
+      conversationId: conversationId,
+    ),
+  );
+
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.72),
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    sheetAnimationStyle: const AnimationStyle(
+      duration: Duration(milliseconds: 320),
+      reverseDuration: Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    ),
+    useRootNavigator: true,
+    useSafeArea: false,
+    enableDrag: true,
+    builder: (sheetContext) {
+      final mq = MediaQuery.of(sheetContext);
+      final topInset = _moodyChatSheetSafeInsets(mq).top;
+      return SizedBox(
+        height: mq.size.height,
+        child: Padding(
+          padding: EdgeInsets.only(top: topInset),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.56,
+            minChildSize: 0.34,
+            maxChildSize: 0.94,
+            snap: true,
+            snapSizes: const [0.56, 0.94],
+            expand: false,
+            builder: (ctx, scrollController) {
+              return _MoodyChatSheetModalEntrance(
+                child: _MoodyChatSheetContent(
+                  chatMessages: chatMessages,
+                  conversationId: conversationId,
+                  moods: moods,
+                  embedded: false,
+                  sharedPlaceContext: sharedPlace,
+                  placeThreadPlaceId: placeId,
+                  placeThreadSource: source,
+                  modalListScrollController: scrollController,
+                  modalDraggableLayout: true,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    },
   );
 }
 
@@ -566,12 +846,25 @@ class _MoodyChatSheetContent extends ConsumerStatefulWidget {
     required this.conversationId,
     required this.moods,
     required this.embedded,
+    this.sharedPlaceContext,
+    this.placeThreadPlaceId,
+    this.placeThreadSource,
+    this.modalListScrollController,
+    this.modalDraggableLayout = false,
   });
 
   final List<_ChatMsg> chatMessages;
   final String conversationId;
   final List<String> moods;
   final bool embedded;
+  /// When non-null (e.g. My Day free time), sent as `shared_place` on every [WanderMoodAIService.chat] call.
+  final Map<String, dynamic>? sharedPlaceContext;
+  /// When set with [placeThreadSource], [chatMessages] are persisted in a separate prefs bucket from the hub.
+  final String? placeThreadPlaceId;
+  final String? placeThreadSource;
+  /// Draggable modal: list scroll is wired to the sheet controller.
+  final ScrollController? modalListScrollController;
+  final bool modalDraggableLayout;
 
   @override
   ConsumerState<_MoodyChatSheetContent> createState() =>
@@ -582,7 +875,8 @@ enum _MicSetupOutcome { ready, denied, permanentlyDenied, speechInitFailed }
 
 class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> {
   late final TextEditingController _chatController;
-  late final ScrollController _scrollController;
+  ScrollController? _ownedScrollController;
+  late String _conversationIdForApi;
   late final FocusNode _composerFocusNode;
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isAILoading = false;
@@ -612,12 +906,30 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     return ref.read(mainTabProvider) == _moodyTabIndex;
   }
 
+  ScrollController get _effectiveScroll =>
+      widget.modalListScrollController ?? _ownedScrollController!;
+
+  bool get _usesPlaceThreadBucket =>
+      widget.placeThreadPlaceId != null &&
+      widget.placeThreadPlaceId!.trim().isNotEmpty &&
+      (widget.placeThreadSource?.trim().isNotEmpty ?? false);
+
   Future<void> _persistChat() async {
     try {
-      await _DailyMoodyChatCache.persistToPrefs(
-        ref.read(sharedPreferencesProvider),
-        MoodyClock.now(),
-      );
+      final prefs = ref.read(sharedPreferencesProvider);
+      final now = MoodyClock.now();
+      if (_usesPlaceThreadBucket) {
+        await _persistPlaceThreadToPrefs(
+          prefs: prefs,
+          now: now,
+          placeId: widget.placeThreadPlaceId!,
+          source: widget.placeThreadSource!,
+          messages: widget.chatMessages,
+          conversationId: _conversationIdForApi,
+        );
+      } else {
+        await _DailyMoodyChatCache.persistToPrefs(prefs, now);
+      }
     } catch (_) {}
     if (mounted) _refreshEarlierChatsAvailability();
   }
@@ -641,15 +953,24 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   }
 
   void _onChatScrollControllerTick() {
-    _clampMoodyChatScrollPastEnd(_scrollController);
+    _clampMoodyChatScrollPastEnd(_effectiveScroll);
   }
 
   @override
   void initState() {
     super.initState();
+    _conversationIdForApi = widget.conversationId;
+    if (!widget.embedded) {
+      _hubPeekOpen = false;
+    }
     _chatController = TextEditingController();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onChatScrollControllerTick);
+    if (widget.modalListScrollController != null) {
+      widget.modalListScrollController!
+          .addListener(_onChatScrollControllerTick);
+    } else {
+      _ownedScrollController = ScrollController();
+      _ownedScrollController!.addListener(_onChatScrollControllerTick);
+    }
     _composerFocusNode = FocusNode();
     _composerFocusNode.addListener(_onComposerFocusForHubCollapse);
   }
@@ -1056,8 +1377,13 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     _composerFocusNode.removeListener(_onComposerFocusForHubCollapse);
     _composerFocusNode.dispose();
     _chatController.dispose();
-    _scrollController.removeListener(_onChatScrollControllerTick);
-    _scrollController.dispose();
+    if (widget.modalListScrollController != null) {
+      widget.modalListScrollController!
+          .removeListener(_onChatScrollControllerTick);
+    } else {
+      _ownedScrollController?.removeListener(_onChatScrollControllerTick);
+      _ownedScrollController?.dispose();
+    }
     super.dispose();
   }
 
@@ -1202,67 +1528,310 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     );
   }
 
+  void _exitModalToMoodyHub() {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).maybePop();
+    ref.read(mainTabProvider.notifier).state = _moodyTabIndex;
+  }
+
+  /// Modal sheet: back, Moody + online, earlier-chats menu (matches chat-only design).
+  Widget _modalChatAppBar() {
+    final l10n = AppLocalizations.of(context);
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
+    final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
+    final onlineLabel = online
+        ? (nl ? 'Online' : 'Online')
+        : (nl ? 'Offline' : 'Offline');
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 4),
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: _exitModalToMoodyHub,
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              color: _wmCharcoal,
+              tooltip: nl ? 'Terug naar Moody Hub' : 'Back to Moody Hub',
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const MoodyCharacter(size: 32),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n?.chatSheetMoodyName ?? 'Moody',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: _wmCharcoal,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: online
+                                    ? const Color(0xFF3CB371)
+                                    : _wmStone,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              onlineLabel,
+                              style: GoogleFonts.poppins(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: _wmStone,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: _openEarlierChatsPicker,
+              icon: const Icon(Icons.menu_rounded),
+              color: _wmCharcoal,
+              tooltip: nl ? 'Chats van eerdere dagen' : 'Chats from previous days',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Rich context row for Explore / place-thread modal (photo + copy).
+  Widget _sharedPlaceAnchorCard(AppLocalizations? l10n) {
+    final sp = widget.sharedPlaceContext!;
+    final title = (sp['title'] as String?)?.trim() ?? '';
+    final address = (sp['address'] as String?)?.trim() ?? '';
+    final ed = (sp['editorialSummary'] as String?)?.trim() ?? '';
+    final photo = (sp['primaryPhotoUrl'] as String?)?.trim();
+    final types = sp['types'];
+    String? typeLine;
+    if (types is List && types.isNotEmpty) {
+      typeLine = types.take(3).map((e) => e.toString()).join(' · ');
+    }
+    final chip = l10n?.myDayAskMoodyButton ?? 'Ask Moody';
+
+    return Material(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: _wmForest.withValues(alpha: 0.18)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 72,
+                height: 72,
+                child: photo != null && photo.isNotEmpty
+                    ? WmPlacePhotoNetworkImage(
+                        photo,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                      )
+                    : ColoredBox(
+                        color: _wmForestTint,
+                        child: Icon(Icons.place_rounded,
+                            color: _wmForest.withValues(alpha: 0.65), size: 36),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    chip,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _wmForest,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title.isEmpty ? '—' : title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: _wmCharcoal,
+                      height: 1.25,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (address.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      address,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11.5,
+                        color: _wmStone,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (typeLine != null && typeLine.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      typeLine,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        color: _wmStone,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (ed.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      ed.length > 220 ? '${ed.substring(0, 220)}…' : ed,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: _wmCharcoal.withValues(alpha: 0.88),
+                      ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Chat list when the hub is collapsed. (When expanded, chat is shown
   /// after the user taps the strip below the hub or collapses the handle.)
-  Widget _hubBelowPanel() {
+  Widget _hubBelowPanel({bool skipInlineMoodyHeader = false}) {
     final l10n = AppLocalizations.of(context);
     return _ScrollChatWhenMetricsChange(
-      scrollController: _scrollController,
+      scrollController: _effectiveScroll,
       shouldAdjustScrollOnMetrics: _metricsDrivenUpdatesAllowed,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-            child: Row(
-              children: [
-                const MoodyCharacter(size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n?.chatSheetMoodyName ?? 'Moody',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: _wmCharcoal,
-                    ),
-                  ),
-                ),
-                if (_hasEarlierChats)
-                  TextButton.icon(
-                    onPressed: _openEarlierChatsPicker,
-                    icon: const Icon(
-                      Icons.history_rounded,
-                      size: 18,
-                      color: _wmForest,
-                    ),
-                    label: Text(
-                      Localizations.localeOf(context).languageCode == 'nl'
-                          ? 'Eerder'
-                          : 'History',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _wmForest,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(0, 36),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                        side: BorderSide(
-                          color: _wmForest.withValues(alpha: 0.2),
+          if (widget.sharedPlaceContext != null) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: skipInlineMoodyHeader
+                  ? _sharedPlaceAnchorCard(l10n)
+                  : Material(
+                      color: _wmForestTint,
+                      borderRadius: BorderRadius.circular(10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        child: Row(
+                          children: [
+                            Icon(Icons.chat_bubble_outline_rounded,
+                                size: 18, color: _wmForest),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '${l10n?.myDayAskMoodyButton ?? 'Ask Moody'} · ${widget.sharedPlaceContext!['title'] ?? ''}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _wmCharcoal,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      foregroundColor: _wmForest,
+                    ),
+            ),
+          ],
+          if (!skipInlineMoodyHeader)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Row(
+                children: [
+                  const MoodyCharacter(size: 22),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l10n?.chatSheetMoodyName ?? 'Moody',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: _wmCharcoal,
+                      ),
                     ),
                   ),
-              ],
+                  if (_hasEarlierChats)
+                    TextButton.icon(
+                      onPressed: _openEarlierChatsPicker,
+                      icon: const Icon(
+                        Icons.history_rounded,
+                        size: 18,
+                        color: _wmForest,
+                      ),
+                      label: Text(
+                        Localizations.localeOf(context).languageCode == 'nl'
+                            ? 'Eerder'
+                            : 'History',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _wmForest,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          side: BorderSide(
+                            color: _wmForest.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        foregroundColor: _wmForest,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: ListView.builder(
-              controller: _scrollController,
+              controller: _effectiveScroll,
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
@@ -1317,7 +1886,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         if (_hubPeekOpen) _hubPeekOpen = false;
       });
       await _persistChat();
-      _scheduleMoodyChatScroll(_scrollController);
+      _scheduleMoodyChatScroll(_effectiveScroll);
       _chatController.clear();
       FocusManager.instance.primaryFocus?.unfocus();
 
@@ -1357,7 +1926,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         _isAILoading = false;
       });
       await _persistChat();
-      _scheduleMoodyChatScroll(_scrollController);
+      _scheduleMoodyChatScroll(_effectiveScroll);
       return;
     }
 
@@ -1382,14 +1951,14 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
       if (_hubPeekOpen) _hubPeekOpen = false;
     });
     await _persistChat();
-    _scheduleMoodyChatScroll(_scrollController);
+    _scheduleMoodyChatScroll(_effectiveScroll);
     _chatController.clear();
     FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       final loc = await _getLocation();
       if (!mounted) return;
-      final convId = _DailyMoodyChatCache.getConversationId(MoodyClock.now());
+      final convId = _conversationIdForApi;
       final msgs = widget.chatMessages;
       final priorTurns = msgs.length > 1
           ? msgs
@@ -1415,11 +1984,18 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
             _calendarDateOnlyIso(ref.read(selectedMyDayDateProvider)),
         clientTurns: priorTurns,
         languageCode: Localizations.localeOf(context).languageCode,
+        sharedPlace: widget.sharedPlaceContext,
       );
 
       if (!mounted) return;
-      _DailyMoodyChatCache.setConversationIdFromServer(response.conversationId);
+      if (!_usesPlaceThreadBucket) {
+        _DailyMoodyChatCache.setConversationIdFromServer(response.conversationId);
+      }
+      final sid = response.conversationId?.trim();
       setState(() {
+        if (sid != null && sid.isNotEmpty) {
+          _conversationIdForApi = sid;
+        }
         widget.chatMessages.add(_ChatMsg(
           message: response.message,
           isUser: false,
@@ -1429,7 +2005,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         _isAILoading = false;
       });
       await _persistChat();
-      _scheduleMoodyChatScroll(_scrollController);
+      _scheduleMoodyChatScroll(_effectiveScroll);
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
@@ -1443,7 +2019,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         _isAILoading = false;
       });
       await _persistChat();
-      _scheduleMoodyChatScroll(_scrollController);
+      _scheduleMoodyChatScroll(_effectiveScroll);
     }
   }
 
@@ -1463,24 +2039,38 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
             ? keyboardBottom
             : math.max(insets.bottom, mq.padding.bottom);
         final maxSheetHeight = mq.size.height - topInset;
-        final sheetHeight = maxSheetHeight * _kMoodyChatSheetHeightFactor;
-        final sheetTopGap = maxSheetHeight - sheetHeight;
+        final isDraggableModal =
+            widget.modalDraggableLayout && !widget.embedded;
 
-        return ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: widget.embedded ? 0 : 10,
-              sigmaY: widget.embedded ? 0 : 10,
-            ),
-            child: Padding(
-              padding: widget.embedded
-                  ? EdgeInsets.only(top: topInset)
-                  : EdgeInsets.only(top: topInset + sheetTopGap),
-              child: SizedBox(
-                height: widget.embedded
-                    ? mq.size.height - topInset
-                    : sheetHeight,
-                child: ClipRRect(
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            var sheetHeight = maxSheetHeight * _kMoodyChatSheetHeightFactor;
+            var sheetTopGap = maxSheetHeight - sheetHeight;
+            if (isDraggableModal &&
+                constraints.hasBoundedHeight &&
+                constraints.maxHeight.isFinite &&
+                constraints.maxHeight > 0) {
+              sheetHeight = constraints.maxHeight;
+              sheetTopGap = 0;
+            }
+
+            return ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: widget.embedded ? 0 : 10,
+                  sigmaY: widget.embedded ? 0 : 10,
+                ),
+                child: Padding(
+                  padding: widget.embedded
+                      ? EdgeInsets.only(top: topInset)
+                      : (isDraggableModal
+                          ? EdgeInsets.zero
+                          : EdgeInsets.only(top: topInset + sheetTopGap)),
+                  child: SizedBox(
+                    height: widget.embedded
+                        ? mq.size.height - topInset
+                        : sheetHeight,
+                    child: ClipRRect(
                   borderRadius: widget.embedded
                       ? BorderRadius.zero
                       : const BorderRadius.only(
@@ -1505,82 +2095,112 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                         child: Column(
                           children: [
                             Expanded(
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final maxH = constraints.maxHeight;
-                                  if (!maxH.isFinite || maxH <= 0) {
-                                    return const SizedBox.shrink();
-                                  }
+                              child: widget.embedded
+                                  ? LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final maxH = constraints.maxHeight;
+                                        if (!maxH.isFinite || maxH <= 0) {
+                                          return const SizedBox.shrink();
+                                        }
 
-                                  // Collapsed: narrow hub strip + chat fills the rest.
-                                  if (hasThread && !sheetExpanded) {
-                                    return Column(
+                                        // Collapsed: narrow hub strip + chat fills the rest.
+                                        if (hasThread && !sheetExpanded) {
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              ClipRect(
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                      milliseconds: 320),
+                                                  curve: Curves.easeOutCubic,
+                                                  height: MoodyActionSheet
+                                                      .collapsedHeightTappable,
+                                                  child: MoodyActionSheet(
+                                                    expanded: false,
+                                                    onToggle:
+                                                        _toggleHubPeekNextFrame,
+                                                    onChat: (msg) {
+                                                      _collapseHubForChat();
+                                                      _sendMessage(msg);
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(child: _hubBelowPanel()),
+                                            ],
+                                          );
+                                        }
+
+                                        // Expanded hub: full width minus a tap strip for
+                                        // “show chat” / dismiss peek (when there is a thread).
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              child: ClipRect(
+                                                child: MoodyActionSheet(
+                                                  expanded: true,
+                                                  onToggle: hasThread
+                                                      ? _toggleHubPeekNextFrame
+                                                      : null,
+                                                  onChat: (msg) {
+                                                    _collapseHubForChat();
+                                                    _sendMessage(msg);
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            if (hasThread &&
+                                                sheetExpanded &&
+                                                _hubPeekOpen)
+                                              GestureDetector(
+                                                onTap: () =>
+                                                    _setHubPeekOpenNextFrame(
+                                                        false),
+                                                behavior: HitTestBehavior
+                                                    .translucent,
+                                                child: Semantics(
+                                                  button: true,
+                                                  label: 'Show chat',
+                                                  child: const SizedBox(
+                                                    height: 56,
+                                                    width: double.infinity,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        );
+                                      },
+                                    )
+                                  : Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.stretch,
                                       children: [
-                                        ClipRect(
-                                          child: AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 320),
-                                            curve: Curves.easeOutCubic,
-                                            height: MoodyActionSheet
-                                                .collapsedHeightTappable,
-                                            child: MoodyActionSheet(
-                                              expanded: false,
-                                              onToggle: _toggleHubPeekNextFrame,
-                                              onChat: (msg) {
-                                                _collapseHubForChat();
-                                                _sendMessage(msg);
-                                              },
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 6, bottom: 2),
+                                          child: Center(
+                                            child: Container(
+                                              width: 40,
+                                              height: 4,
+                                              decoration: BoxDecoration(
+                                                color: _wmStone.withValues(
+                                                    alpha: 0.35),
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                        Expanded(child: _hubBelowPanel()),
+                                        _modalChatAppBar(),
+                                        Expanded(
+                                          child: _hubBelowPanel(
+                                              skipInlineMoodyHeader: true),
+                                        ),
                                       ],
-                                    );
-                                  }
-
-                                  // Expanded hub: full width minus a tap strip for
-                                  // “show chat” / dismiss peek (when there is a thread).
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Expanded(
-                                        child: ClipRect(
-                                          child: MoodyActionSheet(
-                                            expanded: true,
-                                            onToggle: hasThread
-                                                ? _toggleHubPeekNextFrame
-                                                : null,
-                                            onChat: (msg) {
-                                              _collapseHubForChat();
-                                              _sendMessage(msg);
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      if (hasThread &&
-                                          sheetExpanded &&
-                                          _hubPeekOpen)
-                                        GestureDetector(
-                                          onTap: () =>
-                                              _setHubPeekOpenNextFrame(false),
-                                          behavior:
-                                              HitTestBehavior.translucent,
-                                          child: Semantics(
-                                            button: true,
-                                            label: 'Show chat',
-                                            child: const SizedBox(
-                                              height: 56,
-                                              width: double.infinity,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  );
-                                },
-                              ),
+                                    ),
                             ),
                             AnimatedPadding(
                               duration: const Duration(milliseconds: 250),
@@ -1645,6 +2265,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
               ),
             ),
           ),
+        );
+          },
         );
       },
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/places/models/place.dart';
@@ -11,6 +12,7 @@ import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -336,6 +338,37 @@ class PlaceGridCard extends ConsumerWidget {
                                   ? Icons.favorite
                                   : Icons.favorite_border,
                               color: isFavorite ? _wmSunset : Colors.grey,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            showMoodyChatSheetWithSharedPlace(
+                              context,
+                              ref,
+                              sharedPlace:
+                                  moodySharedPlacePayloadForExplorePlace(place),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: _wmForest,
                               size: 14,
                             ),
                           ),
