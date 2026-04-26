@@ -280,7 +280,8 @@ class _GroupPlanningLobbyScreenState
         }
       }
 
-      if (session.status == 'day_proposed') {
+      if (session.status == 'day_proposed' ||
+          session.status == 'day_counter_proposed') {
         resumeGo('/group-planning/day-picker/${widget.sessionId}');
         return;
       }
