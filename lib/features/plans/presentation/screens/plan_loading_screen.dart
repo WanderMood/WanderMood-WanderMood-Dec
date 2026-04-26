@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:wandermood/core/config/supabase_config.dart';
 import 'package:wandermood/core/errors/explore_location_exception.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
+import 'package:wandermood/core/utils/places_cache_utils.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
@@ -18,7 +17,6 @@ import 'package:wandermood/features/location/services/location_service.dart' as 
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/core/utils/reverse_geocode_settlement.dart';
@@ -108,47 +106,9 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
     await _generateActivitiesWithProperLoading();
   }
   
-  /// Wait for session to be fully ready (not just valid)
-  /// This prevents race conditions during email verification
-  Future<void> _waitForSessionReady() async {
-    // Wait up to 2 seconds for session to be fully established
-    for (int i = 0; i < 20; i++) {
-      final user = Supabase.instance.client.auth.currentUser;
-      final session = Supabase.instance.client.auth.currentSession;
-      final token = session?.accessToken;
-      
-      // All 3 must be true for session to be ready
-      if (user != null && session != null && token != null && token.isNotEmpty) {
-        debugPrint('✅ Session ready for day plan: user=${user.id}');
-        return;
-      }
-      
-      // Wait 100ms before checking again
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
-    
-    // If we get here, session is still not ready after 2 seconds
-    final user = Supabase.instance.client.auth.currentUser;
-    final session = Supabase.instance.client.auth.currentSession;
-    final token = session?.accessToken;
-    
-    if (user == null || session == null || token == null) {
-      throw Exception('Session not ready after waiting. Please sign in again.');
-    }
-  }
-
   Future<void> _generateActivitiesWithProperLoading() async {
     debugPrint('🚀 Starting activity generation using Supabase Edge Function for moods: ${widget.selectedMoods}');
 
-    // Capture before any await. Prefer Flutter locale; fallback to platform (e.g. first frame).
-    final languageCode = (() {
-      try {
-        return Localizations.localeOf(context).languageCode;
-      } catch (_) {
-        return WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-      }
-    })();
-      
     // Keep loading visible long enough for the progress bar behavior.
     final minimumLoadingDuration = const Duration(seconds: 6);
     final loadingStartTime = DateTime.now();
@@ -159,19 +119,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
     String moodyReasoning = '';
 
       try {
-      // CRITICAL: Ensure session is valid before calling Edge Function
-      await AuthHelper.ensureValidSession();
-      
-      // CRITICAL FIX: Wait for session to be fully ready (prevents race conditions)
-      await _waitForSessionReady();
-      
-      // Get current user ID
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
-
-      debugPrint('🔗 Calling moody Edge Function: create_day_plan...');
+      debugPrint('🔗 Calling moody create_day_plan via MoodyEdgeFunctionService...');
       debugPrint(
         '🕒 Allowed slots for this generation: ${allowedSlots.map(_timeSlotApiValue).join(', ')}',
       );
@@ -210,79 +158,22 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       } else {
         debugPrint('📍 Using location: $city at ($lat, $lng)');
       }
-      
-      // FIX #1: Explicitly pass Authorization header
-      final session = Supabase.instance.client.auth.currentSession;
-      final token = session?.accessToken;
-      
-      // CRITICAL: All 3 must be true - user, session, and token
-      if (user == null || session == null || token == null) {
-        throw Exception('Session not ready. Please wait a moment and try again.');
-      }
-      
-      // Use Dio to explicitly send Authorization header
-      final dio = Dio();
-      final functionUrl = SupabaseConfig.moodyFunctionUrl;
-      
-      debugPrint('🔑 Calling Edge Function with explicit Authorization header');
-      debugPrint('   Token preview: ${token.substring(0, 20)}...');
-      
-      final profile = await Supabase.instance.client
-          .from('profiles')
-          .select('currently_exploring')
-          .eq('id', user.id)
-          .maybeSingle();
-      final isLocal = ((profile?['currently_exploring'] as String?)
-                      ?.toLowerCase()
-                      .trim() ??
-                  'local') !=
-              'traveling';
 
-      final response = await dio.post(
-        functionUrl,
-        data: {
-          'action': 'create_day_plan',
-          'moods': widget.selectedMoods,
-          'location': city.trim(),
-          'is_local': isLocal,
-          'language_code': languageCode,
-          'coordinates': {
-            'lat': lat,
-            'lng': lng,
-          },
-          'allowed_slots': allowedSlots.map(_timeSlotApiValue).toList(),
-          if (widget.quickPick == DayPlanQuickPick.coffee)
-            'quick_pick': 'coffee',
-          if (widget.targetDate != null)
-            'target_date': DateTime(
-              widget.targetDate!.year,
-              widget.targetDate!.month,
-              widget.targetDate!.day,
-            ).toIso8601String(),
-        },
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-            'apikey': SupabaseConfig.anonKey,
-        },
-        ),
+      final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
+        appLocale: ref.read(localeProvider),
       );
-        
-      debugPrint('📡 Edge Function response status: ${response.statusCode}');
-      
-      if (response.statusCode != 200) {
-        final errorData = response.data;
-        if (kDebugMode) {
-          debugPrint('❌ Edge Function error: Status ${response.statusCode}, Data: $errorData');
-        }
-        final errorMessage = (errorData as Map<String, dynamic>?)?['message'] ?? 
-                            (errorData as Map<String, dynamic>?)?['error'] ?? 
-                            'Service error. Please try again.';
-        throw Exception(errorMessage);
-      }
 
-      final responseData = response.data as Map<String, dynamic>;
+      final moody = ref.read(moodyEdgeFunctionServiceProvider);
+      final responseData = await moody.createDayPlan(
+        moods: widget.selectedMoods,
+        location: city.trim(),
+        latitude: lat,
+        longitude: lng,
+        languageCode: exploreLang,
+        targetDate: widget.targetDate,
+        quickPick: widget.quickPick == DayPlanQuickPick.coffee ? 'coffee' : null,
+        allowedSlots: allowedSlots.map(_timeSlotApiValue).toList(),
+      );
       
       // CRITICAL: Check if Edge Function returned empty state
       if (!responseData['success'] || responseData['total_found'] == 0) {
@@ -487,6 +378,13 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       return l10n.planLoadingErrorNetwork;
     }
     if (errorString.contains('rate limit') || errorString.contains('quota')) {
+      return l10n.planLoadingErrorService;
+    }
+    if (errorString.contains('503') ||
+        errorString.contains('502') ||
+        errorString.contains('429') ||
+        errorString.contains('bad response') ||
+        errorString.contains('temporarily unavailable')) {
       return l10n.planLoadingErrorService;
     }
     if (errorString.contains('location') || errorString.contains('permission')) {

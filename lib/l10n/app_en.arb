@@ -2993,6 +2993,10 @@
   "exploreSectionSomethingDifferent": "Something different 🎲",
   "exploreSeeAll": "See all",
   "exploreLoadMore": "Load more →",
+  "exploreEndOfCachedPool": "You have seen all ideas saved for this area. Pull down to refresh for new suggestions.",
+  "@exploreEndOfCachedPool": {
+    "description": "Shown when Load more reaches the end of the locally cached explore pool."
+  },
   "exploreSectionErrorRetry": "Could not load places — tap to retry",
   "exploreOfflineShowingCached": "Offline — showing cached results",
   "exploreOfflineEmptyBody": "Connect to the internet\nto discover places",

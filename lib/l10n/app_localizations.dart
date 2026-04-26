@@ -11420,6 +11420,12 @@ abstract class AppLocalizations {
   /// **'Load more →'**
   String get exploreLoadMore;
 
+  /// Shown when Load more reaches the end of the locally cached explore pool.
+  ///
+  /// In en, this message translates to:
+  /// **'You have seen all ideas saved for this area. Pull down to refresh for new suggestions.'**
+  String get exploreEndOfCachedPool;
+
   /// No description provided for @exploreSectionErrorRetry.
   ///
   /// In en, this message translates to:

@@ -2212,6 +2212,7 @@
   "exploreSectionSomethingDifferent": "Iets anders 🎲",
   "exploreSeeAll": "Alles tonen",
   "exploreLoadMore": "Meer laden →",
+  "exploreEndOfCachedPool": "Je hebt alle ideeën in dit gebied gezien. Trek omlaag om te verversen voor nieuwe suggesties.",
   "exploreSectionErrorRetry": "Kon plekken niet laden — tik om opnieuw te proberen",
   "exploreOfflineShowingCached": "Offline — gecachte resultaten",
   "exploreOfflineEmptyBody": "Maak verbinding met het internet\nom plekken te ontdekken",

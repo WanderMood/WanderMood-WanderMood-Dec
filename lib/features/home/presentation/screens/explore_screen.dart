@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,6 +47,7 @@ import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/config/explore_launch_config.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:wandermood/features/home/presentation/providers/explore_intent_provider.dart';
+import 'package:wandermood/features/places/providers/moody_place_card_blurb_provider.dart';
 class _ExploreSectionData {
   _ExploreSectionData({required this.id, List<Place>? cards})
       : cards = cards ?? [];
@@ -70,6 +72,11 @@ const double _kExploreFloatingNavClearance = 88;
 
 /// Explore list/grid: initial batch and each "Load more" step (local reveal or after fetch).
 const int _kExplorePageSize = 18;
+const int _kExploreSeedTargetMin = 180;
+const int _kExplorePrewarmBatchSize = 4;
+/// Extra [getExplore] discovery / named-filter rounds to grow the merged pool
+/// toward [_kExploreSeedTargetMin] on first load (writes through moody → DB).
+const int _kExploreBulkSeedMaxExtraCalls = 12;
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -106,8 +113,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   bool _isMapView = false;
   GoogleMapController? _mapController;
 
-  /// Rotates named-filter fetches so "Load more" adds fresh cards without backend pagination.
-  int _exploreMoreRound = 0;
   bool _isLoadingMoreExplore = false;
 
   /// Changes hero photo index for each place when Explore feed is refreshed.
@@ -117,6 +122,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   int _exploreVisiblePlaceCount = _kExplorePageSize;
 
   bool _backgroundExploreRefresh = false;
+  final Queue<Place> _exploreRichPrewarmQueue = Queue<Place>();
+  final Set<String> _exploreRichPrewarmQueuedIds = <String>{};
+  bool _exploreRichPrewarmRunning = false;
+
+  bool _exploreBulkSeedInFlight = false;
+  String? _exploreBulkSeedGateCity;
+  bool _exploreBulkSeedRanForGateCity = false;
 
   late final List<_ExploreSectionData> _sections = [
     _ExploreSectionData(id: 'food'),
@@ -256,7 +268,49 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     _searchController.dispose();
     _scrollController.dispose();
     _mapController?.dispose();
+    _exploreRichPrewarmQueue.clear();
+    _exploreRichPrewarmQueuedIds.clear();
     super.dispose();
+  }
+
+  void _enqueueVisibleRichPrewarm(List<Place> visiblePlaces) {
+    for (final place in visiblePlaces) {
+      final id = place.id.trim();
+      if (id.isEmpty) continue;
+      if (_exploreRichPrewarmQueuedIds.add(id)) {
+        _exploreRichPrewarmQueue.add(place);
+      }
+    }
+    if (_exploreRichPrewarmRunning) return;
+    _exploreRichPrewarmRunning = true;
+    unawaited(_runExploreRichPrewarmQueue());
+  }
+
+  Future<void> _runExploreRichPrewarmQueue() async {
+    try {
+      while (mounted && _exploreRichPrewarmQueue.isNotEmpty) {
+        final batch = <Place>[];
+        while (batch.length < _kExplorePrewarmBatchSize &&
+            _exploreRichPrewarmQueue.isNotEmpty) {
+          batch.add(_exploreRichPrewarmQueue.removeFirst());
+        }
+        await Future.wait(
+          batch.map((p) async {
+            try {
+              await ref.read(moodyPlaceCardUiDescriptionProvider(p).future);
+            } catch (_) {
+              // Keep Explore responsive: copy prewarm failures should never block UI.
+            }
+          }),
+        );
+      }
+    } finally {
+      _exploreRichPrewarmRunning = false;
+      if (mounted && _exploreRichPrewarmQueue.isNotEmpty) {
+        _exploreRichPrewarmRunning = true;
+        unawaited(_runExploreRichPrewarmQueue());
+      }
+    }
   }
 
   void _applyExternalSearchIntent(String query) {
@@ -412,59 +466,108 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return out;
   }
 
-  /// Extra Explore rows via moody `namedFilters` (skips Flutter cache read).
-  Future<void> _loadMoreExploreIdeas() async {
-    if (_isLoadingMoreExplore || _isMapView) return;
+  /// After the four section rows load, optionally call moody [getExplore] a few
+  /// more times (discovery + rotating named filters) until the merged unique
+  /// pool reaches [_kExploreSeedTargetMin] or [maxExtraCalls] is hit. Writes
+  /// go through the same moody → `places_cache` path as normal Explore.
+  ///
+  /// Runs at most once per [ExploreSessionAnchor] city per state lifetime so
+  /// tab revisits do not spam the edge function.
+  Future<void> _maybeBulkSeedExplorePool({bool forceNetwork = false}) async {
+    if (!mounted || _exploreBulkSeedInFlight) return;
+    if (_searchResults != null) return;
+
+    final mapFilters = ref.read(moodyExploreBackendFiltersProvider);
+    final namedScaffold = ref.read(moodyExploreBackendNamedFiltersProvider);
+    if (mapFilters.isNotEmpty || namedScaffold.isNotEmpty) return;
+
+    if (_allCards.length >= _kExploreSeedTargetMin) return;
+
     await _maybeLockSessionAnchor();
     final anchor = ref.read(exploreSessionAnchorProvider);
-    final city = anchor?.city ?? ref.read(locationNotifierProvider).value?.trim();
-    final pos =
-        anchor != null ? _positionForExploreLoad() : ref.read(userLocationProvider).value;
-    if (city == null || city.isEmpty || pos == null) return;
-    final connected = await ref.read(connectivityServiceProvider).isConnected;
-    if (!connected) {
-      if (mounted) showOfflineSnackBar(context);
-      return;
+    final city = (anchor?.city ?? ref.read(locationNotifierProvider).value)
+            ?.trim() ??
+        '';
+    if (city.isEmpty) return;
+
+    if (_exploreBulkSeedGateCity != city) {
+      _exploreBulkSeedGateCity = city;
+      _exploreBulkSeedRanForGateCity = false;
     }
-    setState(() => _isLoadingMoreExplore = true);
+    if (_exploreBulkSeedRanForGateCity) return;
+
+    final pos = anchor != null
+        ? _positionForExploreLoad()
+        : ref.read(userLocationProvider).value;
+    if (pos == null) return;
+
+    final online = await ref.read(connectivityServiceProvider).isConnected;
+    if (!online || !mounted) return;
+
+    _exploreBulkSeedInFlight = true;
     try {
-      final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
+      final service = ref.read(moodyEdgeFunctionServiceProvider);
+      final notifier = ref.read(placesServiceProvider.notifier);
+      final lang = PlacesCacheUtils.effectiveExploreLanguageTag(
         appLocale: ref.read(localeProvider),
       );
-      const tags = [
+
+      const tags = <String>[
         'cultural',
         'foodie',
         'outdoor',
         'nightlife',
         'wellness',
         'trendy',
+        'solo',
+        'family',
+        'romantic',
+        'budget',
       ];
-      final tag = tags[_exploreMoreRound % tags.length];
-      _exploreMoreRound++;
-      final service = ref.read(moodyEdgeFunctionServiceProvider);
-      final more = await service.getExplore(
-        location: city,
-        latitude: pos.latitude,
-        longitude: pos.longitude,
-        section: 'discovery',
-        namedFilters: [tag],
-        languageCode: exploreLang,
-      );
-      final notifier = ref.read(placesServiceProvider.notifier);
-      for (final p in more) {
-        notifier.cachePlaceObject(p);
-      }
-      if (!mounted) return;
-      setState(() {
-        if (_sections.isNotEmpty) {
+
+      var round = 0;
+      while (mounted &&
+          _allCards.length < _kExploreSeedTargetMin &&
+          round < _kExploreBulkSeedMaxExtraCalls) {
+        round++;
+        List<Place> more;
+        if (round == 1) {
+          more = await service.getExplore(
+            location: city,
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            section: 'discovery',
+            languageCode: lang,
+          );
+        } else {
+          final tag = tags[(round - 2) % tags.length];
+          more = await service.getExplore(
+            location: city,
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            section: 'discovery',
+            namedFilters: <String>[tag],
+            languageCode: lang,
+          );
+        }
+        if (!mounted) return;
+        if (more.isEmpty) continue;
+
+        for (final p in more) {
+          notifier.cachePlaceObject(p);
+        }
+        setState(() {
           final last = _sections.last;
           last.cards = _mergePlaces(last.cards, more);
-        }
-      });
+          last.isLoading = false;
+          last.hasError = false;
+        });
+      }
     } catch (e, st) {
-      debugPrint('Explore load more: $e\n$st');
+      debugPrint('Explore bulk seed: $e\n$st');
     } finally {
-      if (mounted) setState(() => _isLoadingMoreExplore = false);
+      _exploreBulkSeedRanForGateCity = true;
+      _exploreBulkSeedInFlight = false;
     }
   }
 
@@ -484,15 +587,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
     if (_searchResults != null) return;
     if (filteredTotal < _kExplorePageSize) return;
-    await _loadMoreExploreIdeas();
-    if (!mounted) return;
-    setState(() {
-      _exploreVisiblePlaceCount += _kExplorePageSize;
-    });
+    // Strict cache-first behavior: when currently loaded cards are exhausted,
+    // stop instead of triggering extra fetches from scroll/load-more.
+    // This keeps Explore pagination local to the seeded/cached pool.
+    if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.exploreEndOfCachedPool)),
+      );
+    }
   }
 
   Future<void> _loadAllSections({bool forceNetwork = false}) async {
     if (!mounted) return;
+    if (forceNetwork) {
+      _exploreBulkSeedRanForGateCity = false;
+      _exploreBulkSeedGateCity = null;
+    }
     await _maybeLockSessionAnchor();
     final anchor = ref.read(exploreSessionAnchorProvider);
     final cityForCache =
@@ -555,6 +666,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           if (needBackground) {
             unawaited(_refreshExploreStaleInBackground());
           }
+          unawaited(_maybeBulkSeedExplorePool(forceNetwork: forceNetwork));
           return;
         }
         if (needBackground) {
@@ -563,6 +675,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         await Future.wait(
           _sections.where((s) => s.isLoading).map((s) => _loadSection(s)),
         );
+        if (mounted) {
+          unawaited(_maybeBulkSeedExplorePool(forceNetwork: forceNetwork));
+        }
         return;
       }
     }
@@ -581,6 +696,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         (s) => _loadSection(s, skipPlacesCache: forceNetwork),
       ),
     );
+    if (mounted) {
+      unawaited(_maybeBulkSeedExplorePool(forceNetwork: forceNetwork));
+    }
   }
 
   Future<void> _refreshExploreStaleInBackground() async {
@@ -2652,6 +2770,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final visibleCount =
         math.min(_exploreVisiblePlaceCount, filteredPlaces.length);
     final visiblePlaces = filteredPlaces.sublist(0, visibleCount);
+    _enqueueVisibleRichPrewarm(visiblePlaces);
     final hasMoreLocally = visibleCount < filteredPlaces.length;
     final canFetchMoreExplore = _searchResults == null &&
         filteredPlaces.length >= _kExplorePageSize &&
@@ -2845,6 +2964,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   userLocation: ul,
                   cityName: currentCity,
                   photoSelectionSeed: _explorePlacePhotoRefreshSeed,
+                  allowVisibilityEnrichment: false,
                   onTap: () => _openPlaceFromExplore(place),
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),
                   onSavedTap: () => unawaited(
@@ -2868,6 +2988,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   userLocation: ul,
                   cityName: currentCity,
                   photoSelectionSeed: _explorePlacePhotoRefreshSeed,
+                  allowVisibilityEnrichment: false,
                   cardMargin: const EdgeInsets.only(top: 2, bottom: 16),
                   showAddToMyDayButton: true,
                   onAddToMyDayTap: () => _showAddToMyDaySheet(place),

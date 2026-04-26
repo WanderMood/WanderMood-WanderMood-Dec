@@ -6385,6 +6385,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get exploreLoadMore => 'Meer laden →';
 
   @override
+  String get exploreEndOfCachedPool =>
+      'Je hebt alle ideeën in dit gebied gezien. Trek omlaag om te verversen voor nieuwe suggesties.';
+
+  @override
   String get exploreSectionErrorRetry =>
       'Kon plekken niet laden — tik om opnieuw te proberen';
 

@@ -59,8 +59,8 @@ class PlacesCacheUtils {
     } catch (_) {}
   }
 
-  /// Same as aggregate explore cache prefix in `moody` (`explore_v8_…`).
-  static const String exploreCacheSchemaVersion = 'v8';
+  /// Same as aggregate explore cache prefix in `moody` (`explore_v9_…`).
+  static const String exploreCacheSchemaVersion = 'v9';
 
   /// Section ids for `get_explore` (`section` param) + broad `discovery` aggregate.
   static const List<String> exploreV7SectionIds = [
@@ -101,6 +101,19 @@ class PlacesCacheUtils {
     return normalizeExploreLanguageCode(raw);
   }
 
+  /// Suffix for named-filter explore rows — must match moody `handleGetExplore`
+  /// (`_nf_${sorted.join('_')}` appended to the base aggregate key).
+  static String exploreNamedFiltersCacheSuffix(List<String>? namedFilters) {
+    if (namedFilters == null || namedFilters.isEmpty) return '';
+    final parts = namedFilters
+        .map((s) => s.toLowerCase().trim())
+        .where((s) => s.isNotEmpty)
+        .toList()
+      ..sort();
+    if (parts.isEmpty) return '';
+    return '_nf_${parts.join('_')}';
+  }
+
   /// Canonical aggregate key — aligned with moody `handleGetExplore` (`index.ts`):
   /// English omits the `_en` suffix; other languages use `_nl`, `_es`, etc.
   static String exploreAggregateCacheKey(
@@ -108,15 +121,17 @@ class PlacesCacheUtils {
     String section,
     String location, {
     String? languageCode,
+    List<String>? namedFilters,
   }) {
     final modeKey = isLocalMode ? 'local' : 'travel';
     final loc = location.toLowerCase().trim();
     final sec = section.toLowerCase().trim();
     final lang = normalizeExploreLanguageCode(languageCode);
+    final nf = exploreNamedFiltersCacheSuffix(namedFilters);
     if (lang == 'en') {
-      return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc';
+      return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_$loc$nf';
     }
-    return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_${loc}_$lang';
+    return 'explore_${exploreCacheSchemaVersion}_${modeKey}_${sec}_${loc}_$lang$nf';
   }
 
   /// v7 primary key (localized), server `all` slot for broad discovery, then legacy keys without language.
@@ -125,7 +140,22 @@ class PlacesCacheUtils {
     String section,
     String location, {
     String? languageCode,
+    List<String>? namedFilters,
   }) {
+    final nf = exploreNamedFiltersCacheSuffix(namedFilters);
+    if (nf.isNotEmpty) {
+      // Moody stores one row per exact key including `_nf_…` — do not fall back to
+      // non-filter keys or we would return the wrong feed.
+      return [
+        exploreAggregateCacheKey(
+          isLocalMode,
+          section,
+          location,
+          languageCode: languageCode,
+          namedFilters: namedFilters,
+        ),
+      ];
+    }
     final modeKey = isLocalMode ? 'local' : 'travel';
     final loc = location.toLowerCase().trim();
     final sec = section.toLowerCase().trim();
@@ -342,9 +372,16 @@ class PlacesCacheUtils {
     String location, {
     bool? isLocalMode,
     String? languageCode,
+    List<String>? namedFilters,
   }) async {
     final local = isLocalMode ?? await readExploreIsLocalMode(client);
-    final keys = exploreAggregateCacheKeyCandidates(local, section, location, languageCode: languageCode);
+    final keys = exploreAggregateCacheKeyCandidates(
+      local,
+      section,
+      location,
+      languageCode: languageCode,
+      namedFilters: namedFilters,
+    );
 
     for (final cacheKey in keys) {
       final hit = await getExploreCardsFromCache(client, cacheKey);
@@ -359,6 +396,7 @@ class PlacesCacheUtils {
     String location, {
     bool? isLocalMode,
     String? languageCode,
+    List<String>? namedFilters,
   }) async {
     final hit = await tryLoadExplorePlacesHit(
       client,
@@ -366,6 +404,7 @@ class PlacesCacheUtils {
       location,
       isLocalMode: isLocalMode,
       languageCode: languageCode,
+      namedFilters: namedFilters,
     );
     return hit?.places;
   }

@@ -6437,6 +6437,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exploreLoadMore => 'Charger plus →';
 
   @override
+  String get exploreEndOfCachedPool =>
+      'Tu as vu toutes les idées enregistrées pour ce secteur. Tire vers le bas pour actualiser et obtenir de nouvelles suggestions.';
+
+  @override
   String get exploreSectionErrorRetry =>
       'Impossible de charger les lieux — touchez pour réessayer';
 

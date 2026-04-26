@@ -176,13 +176,48 @@ async function processPlacesBody(
   let data: any
 
   switch (type) {
-    case 'search':
+    case 'search': {
       if (!query) throw new Error('Query required for search')
-
+      const serviceDb = getServiceSupabase()
+      const searchCacheKey = `places_search_${query.toLowerCase().trim()}_${language}`
+      if (serviceDb) {
+        try {
+          const { data: cachedRow } = await serviceDb
+            .from('places_cache')
+            .select('data,expires_at')
+            .eq('cache_key', searchCacheKey)
+            .maybeSingle()
+          const expiresAt = cachedRow?.expires_at ? new Date(cachedRow.expires_at as string) : null
+          const isFresh = cachedRow?.data && expiresAt != null && expiresAt.getTime() > Date.now()
+          if (isFresh) {
+            console.log(`places.search cache=HIT query="${query}"`)
+            return new Response(
+              JSON.stringify({ success: true, data: cachedRow.data, cached: true }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
+            )
+          }
+          console.log(`places.search cache=MISS query="${query}"`)
+        } catch (cacheReadErr) {
+          console.warn('places.search cache read failed:', cacheReadErr)
+        }
+      }
       const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_PLACES_API_KEY}&language=${language}`
       response = await fetch(searchUrl)
       data = await response.json()
+      if (serviceDb && data?.status === 'OK') {
+        try {
+          const exp = new Date(); exp.setDate(exp.getDate() + 7)
+          await serviceDb.from('places_cache').upsert(
+            { cache_key: searchCacheKey, data, user_id: null, place_id: null, request_type: 'search', expires_at: exp.toISOString() },
+            { onConflict: 'cache_key' },
+          )
+          console.log(`places.search cache=WRITE query="${query}"`)
+        } catch (cacheWriteErr) {
+          console.warn('places.search cache write failed:', cacheWriteErr)
+        }
+      }
       break
+    }
 
     case 'autocomplete':
       if (!query) throw new Error('Query required for autocomplete')
@@ -204,47 +239,70 @@ async function processPlacesBody(
     case 'details':
       if (!placeId) throw new Error('Place ID required for details')
       {
-        // Cache-first for Details to avoid repeat Google billable calls.
+        // Global shared cache — not user-scoped so ANY user gets the same cached row.
+        const serviceDb = getServiceSupabase()
         const cacheKey = `places_details_${placeId}`
-        try {
-          const { data: cachedRow } = await supabaseClient
-            .from('places_cache')
-            .select('data,expires_at')
-            .eq('cache_key', cacheKey)
-            .eq('user_id', user.id)
-            .maybeSingle()
+        if (serviceDb) {
+          try {
+            const { data: cachedRow } = await serviceDb
+              .from('places_cache')
+              .select('data,expires_at')
+              .eq('cache_key', cacheKey)
+              .maybeSingle()
 
-          const expiresAtRaw = cachedRow?.expires_at as string | undefined
-          const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null
-          const isFresh =
-            cachedRow?.data &&
-            expiresAt != null &&
-            !Number.isNaN(expiresAt.getTime()) &&
-            expiresAt.getTime() > Date.now()
+            const expiresAtRaw = cachedRow?.expires_at as string | undefined
+            const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null
+            const isFresh =
+              cachedRow?.data &&
+              expiresAt != null &&
+              !Number.isNaN(expiresAt.getTime()) &&
+              expiresAt.getTime() > Date.now()
 
-          if (isFresh) {
-            console.log(`places.details cache=HIT placeId=${placeId}`)
-            return new Response(
-              JSON.stringify({
-                success: true,
-                data: cachedRow.data,
-                cached_until: expiresAt.toISOString(),
-                cached: true,
-              }),
-              {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 200,
-              },
-            )
+            if (isFresh) {
+              console.log(`places.details cache=HIT placeId=${placeId}`)
+              return new Response(
+                JSON.stringify({
+                  success: true,
+                  data: cachedRow.data,
+                  cached_until: expiresAt.toISOString(),
+                  cached: true,
+                }),
+                {
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                  status: 200,
+                },
+              )
+            }
+            console.log(`places.details cache=MISS placeId=${placeId}`)
+          } catch (cacheReadError) {
+            console.warn('places.details cache read failed:', cacheReadError)
           }
-          console.log(`places.details cache=MISS placeId=${placeId}`)
-        } catch (cacheReadError) {
-          console.warn('places.details cache read failed:', cacheReadError)
         }
 
         const r = await fetchPlaceDetailsWithFallback(placeId, language, GOOGLE_PLACES_API_KEY)
         data = r.data
         response = r.response
+
+        // Write globally so every user benefits from this fetch.
+        if (serviceDb && data?.status === 'OK') {
+          try {
+            const exp = new Date(); exp.setDate(exp.getDate() + 7)
+            await serviceDb.from('places_cache').upsert(
+              {
+                cache_key: cacheKey,
+                data,
+                user_id: null,
+                place_id: null,
+                request_type: 'details',
+                expires_at: exp.toISOString(),
+              },
+              { onConflict: 'cache_key' },
+            )
+            console.log(`places.details cache=WRITE placeId=${placeId}`)
+          } catch (cacheWriteErr) {
+            console.warn('places.details cache write failed:', cacheWriteErr)
+          }
+        }
       }
       break
 
@@ -302,23 +360,30 @@ async function processPlacesBody(
     throw new Error(`Google Places API error: ${data.status} - ${data.error_message || 'Unknown error'}`)
   }
 
-  if (data.status === 'OK' && (type === 'search' || type === 'nearby' || type === 'details')) {
-    try {
-      const cacheKey = `places_${type}_${query || placeId || `${location?.lat}_${location?.lng}`}`
-      const expiresAt = new Date()
-      expiresAt.setHours(expiresAt.getHours() + 24)
+  if (data.status === 'OK' && type === 'nearby') {
+    const serviceDb = getServiceSupabase()
+    if (serviceDb) {
+      try {
+        const cacheKey = `places_nearby_${location?.lat}_${location?.lng}_${radius}`
+        const expiresAt = new Date()
+        expiresAt.setHours(expiresAt.getHours() + 24)
 
-      await supabaseClient
-        .from('places_cache')
-        .upsert({
-          cache_key: cacheKey,
-          data: data,
-          user_id: user.id,
-          request_type: type,
-          expires_at: expiresAt.toISOString(),
-        })
-    } catch (cacheError) {
-      console.warn('Failed to cache places data:', cacheError)
+        await serviceDb
+          .from('places_cache')
+          .upsert(
+            {
+              cache_key: cacheKey,
+              data: data,
+              user_id: null,
+              place_id: null,
+              request_type: 'nearby',
+              expires_at: expiresAt.toISOString(),
+            },
+            { onConflict: 'cache_key' },
+          )
+      } catch (cacheError) {
+        console.warn('Failed to cache nearby data:', cacheError)
+      }
     }
   }
 

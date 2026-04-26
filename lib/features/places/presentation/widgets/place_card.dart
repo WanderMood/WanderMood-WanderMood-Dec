@@ -60,6 +60,9 @@ class PlaceCard extends ConsumerWidget {
   final EdgeInsetsGeometry cardMargin;
   /// Bumps hero photo selection on Explore refresh (see [placeCardPhotoIndex]).
   final int photoSelectionSeed;
+  /// When true, card can fetch extra details/photos while visible.
+  /// Set false for strict cache-only Explore scrolling.
+  final bool allowVisibilityEnrichment;
 
   const PlaceCard({
     Key? key,
@@ -73,6 +76,7 @@ class PlaceCard extends ConsumerWidget {
     this.showSeeActivityLabel = false,
     this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.photoSelectionSeed = 0,
+    this.allowVisibilityEnrichment = true,
   }) : super(key: key);
 
   // Cache distance calculation to prevent spam
@@ -181,11 +185,20 @@ class PlaceCard extends ConsumerWidget {
     if (userLocation != null) {
       final userLat = userLocation!.latitude;
       final userLng = userLocation!.longitude;
+      final cityCenter = _getCityCenterCoordinates(cityName);
       
       // Check if this is unrealistic coordinates (SF simulator)
       final isSanFrancisco = (userLat - 37.785834).abs() < 0.1 && (userLng + 122.406417).abs() < 0.1;
+      final isFarFromSelectedCity = cityCenter != null &&
+          DistanceService.calculateDistance(
+                userLat,
+                userLng,
+                cityCenter.latitude,
+                cityCenter.longitude,
+              ) >
+              150;
       
-      if (!isSanFrancisco) {
+      if (!isSanFrancisco && !isFarFromSelectedCity) {
         // Use valid user location
         referencePoint = userLocation;
         cacheKey = '${place.id}_user_${userLat.toStringAsFixed(4)}_${userLng.toStringAsFixed(4)}';
@@ -474,6 +487,9 @@ class PlaceCard extends ConsumerWidget {
   }
 
   Future<List<String>> _resolvePhotos(WidgetRef ref) {
+    if (!allowVisibilityEnrichment) {
+      return Future.value(place.photos.take(_kMaxCardPhotos).toList());
+    }
     return ref
         .read(placesServiceProvider.notifier)
         .resolveExploreCardPhotos(place, maxPhotos: _kMaxCardPhotos);
@@ -945,6 +961,7 @@ class PlaceCard extends ConsumerWidget {
                     maxLines: 8,
                     paddingTop: 8,
                     useCardStackLayout: true,
+                    cacheOnly: !allowVisibilityEnrichment,
                     textStyle: GoogleFonts.poppins(
                       fontSize: 13,
                       height: 1.4,

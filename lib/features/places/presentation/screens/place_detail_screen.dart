@@ -164,7 +164,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     // Don't do any provider reads/watches that could trigger rebuilds
     if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized &&
         _cachedPlace!.name != l10n.placeDetailUnavailableName) {
-      _syncResolvedPlace(_cachedPlace!);
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
         body: _buildPlaceDetail(_cachedPlace!),

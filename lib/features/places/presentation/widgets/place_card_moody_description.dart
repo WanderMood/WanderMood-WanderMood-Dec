@@ -1,16 +1,26 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/core/presentation/providers/language_provider.dart';
 import 'package:wandermood/core/presentation/widgets/guest_demo_about_sections.dart';
+import 'package:wandermood/core/providers/communication_style_provider.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
+import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
 import 'package:wandermood/features/places/data/place_card_ui_description.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/places/presentation/widgets/place_moody_copy_skeleton.dart';
 import 'package:wandermood/features/places/providers/moody_place_card_blurb_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// Explore / list card: grounded multi-section Moody copy when available; skeleton while loading.
+/// Explore / list card: grounded multi-section Moody copy when available.
+///
+/// Stays a [ConsumerWidget] (not [ConsumerStatefulWidget]) so hot reload and
+/// nested [Consumer] builders keep a consistent widget type.
+///
+/// [ListenableBuilder] on [MoodyPlaceCardUiCache.revision] rebuilds when the
+/// Explore prewarm queue writes rich copy to disk-backed cache.
 class PlaceCardMoodyDescription extends ConsumerWidget {
   const PlaceCardMoodyDescription({
     super.key,
@@ -24,6 +34,7 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
     /// Smaller section typography on compact grid cards (only with [useCardStackLayout] + rich).
     this.structuredTitleFontSize,
     this.structuredBodyFontSize,
+    this.cacheOnly = false,
   });
 
   final Place place;
@@ -35,12 +46,10 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
   final bool useCardStackLayout;
   final double? structuredTitleFontSize;
   final double? structuredBodyFontSize;
-
-  int get _effectiveMaxLines => maxLines ?? 4;
+  final bool cacheOnly;
 
   static const Color _wmForest = Color(0xFF2A6049);
 
-  /// Rich list cards: hook is at most 2 lines (13 / 1.35). Reserve this slot when the edge omits [hook] so list card heights stay aligned.
   static const double _kRichHookLineFontSize = 13;
   static const double _kRichHookLineHeight = 1.35;
   static const int _kRichHookMaxLines = 2;
@@ -49,29 +58,88 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
       _kRichHookLineFontSize * _kRichHookLineHeight * _kRichHookMaxLines +
           _kRichHookAfterGap;
 
+  int _effectiveMaxLines() => maxLines ?? 4;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final fallback = ExplorePlaceCardCopy.cardDescription(place, l10n);
     if (fallback.isEmpty) return const SizedBox.shrink();
 
-    final uiAsync = ref.watch(moodyPlaceCardUiDescriptionProvider(place));
-    final lineCap = _effectiveMaxLines;
+    return ListenableBuilder(
+      listenable: MoodyPlaceCardUiCache.revision,
+      builder: (context, _) {
+        final appLocale = ref.watch(localeProvider);
+        final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
+        final comm = ref
+            .read(communicationStyleProvider.notifier)
+            .getCurrentStyleString();
+
+        final cachedSync = MoodyPlaceCardUiCache.peekStable(
+          place.id,
+          locale.languageCode,
+          comm,
+        );
+        if (cachedSync != null) {
+          return _renderUi(
+            cachedSync,
+            fallback,
+            l10n,
+          );
+        }
+
+        if (cacheOnly) {
+          final uiAsync = ref.watch(
+            moodyPlaceCardUiDescriptionCacheOnlyProvider(place),
+          );
+          final ui = uiAsync.maybeWhen(
+            data: (d) => d,
+            orElse: () => PlaceCardUiDescription.plain(fallback),
+          );
+          return _renderUi(ui, fallback, l10n);
+        }
+
+        final uiAsync = ref.watch(moodyPlaceCardUiDescriptionProvider(place));
+        return uiAsync.when(
+          data: (d) => _renderUi(d, fallback, l10n),
+          loading: () =>
+              _renderUi(PlaceCardUiDescription.plain(fallback), fallback, l10n),
+          error: (_, __) =>
+              _renderUi(PlaceCardUiDescription.plain(fallback), fallback, l10n),
+        );
+      },
+    );
+  }
+
+  Widget _renderUi(
+    PlaceCardUiDescription uiDesc,
+    String fallback,
+    AppLocalizations l10n,
+  ) {
+    if (kDebugMode) {
+      debugPrint(
+        'PlaceCardMoodyDescription rich=${uiDesc.isRich} plainLen=${uiDesc.plainText?.length ?? 0}',
+      );
+    }
+    final lineCap = _effectiveMaxLines();
 
     String displayPlain(String raw) {
       final trimmed = raw.trim();
       final base = trimmed.isNotEmpty ? trimmed : fallback;
-      return ExplorePlaceCardCopy.ensureMinSentencesForCard(place, base, l10n);
+      return ExplorePlaceCardCopy.ensureMinSentencesForCard(
+        place,
+        base,
+        l10n,
+      );
     }
 
-    /// Rich layout ignores [maxLines] unless we merge or cap sections — avoids
-    /// RenderFlex overflow in fixed-height list/grid cards.
-    String richMergedForTightLayout(PlaceCardUiDescription ui) {
+    String richMergedForTightLayout(PlaceCardUiDescription rich) {
       final parts = <String>[];
-      final h = ui.hook?.trim();
+      final h = rich.hook?.trim();
       if (h != null && h.isNotEmpty) parts.add(h);
-      if (ui.sectionsSource != null && ui.sectionsSource!.trim().isNotEmpty) {
-        final sections = parseGuestDemoAboutSections(ui.sectionsSource!);
+      if (rich.sectionsSource != null &&
+          rich.sectionsSource!.trim().isNotEmpty) {
+        final sections = parseGuestDemoAboutSections(rich.sectionsSource!);
         if (sections.isNotEmpty) {
           parts.add(
             sections.first.body.replaceAll(RegExp(r'\s+'), ' ').trim(),
@@ -82,133 +150,112 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
       return displayPlain(merged.isNotEmpty ? merged : fallback);
     }
 
-    return uiAsync.when(
-      data: (ui) {
-        if (kDebugMode) {
-          debugPrint(
-            'PlaceCardMoodyDescription rich=${ui.isRich} plainLen=${ui.plainText?.length ?? 0}',
-          );
+    if (uiDesc.isRich) {
+      final hookText = uiDesc.hook?.trim();
+      final hasHook = hookText != null && hookText.isNotEmpty;
+      String hookLineForStack() {
+        if (hasHook) return hookText;
+        var line = ExplorePlaceCardCopy.editorialLineForExploreCard(fallback);
+        if (line.trim().isEmpty) {
+          final f = fallback.trim();
+          line = f.length > 120 ? '${f.substring(0, 117)}…' : f;
         }
-        if (ui.isRich) {
-          final hookText = ui.hook?.trim();
-          final hasHook = hookText != null && hookText.isNotEmpty;
-          String hookLineForStack() {
-            if (hasHook) return hookText;
-            var line = ExplorePlaceCardCopy.editorialLineForExploreCard(fallback);
-            if (line.trim().isEmpty) {
-              final f = fallback.trim();
-              line = f.length > 120 ? '${f.substring(0, 117)}…' : f;
-            }
-            return line;
-          }
+        return line;
+      }
 
-          if (useCardStackLayout) {
-            final bodyLines = (lineCap - _kRichHookMaxLines).clamp(2, 10);
-            final stackHook = hookLineForStack();
-            return Padding(
-              padding: EdgeInsets.only(top: paddingTop),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: _kRichHookSlotHeight,
-                    width: double.infinity,
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: stackHook.isNotEmpty
-                          ? Text(
-                              stackHook,
-                              style: GoogleFonts.poppins(
-                                fontSize: _kRichHookLineFontSize,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w500,
-                                color: _wmForest,
-                                height: _kRichHookLineHeight,
-                              ),
-                              maxLines: _kRichHookMaxLines,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ),
-                  GuestDemoAboutSectionsView(
-                    source: ui.sectionsSource!,
-                    compact: true,
-                    compactBodyMaxLines: bodyLines,
-                    compactTitleFontSize: structuredTitleFontSize,
-                    compactBodyFontSize: structuredBodyFontSize,
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (lineCap <= 4) {
-            return Padding(
-              padding: EdgeInsets.only(top: paddingTop),
-              child: Text(
-                richMergedForTightLayout(ui),
-                style: textStyle,
-                maxLines: lineCap,
-                overflow: TextOverflow.ellipsis,
-              ),
-            );
-          }
-          final bodyLines = (lineCap - 3).clamp(1, 12);
-          return Padding(
-            padding: EdgeInsets.only(top: paddingTop),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (hasHook) ...[
-                  Text(
-                    hookText,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                      color: _wmForest,
-                      height: 1.35,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                GuestDemoAboutSectionsView(
-                  source: ui.sectionsSource!,
-                  compact: true,
-                  compactBodyMaxLines: bodyLines,
+      if (useCardStackLayout) {
+        final bodyLines = (lineCap - _kRichHookMaxLines).clamp(2, 10);
+        final stackHook = hookLineForStack();
+        return Padding(
+          padding: EdgeInsets.only(top: paddingTop),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: _kRichHookSlotHeight,
+                width: double.infinity,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: stackHook.isNotEmpty
+                      ? Text(
+                          stackHook,
+                          style: GoogleFonts.poppins(
+                            fontSize: _kRichHookLineFontSize,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w500,
+                            color: _wmForest,
+                            height: _kRichHookLineHeight,
+                          ),
+                          maxLines: _kRichHookMaxLines,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : const SizedBox.shrink(),
                 ),
-              ],
-            ),
-          );
-        }
-        final plain = ui.plainText ?? '';
+              ),
+              GuestDemoAboutSectionsView(
+                source: uiDesc.sectionsSource!,
+                compact: true,
+                compactBodyMaxLines: bodyLines,
+                compactTitleFontSize: structuredTitleFontSize,
+                compactBodyFontSize: structuredBodyFontSize,
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (lineCap <= 4) {
         return Padding(
           padding: EdgeInsets.only(top: paddingTop),
           child: Text(
-            displayPlain(plain),
+            richMergedForTightLayout(uiDesc),
             style: textStyle,
             maxLines: lineCap,
             overflow: TextOverflow.ellipsis,
           ),
         );
-      },
-      loading: () => Padding(
+      }
+      final bodyLines = (lineCap - 3).clamp(1, 12);
+      return Padding(
         padding: EdgeInsets.only(top: paddingTop),
-        child: const PlaceMoodyCopySkeleton(compact: true),
-      ),
-      error: (_, __) => Padding(
-        padding: EdgeInsets.only(top: paddingTop),
-        child: Text(
-          fallback,
-          style: textStyle,
-          maxLines: lineCap,
-          overflow: TextOverflow.ellipsis,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasHook) ...[
+              Text(
+                hookText,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w500,
+                  color: _wmForest,
+                  height: 1.35,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+            ],
+            GuestDemoAboutSectionsView(
+              source: uiDesc.sectionsSource!,
+              compact: true,
+              compactBodyMaxLines: bodyLines,
+            ),
+          ],
         ),
+      );
+    }
+
+    final plain = uiDesc.plainText ?? '';
+    return Padding(
+      padding: EdgeInsets.only(top: paddingTop),
+      child: Text(
+        displayPlain(plain),
+        style: textStyle,
+        maxLines: lineCap,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

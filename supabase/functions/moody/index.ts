@@ -631,6 +631,37 @@ async function checkCache(supabase: any, cacheKey: string): Promise<ExploreRespo
   } catch { return null }
 }
 
+/** Same `places_cache` keys as [handleGetExplore] — merge sections so create_day_plan is DB-first. */
+async function gatherCachedExplorePlacesForDayPlan(
+  supabase: any,
+  location: string,
+  placesLang: string,
+  modeKey: 'local' | 'travel',
+): Promise<PlaceCard[]> {
+  const loc = location.toLowerCase().trim()
+  const sections = ['food', 'trending', 'solo', 'different', 'discovery']
+  const seen = new Set<string>()
+  const out: PlaceCard[] = []
+  for (const section of sections) {
+    const cacheKey =
+      placesLang === 'en'
+        ? `explore_v9_${modeKey}_${section}_${loc}`
+        : `explore_v9_${modeKey}_${section}_${loc}_${placesLang}`
+    const hit = await checkCache(supabase, cacheKey)
+    if (!hit?.cards?.length) continue
+    for (const c of hit.cards) {
+      const id = String(c.id || '').trim().toLowerCase()
+      if (!id || seen.has(id)) continue
+      seen.add(id)
+      out.push(c)
+    }
+  }
+  console.log(
+    `📦 day_plan explore_cache merge: ${out.length} unique cards (loc=${loc}, mode=${modeKey}, lang=${placesLang})`,
+  )
+  return out
+}
+
 async function cacheExplore(supabase: any, cacheKey: string, places: PlaceCard[]): Promise<void> {
   try {
     // #region agent log – H-B: log distinct photo_urls when writing fresh cache
@@ -774,8 +805,10 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const modeKey = userContext.isLocalMode ? 'local' : 'travel'
     const timeCtx = getTimeOfDayContext()
     const lang = googlePlacesLanguageFromRequest(params)
-    const cacheKey = lang === 'en' ? `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v8_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
-    if (!hasNamedFilters && !groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { const exposureOrder = await getExposureOrder(supabase, userId); const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const decayed = applyExposureDecay(reranked, exposureOrder); const mixed = interleaveByBucket(decayed); const balanced = enforceExploreVariety(mixed); const enriched = enrichWithSignals(applyFilters(balanced, filters), userContext.isLocalMode); await updateExposureMemory(supabase, userId, enriched); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } }
+    const namedFiltersSuffix = hasNamedFilters ? `_nf_${namedFilters.slice().sort().join('_')}` : ''
+    const baseCacheKey = lang === 'en' ? `explore_v9_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v9_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
+    const cacheKey = `${baseCacheKey}${namedFiltersSuffix}`
+    if (!groupMatch) { const cached = await checkCache(supabase, cacheKey); if (cached && cached.cards.length > 0) { console.log(`🟢 explore cache HIT key=${cacheKey} cards=${cached.cards.length}`); const exposureOrder = await getExposureOrder(supabase, userId); const reranked = rankPlaces(cached.cards, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile); const decayed = applyExposureDecay(reranked, exposureOrder); const mixed = interleaveByBucket(decayed); const balanced = enforceExploreVariety(mixed); const enriched = enrichWithSignals(applyFilters(balanced, filters), userContext.isLocalMode); await updateExposureMemory(supabase, userId, enriched); return new Response(JSON.stringify({ ...cached, cards: enriched, filters_applied: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) } else { console.log(`🔴 explore cache MISS key=${cacheKey}`) } }
     const clientLang = clientOutputLang(params)
     let exploreQueries: string[]
     const externalTrendQueries = await fetchExternalTrendQueries(supabase, location, lang, 6)
@@ -790,7 +823,8 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     else { const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang); exploreQueries = aiQ ?? getMoodQueries(mood) }
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
     if (!hasNamedFilters && places.length < 15) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
-    places = places.slice(0, 100)
+    // Larger seed pool so Explore can paginate locally for longer before any refill.
+    places = places.slice(0, 220)
     if (hasNamedFilters) {
       if (verboseFilterLogs) {
         console.log(`🧪 named_filters start total=${places.length} filters=[${namedFilters.join(',')}]`)
@@ -813,7 +847,7 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const exposureOrder = await getExposureOrder(supabase, userId)
     const ranked = rankPlaces(qualified, mood, !!userContext.isLocalMode, userContext.allInterests || [], userContext.tasteProfile)
     const decayed = applyExposureDecay(ranked, exposureOrder)
-    if (!hasNamedFilters && !groupMatch) { await cacheExplore(supabase, cacheKey, ranked) }
+    if (!groupMatch) { await cacheExplore(supabase, cacheKey, ranked) }
     const mixed = interleaveByBucket(decayed)
     const balanced = enforceExploreVariety(mixed)
     const enriched = enrichWithSignals(applyFilters(balanced, filters), userContext.isLocalMode)
@@ -830,9 +864,10 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
     const moods: string[] = params.moods || ['adventurous'], location = params.location.trim(), coordinates = params.coordinates
     const userContext = await fetchUserContext(supabase, userId)
     const lang = clientOutputLang(params), placesLang = googlePlacesLanguageFromRequest(params), timeCtx = getTimeOfDayContext()
+    const modeKey = userContext.isLocalMode ? 'local' : 'travel'
+    const exploreDbPool = await gatherCachedExplorePlacesForDayPlan(supabase, location, placesLang, modeKey)
     if (quickPick === 'coffee') {
       const coffeeQueries = [`specialty coffee shop ${location}`,`cafe coffee ${location}`,`matcha bar ${location}`,`coffee roastery ${location}`]
-      let places = await fetchPlacesFromGoogle(location, coordinates, 'foodie', {}, coffeeQueries, false, placesLang)
       const isCannabisVenue = (p: PlaceCard): boolean => {
         const text = `${p.name || ''} ${p.primaryType || ''} ${(p.types || []).join(' ')}`.toLowerCase()
         return [
@@ -857,6 +892,18 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
           name.includes('matcha') ||
           name.includes('espresso')
         )
+      }
+      let places = exploreDbPool.filter((p) => !isCannabisVenue(p) && isCoffeeVenue(p) && !!p.photo_url?.trim())
+      if (places.length < 8) {
+        const fromGoogle = await fetchPlacesFromGoogle(location, coordinates, 'foodie', {}, coffeeQueries, false, placesLang)
+        const seen = new Set(places.map((p) => String(p.id || '').trim().toLowerCase()))
+        for (const p of fromGoogle) {
+          const id = String(p.id || '').trim().toLowerCase()
+          if (id && !seen.has(id)) { seen.add(id); places.push(p) }
+        }
+        console.log(`☕ coffee quick_pick: DB pool=${exploreDbPool.length} merged+Google → ${places.length} candidates`)
+      } else {
+        console.log(`☕ coffee quick_pick: DB-first — ${places.length} coffee-ish rows from explore_cache only`)
       }
       let cafes = places.filter(
         p =>
@@ -889,7 +936,22 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
       return new Response(JSON.stringify({ success: true, activities: [activity], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 1, moodyMessage, reasoning: 'quick_pick:coffee' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     const aiQueries = await getMoodySearchQueries(moods, location, userContext, lang, timeCtx.timeSlot)
-    let places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, aiQueries, false, placesLang)
+    const MIN_DAY_PLAN_FROM_DB = 18
+    let places: PlaceCard[]
+    if (exploreDbPool.length >= MIN_DAY_PLAN_FROM_DB) {
+      console.log(`🟢 create_day_plan: DB-first — ${exploreDbPool.length} merged explore_cache cards (skip Google fetchPlacesFromGoogle)`)
+      places = exploreDbPool
+    } else {
+      places = await fetchPlacesFromGoogle(location, coordinates, moods[0], params.filters || {}, aiQueries, false, placesLang)
+      if (exploreDbPool.length > 0) {
+        const seen = new Set(places.map((p) => String(p.id || '').trim().toLowerCase()))
+        for (const c of exploreDbPool) {
+          const id = String(c.id || '').trim().toLowerCase()
+          if (id && !seen.has(id)) { seen.add(id); places.push(c) }
+        }
+        console.log(`🟡 create_day_plan: Google + merged explore_cache (${exploreDbPool.length}) → ${places.length} total candidates`)
+      }
+    }
     let qualified = await enrichAndFilter(places, { minRating: 3.8, minReviews: 20 })
     if (qualified.length === 0) qualified = await enrichAndFilter(places, { minRating: 3.5, minReviews: 8 })
     if (qualified.length === 0) {
@@ -1059,15 +1121,42 @@ async function handleGroupMatchActivityNotes(_supabase: any, _userId: string, pa
   }
 }
 
+// Shared blurb cache helpers — 30-day expiry, global (user_id: null).
+async function checkBlurbCache(serviceDb: any, cacheKey: string): Promise<Record<string, unknown> | null> {
+  if (!serviceDb) return null
+  try {
+    const { data } = await serviceDb.from('places_cache').select('data,expires_at').eq('cache_key', cacheKey).maybeSingle()
+    if (!data?.data || !data.expires_at) return null
+    if (new Date(data.expires_at as string) < new Date()) return null
+    return data.data as Record<string, unknown>
+  } catch { return null }
+}
+async function writeBlurbCache(serviceDb: any, cacheKey: string, payload: Record<string, unknown>): Promise<void> {
+  if (!serviceDb) return
+  try {
+    const exp = new Date(); exp.setDate(exp.getDate() + 30)
+    await serviceDb.from('places_cache').upsert({ cache_key: cacheKey, data: payload, user_id: null, place_id: null, request_type: 'blurb', expires_at: exp.toISOString() }, { onConflict: 'cache_key' })
+  } catch (e) { console.warn('blurb cache write failed:', e) }
+}
+
 async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Response> {
   const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
   if (!facts || facts.length > 12000) return new Response(JSON.stringify({ success: false, error: 'invalid_facts', blurb: '' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en'), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const lang = typeof params.languageCode === 'string' ? params.languageCode : 'en'
+  const outLang = placeCardBlurbOutputLanguageName(lang), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  const placeId = typeof params.placeId === 'string' ? params.placeId.trim() : ''
+  const serviceDb = getServiceSupabase()
+  if (placeId) {
+    const hit = await checkBlurbCache(serviceDb, `blurb_card_v1_${placeId}_${lang}`)
+    if (hit?.blurb && typeof hit.blurb === 'string') { console.log(`blurb_card cache=HIT ${placeId}`); return new Response(JSON.stringify({ success: true, blurb: hit.blurb, cached: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+    console.log(`blurb_card cache=MISS ${placeId}`)
+  }
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyCardBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a card teaser using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 120 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const data = await resp.json(); let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, ''); if (blurb.length > 300) blurb = `${blurb.slice(0, 280).trim()}…`
+    if (placeId && blurb) writeBlurbCache(serviceDb, `blurb_card_v1_${placeId}_${lang}`, { blurb })
     return new Response(JSON.stringify({ success: true, blurb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
@@ -1075,12 +1164,21 @@ async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Re
 async function handlePlaceDetailBlurb(params: Record<string, unknown>): Promise<Response> {
   const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
   if (!facts || facts.length > 12000) return new Response(JSON.stringify({ success: false, error: 'invalid_facts', blurb: '' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en'), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const lang = typeof params.languageCode === 'string' ? params.languageCode : 'en'
+  const outLang = placeCardBlurbOutputLanguageName(lang), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  const placeId = typeof params.placeId === 'string' ? params.placeId.trim() : ''
+  const serviceDb = getServiceSupabase()
+  if (placeId) {
+    const hit = await checkBlurbCache(serviceDb, `blurb_detail_v1_${placeId}_${lang}`)
+    if (hit?.blurb && typeof hit.blurb === 'string') { console.log(`blurb_detail cache=HIT ${placeId}`); return new Response(JSON.stringify({ success: true, blurb: hit.blurb, cached: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+    console.log(`blurb_detail cache=MISS ${placeId}`)
+  }
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyDetailBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a detail screen description using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 400 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const data = await resp.json(); let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, ''); if (blurb.length > 1200) blurb = `${blurb.slice(0, 1180).trim()}…`
+    if (placeId && blurb) writeBlurbCache(serviceDb, `blurb_detail_v1_${placeId}_${lang}`, { blurb })
     return new Response(JSON.stringify({ success: true, blurb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
@@ -1098,13 +1196,22 @@ function parseExploreRichJsonContent(raw: string): { hook: string; sections: { t
 async function handlePlaceExploreRich(params: Record<string, unknown>): Promise<Response> {
   const facts = typeof params.facts === 'string' ? params.facts.trim() : ''
   if (!facts || facts.length > 12000) return new Response(JSON.stringify({ success: false, error: 'invalid_facts', hook: '', sections: [] }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  const outLang = placeCardBlurbOutputLanguageName(typeof params.languageCode === 'string' ? params.languageCode : 'en'), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
+  const lang = typeof params.languageCode === 'string' ? params.languageCode : 'en'
+  const outLang = placeCardBlurbOutputLanguageName(lang), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  const placeId = typeof params.placeId === 'string' ? params.placeId.trim() : ''
+  const serviceDb = getServiceSupabase()
+  if (placeId) {
+    const hit = await checkBlurbCache(serviceDb, `blurb_rich_v1_${placeId}_${lang}_${style}`)
+    if (hit?.hook && hit?.sections) { console.log(`blurb_rich cache=HIT ${placeId}`); return new Response(JSON.stringify({ success: true, hook: hit.hook, sections: hit.sections, cached: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+    console.log(`blurb_rich cache=MISS ${placeId}`)
+  }
   try {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyExploreRichPrompt(outLang, style) }, { role: 'user', content: `Write JSON only using these facts. Do not invent anything.\n\n${facts}` }], response_format: { type: 'json_object' }, temperature: 0.6, max_tokens: 700 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const data = await resp.json(), parsed = parseExploreRichJsonContent(String(data?.choices?.[0]?.message?.content || ''))
     if (!parsed || parsed.sections.length < 2) return new Response(JSON.stringify({ success: false, error: 'parse_failed', hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    if (placeId) writeBlurbCache(serviceDb, `blurb_rich_v1_${placeId}_${lang}_${style}`, { hook: parsed.hook, sections: parsed.sections })
     return new Response(JSON.stringify({ success: true, hook: parsed.hook, sections: parsed.sections }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }

@@ -491,15 +491,45 @@ class ExplorePlaceCardCopy {
 
   /// List/grid card copy: trimmed only. No extra “tap for reviews / bezoekers geven …”
   /// line — star rating is already on the card.
+  ///
+  /// When the input is empty or a single short sentence we append the localized
+  /// type-fallback so cards always read with at least 2 sentences worth of
+  /// context. Avoids the "one sentence here, full Moody description there"
+  /// inconsistency on Explore while rich copy is still being prewarmed.
   static String ensureMinSentencesForCard(
     Place place,
     String text,
     AppLocalizations l10n,
   ) {
-    Object.hash(place.id, l10n.hashCode);
-    final t = text.trim();
-    if (t.isNotEmpty) return t;
-    return l10n.exploreCardBlurbDefault;
+    var t = text.trim();
+    if (t.isEmpty) {
+      t = typeFallbackBlurb(place, l10n).trim();
+    }
+    if (t.isEmpty) return l10n.exploreCardBlurbDefault;
+
+    final sc = sentenceCount(t);
+    if (sc < 2 && t.length < 160) {
+      final extra = typeFallbackBlurb(place, l10n).trim();
+      if (extra.isNotEmpty && !_overlapsHead(t, extra)) {
+        t = '$t $extra'.replaceAll(RegExp(r'\s+'), ' ').trim();
+      }
+    }
+    return t;
+  }
+
+  /// True if [b]'s leading 4 words already appear in [a] (case-insensitive).
+  /// Prevents duplicating the type fallback when it is already in the editorial.
+  static bool _overlapsHead(String a, String b) {
+    final headTokens = b
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .take(4)
+        .toList();
+    if (headTokens.isEmpty) return false;
+    final head = headTokens.join(' ');
+    return a.toLowerCase().contains(head);
   }
 
   /// Extra copy for the place detail info card (third paragraph + context).

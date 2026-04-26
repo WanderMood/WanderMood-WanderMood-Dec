@@ -2156,6 +2156,7 @@
   "exploreSectionSomethingDifferent": "Etwas anderes 🎲",
   "exploreSeeAll": "Alle anzeigen",
   "exploreLoadMore": "Mehr laden →",
+  "exploreEndOfCachedPool": "Du hast alle gespeicherten Ideen in dieser Gegend gesehen. Zum Aktualisieren nach unten ziehen.",
   "exploreSectionErrorRetry": "Orte konnten nicht geladen werden — tippen zum Wiederholen",
   "exploreOfflineShowingCached": "Offline — zwischengespeicherte Ergebnisse",
   "exploreOfflineEmptyBody": "Mit dem Internet verbinden,\num Orte zu entdecken",

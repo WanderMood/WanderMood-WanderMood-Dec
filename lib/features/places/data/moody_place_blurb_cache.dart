@@ -18,6 +18,9 @@ class MoodyPlaceBlurbCache {
   static Future<void>? _hydrateFuture;
   static Timer? _persistTimer;
 
+  /// True once [ensureHydrated] has completed at least once this session.
+  static bool get isHydrated => _hydrated;
+
   static Future<void> ensureHydrated() {
     if (_hydrated) return Future.value();
     _hydrateFuture ??= _loadFromDisk();

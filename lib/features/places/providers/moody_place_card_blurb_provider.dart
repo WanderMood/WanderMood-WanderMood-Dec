@@ -88,10 +88,15 @@ String? _editorialLineFromPlaceOrGoogle(
 final moodyPlaceCardUiDescriptionProvider =
     FutureProvider.autoDispose.family<PlaceCardUiDescription, Place>(
         (ref, place) async {
-  await Future.wait([
-    MoodyPlaceCardUiCache.ensureHydrated(),
-    MoodyPlaceBlurbCache.ensureHydrated(),
-  ]);
+  // Skip the disk-hydration await when both caches are already warm — this
+  // keeps the provider completing in the same microtask batch as any concurrent
+  // setState (e.g. photo resolution), preventing an extra Riverpod rebuild.
+  if (!MoodyPlaceCardUiCache.isHydrated || !MoodyPlaceBlurbCache.isHydrated) {
+    await Future.wait([
+      MoodyPlaceCardUiCache.ensureHydrated(),
+      MoodyPlaceBlurbCache.ensureHydrated(),
+    ]);
+  }
   final appLocale = ref.watch(localeProvider);
   final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
   final l10n = _l10nFor(locale);
@@ -104,7 +109,7 @@ final moodyPlaceCardUiDescriptionProvider =
   // Instant path: we already resolved copy for this place this session (facts-based
   // key alone misses until after a slow [getPlaceDetails] + hash).
   final stableHit = MoodyPlaceCardUiCache.get(stableKey);
-  if (stableHit != null) {
+  if (stableHit != null && stableHit.isRich) {
     if (kDebugMode) {
       debugPrint(
         'moodyPlaceCardUiDescriptionProvider: stable cache hit ${place.name} id=${place.id}',
@@ -123,7 +128,6 @@ final moodyPlaceCardUiDescriptionProvider =
   );
   final uiHit = MoodyPlaceCardUiCache.get(uiKey);
   if (uiHit != null) {
-    MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, uiHit);
     return uiHit;
   }
 
@@ -137,6 +141,7 @@ final moodyPlaceCardUiDescriptionProvider =
       facts: factsForModel,
       languageCode: ctx.lang,
       communicationStyle: comm,
+      placeId: place.id.startsWith('google_') ? place.id.substring(7) : place.id,
     );
     if (rich != null && rich.isValid) {
       out = PlaceCardUiDescription.rich(
@@ -196,6 +201,7 @@ final moodyPlaceCardUiDescriptionProvider =
         plain = (await moodyPlaceCardBlurbFromEdge(
           facts: factsForModel,
           languageCode: ctx.lang,
+          placeId: place.id.startsWith('google_') ? place.id.substring(7) : place.id,
         ))
             .trim();
       }
@@ -217,6 +223,60 @@ final moodyPlaceCardUiDescriptionProvider =
   } finally {
     MoodyPlaceCardUiCache.clearInflight(uiKey);
   }
+});
+
+/// Cache-only variant for scroll surfaces (Explore cards): never calls AI/edge.
+final moodyPlaceCardUiDescriptionCacheOnlyProvider =
+    FutureProvider.autoDispose.family<PlaceCardUiDescription, Place>(
+        (ref, place) async {
+  if (!MoodyPlaceCardUiCache.isHydrated || !MoodyPlaceBlurbCache.isHydrated) {
+    await Future.wait([
+      MoodyPlaceCardUiCache.ensureHydrated(),
+      MoodyPlaceBlurbCache.ensureHydrated(),
+    ]);
+  }
+  final appLocale = ref.watch(localeProvider);
+  final locale = appLocale ?? ui.PlatformDispatcher.instance.locale;
+  final l10n = _l10nFor(locale);
+  final comm =
+      ref.read(communicationStyleProvider.notifier).getCurrentStyleString();
+  final lang = locale.languageCode;
+  final stableKey = MoodyPlaceCardUiCache.stableCacheKey(place.id, lang, comm);
+
+  final stableHit = MoodyPlaceCardUiCache.get(stableKey);
+  if (stableHit != null) return stableHit;
+
+  final ctx = _loadPlaceBlurbContext(place, locale);
+  final factsForModel = clampMoodyPlaceBlurbFactsForEdge(ctx.facts);
+  final uiKey = MoodyPlaceCardUiCache.cacheKey(
+    place.id,
+    ctx.lang,
+    factsForModel.hashCode,
+  );
+  final uiHit = MoodyPlaceCardUiCache.get(uiKey);
+  if (uiHit != null && uiHit.isRich) {
+    MoodyPlaceCardUiCache.putWithStableAlias(uiKey, stableKey, uiHit);
+    return uiHit;
+  }
+
+  final syncLine = _editorialLineFromPlaceOrGoogle(place, l10n, ctx.editorial);
+  if (syncLine != null && syncLine.isNotEmpty) {
+    return PlaceCardUiDescription.plain(syncLine);
+  }
+
+  final legacyKey = MoodyPlaceBlurbCache.cacheKey(
+    place.id,
+    ctx.lang,
+    factsForModel.hashCode,
+    variant: 'card_v5',
+  );
+  final cachedLegacy = MoodyPlaceBlurbCache.get(legacyKey);
+  if (cachedLegacy != null && cachedLegacy.trim().isNotEmpty) {
+    return PlaceCardUiDescription.plain(cachedLegacy.trim());
+  }
+
+  final fallback = ExplorePlaceCardCopy.cardDescription(place, l10n);
+  return PlaceCardUiDescription.plain(fallback);
 });
 
 /// Single-line / legacy blurb derived from [moodyPlaceCardUiDescriptionProvider].
@@ -285,6 +345,7 @@ final moodyPlaceDetailBlurbProvider =
       out = (await moodyPlaceDetailBlurbFromEdge(
         facts: factsForModel,
         languageCode: ctx.lang,
+        placeId: place.id.startsWith('google_') ? place.id.substring(7) : place.id,
       ))
           .trim();
       if (out.isNotEmpty && kDebugMode) {

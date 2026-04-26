@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:wandermood/core/providers/supabase_provider.dart';
 
 /// Header bell for My Day → [NotificationCentreScreen] with unread badge.
 class MyDayUpdatesBell extends ConsumerStatefulWidget {
@@ -66,7 +65,10 @@ class _MyDayUpdatesBellState extends ConsumerState<MyDayUpdatesBell> {
 
   Future<void> _refresh() async {
     if (!mounted) return;
-    final client = ref.read(supabaseClientProvider);
+    // Use the global client so timer/realtime callbacks never call [ref.read]
+    // after this element is deactivated (avoids "Looking up a deactivated
+    // widget's ancestor is unsafe").
+    final client = Supabase.instance.client;
     final uid = client.auth.currentUser?.id;
     if (uid == null) return;
     try {
@@ -78,7 +80,8 @@ class _MyDayUpdatesBellState extends ConsumerState<MyDayUpdatesBell> {
           .filter('read_at', 'is', null)
           .limit(99);
       final n = (rows as List).length;
-      if (mounted) setState(() => _unread = n);
+      if (!mounted) return;
+      setState(() => _unread = n);
     } catch (_) {}
   }
 

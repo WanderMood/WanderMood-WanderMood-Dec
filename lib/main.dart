@@ -261,6 +261,14 @@ class _WanderMoodBootstrapState extends State<_WanderMoodBootstrap> {
       final prefs = await SharedPreferences.getInstance();
       final magicLinkEmailCache = CachedMagicLinkEmailService(prefs);
 
+      // Prehydrate Moody place caches so Explore cards can sync-read rich copy
+      // on the very first frame instead of flashing skeleton → plain → rich.
+      // Disk read is a few ms; we do it in parallel so it costs nothing extra.
+      await Future.wait([
+        MoodyPlaceCardUiCache.ensureHydrated(),
+        MoodyPlaceBlurbCache.ensureHydrated(),
+      ]);
+
       Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
         final event = data.event;
         if (event == AuthChangeEvent.signedIn ||

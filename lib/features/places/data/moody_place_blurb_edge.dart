@@ -7,6 +7,7 @@ import 'package:wandermood/features/places/data/place_card_ui_description.dart';
 Future<String> moodyPlaceCardBlurbFromEdge({
   required String facts,
   required String languageCode,
+  String? placeId,
 }) async {
   final trimmed = clampMoodyPlaceBlurbFactsForEdge(facts);
   if (trimmed.isEmpty) return '';
@@ -16,13 +17,15 @@ Future<String> moodyPlaceCardBlurbFromEdge({
     );
   }
   try {
+    final body = <String, dynamic>{
+      'action': 'place_card_blurb',
+      'facts': trimmed,
+      'languageCode': languageCode,
+    };
+    if (placeId != null && placeId.isNotEmpty) body['placeId'] = placeId;
     final res = await Supabase.instance.client.functions.invoke(
       'moody',
-      body: {
-        'action': 'place_card_blurb',
-        'facts': trimmed,
-        'languageCode': languageCode,
-      },
+      body: body,
     );
     if (res.status != 200) {
       debugPrint('moody place_card_blurb edge failed with status: ${res.status}');
@@ -49,6 +52,7 @@ Future<PlaceExploreRichResult?> moodyPlaceExploreRichFromEdge({
   required String facts,
   required String languageCode,
   String communicationStyle = 'friendly',
+  String? placeId,
 }) async {
   final trimmed = clampMoodyPlaceBlurbFactsForEdge(facts);
   if (trimmed.isEmpty) return null;
@@ -58,14 +62,16 @@ Future<PlaceExploreRichResult?> moodyPlaceExploreRichFromEdge({
     );
   }
   try {
+    final body = <String, dynamic>{
+      'action': 'place_explore_rich',
+      'facts': trimmed,
+      'languageCode': languageCode,
+      'communicationStyle': communicationStyle,
+    };
+    if (placeId != null && placeId.isNotEmpty) body['placeId'] = placeId;
     final res = await Supabase.instance.client.functions.invoke(
       'moody',
-      body: {
-        'action': 'place_explore_rich',
-        'facts': trimmed,
-        'languageCode': languageCode,
-        'communicationStyle': communicationStyle,
-      },
+      body: body,
     );
     if (res.status != 200) {
       if (kDebugMode) {
@@ -104,6 +110,7 @@ Future<PlaceExploreRichResult?> moodyPlaceExploreRichFromEdge({
 Future<String> moodyPlaceDetailBlurbFromEdge({
   required String facts,
   required String languageCode,
+  String? placeId,
 }) async {
   final trimmed = clampMoodyPlaceBlurbFactsForEdge(facts);
   if (trimmed.isEmpty) return '';
@@ -113,13 +120,15 @@ Future<String> moodyPlaceDetailBlurbFromEdge({
     );
   }
   try {
+    final body = <String, dynamic>{
+      'action': 'place_detail_blurb',
+      'facts': trimmed,
+      'languageCode': languageCode,
+    };
+    if (placeId != null && placeId.isNotEmpty) body['placeId'] = placeId;
     final res = await Supabase.instance.client.functions.invoke(
       'moody',
-      body: {
-        'action': 'place_detail_blurb',
-        'facts': trimmed,
-        'languageCode': languageCode,
-      },
+      body: body,
     );
     if (res.status != 200) {
       debugPrint('moody place_detail_blurb edge failed with status: ${res.status}');

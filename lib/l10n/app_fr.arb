@@ -2157,6 +2157,7 @@
   "exploreSectionSomethingDifferent": "Quelque chose de différent 🎲",
   "exploreSeeAll": "Tout voir",
   "exploreLoadMore": "Charger plus →",
+  "exploreEndOfCachedPool": "Tu as vu toutes les idées enregistrées pour ce secteur. Tire vers le bas pour actualiser et obtenir de nouvelles suggestions.",
   "exploreSectionErrorRetry": "Impossible de charger les lieux — touchez pour réessayer",
   "exploreOfflineShowingCached": "Hors ligne — résultats en cache",
   "exploreOfflineEmptyBody": "Connecte-toi à internet\npour découvrir des lieux",

@@ -32,6 +32,9 @@ class PlaceGridCard extends ConsumerWidget {
   final Position? userLocation;
   final String? cityName; // City name for fallback distance calculation
   final int photoSelectionSeed;
+  /// When true, grid card can fetch extra details/photos while visible.
+  /// Set false for strict cache-only Explore scrolling.
+  final bool allowVisibilityEnrichment;
 
   const PlaceGridCard({
     Key? key,
@@ -42,6 +45,7 @@ class PlaceGridCard extends ConsumerWidget {
     this.userLocation,
     this.cityName,
     this.photoSelectionSeed = 0,
+    this.allowVisibilityEnrichment = true,
   }) : super(key: key);
 
   static const double _kGridImageHeight = 96;
@@ -69,9 +73,11 @@ class PlaceGridCard extends ConsumerWidget {
     }
 
     return FutureBuilder<List<String>>(
-      future: ref
-          .read(placesServiceProvider.notifier)
-          .resolveExploreCardPhotos(place, maxPhotos: 10),
+      future: allowVisibilityEnrichment
+          ? ref
+              .read(placesServiceProvider.notifier)
+              .resolveExploreCardPhotos(place, maxPhotos: 10)
+          : Future.value(place.photos.take(10).toList()),
       initialData: place.photos.isNotEmpty ? place.photos : null,
       builder: (context, snapshot) {
         final photos = snapshot.data ?? place.photos;
@@ -180,12 +186,21 @@ class PlaceGridCard extends ConsumerWidget {
     if (userLocation != null) {
       final userLat = userLocation!.latitude;
       final userLng = userLocation!.longitude;
+      final cityCenter = _getCityCenterCoordinates(cityName);
 
       // Check if this is unrealistic coordinates (SF simulator)
       final isSanFrancisco = (userLat - 37.785834).abs() < 0.1 &&
           (userLng + 122.406417).abs() < 0.1;
+      final isFarFromSelectedCity = cityCenter != null &&
+          DistanceService.calculateDistance(
+                userLat,
+                userLng,
+                cityCenter.latitude,
+                cityCenter.longitude,
+              ) >
+              150;
 
-      if (!isSanFrancisco) {
+      if (!isSanFrancisco && !isFarFromSelectedCity) {
         // Use valid user location
         referencePoint = userLocation;
       }
@@ -424,6 +439,7 @@ class PlaceGridCard extends ConsumerWidget {
                               maxLines: 3,
                               paddingTop: 0,
                               useCardStackLayout: false,
+                              cacheOnly: !allowVisibilityEnrichment,
                               textStyle: GoogleFonts.poppins(
                                 fontSize: 10.5,
                                 height: 1.32,

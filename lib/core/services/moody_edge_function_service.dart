@@ -57,7 +57,7 @@ class MoodyEdgeFunctionService {
   /// CRITICAL: Location and coordinates are REQUIRED - no defaults
   ///
   /// [section] — `food` | `trending` | `solo` | `different` | null (broad discovery).
-  /// When non-empty, [namedFilters] skips Flutter cache read — backend fetches fresh.
+  /// [namedFilters] uses the same `places_cache` aggregate key suffix as moody (`_nf_…`).
   ///
   /// [bypassPlacesCache] — when true, skips the direct `places_cache` read so the
   /// Edge Function can refresh (pull-to-refresh, background revalidation).
@@ -72,13 +72,12 @@ class MoodyEdgeFunctionService {
     String? languageCode,
     bool bypassPlacesCache = false,
   }) async {
+    final hasNamedFilters =
+        namedFilters != null && namedFilters.isNotEmpty;
     try {
       if (location.isEmpty || location.trim().isEmpty) {
         throw const ExploreLocationException(ExploreLocationReason.missingCity);
       }
-
-      final hasNamedFilters =
-          namedFilters != null && namedFilters.isNotEmpty;
 
       final effectiveLang = (languageCode != null && languageCode.isNotEmpty)
           ? languageCode.toLowerCase().split(RegExp(r'[-_]')).first
@@ -87,8 +86,8 @@ class MoodyEdgeFunctionService {
       final isLocal = await _readIsLocalMode();
 
       // Supabase `places_cache` first — no session wait, no Edge cold start.
-      // Named-filter requests skip cache (moody always recomputes).
-      if (!hasNamedFilters && !bypassPlacesCache) {
+      // moody is the cache gatekeeper; all requests (including named filters) check DB first.
+      if (!bypassPlacesCache) {
         final cacheSection = section ?? 'discovery';
         final cachedHit = await PlacesCacheUtils.tryLoadExplorePlacesHit(
           _supabase,
@@ -96,6 +95,7 @@ class MoodyEdgeFunctionService {
           location,
           isLocalMode: isLocal,
           languageCode: effectiveLang,
+          namedFilters: hasNamedFilters ? namedFilters : null,
         );
         if (cachedHit != null && cachedHit.places.isNotEmpty) {
           return cachedHit.places;
@@ -181,6 +181,7 @@ class MoodyEdgeFunctionService {
             location,
             isLocalMode: isLocal,
             languageCode: effectiveLang,
+            namedFilters: hasNamedFilters ? namedFilters : null,
           );
           if (fallback != null && fallback.places.isNotEmpty) {
             if (kDebugMode) {
@@ -268,6 +269,7 @@ class MoodyEdgeFunctionService {
           location,
           isLocalMode: isLocalForFallback,
           languageCode: effectiveLangForFallback,
+          namedFilters: hasNamedFilters ? namedFilters : null,
         );
         if (fallback != null && fallback.places.isNotEmpty) {
           if (kDebugMode) {
@@ -283,10 +285,13 @@ class MoodyEdgeFunctionService {
     }
   }
 
-  /// Day plan from Edge (`create_day_plan`). Google Places runs only on the server.
+  /// Day plan from Edge (`create_day_plan`). Same transport rules as [getExplore]:
+  /// session wait, `is_local` from [PlacesCacheUtils.readExploreIsLocalMode], and
+  /// transient **502 / 503 / 429** retries so Mood Match and Plan-with-Moody stay aligned.
+  ///
+  /// [languageCode] is normalized like Explore (`normalizeExploreLanguageCode`).
   ///
   /// Returns the parsed JSON body (includes `activities`, `success`, `moodyMessage`, etc.).
-  /// Callers map to app models as needed.
   Future<Map<String, dynamic>> createDayPlan({
     required List<String> moods,
     required String location,
@@ -294,10 +299,10 @@ class MoodyEdgeFunctionService {
     required double longitude,
     Map<String, dynamic>? filters,
     String? languageCode,
-    /// Calendar day the user picked in the hub / Mood Match (moody may use later).
     DateTime? targetDate,
-    /// When set, moody returns a single coffee-focused activity.
     String? quickPick,
+    /// Moody `allowed_slots` (`morning` / `afternoon` / `evening`).
+    List<String>? allowedSlots,
   }) async {
     await AuthHelper.ensureValidSession();
     await _waitForSessionReady();
@@ -315,47 +320,90 @@ class MoodyEdgeFunctionService {
 
     final dio = Dio();
     final functionUrl = SupabaseConfig.moodyFunctionUrl;
-
     final isLocal = await _readIsLocalMode();
-    final response = await dio.post<Map<String, dynamic>>(
-      functionUrl,
-      data: {
-        'action': 'create_day_plan',
-        'moods': moods,
-        'location': location.trim(),
-        'is_local': isLocal,
-        'coordinates': {'lat': latitude, 'lng': longitude},
-        'filters': filters ?? <String, dynamic>{},
-        if (languageCode != null && languageCode.isNotEmpty)
-          'language_code': languageCode,
-        if (targetDate != null)
-          'target_date': DateTime(
-            targetDate.year,
-            targetDate.month,
-            targetDate.day,
-          ).toIso8601String(),
-        if (quickPick != null && quickPick.trim().isNotEmpty)
-          'quick_pick': quickPick.trim().toLowerCase(),
-      },
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'apikey': SupabaseConfig.anonKey,
-        },
-      ),
-    );
+
+    final String? moodyLang = (languageCode != null &&
+            languageCode.trim().isNotEmpty)
+        ? PlacesCacheUtils.normalizeExploreLanguageCode(languageCode)
+        : null;
+
+    final payload = <String, dynamic>{
+      'action': 'create_day_plan',
+      'moods': moods,
+      'location': location.trim(),
+      'is_local': isLocal,
+      'coordinates': {'lat': latitude, 'lng': longitude},
+      'filters': filters ?? <String, dynamic>{},
+      if (moodyLang != null) 'language_code': moodyLang,
+      if (targetDate != null)
+        'target_date': DateTime(
+          targetDate.year,
+          targetDate.month,
+          targetDate.day,
+        ).toIso8601String(),
+      if (quickPick != null && quickPick.trim().isNotEmpty)
+        'quick_pick': quickPick.trim().toLowerCase(),
+      if (allowedSlots != null && allowedSlots.isNotEmpty)
+        'allowed_slots': allowedSlots,
+    };
+
+    const maxAttempts = 4;
+    late Response<dynamic> response;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (attempt > 1) {
+        final waitMs = 1200 * (attempt - 1);
+        if (kDebugMode) {
+          debugPrint(
+            '⏳ create_day_plan retry $attempt/$maxAttempts after ${waitMs}ms',
+          );
+        }
+        await Future.delayed(Duration(milliseconds: waitMs));
+      }
+
+      response = await dio.post(
+        functionUrl,
+        data: payload,
+        options: Options(
+          validateStatus: (status) => status != null && status < 600,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+            'apikey': SupabaseConfig.anonKey,
+          },
+        ),
+      );
+
+      final code = response.statusCode ?? 0;
+      if (code == 200) break;
+
+      final retryable = code == 503 || code == 502 || code == 429;
+      if (retryable && attempt < maxAttempts) {
+        if (kDebugMode) {
+          debugPrint('⚠️ create_day_plan HTTP $code — retrying');
+        }
+        continue;
+      }
+
+      final errorData = response.data;
+      final errorMessage = errorData is Map<String, dynamic>
+          ? (errorData['message'] as String? ??
+              errorData['error'] as String? ??
+              'Service error. Please try again.')
+          : 'Service error. Please try again.';
+      throw Exception(errorMessage);
+    }
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Edge Function returned status ${response.statusCode}: ${response.data}',
+        'HTTP ${response.statusCode}: Service temporarily unavailable.',
       );
     }
 
-    final data = response.data;
-    if (data == null) {
+    final raw = response.data;
+    if (raw is! Map) {
       throw Exception('Empty response from create_day_plan');
     }
+    final data = Map<String, dynamic>.from(raw);
     if (data['success'] == false) {
       final err = data['error']?.toString() ??
           data['message']?.toString() ??
