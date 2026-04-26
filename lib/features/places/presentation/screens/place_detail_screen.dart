@@ -73,6 +73,61 @@ String _wmHeroDebugClipUrl(String u) {
   return '${t.substring(0, 200)}…';
 }
 
+/// Strips `=s1024` / `=w800-h600` / `=w800-h600-k-no` size tokens from the last
+/// path segment so two resolved `photoUri`s that differ only by dimensions map
+/// to one hero frame (avoids back-to-back identical slides).
+String _stripGoogleUserContentPathSizeSuffix(String path) {
+  if (path.isEmpty) return path;
+  final slash = path.lastIndexOf('/');
+  final last = slash >= 0 ? path.substring(slash + 1) : path;
+  final eq = last.lastIndexOf('=');
+  if (eq <= 0 || eq >= last.length - 1) return path;
+  final suffix = last.substring(eq + 1);
+  if (!RegExp(r'^(s\d+|w\d+(-h\d+)?(-k-no)?)$').hasMatch(suffix)) {
+    return path;
+  }
+  final baseLast = last.substring(0, eq);
+  if (slash >= 0) {
+    return '${path.substring(0, slash + 1)}$baseLast';
+  }
+  return '/$baseLast';
+}
+
+/// Stronger than [dedupeRepeatedHeroIdentity] after `/media` → `photoUri`:
+/// collapses `lh3…` URLs that share the same logical asset but use different
+/// size suffixes or query strings.
+String _detailPhotoGalleryIdentityKey(String raw) {
+  final u = Uri.tryParse(raw.trim());
+  if (u == null || u.host.isEmpty) return raw.trim();
+  if (u.host == 'places.googleapis.com') {
+    final m = RegExp(r'/places/([^/]+)/photos/([^/]+)').firstMatch(u.path);
+    if (m != null) return 'pnew:${m[1]}:${m[2]}';
+  }
+  if (u.host.contains('googleusercontent.com')) {
+    return 'gc:${u.host}${_stripGoogleUserContentPathSizeSuffix(u.path)}';
+  }
+  final pr = (u.queryParameters['photoreference'] ??
+          u.queryParameters['photo_reference'] ??
+          u.queryParameters['photoReference'])
+      ?.trim();
+  if (pr != null && pr.isNotEmpty) return 'pref:$pr';
+  return raw.trim();
+}
+
+List<String> _dedupeDetailPhotosPostResolve(List<String> urls) {
+  final seen = <String>{};
+  final out = <String>[];
+  for (final raw in urls) {
+    final u = raw.trim();
+    if (u.isEmpty) continue;
+    final key = _detailPhotoGalleryIdentityKey(u);
+    if (seen.contains(key)) continue;
+    seen.add(key);
+    out.add(u);
+  }
+  return out;
+}
+
 /// WanderMood v2 — Place detail (SCREEN 8)
 const Color _pdWmWhite = Color(0xFFFFFFFF);
 const Color _pdWmCream = Color(0xFFF5F0E8);
@@ -376,6 +431,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       // CachedNetworkImage never follow redirects (iOS release hang on `/media`).
       merged = await resolvePlacesNewPhotoUrlList(merged);
       merged = dedupeRepeatedHeroIdentity(merged);
+      merged = _dedupeDetailPhotosPostResolve(merged);
       // #region agent log
       _agentLogPlaceDetail(
         'H3',
@@ -394,7 +450,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       final fb = PlacesService.mergeUniquePhotoUrls(place.photos, [], maxPhotos: 10);
       final deduped = dedupeRepeatedHeroIdentity(fb);
       final direct = await resolvePlacesNewPhotoUrlList(deduped);
-      return dedupeRepeatedHeroIdentity(direct);
+      return _dedupeDetailPhotosPostResolve(dedupeRepeatedHeroIdentity(direct));
     }
   }
 

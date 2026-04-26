@@ -20,10 +20,10 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/core/utils/place_card_photo_index.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
+import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
 
 // WM v2 tokens (aligned with My Day cards)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -498,47 +498,7 @@ class PlaceCard extends ConsumerWidget {
   static const double _kCardImageHeight = 192;
 
   Widget _buildPlaceImage(List<String> photos, {required int photoSeed}) {
-    Widget mainImage;
-
-    Widget buildPhotoAt(int index) {
-      final safeIndex = index >= 0 && index < photos.length ? index : 0;
-      final photo = photos[safeIndex];
-      if (place.isAsset) {
-        return Image.asset(
-          photo,
-          height: _kCardImageHeight,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            debugPrint('Error loading asset image: $error');
-            return _buildFallbackImage();
-          },
-        );
-      }
-      return WmPlacePhotoNetworkImage(
-        photo,
-        height: _kCardImageHeight,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          debugPrint('Error loading network image: $error');
-          return _buildFallbackImage();
-        },
-        progressIndicatorBuilder: (context, url, progress) {
-          return Container(
-            height: _kCardImageHeight,
-            width: double.infinity,
-            color: Colors.grey[200],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: progress.progress,
-                color: const Color(0xFF2A6049),
-              ),
-            ),
-          );
-        },
-      );
-    }
+    late final Widget mainImage;
 
     if (photos.isEmpty) {
       mainImage = Container(
@@ -565,12 +525,13 @@ class PlaceCard extends ConsumerWidget {
         ),
       );
     } else {
-      final idx = placeCardPhotoIndex(
-        place.id,
-        photos.length,
-        refreshSeed: photoSeed,
+      mainImage = ExploreSwipeablePlacePhotos(
+        key: ValueKey<int>(Object.hashAll(photos)),
+        place: place,
+        photos: photos,
+        photoSeed: photoSeed,
+        height: _kCardImageHeight,
       );
-      mainImage = buildPhotoAt(idx);
     }
     
     // Return stack with image and badges

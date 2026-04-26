@@ -7,11 +7,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/utils/explore_place_card_copy.dart';
-import 'package:wandermood/core/utils/place_card_photo_index.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
+import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -51,27 +50,6 @@ class PlaceGridCard extends ConsumerWidget {
   static const double _kGridImageHeight = 96;
 
   Widget _buildPlaceImageArea(WidgetRef ref) {
-    Widget buildPhotoAt(int index, List<String> photos) {
-      final safeIndex = index >= 0 && index < photos.length ? index : 0;
-      final photo = photos[safeIndex];
-      if (place.isAsset) {
-        return Image.asset(
-          photo,
-          height: _kGridImageHeight,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-        );
-      }
-      return WmPlacePhotoNetworkImage(
-        photo,
-        height: _kGridImageHeight,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-      );
-    }
-
     return FutureBuilder<List<String>>(
       future: allowVisibilityEnrichment
           ? ref
@@ -82,12 +60,14 @@ class PlaceGridCard extends ConsumerWidget {
       builder: (context, snapshot) {
         final photos = snapshot.data ?? place.photos;
         if (photos.isEmpty) return _buildFallbackImage();
-        final idx = placeCardPhotoIndex(
-          place.id,
-          photos.length,
-          refreshSeed: photoSelectionSeed,
+        return ExploreSwipeablePlacePhotos(
+          key: ValueKey<int>(Object.hashAll(photos)),
+          place: place,
+          photos: photos,
+          photoSeed: photoSelectionSeed,
+          height: _kGridImageHeight,
+          dotBottomPadding: 4,
         );
-        return buildPhotoAt(idx, photos);
       },
     );
   }
