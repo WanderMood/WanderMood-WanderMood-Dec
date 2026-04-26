@@ -21,6 +21,7 @@ import 'package:wandermood/features/group_planning/data/mood_match_session_prefs
 import 'package:wandermood/features/group_planning/domain/mood_match_plan_proposals.dart';
 import 'package:wandermood/features/group_planning/domain/group_plan_place_mapper.dart';
 import 'package:wandermood/features/group_planning/domain/group_plan_v2.dart';
+import 'package:wandermood/features/group_planning/presentation/widgets/group_planning_result_slot_both_in_footer.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_mood_labels.dart';
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart'
     show GroupMemberView, GroupPlanRow, GroupSessionRow;
@@ -2439,84 +2440,6 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return text;
   }
 
-  Widget _slotCardBothInFooter(
-    AppLocalizations l10n,
-    GroupMemberView? ownerMv,
-    GroupMemberView? guestMv,
-    String ownerName,
-    String guestName,
-  ) {
-    Widget face(GroupMemberView? m) {
-      final url = m?.avatarUrl?.trim();
-      final label = (m?.displayName ?? '?').trim();
-      final initial = label.isNotEmpty ? label[0].toUpperCase() : '?';
-      return Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: CircleAvatar(
-          radius: 13,
-          backgroundColor: _wmForest,
-          backgroundImage:
-              url != null && url.isNotEmpty ? NetworkImage(url) : null,
-          child: url == null || url.isEmpty
-              ? Text(
-                  initial,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1,
-                  ),
-                )
-              : null,
-        ),
-      );
-    }
-
-    final caption = _isOwner
-        ? l10n.moodMatchPlanV2YouBothIn(guestName)
-        : l10n.moodMatchPlanV2YouBothIn(ownerName);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F1EB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE5DFD4),
-        ),
-      ),
-      child: Row(
-        children: [
-          face(ownerMv),
-          Transform.translate(
-            offset: const Offset(-8, 0),
-            child: face(guestMv),
-          ),
-          const SizedBox(width: 2),
-          Expanded(
-            child: Text(
-              caption,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                height: 1.35,
-                color: _slotCardBodyInk.withValues(alpha: 0.78),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _slotCard(
     String slot,
     AppLocalizations l10n,
@@ -2844,12 +2767,13 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                     ],
                     if (bothConfirmedOnSlot) ...[
                       const SizedBox(height: 12),
-                      _slotCardBothInFooter(
-                        l10n,
-                        ownerMv,
-                        guestMv,
-                        ownerName,
-                        guestName,
+                      GroupPlanningResultSlotBothInFooter(
+                        l10n: l10n,
+                        isOwner: _isOwner,
+                        ownerMember: ownerMv,
+                        guestMember: guestMv,
+                        ownerName: ownerName,
+                        guestName: guestName,
                       ),
                     ],
                     if (_isOwner) ...[
