@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import '../providers/preferences_provider.dart';
 import '../../features/places/models/place.dart';
 

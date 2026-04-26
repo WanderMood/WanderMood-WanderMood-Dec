@@ -4,7 +4,6 @@ import 'package:wandermood/core/domain/models/user_preferences.dart';
 import 'package:wandermood/core/notifications/user_preferences_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:wandermood/core/config/env_config.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

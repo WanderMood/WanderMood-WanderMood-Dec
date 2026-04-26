@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/social/domain/models/user_profile.dart';
 import 'package:wandermood/features/social/domain/models/wander_badge.dart';

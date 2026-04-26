@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
-import 'dart:convert';
 import '../domain/models/travel_post.dart';
 import '../../../features/weather/application/enhanced_weather_service.dart';
 

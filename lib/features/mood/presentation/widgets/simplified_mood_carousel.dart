@@ -7,7 +7,6 @@ import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import '../../../places/services/saved_places_service.dart';
 import '../../../../core/extensions/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';

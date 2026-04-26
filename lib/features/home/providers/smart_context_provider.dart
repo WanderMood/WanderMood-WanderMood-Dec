@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/context_manager.dart';
-import '../../mood/domain/models/mood.dart';
 import '../../weather/domain/models/weather.dart';
 import '../../weather/domain/models/weather_location.dart';
 import '../../mood/providers/current_mood_provider.dart';

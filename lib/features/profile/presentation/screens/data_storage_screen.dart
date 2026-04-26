@@ -8,7 +8,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
-import '../providers/settings_providers.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 

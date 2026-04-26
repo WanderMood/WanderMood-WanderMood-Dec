@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
-import 'package:wandermood/features/social/domain/models/social_post.dart';
 import 'package:wandermood/features/social/domain/providers/social_providers.dart';
 import 'package:wandermood/features/social/presentation/screens/user_profile_screen.dart';
 import 'package:wandermood/l10n/app_localizations.dart';

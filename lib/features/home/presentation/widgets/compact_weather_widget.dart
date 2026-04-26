@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wandermood/features/weather/presentation/widgets/hourly_weather_widget.dart';
 
 class CompactWeatherWidget extends StatelessWidget {

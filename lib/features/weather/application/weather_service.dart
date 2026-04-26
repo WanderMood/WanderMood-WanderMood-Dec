@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../domain/models/weather_data.dart';
 import '../domain/models/weather_forecast.dart';
 import '../domain/models/weather_alert.dart';
 import '../domain/models/weather_location.dart';

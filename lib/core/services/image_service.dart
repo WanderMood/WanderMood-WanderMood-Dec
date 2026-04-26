@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../constants/api_constants.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
-import 'dart:io';
-import 'dart:math';
 
 final imageServiceProvider = Provider<ImageService>((ref) => ImageService());
 

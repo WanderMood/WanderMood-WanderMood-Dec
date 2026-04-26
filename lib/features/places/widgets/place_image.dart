@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/core/services/google_places_service.dart';
 import 'package:wandermood/core/utils/logger.dart';
 

@@ -1,4 +1,3 @@
-import 'package:wandermood/features/mood/domain/models/mood.dart';
 import 'package:wandermood/features/mood/domain/models/activity.dart';
 import 'package:wandermood/features/mood/domain/models/mood_data.dart';
 

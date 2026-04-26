@@ -3,11 +3,9 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../domain/models/weather_data.dart';
 import '../domain/models/weather_forecast.dart';
 import '../domain/models/weather_location.dart';
 import '../domain/models/weather.dart';
-import 'package:http/http.dart' as http;
 
 part 'enhanced_weather_service.g.dart';
 

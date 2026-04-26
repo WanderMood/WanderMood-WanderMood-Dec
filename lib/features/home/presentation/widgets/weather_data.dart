@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:wandermood/features/weather/presentation/widgets/hourly_weather_widget.dart';
 
 // Weather data model en voorbeeldgegevens
 Map<String, dynamic> weatherDetails = {

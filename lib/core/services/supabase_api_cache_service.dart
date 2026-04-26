@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:convert';
-import '../config/api_config.dart';
 
 /// Supabase-based API cache service for development cost savings
 /// 

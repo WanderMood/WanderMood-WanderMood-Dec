@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/social/domain/models/diary_entry.dart';
-import 'package:wandermood/core/constants/supabase_constants.dart';
 import 'dart:io';
 import 'package:wandermood/features/social/domain/models/user_profile.dart';
 

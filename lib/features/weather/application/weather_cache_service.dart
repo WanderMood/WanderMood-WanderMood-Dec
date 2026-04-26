@@ -4,10 +4,6 @@ import '../domain/models/weather_data.dart';
 import '../domain/models/weather_forecast.dart';
 import '../domain/models/weather_alert.dart';
 import '../domain/models/weather_location.dart';
-import '../infrastructure/adapters/weather_data_adapter.dart';
-import '../infrastructure/adapters/weather_forecast_adapter.dart';
-import '../infrastructure/adapters/weather_alert_adapter.dart';
-import '../infrastructure/adapters/location_adapter.dart';
 
 class WeatherCacheService {
   static const String _locationBoxName = 'locations';

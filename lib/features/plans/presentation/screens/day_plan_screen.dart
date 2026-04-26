@@ -12,7 +12,6 @@ import 'package:wandermood/features/plans/widgets/activity_detail_screen.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart' as ai_service;
 import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
-import 'package:wandermood/core/extensions/string_extensions.dart';
 import 'package:wandermood/features/places/presentation/screens/place_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';

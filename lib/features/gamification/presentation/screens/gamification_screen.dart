@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 import '../../domain/models/achievement.dart';
 import '../../domain/models/achievement_titles.dart';
-import '../../domain/models/streak.dart';
 import '../../providers/gamification_provider.dart';
 import '../widgets/achievement_badge.dart';
 import '../widgets/streak_card.dart';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
-import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

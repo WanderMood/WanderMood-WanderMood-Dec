@@ -1,7 +1,6 @@
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui'; // Add this import for ImageFilter
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
@@ -12,10 +11,8 @@ import 'package:wandermood/features/weather/providers/weather_provider.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/moody_conversation_screen.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wandermood/features/gamification/providers/gamification_provider.dart';
 import 'package:wandermood/features/weather/presentation/screens/weather_detail_screen.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart';
-import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:wandermood/features/mood/providers/mood_options_provider.dart';
 import 'package:wandermood/features/mood/models/mood_option.dart';
@@ -23,7 +20,6 @@ import 'package:wandermood/features/profile/domain/providers/profile_provider.da
 import 'package:wandermood/features/profile/presentation/widgets/profile_drawer.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_provider.dart';
-import 'package:wandermood/features/mood/presentation/screens/moody_hub_screen.dart';
 import 'package:wandermood/features/mood/presentation/widgets/mood_action_choice_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';

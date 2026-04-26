@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import '../models/check_in.dart';
 import '../models/activity_rating.dart';
 import 'check_in_service.dart';
 import 'activity_rating_service.dart';

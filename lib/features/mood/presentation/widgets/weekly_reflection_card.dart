@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/activity_rating.dart';
 import '../../services/activity_rating_service.dart';
-import 'dart:math' as math;
 
 class WeeklyReflectionCard extends ConsumerWidget {
   final WeeklyReflection reflection;

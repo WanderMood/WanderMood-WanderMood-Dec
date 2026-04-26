@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../mood/application/mood_service.dart';
-import '../../weather/application/weather_service.dart';
 import '../domain/models/travel_recommendation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../weather/domain/models/weather_location.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../domain/models/activity.dart';
 
 // Provider to manage selected activities globally
 final selectedActivitiesProvider = StateNotifierProvider<SelectedActivitiesNotifier, Set<String>>((ref) {
