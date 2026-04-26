@@ -13,7 +13,7 @@ import 'core/constants/api_keys.dart';
 import 'core/domain/providers/location_notifier_provider.dart';
 import 'features/location/services/location_service.dart';
 import 'features/plans/data/services/schema_helper.dart';
-import 'services/daily_cleanup_service.dart';
+import 'package:wandermood/core/services/daily_cleanup_service.dart';
 import 'core/providers/supabase_provider.dart';
 import 'features/settings/presentation/providers/user_preferences_provider.dart';
 import 'core/services/ai_chat_quota_service.dart';

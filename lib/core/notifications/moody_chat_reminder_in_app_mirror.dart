@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/notifications/in_app_notification_copy.dart';
-import 'package:wandermood/services/push_notify_edge.dart';
+import 'package:wandermood/core/services/push_notify_edge.dart';
 
 /// Inserts a `realtime_events` row for the signed-in user so My Day bell /
 /// notification centre stay aligned with a locally scheduled Moody Hub reminder.

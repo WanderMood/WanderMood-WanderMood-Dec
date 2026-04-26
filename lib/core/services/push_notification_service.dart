@@ -6,7 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/firebase_options.dart';
-import 'package:wandermood/services/push_notify_edge.dart';
+import 'push_notify_edge.dart';
 
 /// Registers FCM token with Supabase [push_tokens] and wires foreground/background handlers.
 class PushNotificationService {

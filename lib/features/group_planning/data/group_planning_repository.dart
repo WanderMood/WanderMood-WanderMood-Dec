@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/notifications/in_app_notification_copy.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart';
-import 'package:wandermood/services/push_notify_edge.dart';
+import 'package:wandermood/core/services/push_notify_edge.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/group_planning/domain/group_plan_compatibility.dart';
 import 'package:wandermood/features/group_planning/domain/group_plan_v2.dart';
