@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
@@ -41,6 +42,7 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmParchment = Color(0xFFE8E2D8);
 const Color _wmCharcoal = Color(0xFF1E1C18);
+const Color _wmStone = Color(0xFF8C8780);
 
 /// Below 1.0 leaves a strip of scrim above the sheet so it feels slightly shorter.
 const double _kMoodyChatSheetHeightFactor = 0.93;
@@ -227,6 +229,57 @@ class _DailyMoodyChatCache {
       'messages': slice.map(_chatMsgToJson).toList(),
     };
     await prefs.setString(_prefsKey(now), jsonEncode(payload));
+  }
+
+  static DateTime _startOfLocalDay(DateTime d) =>
+      DateTime(d.year, d.month, d.day);
+
+  static String _prefsKeyForDay(DateTime dayLocal) {
+    final uid = Supabase.instance.client.auth.currentUser?.id ?? 'guest';
+    final d = _startOfLocalDay(dayLocal);
+    return 'wm_moody_chat_sheet_v1_${uid}_${_keyFor(d)}';
+  }
+
+  /// True if that calendar day has more than the auto-starter alone (user
+  /// messages or a multi-turn thread persisted on device).
+  static bool dayHasMeaningfulHistory(
+    SharedPreferences prefs,
+    DateTime dayLocal,
+  ) {
+    final raw = prefs.getString(_prefsKeyForDay(dayLocal));
+    if (raw == null || raw.isEmpty) return false;
+    try {
+      final o = jsonDecode(raw) as Map<String, dynamic>;
+      final arr = o['messages'] as List<dynamic>?;
+      if (arr == null || arr.isEmpty) return false;
+      if (arr.length >= 2) return true;
+      for (final e in arr) {
+        if (e is! Map) continue;
+        if (e['isUser'] == true) return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static List<_ChatMsg> readDayMessages(
+    SharedPreferences prefs,
+    DateTime dayLocal,
+  ) {
+    final out = <_ChatMsg>[];
+    final raw = prefs.getString(_prefsKeyForDay(dayLocal));
+    if (raw == null || raw.isEmpty) return out;
+    try {
+      final o = jsonDecode(raw) as Map<String, dynamic>;
+      final arr = o['messages'] as List<dynamic>?;
+      if (arr == null) return out;
+      for (final e in arr) {
+        if (e is! Map) continue;
+        out.add(_chatMsgFromJson(Map<String, dynamic>.from(e)));
+      }
+    } catch (_) {}
+    return out;
   }
 }
 
@@ -540,6 +593,9 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   /// re-opens when returning to the Moody tab from another bottom-nav tab.
   bool _hubPeekOpen = true;
 
+  /// Past days have a persisted Moody thread on device (SharedPreferences).
+  bool _hasEarlierChats = false;
+
   static const int _moodyTabIndex = 2;
   ProviderSubscription<int>? _mainTabSubscription;
 
@@ -559,6 +615,25 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         MoodyClock.now(),
       );
     } catch (_) {}
+    if (mounted) _refreshEarlierChatsAvailability();
+  }
+
+  void _refreshEarlierChatsAvailability() {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final now = MoodyClock.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    var any = false;
+    for (var i = 1; i <= 21; i++) {
+      final d = todayStart.subtract(Duration(days: i));
+      if (_DailyMoodyChatCache.dayHasMeaningfulHistory(prefs, d)) {
+        any = true;
+        break;
+      }
+    }
+    if (!mounted) return;
+    if (any != _hasEarlierChats) {
+      setState(() => _hasEarlierChats = any);
+    }
   }
 
   void _onChatScrollControllerTick() {
@@ -611,6 +686,230 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         });
       }
     });
+    _refreshEarlierChatsAvailability();
+  }
+
+  String _earlierChatsBannerLabel() {
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
+    return nl ? 'Eerdere gesprekken' : 'Earlier chats';
+  }
+
+  Future<void> _openArchiveCopyOnly(_ChatMsg msg) async {
+    final l10n = AppLocalizations.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: ListTile(
+          leading: const Icon(Icons.copy_rounded, color: _wmForest),
+          title: Text(
+            l10n?.chatSheetMessageCopy ?? 'Copy',
+            style: GoogleFonts.poppins(fontSize: 16, color: _wmCharcoal),
+          ),
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: msg.copyableText));
+            if (ctx.mounted) Navigator.of(ctx).pop();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n?.chatSheetCopied ?? 'Copied'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showArchivedDaySheet(DateTime day) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final msgs = _DailyMoodyChatCache.readDayMessages(prefs, day);
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    final localeTag = Localizations.localeOf(context).toString();
+    final title = DateFormat.yMMMEd(localeTag).format(day);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _wmSkyTint,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.72,
+          minChildSize: 0.35,
+          maxChildSize: 0.92,
+          builder: (ctx, scrollController) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: _wmCharcoal,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                        color: _wmCharcoal,
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    Localizations.localeOf(context).languageCode == 'nl'
+                        ? 'Alleen lezen — dit is je opgeslagen chat van die dag op dit apparaat.'
+                        : 'Read-only — saved chat from that day on this device.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.5,
+                      color: _wmStone,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: msgs.isEmpty
+                      ? Center(
+                          child: Text(
+                            l10n?.chatSheetErrorMessage ??
+                                'Nothing saved for that day.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              color: _wmCharcoal,
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.only(bottom: 24),
+                          itemCount: msgs.length,
+                          itemBuilder: (context, i) {
+                            final m = msgs[i];
+                            return _MessageBubble(
+                              msg: m,
+                              moodyName:
+                                  l10n?.chatSheetMoodyName ?? 'Moody',
+                              youLabel: l10n?.chatSheetReplyLabelYou ?? 'You',
+                              onLongPress: () => _openArchiveCopyOnly(m),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _openEarlierChatsPicker() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final now = MoodyClock.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final days = <DateTime>[];
+    for (var i = 1; i <= 21; i++) {
+      final d = todayStart.subtract(Duration(days: i));
+      if (_DailyMoodyChatCache.dayHasMeaningfulHistory(prefs, d)) {
+        days.add(d);
+      }
+    }
+    if (!mounted) return;
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
+    final localeTag = Localizations.localeOf(context).toString();
+    final df = DateFormat.yMMMEd(localeTag);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final maxListH = MediaQuery.of(ctx).size.height * 0.5;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Text(
+                  nl ? 'Kies een dag' : 'Pick a day',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: _wmCharcoal,
+                  ),
+                ),
+              ),
+              if (days.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  child: Text(
+                    nl
+                        ? 'Geen opgeslagen chats van de afgelopen weken.'
+                        : 'No saved chats from the past few weeks.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: _wmStone,
+                      height: 1.35,
+                    ),
+                  ),
+                )
+              else
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: maxListH),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: days.length,
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 1, indent: 20, endIndent: 20),
+                    itemBuilder: (context, index) {
+                      final d = days[index];
+                      return ListTile(
+                        title: Text(
+                          df.format(d),
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: _wmCharcoal,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          unawaited(_showArchivedDaySheet(d));
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   /// Lazily initialize speech recognition the first time the user taps the mic.
@@ -920,9 +1219,54 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                 parent: BouncingScrollPhysics(),
               ),
               padding: const EdgeInsets.only(top: 12, bottom: 12),
-              itemCount: widget.chatMessages.length,
+              itemCount:
+                  (_hasEarlierChats ? 1 : 0) + widget.chatMessages.length,
               itemBuilder: (context, index) {
-                final m = widget.chatMessages[index];
+                if (_hasEarlierChats && index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    child: Material(
+                      color: Colors.white.withValues(alpha: 0.72),
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: _openEarlierChatsPicker,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 11,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.history_rounded,
+                                size: 20,
+                                color: _wmForest,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _earlierChatsBannerLabel(),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: _wmCharcoal,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: _wmStone.withValues(alpha: 0.9),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                final msgIndex = index - (_hasEarlierChats ? 1 : 0);
+                final m = widget.chatMessages[msgIndex];
                 return _MessageBubble(
                   msg: m,
                   moodyName: l10n?.chatSheetMoodyName ?? 'Moody',
