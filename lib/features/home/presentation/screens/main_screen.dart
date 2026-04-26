@@ -34,7 +34,7 @@ const Color _wmDusk = Color(0xFF4A4640);
 const Color _wmStone = Color(0xFF8C8780);
 
 // Provider to check if user has seen Moody intro overlay
-// Made public so it can be invalidated from MoodyHubScreen when intro is dismissed
+// Made public so it can be invalidated from the Moody tab when intro is dismissed
 final hasSeenIntroProvider = FutureProvider<bool>((ref) async {
   try {
     final prefs = await SharedPreferences.getInstance();
