@@ -402,9 +402,13 @@ class GroupPlanningRepository {
     }
   }
 
-  /// Every non-expired session the current user is a member of, ready for the
-  /// Mood Match hub multi-card list. Each entry also reports whether a shared
-  /// plan has already been generated so the card can render the right CTA.
+  /// Sessions the current user is a member of, for the Mood Match hub list.
+  ///
+  /// - `waiting`: only if [expires_at] is still in the future (stale invites
+  ///   hidden without deleting rows).
+  /// - `generating`, `ready`, `day_proposed`, `day_counter_proposed`,
+  ///   `day_confirmed`: always listed so an in-flight or scheduled match is not
+  ///   dropped when `expires_at` passes before the plan is finished.
   Future<
       List<
           ({
@@ -429,25 +433,73 @@ class GroupPlanningRepository {
       if (ids.isEmpty) return const [];
 
       final nowIso = MoodyClock.now().toUtc().toIso8601String();
-      final sessionRows = await _client
-          .from('group_sessions')
-          .select()
-          .inFilter('id', ids.toList())
-          .gt('expires_at', nowIso)
-          .inFilter('status', const [
-        'waiting',
+      final idList = ids.toList();
+      const inProgressStatuses = <String>[
         'generating',
         'ready',
         'day_proposed',
+        'day_counter_proposed',
         'day_confirmed',
-      ]).order('updated_at', ascending: false);
+      ];
 
-      final sessions = <GroupSessionRow>[];
-      for (final r in (sessionRows as List<dynamic>)) {
-        sessions.add(
-          GroupSessionRow.fromMap(Map<String, dynamic>.from(r as Map)),
-        );
+      final waitingRows = await _client
+          .from('group_sessions')
+          .select()
+          .inFilter('id', idList)
+          .eq('status', 'waiting')
+          .gt('expires_at', nowIso);
+
+      final activeRows = await _client
+          .from('group_sessions')
+          .select()
+          .inFilter('id', idList)
+          .inFilter('status', inProgressStatuses);
+
+      final byId = <String, Map<String, dynamic>>{};
+      void ingestRows(Object? rows) {
+        if (rows is! List) return;
+        for (final r in rows) {
+          if (r is! Map) continue;
+          final m = Map<String, dynamic>.from(r);
+          final sid = (m['id'] ?? '').toString();
+          if (sid.isEmpty) continue;
+          byId[sid] = m;
+        }
       }
+
+      ingestRows(waitingRows);
+      ingestRows(activeRows);
+
+      var sessions = <GroupSessionRow>[
+        for (final m in byId.values) GroupSessionRow.fromMap(m),
+      ];
+
+      int hubStatusRank(String s) {
+        switch (s) {
+          case 'ready':
+            return 0;
+          case 'day_confirmed':
+            return 1;
+          case 'day_counter_proposed':
+            return 2;
+          case 'day_proposed':
+            return 3;
+          case 'generating':
+            return 4;
+          case 'waiting':
+            return 5;
+          default:
+            return 6;
+        }
+      }
+
+      sessions.sort((a, b) {
+        final ra = hubStatusRank(a.status);
+        final rb = hubStatusRank(b.status);
+        if (ra != rb) return ra.compareTo(rb);
+        return b.updatedAt.compareTo(a.updatedAt);
+      });
+
       if (sessions.isEmpty) return const [];
 
       final sessionIds = sessions.map((s) => s.id).toList();

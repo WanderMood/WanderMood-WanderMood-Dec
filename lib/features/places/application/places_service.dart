@@ -372,6 +372,18 @@ class PlacesService extends _$PlacesService {
     String language = 'en',
   }) async {
     try {
+      final t = placeId.trim();
+      final lower = t.toLowerCase();
+      final badSlash = t.contains('/') && !lower.startsWith('places/');
+      if (t.isEmpty ||
+          t.length < 10 ||
+          lower.startsWith('http') ||
+          badSlash ||
+          t.startsWith('place_') ||
+          t.startsWith('mood_place_')) {
+        print('Skipping places/details: invalid placeId=$placeId');
+        return null;
+      }
       print('Getting place details for: $placeId');
       
       // Try to get from cache first

@@ -73,6 +73,20 @@ class PlacesService extends _$PlacesService {
     return t;
   }
 
+  /// Skips obviously invalid ids so we do not bill Google for mock strings,
+  /// URLs, or garbage from stale caches (we still allow any plausible id, not
+  /// only `ChIJ…`, so newer Google formats keep working).
+  static bool _looksUsableGooglePlaceIdForEdgeDetails(String raw) {
+    final t = raw.trim();
+    if (t.length < 10) return false;
+    final lower = t.toLowerCase();
+    if (lower.startsWith('http')) return false;
+    // Allow Places API (New) resource names `places/ChIJ…`; block other slashes.
+    if (t.contains('/') && !lower.startsWith('places/')) return false;
+    if (t.startsWith('place_') || t.startsWith('mood_place_')) return false;
+    return true;
+  }
+
   static List<String> mergeUniquePhotoUrls(
     Iterable<String> primary,
     Iterable<String> secondary, {
@@ -240,7 +254,12 @@ class PlacesService extends _$PlacesService {
   /// billable Google Details requests.
   Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
     final raw = _normalizedGooglePlaceIdForDetails(placeId);
-    if (raw.isEmpty) return {};
+    if (raw.isEmpty || !_looksUsableGooglePlaceIdForEdgeDetails(raw)) {
+      if (kDebugMode && raw.isNotEmpty) {
+        debugPrint('Skipping places/details: unusable placeId=$placeId');
+      }
+      return {};
+    }
 
     final lang = PlacesCacheUtils.normalizeExploreLanguageCode(
       ref.read(localeProvider)?.languageCode ??

@@ -126,6 +126,10 @@ class _HubPrimaryPillButton extends StatelessWidget {
   }
 }
 
+/// Day handshake before shared plan generation (day picker owns both).
+bool _hubSessionIsDayNegotiation(String status) =>
+    status == 'day_proposed' || status == 'day_counter_proposed';
+
 String _hubFriendFirstName(GroupMemberView? v, AppLocalizations l10n) {
   if (v == null) return l10n.moodMatchFriendThey;
   final n = v.displayName.trim();
@@ -156,7 +160,7 @@ String _hubFriendFirstName(GroupMemberView? v, AppLocalizations l10n) {
     );
   }
 
-  if (s.status == 'day_proposed') {
+  if (_hubSessionIsDayNegotiation(s.status)) {
     final prop = s.proposedByUserId?.trim() ?? '';
     if (prop == uid) {
       return (
@@ -233,7 +237,7 @@ GroupMemberView? _hubOtherMember(String uid, _HubSessionItem item) {
 /// drafting or waiting on their friend after “send to guest”).
 bool _hubShouldUseReadyResumeCard(_HubSessionItem item) {
   if (!item.hasPlan || item.planData == null) return false;
-  if (item.session.status == 'day_proposed') return false;
+  if (_hubSessionIsDayNegotiation(item.session.status)) return false;
   final p =
       GroupPlanV2.normalizePlanData(Map<String, dynamic>.from(item.planData!));
   if (p['sentToGuest'] != true) return false;
@@ -251,7 +255,7 @@ bool _hubShouldUseReadyResumeCard(_HubSessionItem item) {
   _HubSessionItem item,
 ) {
   if (!item.hasPlan || item.planData == null) return null;
-  if (item.session.status == 'day_proposed') return null;
+  if (_hubSessionIsDayNegotiation(item.session.status)) return null;
   final p =
       GroupPlanV2.normalizePlanData(Map<String, dynamic>.from(item.planData!));
   final friendName = _hubFriendFirstName(_hubOtherMember(uid, item), l10n);
@@ -666,7 +670,7 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
       context.go('/group-planning/result/${s.id}');
       return;
     }
-    if (s.status == 'day_proposed') {
+    if (_hubSessionIsDayNegotiation(s.status)) {
       context.go('/group-planning/day-picker/${s.id}');
       return;
     }
