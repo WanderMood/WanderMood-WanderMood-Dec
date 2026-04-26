@@ -89,7 +89,11 @@ class RecommendationService extends _$RecommendationService {
           .from('travel_recommendations')
           .select('is_favorite')
           .eq('id', id)
-          .single();
+          .maybeSingle();
+
+      if (response == null) {
+        return;
+      }
 
       final currentFavorite = response['is_favorite'] as bool;
 
