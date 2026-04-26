@@ -56,6 +56,8 @@ String _userMessageWithReplyForModel(
   return '$header\n\n$body';
 }
 
+/// Full-screen chat overlay (e.g. on mood home). Distinct from [MoodyChatTabView]
+/// (bottom tab / sheet stack) and [MoodyIdleScreen] (idle welcome, not a composer).
 class MoodyConversationScreen extends ConsumerStatefulWidget {
   final VoidCallback onClose;
   final Set<String> selectedMoods;

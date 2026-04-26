@@ -515,6 +515,10 @@ Future<void> showMoodyChatSheet(BuildContext context, WidgetRef ref) {
 }
 
 /// Full chat-first Moody tab surface (non-modal).
+///
+/// **Related:** [MoodyConversationScreen] (mood home overlay) and
+/// [MoodyIdleScreen] (time-bucket idle welcome) are separate entry points;
+/// when changing composer behavior, check those surfaces too.
 class MoodyChatTabView extends ConsumerStatefulWidget {
   const MoodyChatTabView({super.key});
 
