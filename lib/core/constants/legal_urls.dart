@@ -1,14 +1,13 @@
 /// Public legal document URLs (privacy, terms, account deletion).
 ///
-/// Hosted on the WanderMood landing deployment. When [publicLegalBase] is also
-/// served at `wandermood.com`, you can switch the base to that domain.
+/// Hosted on the WanderMood landing deployment at `wandermood.com`.
 class LegalUrls {
   LegalUrls._();
 
-  /// Production legal pages (Vercel). Change to `https://wandermood.com` when
-  /// DNS points the domain at this deployment.
-  static const String publicLegalBase =
-      'https://wandermood-landing.vercel.app';
+  /// Production legal pages on the WanderMood domain. The landing site serves
+  /// per-locale pages under `/{locale}/privacy`, `/{locale}/terms`, and
+  /// `/{locale}/account-deletion` (locales: en, nl, de, es, fr).
+  static const String publicLegalBase = 'https://wandermood.com';
 
   static final Uri privacyPolicy =
       Uri.parse('$publicLegalBase/en/privacy');
