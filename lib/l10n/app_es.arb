@@ -1968,6 +1968,7 @@
   "myDayExploreNearbyButton": "Explorar cerca",
   "myDayAskMoodyButton": "Preguntar a Moody",
   "myDayOpenFullPlaceDetails": "Abrir lugar completo",
+  "placeQuickSheetAddToMyDayCta": "+añadir a mi día",
   "myDayMoodStreakBadge": "{count, plural, one{1 día seguido} other{{count} días seguidos}}",
   "@myDayMoodStreakBadge": {
     "placeholders": {
@@ -3773,6 +3774,56 @@
   "placeDetailTabReviews": "Reseñas",
   "plan": "Plan",
   "plannerMoodyAdviceBlurb": "Consejos de Moody:\\n• Revisa horarios (y el tiempo si vas a estar fuera).\\n• Llega unos minutos antes para acomodarte.\\n• Mantente hidratado y con la mente abierta — ¡disfruta!",
+  "plannerMoodMatchQuickTogether": "Tú + {partner}",
+  "@plannerMoodMatchQuickTogether": {
+    "placeholders": {
+      "partner": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerMoodMatchQuickStory": "{placeTitle} está en vuestro día compartido porque encaja con lo que los dos me contasteis — por separado, entre nosotros.",
+  "@plannerMoodMatchQuickStory": {
+    "placeholders": {
+      "placeTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerMoodMatchQuickPlaceFallback": "Esta parada",
+  "plannerMoodMatchQuickYouLabel": "Tú",
+  "plannerMoodMatchQuickMoodyNote": "Aquí os hablo a los dos — las pestañas de abajo son datos del sitio, como siempre.",
+  "plannerMoodMatchPairStory_romantic_adventurous": "{place} da en el clavo — ambiente íntimo para el mood romántico y suficiente sorpresa para el aventurero.",
+  "@plannerMoodMatchPairStory_romantic_adventurous": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_adventurous_relaxed": "{place} funciona porque hay suficiente novedad para quien quiere descubrir y suficiente calma para quien necesita descansar.",
+  "@plannerMoodMatchPairStory_adventurous_relaxed": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_cultural_social": "{place} os da algo que descubrir y de lo que hablar — el tipo de parada que se convierte en una conversación real.",
+  "@plannerMoodMatchPairStory_cultural_social": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_relaxed_social": "{place} es tranquilo y abierto — relajarse juntos sin presión.",
+  "@plannerMoodMatchPairStory_relaxed_social": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_energetic_relaxed": "{place} busca el equilibrio — uno sigue activo, el otro encuentra un momento de pausa.",
+  "@plannerMoodMatchPairStory_energetic_relaxed": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_cultural_romantic": "{place} se gana su sitio combinando ambiente con algo bonito que ver juntos.",
+  "@plannerMoodMatchPairStory_cultural_romantic": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_energetic_adventurous": "{place} mantiene el ritmo alto — los dos queríais movimiento y esto lo da.",
+  "@plannerMoodMatchPairStory_energetic_adventurous": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_contemplative_any": "Elegí {place} porque os da espacio a los dos — para hablar, quedarse con el momento o simplemente estar juntos.",
+  "@plannerMoodMatchPairStory_contemplative_any": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_same_mood": "Los dos llegasteis con la misma energía — {place} va directo a por eso.",
+  "@plannerMoodMatchPairStory_same_mood": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_default": "{place} encaja con lo que me disteis por separado — lo planifiqué para que ningún mood se quede sin satisfacer.",
+  "@plannerMoodMatchPairStory_default": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchNoteHint": "Deja una nota para {partner}…",
+  "@plannerMoodMatchNoteHint": { "placeholders": { "partner": { "type": "String" } } },
+  "plannerMoodMatchNoteSave": "Enviar",
+  "plannerMoodMatchNoteSaved": "Enviado ✓",
+  "plannerMoodMatchNoteSaving": "Guardando…",
+  "plannerMoodMatchNotePartnerLabel": "{partner} dice:",
+  "@plannerMoodMatchNotePartnerLabel": { "placeholders": { "partner": { "type": "String" } } },
+  "plannerMoodMatchNoteYourLabel": "Tu nota",
+  "plannerMoodMatchNoteSectionTitle": "Notas",
+  "plannerMoodMatchNoteSavedSnackbar": "Guardado — {partner} lo verá al abrir esta parada (o al instante si ya tiene esta hoja abierta).",
+  "@plannerMoodMatchNoteSavedSnackbar": { "placeholders": { "partner": { "type": "String" } } },
   "plannerSheetNoExtraPhotos": "Aún no hay fotos extra en este plan.\\nCuando la actividad esté vinculada a un lugar, verás la galería en Explorar.",
   "plannerSheetRatingOnPlan": "Valoración en tu plan",
   "plannerSheetReviewsExplainerNoRating": "Aún no hay datos de reseñas para este elemento. Vincúlalo a un lugar de Google (p. ej. desde Explorar) para leer opiniones reales.",

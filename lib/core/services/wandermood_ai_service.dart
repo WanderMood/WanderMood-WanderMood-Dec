@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/config/supabase_config.dart';
 import 'package:wandermood/core/models/ai_recommendation.dart';
@@ -180,6 +181,7 @@ class WanderMoodAIService {
       '🤖 Mood Match: moody create_day_plan for moods: $moods @ $location',
     );
     final svc = MoodyEdgeFunctionService(_supabase);
+    final prefs = await SharedPreferences.getInstance();
     final data = await svc.createDayPlan(
       moods: moods,
       location: location,
@@ -188,6 +190,7 @@ class WanderMoodAIService {
       filters: const <String, dynamic>{},
       languageCode: languageCode,
       targetDate: plannedDay,
+      planResponseCache: prefs,
     );
 
     final activities = data['activities'] as List<dynamic>? ?? [];
@@ -511,6 +514,8 @@ class WanderMoodAIService {
     List<Map<String, String>>? clientTurns,
     /// BCP 47 language code (e.g. `de`, `nl`) so Moody replies match app locale.
     String languageCode = 'en',
+    /// Optional grounded context (e.g. My Day "free time" card) — sent as `shared_place` to moody.
+    Map<String, dynamic>? sharedPlace,
   }) async {
     debugPrint('💬 Routing chat through moody edge function');
 
@@ -567,22 +572,27 @@ class WanderMoodAIService {
         }
       } catch (_) {}
 
+      final body = <String, dynamic>{
+        'action': 'chat',
+        'message': message,
+        'history': history,
+        'conversationId': convId,
+        'location': resolvedCity,
+        'coordinates': {
+          'lat': resolvedLat,
+          'lng': resolvedLng,
+        },
+        'language_code': languageCode,
+        'moods': moods ?? <String>[],
+        ...clockFields,
+      };
+      if (sharedPlace != null && sharedPlace.isNotEmpty) {
+        body['shared_place'] = sharedPlace;
+      }
+
       final response = await _supabase.functions.invoke(
         _moodyFunctionName,
-        body: {
-          'action': 'chat',
-          'message': message,
-          'history': history,
-          'conversationId': convId,
-          'location': resolvedCity,
-          'coordinates': {
-            'lat': resolvedLat,
-            'lng': resolvedLng,
-          },
-          'language_code': languageCode,
-          'moods': moods ?? <String>[],
-          ...clockFields,
-        },
+        body: body,
       );
 
       if (response.status != 200) {

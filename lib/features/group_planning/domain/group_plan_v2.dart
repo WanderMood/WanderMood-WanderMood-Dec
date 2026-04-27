@@ -273,6 +273,28 @@ class GroupPlanV2 {
         .toList();
   }
 
+  /// Strips Places API (New) `places/ChIJ…` wrappers and pulls embedded
+  /// `ChIJ` / `EhIJ` ids from URLs so scheduling + detail routes get a plain
+  /// Google place id.
+  static String? normalizeGooglePlaceIdCandidate(String? raw) {
+    if (raw == null) return null;
+    var t = raw.trim();
+    if (t.isEmpty || t.startsWith('groupplan_')) return null;
+    if (t.startsWith('google_')) {
+      final inner = t.substring('google_'.length);
+      if (inner.startsWith('ChIJ') || inner.startsWith('EhIJ')) return t;
+    }
+    if (t.startsWith('places/')) {
+      final rest = t.substring('places/'.length).split('/').first.trim();
+      if (rest.startsWith('ChIJ') || rest.startsWith('EhIJ')) return rest;
+    }
+    if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return t;
+    final m = RegExp(r'\b(ChIJ[a-zA-Z0-9_-]{10,}|EhIJ[a-zA-Z0-9_-]{10,})\b')
+        .firstMatch(t);
+    if (m != null) return m.group(1);
+    return null;
+  }
+
   /// Resolve the first usable place_id for scheduling. Checks top-level
   /// keys and a nested `location` map; treats empty strings as missing and
   /// skips synthetic `groupplan_*` ids that can't be re-fetched.
@@ -282,21 +304,19 @@ class GroupPlanV2 {
       final t = v.toString().trim();
       if (t.isEmpty) return null;
       if (t.startsWith('groupplan_')) return null;
-      return t;
+      return normalizeGooglePlaceIdCandidate(t) ?? t;
     }
 
     bool looksLikeGooglePlacesRef(String id) {
-      if (id.startsWith('google_')) return true;
-      if (id.startsWith('ChIJ') || id.startsWith('EhIJ')) return true;
-      return false;
+      final core =
+          id.startsWith('google_') ? id.substring('google_'.length) : id;
+      return core.startsWith('ChIJ') || core.startsWith('EhIJ');
     }
 
     for (final v in [m['place_id'], m['placeId']]) {
       final id = pick(v);
       if (id != null && looksLikeGooglePlacesRef(id)) return id;
     }
-    // Skip synthetic `activity_*` rows and short slugs — they are not Google ids
-    // and break `/place/:id` + photo resolution (wrong hero / "mock" images).
     final topId = pick(m['id']);
     if (topId != null &&
         !topId.startsWith('activity_') &&

@@ -8,6 +8,7 @@ import '../../../core/constants/api_keys.dart';
 import '../../../core/utils/explore_place_card_copy.dart';
 import '../../../core/presentation/providers/language_provider.dart';
 import '../../../core/utils/places_cache_utils.dart';
+import '../data/place_details_disk_cache.dart';
 import '../models/place.dart';
 import 'opening_hours_service.dart';
 
@@ -103,9 +104,11 @@ class PlacesService extends _$PlacesService {
     return out;
   }
 
-  /// Resolves up to [maxPhotos] URLs for Explore cards. Bypasses [getPlaceById] cache
-  /// so Google-backed places get the full gallery from the details API when the hub
-  /// only sent a single preview photo.
+  /// Resolves up to [maxPhotos] URLs for Explore cards.
+  ///
+  /// When Moody / `places_cache` already attached photo URLs, we **do not** call
+  /// Place Details just to grow the carousel — that was one Details bill per
+  /// visible card. Full galleries load on Place detail / explicit fetches.
   Future<List<String>> resolveExploreCardPhotos(
     Place place, {
     int maxPhotos = 10,
@@ -113,7 +116,7 @@ class PlacesService extends _$PlacesService {
     if (!place.id.startsWith('google_')) {
       return place.photos.take(maxPhotos).toList();
     }
-    if (place.photos.length >= maxPhotos) {
+    if (place.photos.isNotEmpty) {
       return place.photos.take(maxPhotos).toList();
     }
     return _exploreCardPhotoFutures.putIfAbsent(place.id, () async {
@@ -270,10 +273,23 @@ class PlacesService extends _$PlacesService {
     final mem = _placeDetailsMemoryCache[cacheKey];
     if (mem != null) return mem;
 
+    await PlaceDetailsDiskCache.ensureHydrated();
+    final disk = PlaceDetailsDiskCache.get(cacheKey);
+    if (disk != null && disk.isNotEmpty) {
+      _placeDetailsMemoryCache[cacheKey] = disk;
+      if (kDebugMode) {
+        debugPrint('💾 place_details session restore from disk: $cacheKey');
+      }
+      return disk;
+    }
+
     final fut = _placeDetailsInflight.putIfAbsent(
       cacheKey,
       () => _getPlaceDetailsFromEdge(raw, lang).then((r) {
-            if (r.isNotEmpty) _placeDetailsMemoryCache[cacheKey] = r;
+            if (r.isNotEmpty) {
+              _placeDetailsMemoryCache[cacheKey] = r;
+              PlaceDetailsDiskCache.put(cacheKey, r);
+            }
             return r;
           }).whenComplete(() {
             _placeDetailsInflight.remove(cacheKey);
@@ -357,9 +373,13 @@ class PlacesService extends _$PlacesService {
       final geometry = result['geometry'] as Map<String, dynamic>?;
       final locationRaw = geometry?['location'] as Map<String, dynamic>?;
 
-      // open_now from Google uses device local time (correct for user's timezone e.g. NL)
-      final openingHours = result['opening_hours'] as Map<String, dynamic>?;
-      final openNow = openingHours?['open_now'] as bool? ?? false;
+      // Opening hours from Google (Places Details). open_now reflects Google's snapshot at request time.
+      final openingHoursRaw = result['opening_hours'] as Map<String, dynamic>?;
+      final openNow = openingHoursRaw?['open_now'] as bool? ?? false;
+      final weekdayText = (openingHoursRaw?['weekday_text'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          <String>[];
 
       // editorial_summary gives a short human-readable overview in the requested language
       final editorialSummary = result['editorial_summary'] as Map<String, dynamic>?;
@@ -367,7 +387,7 @@ class PlacesService extends _$PlacesService {
           result['vicinity'] as String? ?? '';
 
       final userRatingsTotal = result['user_ratings_total'] as num?;
-      final details = {
+      final details = <String, dynamic>{
         'name': result['name'] as String? ?? '',
         'address': result['formatted_address'] as String? ?? '',
         'description': description,
@@ -381,10 +401,17 @@ class PlacesService extends _$PlacesService {
           'lat': locationRaw['lat'] as num? ?? 0.0,
           'lng': locationRaw['lng'] as num? ?? 0.0,
         } : null,
-        'open_now': openNow,
         'website': result['website'] as String?,
         'phone_number': result['formatted_phone_number'] as String?,
       };
+      // Only when Google returns opening_hours — avoids treating "unknown" as closed.
+      if (openingHoursRaw != null) {
+        details['open_now'] = openNow;
+        details['opening_hours'] = <String, dynamic>{
+          'open_now': openNow,
+          'weekday_text': weekdayText,
+        };
+      }
 
       debugPrint('✅ Got details for ${result['name']} with ${photoReferences.length} photos and ${reviews.length} reviews');
       return details;
@@ -521,7 +548,23 @@ class PlacesService extends _$PlacesService {
         }
         
         debugPrint('✅ Successfully created Place object: $name with ${photoUrls.length} photos, priceLevel=$priceLevel, isFree=$isFree');
-        
+
+        final ohRaw = details['opening_hours'] as Map<String, dynamic>?;
+        final PlaceOpeningHours? openingHoursFromGoogle = ohRaw != null
+            ? PlaceOpeningHours(
+                isOpen: ohRaw['open_now'] as bool? ?? false,
+                weekdayText: (ohRaw['weekday_text'] as List<dynamic>?)
+                        ?.map((e) => e.toString())
+                        .toList() ??
+                    const [],
+              )
+            : (details.containsKey('open_now')
+                ? PlaceOpeningHours(
+                    isOpen: details['open_now'] as bool? ?? false,
+                    weekdayText: const [],
+                  )
+                : null);
+
         return Place(
           id: normalizedPlaceId,
           name: name,
@@ -531,7 +574,7 @@ class PlacesService extends _$PlacesService {
           photos: photoUrls,
           types: placeTypes,
           location: PlaceLocation(lat: lat, lng: lng),
-          openingHours: OpeningHoursService.generateOpeningHours(placeTypes),
+          openingHours: openingHoursFromGoogle,
           priceLevel: priceLevel,
           priceRange: priceRange,
           isFree: isFree,

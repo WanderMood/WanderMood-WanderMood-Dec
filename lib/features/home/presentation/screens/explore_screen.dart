@@ -10,6 +10,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/riverpod.dart' show ProviderSubscription;
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wandermood/features/location/presentation/widgets/location_dropdown.dart';
 import 'package:wandermood/features/places/models/place.dart';
 // OLD - Replaced by moody_explore_provider. Keep for 24-48h rollback safety.
@@ -32,6 +33,7 @@ import 'package:wandermood/core/services/user_preferences_service.dart';
 import '../widgets/conversational_explore_header.dart';
 import '../widgets/explore_feed_loading_surface.dart';
 import '../widgets/explore_place_quick_peek_sheet.dart';
+import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
@@ -51,6 +53,15 @@ import 'package:wandermood/features/home/presentation/providers/explore_intent_p
 import 'package:wandermood/features/places/providers/moody_place_card_blurb_provider.dart';
 
 part 'explore_screen_data.dart';
+part 'explore_screen_map_view.part.dart';
+part 'explore_screen_af_layout.part.dart';
+part 'explore_screen_af_mood_pills.part.dart';
+part 'explore_screen_af_suggestion_outline.part.dart';
+part 'explore_screen_af_quick_suggestions.part.dart';
+part 'explore_screen_af_dietary_accessibility.part.dart';
+part 'explore_screen_af_logistics_photo_chips.part.dart';
+part 'explore_screen_af_shell_chrome.part.dart';
+part 'explore_screen_af_shell.part.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
@@ -392,7 +403,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       longitude: pos.longitude,
     );
     if (!mounted) return;
-    await _loadAllSections(forceNetwork: true);
+    await _loadAllSections(resetBulkSeed: true);
   }
 
   Future<void> _onUserPulledToRefresh() async {
@@ -427,7 +438,30 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       );
     }
     ref.invalidate(moodyExploreAutoProvider);
-    await _loadAllSections(forceNetwork: true);
+    await _loadAllSections(resetBulkSeed: true);
+    if (!mounted) return;
+    _rotateExploreCachedPresentation();
+    unawaited(
+      Future<void>.delayed(const Duration(seconds: 2), () async {
+        if (!mounted) return;
+        await _refreshExploreStaleInBackground();
+      }),
+    );
+  }
+
+  /// Pull-to-refresh: after cache-first reload, vary presentation without a
+  /// synchronous moody Edge call (stale refresh is deferred separately).
+  void _rotateExploreCachedPresentation() {
+    if (!mounted) return;
+    final rng = math.Random();
+    setState(() {
+      _explorePlacePhotoRefreshSeed++;
+      for (final s in _sections) {
+        if (s.cards.length <= 1) continue;
+        final copy = List<Place>.from(s.cards)..shuffle(rng);
+        s.cards = copy;
+      }
+    });
   }
 
   List<Place> _mergePlaces(List<Place> existing, List<Place> incoming) {
@@ -447,7 +481,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   ///
   /// Runs at most once per [ExploreSessionAnchor] city per state lifetime so
   /// tab revisits do not spam the edge function.
-  Future<void> _maybeBulkSeedExplorePool({bool forceNetwork = false}) async {
+  Future<void> _maybeBulkSeedExplorePool() async {
     if (!mounted || _exploreBulkSeedInFlight) return;
     if (_searchResults != null) return;
 
@@ -572,9 +606,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
   }
 
-  Future<void> _loadAllSections({bool forceNetwork = false}) async {
+  Future<void> _loadAllSections({bool resetBulkSeed = false}) async {
     if (!mounted) return;
-    if (forceNetwork) {
+    if (resetBulkSeed) {
       _exploreBulkSeedRanForGateCity = false;
       _exploreBulkSeedGateCity = null;
     }
@@ -594,8 +628,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final skipPlacesCacheFirstPass =
         filters.isNotEmpty || namedFilters.isNotEmpty;
 
-    if (!forceNetwork &&
-        !skipPlacesCacheFirstPass &&
+    // Always try Supabase `places_cache` first when no advanced filters —
+    // never skip this path for "refresh" (pull-to-refresh uses cache + rotate;
+    // moody Edge runs only inside getExplore / deferred stale refresh).
+    if (!skipPlacesCacheFirstPass &&
         cityForCache.isNotEmpty &&
         mounted) {
       final client = Supabase.instance.client;
@@ -640,7 +676,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           if (needBackground) {
             unawaited(_refreshExploreStaleInBackground());
           }
-          unawaited(_maybeBulkSeedExplorePool(forceNetwork: forceNetwork));
+          unawaited(_maybeBulkSeedExplorePool());
           return;
         }
         if (needBackground) {
@@ -650,7 +686,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           _sections.where((s) => s.isLoading).map((s) => _loadSection(s)),
         );
         if (mounted) {
-          unawaited(_maybeBulkSeedExplorePool(forceNetwork: forceNetwork));
+          unawaited(_maybeBulkSeedExplorePool());
         }
         return;
       }
@@ -667,11 +703,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     });
     await Future.wait(
       _sections.map(
-        (s) => _loadSection(s, skipPlacesCache: forceNetwork),
+        (s) => _loadSection(s),
       ),
     );
     if (mounted) {
-      unawaited(_maybeBulkSeedExplorePool(forceNetwork: forceNetwork));
+      unawaited(_maybeBulkSeedExplorePool());
     }
   }
 
@@ -1266,7 +1302,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  /// Opens place detail with light haptic — same cache + route as before.
+  /// Opens place quick sheet (same body as full detail) + CTAs; full route on demand.
   void _openPlaceFromExplore(Place place) {
     String normalizedId(String raw) {
       final t = raw.trim();
@@ -1277,14 +1313,197 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final targetId = normalizedId(place.id);
     HapticFeedback.lightImpact();
     unawaited(_trackExploreTasteInteraction(place, 'tapped'));
-    if (targetId != place.id) {
-      ref.read(placesServiceProvider.notifier).cachePlaceObject(
-            place.copyWith(id: targetId),
+    final seeded =
+        targetId != place.id ? place.copyWith(id: targetId) : place;
+    ref.read(placesServiceProvider.notifier).cachePlaceObject(seeded);
+
+    final l10n = AppLocalizations.of(context)!;
+    unawaited(
+      showPlaceQuickDetailSheet(
+        context,
+        place: seeded,
+        footerBuilder: (pop) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        pop();
+                        unawaited(_openDirectionsForPlace(seeded));
+                      },
+                      icon: const Icon(Icons.directions),
+                      label: Text(l10n.activityDetailDirections),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2A6049),
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        pop();
+                        _showAddToMyDaySheet(seeded);
+                      },
+                      icon: const Icon(Icons.calendar_today_outlined),
+                      label: Text(l10n.placeQuickSheetAddToMyDayCta),
+                      style: placeQuickSheetSecondaryFilledButtonStyle(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  pop();
+                  if (!mounted) return;
+                  context.push('/place/$targetId');
+                },
+                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                label: Text(l10n.myDayOpenFullPlaceDetails),
+                style: placeQuickSheetOutlinedButtonStyle(),
+              ),
+            ],
           );
-    } else {
-      ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
+        },
+      ),
+    );
+  }
+
+  Uri _exploreGoogleWebDirectionsUri(double? lat, double? lng, String title) {
+    if (lat != null &&
+        lng != null &&
+        (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
+      return Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+      );
     }
-    context.push('/place/$targetId');
+    return Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(title)}',
+    );
+  }
+
+  Uri _exploreGoogleAppDirectionsUri(double? lat, double? lng, String title) {
+    if (lat != null &&
+        lng != null &&
+        (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
+      return Uri.parse(
+        'comgooglemaps://?daddr=$lat,$lng&directionsmode=driving',
+      );
+    }
+    return Uri.parse('comgooglemaps://?q=${Uri.encodeComponent(title)}');
+  }
+
+  Uri _exploreAppleMapsUri(double? lat, double? lng, String title) {
+    if (lat != null &&
+        lng != null &&
+        (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
+      return Uri.parse('maps://?q=${Uri.encodeComponent(title)}&ll=$lat,$lng');
+    }
+    return Uri.parse('maps://?q=${Uri.encodeComponent(title)}');
+  }
+
+  Future<void> _openDirectionsForPlace(Place place) async {
+    final l10n = AppLocalizations.of(context)!;
+    final lat = place.location.lat;
+    final lng = place.location.lng;
+    final title = place.name;
+
+    try {
+      final appleUri = _exploreAppleMapsUri(lat, lng, title);
+      final googleAppUri = _exploreGoogleAppDirectionsUri(lat, lng, title);
+      final googleWebUri = _exploreGoogleWebDirectionsUri(lat, lng, title);
+
+      final canOpenApple = await canLaunchUrl(appleUri);
+      final canOpenGoogleApp = await canLaunchUrl(googleAppUri);
+
+      if (!mounted) return;
+
+      final options = <({String label, Uri uri})>[
+        (
+          label: l10n.myDayOpenGoogleMaps,
+          uri: canOpenGoogleApp ? googleAppUri : googleWebUri,
+        ),
+        if (canOpenApple)
+          (
+            label: l10n.myDayOpenAppleMaps,
+            uri: appleUri,
+          ),
+      ];
+
+      if (options.length == 1) {
+        await launchUrl(
+          options.first.uri,
+          mode: LaunchMode.externalApplication,
+        );
+        return;
+      }
+
+      await showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (sheetContext) => SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8E2D8),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.myDayDirectionsNavigateTitle,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1C18),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...options.map(
+                (opt) => ListTile(
+                  leading:
+                      const Icon(Icons.map_outlined, color: Color(0xFF2A6049)),
+                  title: Text(
+                    opt.label,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF1E1C18),
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await launchUrl(opt.uri, mode: LaunchMode.externalApplication);
+                  },
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+            ],
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      showMoodyToast(context, l10n.placeDetailOpenMaps);
+    }
   }
 
   Future<void> _trackExploreTasteInteraction(
@@ -1362,7 +1581,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         '🧭 Explore category="$category" mergedNamedFilters=${named.join(",")}',
       );
     }
-    unawaited(_loadAllSections(forceNetwork: true));
+    unawaited(_loadAllSections(resetBulkSeed: true));
   }
 
   void _onSearchFilterSelected(String filter) {
@@ -1378,7 +1597,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         '🧭 Explore search-filter="$filter" mergedNamedFilters=${named.join(",")}',
       );
     }
-    unawaited(_loadAllSections(forceNetwork: true));
+    unawaited(_loadAllSections(resetBulkSeed: true));
   }
 
   List<String> _namedFiltersForCategory(String category) {
@@ -2593,7 +2812,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 setState(() => _explorePlacePhotoRefreshSeed++);
               }
               ref.invalidate(moodyExploreAutoProvider);
-              await _loadAllSections(forceNetwork: true);
+              await _loadAllSections(resetBulkSeed: true);
               if (isLocationError) {
                 ref
                     .read(locationNotifierProvider.notifier)
@@ -3137,1599 +3356,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  Widget _buildAdvancedFilterModal() {
-    return StatefulBuilder(
-      builder: (BuildContext context, StateSetter setModalState) {
-        final l10n = AppLocalizations.of(context)!;
-        // Create updateFilter function that updates both states
-        void updateFilter(VoidCallback updateCallback) {
-          updateCallback(); // Execute the state change once
-          setState(() {}); // Trigger main widget rebuild
-          setModalState(() {}); // Trigger modal rebuild
-        }
-
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.8,
-              maxWidth: MediaQuery.of(context).size.width * 0.9,
-            ),
-            decoration: BoxDecoration(
-              color: _afWmWhite,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _afWmParchment, width: 0.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Header — title row gets full width minus icon + close (avoids
-                // mid-word wraps when "Clear all" sat beside long l10n titles).
-                Container(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 8, 14),
-                  decoration: const BoxDecoration(
-                    color: _afWmWhite,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: _afWmForest,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.tune,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 2, right: 4),
-                              child: Text(
-                                l10n.exploreAdvancedFiltersTitle,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: _afWmCharcoal,
-                                  height: 1.25,
-                                ),
-                                maxLines: 2,
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            constraints: const BoxConstraints(
-                              minWidth: 40,
-                              minHeight: 40,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.grey[100],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_activeFiltersCount > 0) ...[
-                        const SizedBox(height: 6),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 46, right: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  l10n.exploreFiltersActiveCount(
-                                    _activeFiltersCount,
-                                  ),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: _afWmForest,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  maxLines: 2,
-                                  softWrap: true,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  _clearAllFilters();
-                                  setModalState(() {});
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: _afWmStone,
-                                  backgroundColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  shape: const RoundedRectangleBorder(
-                                    side: BorderSide.none,
-                                  ),
-                                ),
-                                child: Text(
-                                  l10n.exploreClearAll,
-                                  style: GoogleFonts.poppins(
-                                    color: _afWmStone,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                const Divider(height: 1, thickness: 1, color: _afWmParchment),
-
-                // Filter Content - New Expandable Structure
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Moody hint card
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF2F7F4),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFD0E4DA), width: 1),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: _afWmForestTint,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: _afWmParchment, width: 1),
-                                  ),
-                                  child: Center(
-                                    child: MoodyCharacter(
-                                      size: 30,
-                                      mood: _activeFiltersCount > 0 ? 'happy' : 'default',
-                                      glowOpacityScale: 0.35,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _activeFiltersCount > 0
-                                            ? l10n.exploreMoodyHintFiltersActive(_activeFiltersCount)
-                                            : l10n.exploreMoodyHintFiltersIntro,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: const Color(0xFF2A6049),
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.45,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Dietary Preferences
-                        _buildExpandableSection(
-                          '🍽️',
-                          l10n.exploreSectionDietaryPreferences,
-                          _dietaryExpanded,
-                          () => updateFilter(() {
-                            _dietaryExpanded = !_dietaryExpanded;
-                          }),
-                          _buildDietaryFilters(updateFilter),
-                          activeCount: _dietaryActiveCount,
-                        ),
-
-                        // Accessibility & Inclusion
-                        _buildExpandableSection(
-                          '♿',
-                          l10n.exploreSectionAccessibilityInclusion,
-                          _accessibilityExpanded,
-                          () => updateFilter(() {
-                            _accessibilityExpanded = !_accessibilityExpanded;
-                          }),
-                          _buildAccessibilityFilters(updateFilter),
-                          activeCount: _accessibilityActiveCount,
-                        ),
-
-                        // Photo & Aesthetic
-                        _buildExpandableSection(
-                          '📸',
-                          l10n.exploreSectionPhotoAesthetic,
-                          _photoExpanded,
-                          () => updateFilter(() {
-                            _photoExpanded = !_photoExpanded;
-                          }),
-                          _buildPhotoFilters(updateFilter),
-                          activeCount: _photoActiveCount,
-                        ),
-
-                        // Quick Suggestions
-                        _buildExpandableSection(
-                          '⚡',
-                          l10n.exploreSectionQuickSuggestions,
-                          _advancedSuggestionsExpanded,
-                          () => updateFilter(() {
-                            _advancedSuggestionsExpanded = !_advancedSuggestionsExpanded;
-                          }),
-                          _buildAdvancedSuggestionFilters(updateFilter),
-                          activeCount: _quickSuggestionsActiveCount,
-                        ),
-
-                        // Comfort & Convenience
-                        _buildExpandableSection(
-                          '🛋️',
-                          l10n.exploreSectionComfortConvenience,
-                          _logisticsExpanded,
-                          () => updateFilter(() {
-                            _logisticsExpanded = !_logisticsExpanded;
-                          }),
-                          _buildLogisticsFilters(updateFilter),
-                          activeCount: _comfortActiveCount,
-                        ),
-
-                        const SizedBox(height: 80),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Apply Button
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
-                  decoration: BoxDecoration(
-                    color: _afWmWhite,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
-                    ),
-                    border: Border(
-                      top: BorderSide(color: _afWmParchment.withValues(alpha: 0.85)),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final connected = await ref
-                                .read(connectivityServiceProvider)
-                                .isConnected;
-                            if (!context.mounted) return;
-                            if (!connected) {
-                              showOfflineSnackBar(context);
-                              return;
-                            }
-                            HapticFeedback.mediumImpact();
-                            Navigator.pop(context);
-                            final backendFilters = _buildMoodyBackendFilters();
-                            final namedFilters = _buildMoodyNamedFilters();
-                            ref
-                                .read(moodyExploreBackendFiltersProvider.notifier)
-                                .state = backendFilters;
-                            ref
-                                .read(
-                                    moodyExploreBackendNamedFiltersProvider
-                                        .notifier,
-                                )
-                                .state = namedFilters;
-                            ref.invalidate(moodyExploreAutoProvider);
-                            await _loadAllSections(forceNetwork: true);
-                            // Force a rebuild to apply filters
-                            setState(() {
-                              _exploreVisiblePlaceCount = _kExplorePageSize;
-                              // Update active filters count
-                              _updateActiveFiltersCount();
-                              debugPrint(
-                                  '💾 Saved filters - Active count: $_activeFiltersCount');
-                              debugPrint(
-                                  '🔍 Filter state - Vegan: $_vegan, Vegetarian: $_vegetarian, Wheelchair: $_wheelchairAccessible');
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _afWmForest,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 24),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.check_circle, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                _activeFiltersCount > 0
-                                    ? l10n.exploreSaveFiltersWithCount(_activeFiltersCount)
-                                    : l10n.exploreSaveFilters,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFilterSection(
-      String title, IconData icon, List<Widget> children) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: _afWmWhite,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: _afWmParchment,
-                width: 0.5,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: _afWmForest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, size: 18, color: Colors.white),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: _afWmCharcoal,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String emoji, String title) {
-    return Row(
-      children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 20),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMoodButtons() {
-    final l10n = AppLocalizations.of(context)!;
-    final moods = _exploreMoodDefinitions(l10n);
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: moods
-            .map((mood) => Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: _buildMoodButton(mood),
-                ))
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildMoodButton(Map<String, dynamic> mood) {
-    final isSelected = _selectedMood == mood['id'];
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          setState(() {
-            _selectedMood = isSelected ? null : mood['id'] as String;
-            _updateActiveFiltersCount();
-          });
-        },
-        borderRadius: BorderRadius.circular(25),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? mood['color'] : Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: isSelected ? mood['color'] : Colors.grey[300]!,
-              width: isSelected ? 3 : 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: mood['color'].withOpacity(0.4),
-                      blurRadius: 8,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 4),
-                    ),
-                    BoxShadow(
-                      color: mood['color'].withOpacity(0.2),
-                      blurRadius: 12,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(mood['emoji'], style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 8),
-              Text(
-                mood['label'] as String,
-                style: GoogleFonts.poppins(
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMoodButtonsWithCallback(Function(VoidCallback) updateFilter) {
-    final l10n = AppLocalizations.of(context)!;
-    final moods = _exploreMoodDefinitions(l10n);
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: moods
-            .map((mood) => Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: _buildMoodButtonWithCallback(mood, updateFilter),
-                ))
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildMoodButtonWithCallback(
-      Map<String, dynamic> mood, Function(VoidCallback) updateFilter) {
-    final isSelected = _selectedMood == mood['id'];
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          updateFilter(() {
-            _selectedMood = isSelected ? null : mood['id'] as String;
-            _updateActiveFiltersCount();
-          });
-        },
-        borderRadius: BorderRadius.circular(25),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? mood['color'] : Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: isSelected ? mood['color'] : Colors.grey[300]!,
-              width: isSelected ? 3 : 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: mood['color'].withOpacity(0.4),
-                      blurRadius: 8,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 4),
-                    ),
-                    BoxShadow(
-                      color: mood['color'].withOpacity(0.2),
-                      blurRadius: 12,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(mood['emoji'], style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 8),
-              Text(
-                mood['label'] as String,
-                style: GoogleFonts.poppins(
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSuggestionChip(
-      String emoji, String label, bool value, Function(bool)? onChanged) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onChanged != null
-            ? () {
-                HapticFeedback.lightImpact();
-                onChanged(!value);
-              }
-            : null,
-        borderRadius: BorderRadius.circular(20),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: value ? const Color(0xFF2A6049) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
-              width: value ? 2 : 1,
-            ),
-            boxShadow: value
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.3),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 3),
-                    ),
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 3,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 16)),
-              if (label.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontWeight: value ? FontWeight.w600 : FontWeight.w500,
-                    color: value ? Colors.white : Colors.black87,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSuggestionChipWithCallback(
-      String emoji, String label, bool value, VoidCallback? onChanged) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onChanged,
-        borderRadius: BorderRadius.circular(20),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: value ? const Color(0xFF2A6049) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
-              width: value ? 2 : 1,
-            ),
-            boxShadow: value
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.3),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 3),
-                    ),
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 3,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 16)),
-              if (label.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontWeight: value ? FontWeight.w600 : FontWeight.w500,
-                    color: value ? Colors.white : Colors.black87,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOutlineButton(
-      String emoji, String label, bool value, Function(bool) onChanged) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onChanged(!value);
-        },
-        borderRadius: BorderRadius.circular(25),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: value ? const Color(0xFF2A6049) : Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
-              width: value ? 2.5 : 1.5,
-            ),
-            boxShadow: value
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.3),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 3),
-                    ),
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.1),
-                      blurRadius: 8,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 2,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 14)),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontWeight: value ? FontWeight.w700 : FontWeight.w500,
-                  color: value ? Colors.white : Colors.black87,
-                  fontSize: 12,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOutlineButtonWithCallback(
-      String emoji, String label, bool value, VoidCallback? onChanged) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onChanged,
-        borderRadius: BorderRadius.circular(25),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: value ? const Color(0xFF2A6049) : Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: value ? const Color(0xFF2A6049) : Colors.grey[300]!,
-              width: value ? 2.5 : 1.5,
-            ),
-            boxShadow: value
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.3),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 3),
-                    ),
-                    BoxShadow(
-                      color: const Color(0xFF2A6049).withOpacity(0.1),
-                      blurRadius: 8,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 2,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 14)),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontWeight: value ? FontWeight.w700 : FontWeight.w500,
-                  color: value ? Colors.white : Colors.black87,
-                  fontSize: 12,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getPriceLevelText(AppLocalizations l10n, int level) {
-    switch (level) {
-      case 1:
-        return l10n.explorePriceLevelBudget;
-      case 2:
-        return l10n.explorePriceLevelModerate;
-      case 3:
-        return l10n.explorePriceLevelExpensive;
-      case 4:
-        return l10n.explorePriceLevelLuxury;
-      default:
-        return l10n.explorePriceLevelBudget;
-    }
-  }
-
-  List<Map<String, dynamic>> _exploreMoodDefinitions(AppLocalizations l10n) {
-    return [
-      {'id': 'adventure', 'label': l10n.exploreMoodAdventure, 'emoji': '🏔️', 'color': const Color(0xFFFFD700)},
-      {'id': 'creative', 'label': l10n.exploreMoodCreative, 'emoji': '😊', 'color': const Color(0xFF87CEEB)},
-      {'id': 'relaxed', 'label': l10n.exploreMoodRelaxed, 'emoji': '🍀', 'color': const Color(0xFF98FB98)},
-      {'id': 'mindful', 'label': l10n.exploreMoodMindful, 'emoji': '🍀', 'color': const Color(0xFFDDA0DD)},
-      {'id': 'romantic', 'label': l10n.exploreMoodRomantic, 'emoji': '❤️', 'color': const Color(0xFFFFB6C1)},
-    ];
-  }
-
-  // Helper method to build expandable sections
-  Widget _buildExpandableSection(
-    String icon,
-    String title,
-    bool isExpanded,
-    VoidCallback onToggle,
-    Widget content, {
-    int activeCount = 0,
-  }) {
-    final hasActive = activeCount > 0;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-      decoration: BoxDecoration(
-        color: _afWmWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: hasActive && !isExpanded ? _afWmForest.withValues(alpha: 0.55) : _afWmParchment,
-          width: hasActive && !isExpanded ? 1.25 : 0.75,
-        ),
-      ),
-      child: Column(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onToggle();
-              },
-              borderRadius: BorderRadius.vertical(
-                top: const Radius.circular(16),
-                bottom: isExpanded ? Radius.zero : const Radius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                child: Row(
-                  children: [
-                    Text(icon, style: const TextStyle(fontSize: 20)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: hasActive ? _afWmForest : _afWmCharcoal,
-                        ),
-                      ),
-                    ),
-                    // Active count badge
-                    if (hasActive && !isExpanded) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: _afWmForest,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '$activeCount',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    AnimatedRotation(
-                      turns: isExpanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: isExpanded ? _afWmForest : _afWmStone,
-                        size: 22,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          ClipRect(
-            child: AnimatedAlign(
-              alignment: Alignment.topCenter,
-              duration: const Duration(milliseconds: 200),
-              heightFactor: isExpanded ? 1.0 : 0.0,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: content,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Advanced Suggestion filters
-  Widget _buildAdvancedSuggestionFilters(Function(VoidCallback) updateFilter) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildFilterChip('🏠', l10n.exploreFilterIndoorOnly, _indoorOnly, (value) {
-                updateFilter(() {
-                  _indoorOnly = value;
-                  if (value) _outdoorOnly = false;
-                  _updateActiveFiltersCount();
-                });
-              }),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildFilterChip('☀️', l10n.exploreFilterOutdoorOnly, _outdoorOnly, (value) {
-                updateFilter(() {
-                  _outdoorOnly = value;
-                  if (value) _indoorOnly = false;
-                  _updateActiveFiltersCount();
-                });
-              }),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        _buildFilterChip('🌙', l10n.exploreFilterOpenNow, _openNow, (value) {
-          updateFilter(() {
-            _openNow = value;
-            _updateActiveFiltersCount();
-          });
-        }),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildFilterChip('🤫', l10n.exploreFilterQuiet, _crowdQuiet, (value) {
-                updateFilter(() {
-                  _crowdQuiet = value;
-                  if (value) _crowdLively = false;
-                  _updateActiveFiltersCount();
-                });
-              }),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildFilterChip('💃', l10n.exploreFilterLively, _crowdLively, (value) {
-                updateFilter(() {
-                  _crowdLively = value;
-                  if (value) _crowdQuiet = false;
-                  _updateActiveFiltersCount();
-                });
-              }),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildFilterChip('💕', l10n.exploreFilterRomanticVibe, _romanticVibe, (value) {
-                updateFilter(() {
-                  _romanticVibe = value;
-                  _updateActiveFiltersCount();
-                });
-              }),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildFilterChip('🔀', l10n.exploreFilterSurpriseMe, _surpriseMe, (value) {
-                updateFilter(() {
-                  _surpriseMe = value;
-                  _updateActiveFiltersCount();
-                });
-              }),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Dietary Preferences filters
-  Widget _buildDietaryFilters(Function(VoidCallback) updateFilter) {
-    final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _buildFilterChip('🌱', l10n.exploreFilterVegan, _vegan, (value) {
-          updateFilter(() { _vegan = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🥬', l10n.exploreFilterVegetarian, _vegetarian, (value) {
-          updateFilter(() { _vegetarian = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🥗', l10n.exploreFilterHalal, _halal, (value) {
-          updateFilter(() { _halal = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🌾', l10n.exploreFilterGlutenFree, _glutenFree, (value) {
-          updateFilter(() { _glutenFree = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🐟', l10n.exploreFilterPescatarian, _pescatarian, (value) {
-          updateFilter(() { _pescatarian = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('❌', l10n.exploreFilterNoAlcohol, _noAlcohol, (value) {
-          updateFilter(() { _noAlcohol = value; _updateActiveFiltersCount(); });
-        }),
-      ],
-    );
-  }
-
-  // Accessibility & Inclusion filters
-  Widget _buildAccessibilityFilters(Function(VoidCallback) updateFilter) {
-    final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _buildFilterChip('♿', l10n.exploreFilterWheelchairAccessible, _wheelchairAccessible, (value) {
-          updateFilter(() { _wheelchairAccessible = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🏳️‍🌈', l10n.exploreFilterLgbtqFriendly, _lgbtqFriendly, (value) {
-          updateFilter(() { _lgbtqFriendly = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🧠', l10n.exploreFilterSensoryFriendly, _sensoryFriendly, (value) {
-          updateFilter(() { _sensoryFriendly = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('👨‍👩‍👧', l10n.exploreFilterFamilyFriendly, _familyFriendly, (value) {
-          updateFilter(() { _familyFriendly = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🧓', l10n.exploreFilterSeniorFriendly, _seniorFriendly, (value) {
-          updateFilter(() { _seniorFriendly = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🧑‍🍼', l10n.exploreFilterBabyFriendly, _babyFriendly, (value) {
-          updateFilter(() { _babyFriendly = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('✊🏿', l10n.exploreFilterBlackOwned, _blackOwned, (value) {
-          updateFilter(() { _blackOwned = value; _updateActiveFiltersCount(); });
-        }),
-      ],
-    );
-  }
-
-  // Comfort & Convenience filters
-  Widget _buildLogisticsFilters(Function(VoidCallback) updateFilter) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.exploreFilterPriceRange,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: _afWmCharcoal,
-          ),
-        ),
-        const SizedBox(height: 8),
-        RangeSlider(
-          values: _priceRange,
-          min: 0,
-          max: 100,
-          divisions: 20,
-          labels: RangeLabels(
-            '€${_priceRange.start.round()}',
-            '€${_priceRange.end.round()}',
-          ),
-          onChanged: (values) {
-            updateFilter(() {
-              _priceRange = values;
-              _updateActiveFiltersCount();
-            });
-          },
-          activeColor: _afWmForest,
-          inactiveColor: _afWmForest.withOpacity(0.2),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.exploreFilterMaxDistance,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: _afWmCharcoal,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Slider(
-          value: _maxDistance,
-          min: 0,
-          max: 50,
-          divisions: 50,
-          label: '${_maxDistance.round()} km',
-          onChanged: (value) {
-            updateFilter(() {
-              _maxDistance = value;
-              _updateActiveFiltersCount();
-            });
-          },
-          activeColor: _afWmForest,
-          inactiveColor: _afWmForest.withOpacity(0.2),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.exploreFilterAdditionalOptions,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: _afWmCharcoal,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _buildFilterChip('🚗', l10n.exploreFilterParking, _parkingAvailable, (value) {
-              updateFilter(() { _parkingAvailable = value; _updateActiveFiltersCount(); });
-            }),
-            _buildFilterChip('📶', l10n.exploreFilterWifi, _wifiAvailable, (value) {
-              updateFilter(() { _wifiAvailable = value; _updateActiveFiltersCount(); });
-            }),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Photo Options filters
-  Widget _buildPhotoFilters(Function(VoidCallback) updateFilter) {
-    final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _buildFilterChip('📸', l10n.exploreFilterInstagrammable, _instagrammable, (value) {
-          updateFilter(() { _instagrammable = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🎨', l10n.exploreFilterArtisticDesign, _artisticDesign, (value) {
-          updateFilter(() { _artisticDesign = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🧘‍♀️', l10n.exploreFilterAestheticSpaces, _aestheticSpaces, (value) {
-          updateFilter(() { _aestheticSpaces = value; _updateActiveFiltersCount(); });
-        }),
-        _buildFilterChip('🌆', l10n.exploreFilterScenicViews, _scenicViews, (value) {
-          updateFilter(() { _scenicViews = value; _updateActiveFiltersCount(); });
-        }),
-      ],
-    );
-  }
-
-  /// v2 filter pills (SCREEN 7): unselected cream + parchment + charcoal; selected forestTint + forest + forest text.
-  Widget _buildFilterChip(
-      String emoji, String label, bool isSelected, Function(bool) onChanged) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onChanged(!isSelected);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? _afWmForestTint : _afWmCream,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? _afWmForest : _afWmParchment,
-            width: isSelected ? 1.5 : 0.5,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? _afWmForest : _afWmCharcoal,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Helper to build selectable chips (for single-select options)
-  Widget _buildSelectableChip(
-      String label, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEBF3EE) : const Color(0xFFF5F0E8),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color:
-                isSelected ? const Color(0xFF2A6049) : const Color(0xFFE8E2D8),
-            width: isSelected ? 1.5 : 0.5,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color:
-                isSelected ? const Color(0xFF2A6049) : const Color(0xFF8C8780),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Build map view with markers for places
-  Widget _buildMapView(List<Place> places, Position? userLocation) {
-    // Safety check: if no places, show empty state
-    if (places.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.exploreNoPlacesOnMap,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-
-    // Determine initial camera position
-    LatLng initialPosition;
-    if (userLocation != null) {
-      // Check if it's simulator coordinates
-      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 &&
-          (userLocation.longitude + 122.406417).abs() < 0.1;
-      if (!isSanFrancisco) {
-        initialPosition = LatLng(userLocation.latitude, userLocation.longitude);
-      } else {
-        // Use city center as fallback
-        final currentCity =
-            ref.read(locationNotifierProvider).value ?? 'Rotterdam';
-        final cityCoords = _getCityCoordinates(currentCity);
-        initialPosition = LatLng(cityCoords['lat']!, cityCoords['lng']!);
-      }
-    } else {
-      // Use city center
-      final currentCity =
-          ref.read(locationNotifierProvider).value ?? 'Rotterdam';
-      final cityCoords = _getCityCoordinates(currentCity);
-      initialPosition = LatLng(cityCoords['lat']!, cityCoords['lng']!);
-    }
-
-    // Create markers for all places (not filtered - show everything on map)
-    final Set<Marker> markers = {};
-    final currentCity = ref.read(locationNotifierProvider).value ?? 'Rotterdam';
-
-    for (int i = 0; i < places.length; i++) {
-      final place = places[i];
-      final markerId = MarkerId(place.id);
-
-      // Determine marker color based on quick filters (visual indicator only)
-      BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
-      if (_quickFilterRating45 && place.rating >= 4.5) {
-        markerIcon =
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
-      } else if (_quickFilterDistance1km) {
-        // Check if within 1km (for visual highlighting)
-        final distance =
-            _calculatePlaceDistance(place, userLocation, currentCity);
-        if (distance != null && distance <= 1.0) {
-          markerIcon =
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
-        }
-      }
-
-      markers.add(
-        Marker(
-          markerId: markerId,
-          position: LatLng(place.location.lat, place.location.lng),
-          infoWindow: InfoWindow(
-            title: place.name,
-            snippet: place.rating > 0
-                ? '⭐ ${place.rating.toStringAsFixed(1)}'
-                : null,
-          ),
-          icon: markerIcon,
-          onTap: () async {
-            await Future.delayed(const Duration(milliseconds: 100));
-            if (!mounted) {
-              return;
-            }
-            HapticFeedback.lightImpact();
-            await showExplorePlaceQuickPeekSheet(
-              context: context,
-              place: place,
-              photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-              onViewFullPlace: () => _openPlaceFromExplore(place),
-              onAddToMyDay: () {
-                unawaited(_showAddToMyDaySheet(place));
-              },
-            );
-          },
-        ),
-      );
-    }
-
-    // Avoid ClipRRect around the PlatformView — on iOS it can leave tiles blank while
-    // markers/logo still render. City / radius is unchanged; LocationDropdown still shows it.
-    return SizedBox.expand(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-          Positioned.fill(
-            child: GoogleMap(
-            key: const ValueKey<String>('explore_google_map'),
-            initialCameraPosition: CameraPosition(
-              target: initialPosition,
-              zoom: 13,
-            ),
-            markers: markers,
-            mapType: MapType.normal,
-            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-              Factory<OneSequenceGestureRecognizer>(
-                  () => EagerGestureRecognizer()),
-            },
-            scrollGesturesEnabled: true,
-            zoomGesturesEnabled: true,
-            rotateGesturesEnabled: true,
-            tiltGesturesEnabled: true,
-            minMaxZoomPreference: const MinMaxZoomPreference(9, 20),
-            padding: EdgeInsets.zero,
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                if (!mounted || _mapController != controller) return;
-                try {
-                  await controller.moveCamera(
-                    CameraUpdate.newLatLngZoom(initialPosition, 13),
-                  );
-                } catch (_) {}
-              });
-            },
-            myLocationEnabled: userLocation != null &&
-                (userLocation.latitude - 37.785834).abs() > 0.1,
-            myLocationButtonEnabled: true,
-            zoomControlsEnabled: false,
-            mapToolbarEnabled: false,
-            compassEnabled: true,
-            trafficEnabled: false,
-            buildingsEnabled: true,
-            indoorViewEnabled: false,
-          ),
-          ),
-
-          // Quick filter chips at the top
-          Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.filter_list,
-                      size: 20,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.exploreQuickFilters,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                    const Spacer(),
-                    // Distance filter (highlights places within 1km)
-                    _buildQuickFilterChip(
-                      '1km',
-                      isActive: _quickFilterDistance1km,
-                      onTap: () {
-                        setState(() {
-                          _quickFilterDistance1km = !_quickFilterDistance1km;
-                          _exploreVisiblePlaceCount = _kExplorePageSize;
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    // Rating filter (highlights places 4.5+)
-                    _buildQuickFilterChip(
-                      '4.5+',
-                      isActive: _quickFilterRating45,
-                      onTap: () {
-                        setState(() {
-                          _quickFilterRating45 = !_quickFilterRating45;
-                          _exploreVisiblePlaceCount = _kExplorePageSize;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        ),
-    );
-  }
-
-  /// Get city coordinates for map initialization
-  Map<String, double> _getCityCoordinates(String cityName) {
-    final cityCoords = {
-      'Rotterdam': {'lat': 51.9244, 'lng': 4.4777},
-      'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
-      'The Hague': {'lat': 52.0705, 'lng': 4.3007},
-      'Utrecht': {'lat': 52.0907, 'lng': 5.1214},
-      'Eindhoven': {'lat': 51.4416, 'lng': 5.4697},
-      'Groningen': {'lat': 53.2194, 'lng': 6.5665},
-      'Delft': {'lat': 52.0067, 'lng': 4.3556},
-      'Beneden-Leeuwen': {'lat': 51.8892, 'lng': 5.5142},
-    };
-    return cityCoords[cityName] ?? cityCoords['Rotterdam']!;
-  }
-
-  /// Calculate distance for a place (helper for map markers)
-  double? _calculatePlaceDistance(
-      Place place, Position? userLocation, String cityName) {
-    Position? referencePoint;
-
-    if (userLocation != null) {
-      final isSanFrancisco = (userLocation.latitude - 37.785834).abs() < 0.1 &&
-          (userLocation.longitude + 122.406417).abs() < 0.1;
-      if (!isSanFrancisco) {
-        referencePoint = userLocation;
-      }
-    }
-
-    if (referencePoint == null) {
-      final cityCoords = _getCityCoordinates(cityName);
-      referencePoint = Position(
-        latitude: cityCoords['lat']!,
-        longitude: cityCoords['lng']!,
-        timestamp: MoodyClock.now(),
-        accuracy: 0,
-        altitude: 0,
-        altitudeAccuracy: 0,
-        heading: 0,
-        headingAccuracy: 0,
-        speed: 0,
-        speedAccuracy: 0,
-      );
-    }
-
-    return DistanceService.calculateDistance(
-      referencePoint.latitude,
-      referencePoint.longitude,
-      place.location.lat,
-      place.location.lng,
-    );
-  }
-
   // --- Add to My Day ---
 
   Future<void> _showAddToMyDaySheet(Place place) async {
@@ -4789,38 +3415,5 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       photoSelectionSeed: _explorePlacePhotoRefreshSeed,
     );
     unawaited(_trackExploreTasteInteraction(place, 'added_to_day'));
-  }
-
-  // Build quick filter chip for map view
-  Widget _buildQuickFilterChip(
-    String label, {
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFEAF5EE) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isActive ? const Color(0xFF2A6049) : Colors.grey[300]!,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: isActive ? const Color(0xFF2A6049) : Colors.grey[800],
-          ),
-        ),
-      ),
-    );
   }
 }

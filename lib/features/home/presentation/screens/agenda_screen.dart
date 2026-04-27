@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
@@ -1254,7 +1256,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        _showActivityDetails(activity);
+        unawaited(_showActivityDetails(activity));
       },
       child: Container(
         height: 216,
@@ -1547,7 +1549,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                             onSelected: (value) {
                               switch (value) {
                                 case 'details':
-                                  _showActivityDetails(activity);
+                                  unawaited(_showActivityDetails(activity));
                                   break;
                                 case 'directions':
                                   _openAgendaDirections(activity);
@@ -1688,7 +1690,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'price': activity['price'] ?? 0.0,
       'category': activity['category'] ?? 'general',
       'mood': activity['mood'] ?? 'neutral',
-      'placeId': activity['placeId'],
+      'placeId': activity['placeId'] ?? activity['place_id'],
+      'place_id': activity['place_id'] ?? activity['placeId'],
       'rating': activity['rating'] ?? 0.0,
       'timeOfDay': activity['timeOfDay'] ?? 'any',
       'startTime': activity['startTime'],
@@ -1957,57 +1960,83 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
   
-  void _showActivityDetails(Map<String, dynamic> activity) {
+  Future<void> _showActivityDetails(Map<String, dynamic> activity) async {
     final routePlaceId = resolvePlannerPlaceDetailRouteId(activity);
-    if (routePlaceId != null) {
+    final moodMatchSessionId = resolvePlannerGroupSessionId(activity);
+    // Mood Match + place: same quick sheet as My Day (pair chrome + embedded place).
+    // Other place-linked rows: keep full-screen place detail.
+    if (routePlaceId != null && moodMatchSessionId == null) {
       context.pushNamed('place-detail', pathParameters: {'id': routePlaceId});
       return;
     }
 
-    showPlannerActivityDetailSheet(
+    final l10n = AppLocalizations.of(context)!;
+    await showPlannerActivityDetailSheet(
       context,
       activity: activity,
       scheduledTimeLabel: activity['time']?.toString(),
       footerBuilder: (pop) {
-        return Row(
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  pop();
-                  _openAgendaDirections(activity);
-                },
-                icon: const Icon(Icons.directions),
-                label: Text(AppLocalizations.of(context)!.socialGetDirections),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2A6049),
-                  side: const BorderSide(color: Color(0xFF2A6049)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      pop();
+                      _openAgendaDirections(activity);
+                    },
+                    icon: const Icon(Icons.directions),
+                    label: Text(l10n.socialGetDirections),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF2A6049),
+                      side: const BorderSide(color: Color(0xFF2A6049)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  pop();
-                  _deleteScheduledActivity(activity);
-                },
-                icon: const Icon(Icons.delete_outline),
-                label: Text(AppLocalizations.of(context)!.myDayDeleteActivityCta),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      pop();
+                      _deleteScheduledActivity(activity);
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.myDayDeleteActivityCta),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
+            if (routePlaceId != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  pop();
+                  if (!context.mounted) return;
+                  context.pushNamed(
+                    'place-detail',
+                    pathParameters: {'id': routePlaceId},
+                  );
+                },
+                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                label: Text(l10n.myDayOpenFullPlaceDetails),
+                style: placeQuickSheetOutlinedButtonStyle(),
+              ),
+            ],
           ],
         );
       },

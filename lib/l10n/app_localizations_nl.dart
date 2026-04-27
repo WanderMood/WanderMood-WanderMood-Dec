@@ -5901,6 +5901,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get myDayOpenFullPlaceDetails => 'Volledige plek openen';
 
   @override
+  String get placeQuickSheetAddToMyDayCta => '+ mijn dag';
+
+  @override
   String myDayMoodStreakBadge(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -7851,6 +7854,106 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get plannerMoodyAdviceBlurb =>
       'Tips van Moody:\n• Check openingstijden (en het weer als je naar buiten gaat).\n• Kom een paar minuten eerder zodat je rustig aankomt.\n• Blijf drinken en houd een open blik — geniet!';
+
+  @override
+  String plannerMoodMatchQuickTogether(String partner) {
+    return 'Jij + $partner';
+  }
+
+  @override
+  String plannerMoodMatchQuickStory(String placeTitle) {
+    return '$placeTitle staat in jullie gedeelde dag omdat het past bij wat jullie allebei met me hebben gedeeld — apart, privé.';
+  }
+
+  @override
+  String get plannerMoodMatchQuickPlaceFallback => 'Deze stop';
+
+  @override
+  String get plannerMoodMatchQuickYouLabel => 'Jij';
+
+  @override
+  String get plannerMoodMatchQuickMoodyNote =>
+      'Ik praat hier met jullie twee — de tabs hieronder zijn gewoon de plekfeiten, zoals altijd.';
+
+  @override
+  String plannerMoodMatchPairStory_romantic_adventurous(String place) {
+    return '$place treft precies het midden — een intieme sfeer voor de romantische stemming, en genoeg verrassing voor de avontuurlijke.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_adventurous_relaxed(String place) {
+    return '$place werkt omdat er genoeg nieuws is voor degene die wil ontdekken, en genoeg rust voor degene die wil ontspannen.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_cultural_social(String place) {
+    return '$place geeft jullie allebei iets om te ontdekken én om over te praten — het soort stop dat een echt gesprek wordt.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_relaxed_social(String place) {
+    return '$place is ontspannen en open — samen bijkomen zonder druk.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_energetic_relaxed(String place) {
+    return '$place zoekt het midden — één van jullie blijft energiek, de ander vindt even rust.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_cultural_romantic(String place) {
+    return '$place verdient zijn plek door sfeer en iets moois om samen te bekijken te combineren.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_energetic_adventurous(String place) {
+    return '$place houdt het tempo hoog — jullie wilden allebei beweging, en dat krijgen jullie.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_contemplative_any(String place) {
+    return 'Ik koos $place omdat het jullie allebei ruimte geeft — om te praten, te zitten, of gewoon samen te zijn.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_same_mood(String place) {
+    return 'Jullie kwamen met dezelfde energie — $place speelt daar volledig op in.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_default(String place) {
+    return '$place past bij wat jullie allebei apart met me hebben gedeeld — ik heb het zo gepland dat geen enkele stemming erbij inschiet.';
+  }
+
+  @override
+  String plannerMoodMatchNoteHint(String partner) {
+    return 'Laat een berichtje achter voor $partner…';
+  }
+
+  @override
+  String get plannerMoodMatchNoteSave => 'Verstuur';
+
+  @override
+  String get plannerMoodMatchNoteSaved => 'Verstuurd ✓';
+
+  @override
+  String get plannerMoodMatchNoteSaving => 'Opslaan…';
+
+  @override
+  String plannerMoodMatchNotePartnerLabel(String partner) {
+    return '$partner zegt:';
+  }
+
+  @override
+  String get plannerMoodMatchNoteYourLabel => 'Jouw berichtje';
+
+  @override
+  String get plannerMoodMatchNoteSectionTitle => 'Berichtjes';
+
+  @override
+  String plannerMoodMatchNoteSavedSnackbar(String partner) {
+    return 'Opgeslagen — $partner ziet dit als ze deze stop openen (of meteen als hun venster open staat).';
+  }
 
   @override
   String moodyChatSubtitleEnergeticCity(String city) {

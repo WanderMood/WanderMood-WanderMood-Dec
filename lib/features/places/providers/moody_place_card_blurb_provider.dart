@@ -13,6 +13,8 @@ import 'package:wandermood/features/places/data/moody_place_blurb_facts.dart';
 import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
 import 'package:wandermood/features/places/data/place_card_ui_description.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
+import 'package:wandermood/features/places/utils/moody_explore_filter_digest.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 AppLocalizations _l10nFor(ui.Locale locale) {
@@ -103,8 +105,16 @@ final moodyPlaceCardUiDescriptionProvider =
   final comm =
       ref.read(communicationStyleProvider.notifier).getCurrentStyleString();
   final lang = locale.languageCode;
-  final stableKey =
-      MoodyPlaceCardUiCache.stableCacheKey(place.id, lang, comm);
+  final namedFilters = ref.watch(moodyExploreBackendNamedFiltersProvider);
+  final hardFilters = ref.watch(moodyExploreBackendFiltersProvider);
+  final filterDigest =
+      moodyExploreFilterDigest(namedFilters, hardFilters);
+  final stableKey = MoodyPlaceCardUiCache.stableCacheKey(
+    place.id,
+    lang,
+    comm,
+    filterDigest,
+  );
 
   // Instant path: we already resolved copy for this place this session (facts-based
   // key alone misses until after a slow [getPlaceDetails] + hash).
@@ -142,6 +152,9 @@ final moodyPlaceCardUiDescriptionProvider =
       languageCode: ctx.lang,
       communicationStyle: comm,
       placeId: place.id.startsWith('google_') ? place.id.substring(7) : place.id,
+      activeExploreFilters:
+          namedFilters.isEmpty ? null : List<String>.from(namedFilters),
+      exploreHardFilters: hardFilters.isEmpty ? null : Map<String, dynamic>.from(hardFilters),
     );
     if (rich != null && rich.isValid) {
       out = PlaceCardUiDescription.rich(
@@ -202,6 +215,10 @@ final moodyPlaceCardUiDescriptionProvider =
           facts: factsForModel,
           languageCode: ctx.lang,
           placeId: place.id.startsWith('google_') ? place.id.substring(7) : place.id,
+          activeExploreFilters:
+              namedFilters.isEmpty ? null : List<String>.from(namedFilters),
+          exploreHardFilters:
+              hardFilters.isEmpty ? null : Map<String, dynamic>.from(hardFilters),
         ))
             .trim();
       }
@@ -241,7 +258,16 @@ final moodyPlaceCardUiDescriptionCacheOnlyProvider =
   final comm =
       ref.read(communicationStyleProvider.notifier).getCurrentStyleString();
   final lang = locale.languageCode;
-  final stableKey = MoodyPlaceCardUiCache.stableCacheKey(place.id, lang, comm);
+  final namedFilters = ref.watch(moodyExploreBackendNamedFiltersProvider);
+  final hardFilters = ref.watch(moodyExploreBackendFiltersProvider);
+  final filterDigest =
+      moodyExploreFilterDigest(namedFilters, hardFilters);
+  final stableKey = MoodyPlaceCardUiCache.stableCacheKey(
+    place.id,
+    lang,
+    comm,
+    filterDigest,
+  );
 
   final stableHit = MoodyPlaceCardUiCache.get(stableKey);
   if (stableHit != null) return stableHit;
@@ -318,11 +344,19 @@ final moodyPlaceDetailBlurbProvider =
 
   final factsForModel = clampMoodyPlaceBlurbFactsForEdge(ctx.facts);
 
+  final namedFilters = ref.watch(moodyExploreBackendNamedFiltersProvider);
+  final hardFilters = ref.watch(moodyExploreBackendFiltersProvider);
+  final filterDigest =
+      moodyExploreFilterDigest(namedFilters, hardFilters);
+  final detailVariant = filterDigest.isEmpty
+      ? 'detail_v4'
+      : 'detail_v4_$filterDigest';
+
   final key = MoodyPlaceBlurbCache.cacheKey(
     place.id,
     ctx.lang,
     factsForModel.hashCode,
-    variant: 'detail_v4',
+    variant: detailVariant,
   );
   final hit = MoodyPlaceBlurbCache.get(key);
   if (hit != null) return hit;
@@ -346,6 +380,10 @@ final moodyPlaceDetailBlurbProvider =
         facts: factsForModel,
         languageCode: ctx.lang,
         placeId: place.id.startsWith('google_') ? place.id.substring(7) : place.id,
+        activeExploreFilters:
+            namedFilters.isEmpty ? null : List<String>.from(namedFilters),
+        exploreHardFilters:
+            hardFilters.isEmpty ? null : Map<String, dynamic>.from(hardFilters),
       ))
           .trim();
       if (out.isNotEmpty && kDebugMode) {

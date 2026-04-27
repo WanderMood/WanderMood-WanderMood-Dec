@@ -31,6 +31,7 @@ import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import '../widgets/travel_time_connector.dart';
@@ -1356,7 +1357,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        _showActivityDetails(status['activity']);
+        unawaited(_showActivityDetails(status['activity']));
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
@@ -1775,7 +1776,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           _collapsedSections[sectionKey] = !(_collapsedSections[sectionKey] ?? false);
         });
       },
-      onActivityTap: (activity) => _showActivityDetails(activity.rawData),
+      onActivityTap: (activity) =>
+          unawaited(_showActivityDetails(activity.rawData)),
       onDirectionsTap: _handleTimelinePrimaryAction,
       onMoreTap: _showActivityOptions,
       onCheckIn: _checkInActivity,
@@ -2185,7 +2187,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         unawaited(_openMoodSelectionForPlanning());
         break;
       case 'View Details':
-        _showActivityDetails(status['activity']);
+        unawaited(_showActivityDetails(status['activity']));
         break;
       case 'Get Ready':
         unawaited(_tryShowGetReadyFromStatus(status));
@@ -2304,11 +2306,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       if (found != null) {
         await _showRichGetReadySheet(found);
       } else {
-        _showActivityDetails(raw);
+        await _showActivityDetails(raw);
       }
     } catch (_) {
       if (!mounted) return;
-      _showActivityDetails(raw);
+      await _showActivityDetails(raw);
     }
   }
 
@@ -2403,14 +2405,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     ref.read(placesServiceProvider.notifier).cachePlaceObject(place);
   }
 
-  void _showActivityDetails(Map<String, dynamic> activity) {
+  Future<void> _showActivityDetails(Map<String, dynamic> activity) async {
     final routePlaceId = resolvePlannerPlaceDetailRouteId(activity);
     final scheduledLabel = activity['startTime'] != null
         ? _formatTime(DateTime.parse(activity['startTime'] as String))
         : null;
     final l10n = AppLocalizations.of(context)!;
 
-    showPlannerActivityDetailSheet(
+    await showPlannerActivityDetailSheet(
       context,
       activity: activity,
       scheduledTimeLabel: scheduledLabel,
@@ -2432,6 +2434,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2A6049),
                       foregroundColor: Colors.white,
+                      elevation: 2,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
@@ -2441,21 +2444,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: ElevatedButton.icon(
                     onPressed: () {
                       pop();
                       unawaited(_saveActivity(activity));
                     },
                     icon: const Icon(Icons.bookmark_outline),
                     label: Text(l10n.myDaySaveForLater),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF2A6049),
-                      side: const BorderSide(color: Color(0xFF2A6049)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
+                    style: placeQuickSheetSecondaryFilledButtonStyle(),
                   ),
                 ),
               ],
@@ -2474,14 +2470,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 },
                 icon: const Icon(Icons.open_in_new_rounded, size: 20),
                 label: Text(l10n.myDayOpenFullPlaceDetails),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2A6049),
-                  side: const BorderSide(color: Color(0xFF2A6049)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
+                style: placeQuickSheetOutlinedButtonStyle(),
               ),
             ],
           ],
@@ -2754,7 +2743,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 title: AppLocalizations.of(context)!.myDayViewDetails,
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  _showActivityDetails(activity.rawData);
+                  unawaited(_showActivityDetails(activity.rawData));
                 },
               ),
               _activityOptionSheetTile(
@@ -2829,6 +2818,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         onActivityTap: _showActivityDetails,
         onSaveTap: _saveActivity,
         onDirectionsTap: _openDirections,
+        onAskMoodyTap: _onAskMoodyFromFreeTime,
       ),
       loading: () => MyDayFreeTimeCarousel(
         activities: const [],
@@ -2844,6 +2834,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         onSaveTap: (_) {},
         onDirectionsTap: (_) {},
       ),
+    );
+  }
+
+  void _onAskMoodyFromFreeTime(Map<String, dynamic> activity) {
+    if (!mounted) return;
+    showMoodyChatSheetWithSharedPlace(
+      context,
+      ref,
+      sharedPlace: moodySharedPlacePayloadForFreeTimeActivity(activity),
     );
   }
 

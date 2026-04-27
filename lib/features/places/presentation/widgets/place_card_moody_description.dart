@@ -11,7 +11,9 @@ import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
 import 'package:wandermood/features/places/data/place_card_ui_description.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/providers/moody_place_card_blurb_provider.dart';
+import 'package:wandermood/features/places/utils/moody_explore_filter_digest.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Explore / list card: grounded multi-section Moody copy when available.
@@ -75,10 +77,15 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
             .read(communicationStyleProvider.notifier)
             .getCurrentStyleString();
 
+        final named = ref.watch(moodyExploreBackendNamedFiltersProvider);
+        final hard = ref.watch(moodyExploreBackendFiltersProvider);
+        final filterDigest = moodyExploreFilterDigest(named, hard);
+
         final cachedSync = MoodyPlaceCardUiCache.peekStable(
           place.id,
           locale.languageCode,
           comm,
+          filterDigest,
         );
         if (cachedSync != null) {
           return _renderUi(

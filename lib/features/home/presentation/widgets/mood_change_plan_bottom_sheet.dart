@@ -174,6 +174,7 @@ Future<void> _commitMoodAndOpenLoading({
       builder: (_) => PlanLoadingScreen(
         selectedMoods: [label],
         targetDate: planDate,
+        forceRefresh: true,
       ),
     ),
   );

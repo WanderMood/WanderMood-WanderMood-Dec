@@ -29,6 +29,8 @@ class MyDayFreeTimeCarousel extends StatefulWidget {
   final void Function(Map<String, dynamic>) onActivityTap;
   final void Function(Map<String, dynamic>) onSaveTap;
   final void Function(Map<String, dynamic>) onDirectionsTap;
+  /// Opens Moody chat (bottom sheet) with this activity as `shared_place`.
+  final void Function(Map<String, dynamic> activity)? onAskMoodyTap;
   /// When true, shows the section header and a loading indicator (not an empty sliver).
   final bool isLoading;
   /// When true, shows the section header and a short error hint.
@@ -40,6 +42,7 @@ class MyDayFreeTimeCarousel extends StatefulWidget {
     required this.onActivityTap,
     required this.onSaveTap,
     required this.onDirectionsTap,
+    this.onAskMoodyTap,
     this.isLoading = false,
     this.loadFailed = false,
   });
@@ -162,6 +165,9 @@ class _MyDayFreeTimeCarouselState extends State<MyDayFreeTimeCarousel> {
                     onTap: () => widget.onActivityTap(activity),
                     onSaveTap: () => widget.onSaveTap(activity),
                     onDirectionsTap: () => widget.onDirectionsTap(activity),
+                    onAskMoodyTap: widget.onAskMoodyTap != null
+                        ? () => widget.onAskMoodyTap!(activity)
+                        : null,
                   ).animate(delay: (index * 120).ms)
                       .slideX(begin: 0.2, duration: 500.ms)
                       .fadeIn(duration: 500.ms),
@@ -368,12 +374,14 @@ class _FreeTimeCard extends ConsumerWidget {
   final VoidCallback onTap;
   final VoidCallback onSaveTap;
   final VoidCallback onDirectionsTap;
+  final VoidCallback? onAskMoodyTap;
 
   const _FreeTimeCard({
     required this.activity,
     required this.onTap,
     required this.onSaveTap,
     required this.onDirectionsTap,
+    this.onAskMoodyTap,
   });
 
   static String _categoryLabel(AppLocalizations l10n, String category) {
@@ -680,6 +688,26 @@ class _FreeTimeCard extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        if (onAskMoodyTap != null) ...[
+                          const SizedBox(width: 6),
+                          IconButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              onAskMoodyTap!();
+                            },
+                            icon: const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 22,
+                            ),
+                            tooltip: l10n.myDayAskMoodyButton,
+                            color: _wmForest,
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.all(8),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],

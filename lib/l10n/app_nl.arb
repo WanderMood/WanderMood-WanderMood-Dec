@@ -2024,6 +2024,7 @@
   "myDayExploreNearbyButton": "Verken in de buurt",
   "myDayAskMoodyButton": "Vraag Moody",
   "myDayOpenFullPlaceDetails": "Volledige plek openen",
+  "placeQuickSheetAddToMyDayCta": "+ mijn dag",
   "myDayMoodStreakBadge": "{count, plural, one{1 dag op rij} other{{count} dagen op rij}}",
   "@myDayMoodStreakBadge": {
     "placeholders": {
@@ -2874,6 +2875,56 @@
   "plannerSheetReviewsExplainerWithRating": "Sterren hierboven komen uit jouw plan. Volledige Google-reviews en meer foto's verschijnen zodra deze activiteit aan een plek gekoppeld is — open die via Ontdekken of plan vanaf een plekkaart zodat WanderMood een place-id kan koppelen.",
   "plannerSheetReviewsExplainerNoRating": "Nog geen reviewgegevens voor dit geplande item. Koppel het aan een Google-plek (bijv. via Ontdekken) om echte bezoekersreviews in de volledige plekweergave te lezen.",
   "plannerMoodyAdviceBlurb": "Tips van Moody:\n• Check openingstijden (en het weer als je naar buiten gaat).\n• Kom een paar minuten eerder zodat je rustig aankomt.\n• Blijf drinken en houd een open blik — geniet!",
+  "plannerMoodMatchQuickTogether": "Jij + {partner}",
+  "@plannerMoodMatchQuickTogether": {
+    "placeholders": {
+      "partner": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerMoodMatchQuickStory": "{placeTitle} staat in jullie gedeelde dag omdat het past bij wat jullie allebei met me hebben gedeeld — apart, privé.",
+  "@plannerMoodMatchQuickStory": {
+    "placeholders": {
+      "placeTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "plannerMoodMatchQuickPlaceFallback": "Deze stop",
+  "plannerMoodMatchQuickYouLabel": "Jij",
+  "plannerMoodMatchQuickMoodyNote": "Ik praat hier met jullie twee — de tabs hieronder zijn gewoon de plekfeiten, zoals altijd.",
+  "plannerMoodMatchPairStory_romantic_adventurous": "{place} treft precies het midden — een intieme sfeer voor de romantische stemming, en genoeg verrassing voor de avontuurlijke.",
+  "@plannerMoodMatchPairStory_romantic_adventurous": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_adventurous_relaxed": "{place} werkt omdat er genoeg nieuws is voor degene die wil ontdekken, en genoeg rust voor degene die wil ontspannen.",
+  "@plannerMoodMatchPairStory_adventurous_relaxed": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_cultural_social": "{place} geeft jullie allebei iets om te ontdekken én om over te praten — het soort stop dat een echt gesprek wordt.",
+  "@plannerMoodMatchPairStory_cultural_social": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_relaxed_social": "{place} is ontspannen en open — samen bijkomen zonder druk.",
+  "@plannerMoodMatchPairStory_relaxed_social": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_energetic_relaxed": "{place} zoekt het midden — één van jullie blijft energiek, de ander vindt even rust.",
+  "@plannerMoodMatchPairStory_energetic_relaxed": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_cultural_romantic": "{place} verdient zijn plek door sfeer en iets moois om samen te bekijken te combineren.",
+  "@plannerMoodMatchPairStory_cultural_romantic": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_energetic_adventurous": "{place} houdt het tempo hoog — jullie wilden allebei beweging, en dat krijgen jullie.",
+  "@plannerMoodMatchPairStory_energetic_adventurous": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_contemplative_any": "Ik koos {place} omdat het jullie allebei ruimte geeft — om te praten, te zitten, of gewoon samen te zijn.",
+  "@plannerMoodMatchPairStory_contemplative_any": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_same_mood": "Jullie kwamen met dezelfde energie — {place} speelt daar volledig op in.",
+  "@plannerMoodMatchPairStory_same_mood": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchPairStory_default": "{place} past bij wat jullie allebei apart met me hebben gedeeld — ik heb het zo gepland dat geen enkele stemming erbij inschiet.",
+  "@plannerMoodMatchPairStory_default": { "placeholders": { "place": { "type": "String" } } },
+  "plannerMoodMatchNoteHint": "Laat een berichtje achter voor {partner}…",
+  "@plannerMoodMatchNoteHint": { "placeholders": { "partner": { "type": "String" } } },
+  "plannerMoodMatchNoteSave": "Verstuur",
+  "plannerMoodMatchNoteSaved": "Verstuurd ✓",
+  "plannerMoodMatchNoteSaving": "Opslaan…",
+  "plannerMoodMatchNotePartnerLabel": "{partner} zegt:",
+  "@plannerMoodMatchNotePartnerLabel": { "placeholders": { "partner": { "type": "String" } } },
+  "plannerMoodMatchNoteYourLabel": "Jouw berichtje",
+  "plannerMoodMatchNoteSectionTitle": "Berichtjes",
+  "plannerMoodMatchNoteSavedSnackbar": "Opgeslagen — {partner} ziet dit als ze deze stop openen (of meteen als hun venster open staat).",
+  "@plannerMoodMatchNoteSavedSnackbar": { "placeholders": { "partner": { "type": "String" } } },
   "moodyChatSubtitleEnergeticCity": "Jouw {city}-hype-reismaatje",
   "@moodyChatSubtitleEnergeticCity": {
     "placeholders": {

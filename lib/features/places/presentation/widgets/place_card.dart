@@ -11,8 +11,6 @@ import 'package:wandermood/features/places/services/saved_places_service.dart';
 import 'package:wandermood/features/places/services/sharing_service.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:map_launcher/map_launcher.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/features/plans/domain/models/activity.dart';
@@ -786,11 +784,6 @@ class PlaceCard extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _CardIconButton(
-                          icon: Icons.near_me_rounded,
-                          onTap: () => _openDirections(context),
-                        ),
-                        const SizedBox(height: 9),
-                        _CardIconButton(
                           icon: Icons.ios_share_rounded,
                           onTap: () async {
                             try {
@@ -960,7 +953,7 @@ class PlaceCard extends ConsumerWidget {
                               place);
                       final hasDistancePill = distance != null;
                       final bestTimeLabel = ExplorePlaceCardCopy
-                          .bestTimeDisplayLabel(place.bestTime, l10n);
+                          .bestTimePillForExploreCard(place, l10n);
                       final hasBestTimePill = bestTimeLabel != null;
                       final durationLabel = ExplorePlaceCardCopy
                           .exploreCardVisitDurationLabel(place, l10n);
@@ -1437,38 +1430,6 @@ class PlaceCard extends ConsumerWidget {
         return today.add(const Duration(hours: 18));
       default:
         return today.add(const Duration(hours: 14));
-    }
-  }
-
-  // Open directions functionality
-  Future<void> _openDirections(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      // Check if maps are available
-      final availableMaps = await MapLauncher.installedMaps;
-      
-      if (availableMaps.isNotEmpty) {
-        // Use the first available map app
-        await availableMaps.first.showMarker(
-          coords: Coords(place.location.lat, place.location.lng),
-          title: place.name,
-          description: place.address,
-        );
-      } else {
-        // Fallback to Google Maps web
-        final url = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=${place.location.lat},${place.location.lng}'
-        );
-        
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        } else {
-          throw 'Could not open maps';
-        }
-      }
-    } catch (e) {
-      debugPrint('Error opening directions: $e');
-      _showErrorSnackBar(context, l10n.placeCardUnableOpenDirections);
     }
   }
 

@@ -747,6 +747,72 @@ class GroupPlanningRepository {
     return GroupPlanRow.fromMap(Map<String, dynamic>.from(row));
   }
 
+  /// Fills missing or non-resolvable Google `place_id`, [description], and photo
+  /// lists from [group_plans] when the row is tied to Mood Match ([groupSessionId]).
+  Future<Map<String, dynamic>> enrichActivityMapFromGroupPlan(
+    Map<String, dynamic> activity,
+  ) async {
+    final merged = Map<String, dynamic>.from(activity);
+    final sessionId = (merged['groupSessionId'] ?? merged['group_session_id'])
+        ?.toString()
+        .trim();
+    if (sessionId == null || sessionId.isEmpty) return merged;
+
+    final plan = await fetchPlan(sessionId);
+    if (plan == null) return merged;
+
+    final normalized = GroupPlanV2.normalizePlanData(
+      Map<String, dynamic>.from(plan.planData),
+    );
+    final planActs = GroupPlanV2.activitiesList(normalized);
+    final swapFlat = _flattenSwapPoolMaps(normalized);
+    final allCandidates = <Map<String, dynamic>>[...planActs, ...swapFlat];
+    if (allCandidates.isEmpty) return merged;
+
+    final match = _matchGroupPlanActivityFromScheduledId(merged, allCandidates) ??
+        _matchGroupPlanActivityForEnrich(merged, allCandidates);
+    if (match == null) return merged;
+
+    final from = GroupPlanV2.resolvePlaceId(match);
+    if (from != null && from.isNotEmpty) {
+      final cur = (merged['placeId'] ?? merged['place_id'])?.toString().trim();
+      if (!_plannerActivityHasResolvablePlaceId(merged) || cur != from) {
+        merged['place_id'] = from;
+        merged['placeId'] = from;
+      }
+    }
+
+    final desc = merged['description']?.toString().trim() ?? '';
+    if (desc.isEmpty) {
+      final pd = match['description']?.toString().trim() ?? '';
+      if (pd.isNotEmpty) merged['description'] = pd;
+    }
+
+    final heroExisting = merged['imageUrl']?.toString().trim() ?? '';
+    final hero = GroupPlanV2.resolveActivityImageUrl(match);
+    if (heroExisting.isEmpty && hero.isNotEmpty) {
+      merged['imageUrl'] = hero;
+    }
+
+    final extras = _photoUrlStringsFromActivityMap(match);
+    if (extras.isNotEmpty) {
+      final existing = merged['imageUrls'];
+      final list = <String>[];
+      if (existing is List) {
+        for (final e in existing) {
+          final s = e?.toString().trim();
+          if (s != null && s.isNotEmpty) list.add(s);
+        }
+      }
+      for (final u in extras) {
+        if (!list.contains(u)) list.add(u);
+      }
+      if (list.isNotEmpty) merged['imageUrls'] = list;
+    }
+
+    return merged;
+  }
+
   /// When every member has [mood_tag], calls Moody explore once and stores [group_plans].
   /// Idempotent: if a plan row exists, returns it. Safe if two clients race (unique on session_id).
   Future<GroupPlanRow?> tryGeneratePlanIfComplete({
@@ -2503,6 +2569,81 @@ class GroupPlanningRepository {
     }
   }
 
+  // ── Group activity notes ────────────────────────────────────────────────
+
+  /// Stable key used to address a shared activity in `group_activity_notes`.
+  /// Prefers the [placeId] (with `google_` prefix normalised) so both users
+  /// always resolve to the same key even if they opened from different paths.
+  static String activityNoteKey({String? placeId, String? activityTitle}) {
+    final pid = placeId?.trim();
+    if (pid != null && pid.isNotEmpty) {
+      if (pid.startsWith('google_')) return pid;
+      if (pid.startsWith('ChIJ') || pid.startsWith('EhIJ')) {
+        return 'google_$pid';
+      }
+      return pid;
+    }
+    final t = activityTitle?.trim() ?? '';
+    if (t.isEmpty) return 'activity';
+    // Slug: lower, spaces → underscores, max 60 chars.
+    return t.toLowerCase().replaceAll(RegExp(r'\s+'), '_').substring(
+          0,
+          t.length > 60 ? 60 : t.length,
+        );
+  }
+
+  /// Load all notes for [sessionId] + [noteKey] (one per member).
+  Future<Map<String, String>> loadActivityNotes({
+    required String sessionId,
+    required String noteKey,
+  }) async {
+    try {
+      final rows = await _client
+          .from('group_activity_notes')
+          .select('user_id, note_text')
+          .eq('session_id', sessionId)
+          .eq('note_key', noteKey);
+      final out = <String, String>{};
+      for (final r in (rows as List<dynamic>)) {
+        final m = Map<String, dynamic>.from(r as Map);
+        final uid = (m['user_id'] ?? '').toString();
+        final txt = (m['note_text'] ?? '').toString();
+        if (uid.isNotEmpty) out[uid] = txt;
+      }
+      return out;
+    } catch (e, st) {
+      debugPrint('loadActivityNotes: $e\n$st');
+      return {};
+    }
+  }
+
+  /// Upsert the current user's note for this activity (empty = clear).
+  Future<void> saveActivityNote({
+    required String sessionId,
+    required String noteKey,
+    required String noteText,
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      await _client.from('group_activity_notes').upsert(
+        {
+          'session_id': sessionId,
+          'note_key': noteKey,
+          'user_id': uid,
+          'note_text': noteText.trim(),
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        },
+        onConflict: 'session_id,note_key,user_id',
+      );
+    } catch (e, st) {
+      debugPrint('saveActivityNote: $e\n$st');
+      rethrow;
+    }
+  }
+
+  // ── End group activity notes ─────────────────────────────────────────────
+
   /// Realtime channel fires when a new `realtime_events` row is inserted for
   /// the current user — the hub listens so pending invites appear live.
   RealtimeChannel subscribeToIncomingRealtimeEvents({
@@ -2530,4 +2671,138 @@ class GroupPlanningRepository {
     channel.subscribe();
     return channel;
   }
+}
+
+bool _plannerActivityHasResolvablePlaceId(Map<String, dynamic> merged) {
+  final raw = (merged['placeId'] ?? merged['place_id'])?.toString().trim();
+  if (raw == null || raw.isEmpty) return false;
+  return GroupPlanV2.normalizeGooglePlaceIdCandidate(raw) != null;
+}
+
+/// Swap-pool alternatives (same shape as main [activities] entries).
+List<Map<String, dynamic>> _flattenSwapPoolMaps(
+  Map<String, dynamic> normalized,
+) {
+  final out = <Map<String, dynamic>>[];
+  final pools = GroupPlanV2.swapPools(normalized);
+  for (final slot in GroupPlanV2.slots) {
+    for (final a in pools[slot] ?? const <Map<String, dynamic>>[]) {
+      out.add(a);
+    }
+  }
+  return out;
+}
+
+/// [scheduled_activities.activity_id] is built as
+/// `groupplan_<session>_<slot>_<idx>_<place_id|name>` — use it so we still find
+/// the plan row when My Day title ≠ plan name (short titles, punctuation).
+Map<String, dynamic>? _matchGroupPlanActivityFromScheduledId(
+  Map<String, dynamic> activity,
+  List<Map<String, dynamic>> planActs,
+) {
+  final id = (activity['id'] ?? activity['activity_id'])?.toString() ?? '';
+  if (!id.startsWith('groupplan_')) return null;
+
+  // Session id is a UUID (hex + hyphens); `caseSensitive` does not relax
+  // character-class ranges, so allow A–F explicitly.
+  final head = RegExp(
+    r'^groupplan_([0-9a-fA-F-]{36})_(morning|afternoon|evening)_(\d+)_(.*)$',
+    caseSensitive: false,
+  ).firstMatch(id);
+  if (head == null) return null;
+
+  final slot = head.group(2)!.toLowerCase();
+  final idx = int.tryParse(head.group(3)!) ?? 0;
+  final tail = (head.group(4) ?? '').trim();
+
+  final inSlot = planActs
+      .where(
+        (a) => GroupPlanV2.slotFromActivity(a)?.toLowerCase() == slot,
+      )
+      .toList();
+  if (idx >= 0 && idx < inSlot.length) return inSlot[idx];
+
+  if (idx >= 0 && idx < planActs.length) return planActs[idx];
+
+  if (tail.isNotEmpty) {
+    final tailNorm = _normTitleLoose(tail);
+    for (final a in planActs) {
+      final pid = GroupPlanV2.resolvePlaceId(a);
+      if (pid != null &&
+          pid.isNotEmpty &&
+          (tail.contains(pid) || pid.contains(tail))) {
+        return a;
+      }
+      final n = _normTitleLoose((a['name'] ?? a['title'])?.toString() ?? '');
+      if (n.isEmpty) continue;
+      if (n == tailNorm || n.contains(tailNorm) || tailNorm.contains(n)) {
+        return a;
+      }
+    }
+  }
+  return null;
+}
+
+String _normTitleLoose(String s) =>
+    s.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+
+Map<String, dynamic>? _matchGroupPlanActivityForEnrich(
+  Map<String, dynamic> activity,
+  List<Map<String, dynamic>> planActs,
+) {
+  String norm(String s) =>
+      s.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+
+  final title = norm(
+    (activity['title'] ?? activity['name'])?.toString() ?? '',
+  );
+  if (title.isEmpty) return null;
+
+  final slot = activity['timeOfDay']?.toString().toLowerCase().trim();
+
+  final byExactTitle = <Map<String, dynamic>>[];
+  for (final c in planActs) {
+    final cname = norm((c['name'] ?? c['title'])?.toString() ?? '');
+    if (cname.isEmpty) continue;
+    if (cname == title) byExactTitle.add(c);
+  }
+  if (byExactTitle.isEmpty) {
+    for (final c in planActs) {
+      final cname = norm((c['name'] ?? c['title'])?.toString() ?? '');
+      if (cname.isEmpty) continue;
+      if (title.contains(cname) || cname.contains(title)) return c;
+    }
+    return null;
+  }
+  if (byExactTitle.length == 1) return byExactTitle.first;
+  if (slot != null && slot.isNotEmpty) {
+    for (final c in byExactTitle) {
+      final cs = GroupPlanV2.slotFromActivity(c)?.toLowerCase();
+      if (cs == slot) return c;
+    }
+  }
+  return byExactTitle.first;
+}
+
+List<String> _photoUrlStringsFromActivityMap(Map<String, dynamic> m) {
+  final urls = <String>[];
+  final u0 = GroupPlanV2.resolveActivityImageUrl(m);
+  if (u0.isNotEmpty) urls.add(u0);
+  final photos = m['photos'];
+  if (photos is! List) return urls;
+  for (final p in photos) {
+    if (p is String) {
+      final t = p.trim();
+      if (t.isNotEmpty && !urls.contains(t)) urls.add(t);
+    } else if (p is Map) {
+      for (final k in ['url', 'photoUri', 'photo_uri', 'uri']) {
+        final u = p[k]?.toString().trim();
+        if (u != null && u.isNotEmpty) {
+          if (!urls.contains(u)) urls.add(u);
+          break;
+        }
+      }
+    }
+  }
+  return urls;
 }

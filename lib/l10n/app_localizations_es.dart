@@ -5929,6 +5929,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get myDayOpenFullPlaceDetails => 'Abrir lugar completo';
 
   @override
+  String get placeQuickSheetAddToMyDayCta => '+añadir a mi día';
+
+  @override
   String myDayMoodStreakBadge(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -7891,6 +7894,106 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get plannerMoodyAdviceBlurb =>
       'Consejos de Moody:\\n• Revisa horarios (y el tiempo si vas a estar fuera).\\n• Llega unos minutos antes para acomodarte.\\n• Mantente hidratado y con la mente abierta — ¡disfruta!';
+
+  @override
+  String plannerMoodMatchQuickTogether(String partner) {
+    return 'Tú + $partner';
+  }
+
+  @override
+  String plannerMoodMatchQuickStory(String placeTitle) {
+    return '$placeTitle está en vuestro día compartido porque encaja con lo que los dos me contasteis — por separado, entre nosotros.';
+  }
+
+  @override
+  String get plannerMoodMatchQuickPlaceFallback => 'Esta parada';
+
+  @override
+  String get plannerMoodMatchQuickYouLabel => 'Tú';
+
+  @override
+  String get plannerMoodMatchQuickMoodyNote =>
+      'Aquí os hablo a los dos — las pestañas de abajo son datos del sitio, como siempre.';
+
+  @override
+  String plannerMoodMatchPairStory_romantic_adventurous(String place) {
+    return '$place da en el clavo — ambiente íntimo para el mood romántico y suficiente sorpresa para el aventurero.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_adventurous_relaxed(String place) {
+    return '$place funciona porque hay suficiente novedad para quien quiere descubrir y suficiente calma para quien necesita descansar.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_cultural_social(String place) {
+    return '$place os da algo que descubrir y de lo que hablar — el tipo de parada que se convierte en una conversación real.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_relaxed_social(String place) {
+    return '$place es tranquilo y abierto — relajarse juntos sin presión.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_energetic_relaxed(String place) {
+    return '$place busca el equilibrio — uno sigue activo, el otro encuentra un momento de pausa.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_cultural_romantic(String place) {
+    return '$place se gana su sitio combinando ambiente con algo bonito que ver juntos.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_energetic_adventurous(String place) {
+    return '$place mantiene el ritmo alto — los dos queríais movimiento y esto lo da.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_contemplative_any(String place) {
+    return 'Elegí $place porque os da espacio a los dos — para hablar, quedarse con el momento o simplemente estar juntos.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_same_mood(String place) {
+    return 'Los dos llegasteis con la misma energía — $place va directo a por eso.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_default(String place) {
+    return '$place encaja con lo que me disteis por separado — lo planifiqué para que ningún mood se quede sin satisfacer.';
+  }
+
+  @override
+  String plannerMoodMatchNoteHint(String partner) {
+    return 'Deja una nota para $partner…';
+  }
+
+  @override
+  String get plannerMoodMatchNoteSave => 'Enviar';
+
+  @override
+  String get plannerMoodMatchNoteSaved => 'Enviado ✓';
+
+  @override
+  String get plannerMoodMatchNoteSaving => 'Guardando…';
+
+  @override
+  String plannerMoodMatchNotePartnerLabel(String partner) {
+    return '$partner dice:';
+  }
+
+  @override
+  String get plannerMoodMatchNoteYourLabel => 'Tu nota';
+
+  @override
+  String get plannerMoodMatchNoteSectionTitle => 'Notas';
+
+  @override
+  String plannerMoodMatchNoteSavedSnackbar(String partner) {
+    return 'Guardado — $partner lo verá al abrir esta parada (o al instante si ya tiene esta hoja abierta).';
+  }
 
   @override
   String moodyChatSubtitleEnergeticCity(String city) {

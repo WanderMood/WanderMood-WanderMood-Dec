@@ -141,8 +141,21 @@ const Color _pdWmCardBorder = Color(0xFFD9D0C3);
 class PlaceDetailScreen extends ConsumerStatefulWidget {
   final String placeId;
 
+  /// When true: no [Scaffold] / bottom bar — same tabbed body as full detail for
+  /// bottom sheets (My Day quick view, future Explore). Optional [seedPlace] for
+  /// instant paint (e.g. free-time carousel [Place]).
+  final bool quickViewLayout;
+
+  final Place? seedPlace;
+
+  /// Shown under the hero when set (e.g. scheduled slot from planner).
+  final String? scheduledTimeLabel;
+
   const PlaceDetailScreen({
     required this.placeId,
+    this.quickViewLayout = false,
+    this.seedPlace,
+    this.scheduledTimeLabel,
     Key? key,
   }) : super(key: key);
 
@@ -181,6 +194,25 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _isInitialized = true;
+    final seed = widget.seedPlace;
+    if (widget.quickViewLayout &&
+        seed != null &&
+        _placeIdsEquivalent(seed.id, widget.placeId)) {
+      _cachedPlace = seed;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _syncResolvedPlace(seed);
+      });
+    }
+  }
+
+  static bool _placeIdsEquivalent(String a, String b) {
+    final na = a.trim();
+    final nb = b.trim();
+    if (na == nb) return true;
+    final ga = na.startsWith('google_') ? na.substring('google_'.length) : na;
+    final gb = nb.startsWith('google_') ? nb.substring('google_'.length) : nb;
+    return ga == gb;
   }
 
   @override
@@ -207,6 +239,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         _cachedPlace = memoryPlace;
         _syncResolvedPlace(memoryPlace);
       }
+      if (widget.quickViewLayout) {
+        return ColoredBox(
+          color: const Color(0xFFF5F0E8),
+          child: _buildQuickViewForPlace(_placeForDetailBody(memoryPlace)),
+        );
+      }
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
         body: _buildPlaceDetail(_placeForDetailBody(memoryPlace)),
@@ -217,8 +255,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     // Prevent rebuild loops: If we have a cached place and it matches, use it immediately
     // Don't use broken fallback places — let the fetch retry succeed.
     // Don't do any provider reads/watches that could trigger rebuilds
-    if (_cachedPlace != null && _cachedPlace!.id == widget.placeId && _isInitialized &&
+    if (_cachedPlace != null &&
+        _isInitialized &&
+        _placeIdsEquivalent(_cachedPlace!.id, widget.placeId) &&
         _cachedPlace!.name != l10n.placeDetailUnavailableName) {
+      if (widget.quickViewLayout) {
+        return ColoredBox(
+          color: const Color(0xFFF5F0E8),
+          child: _buildQuickViewForPlace(_cachedPlace!),
+        );
+      }
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
         body: _buildPlaceDetail(_cachedPlace!),
@@ -229,58 +275,75 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     // Resolve from Supabase places_cache aggregate only (same as Moody Hub / My Day free time).
     if (kDebugMode) debugPrint('🔍 Looking for place in places_cache aggregate...');
     final edgePlacesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
-    
-    return Scaffold(
-        backgroundColor: const Color(0xFFF5F0E8),
-        body: edgePlacesAsync.when(
-          data: (places) {
-            try {
-              final place = places.firstWhere(
-                (p) => p.id == widget.placeId,
-              );
-              _cachedPlace = place;
-              _syncResolvedPlace(place);
-              if (kDebugMode) debugPrint('✅ Place found in Edge Function cache');
-              return _buildPlaceDetail(_placeForDetailBody(place));
-            } catch (e) {
-              // Place not found in Edge Function cache - always attempt direct fetch fallback.
-              if (kDebugMode) {
-                debugPrint(
-                  '🔄 Place not in Edge Function cache, trying direct fallback for: ${widget.placeId}',
-                );
-              }
-              return FutureBuilder<Place>(
-                future: _fetchPlaceDirectly(widget.placeId),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
-                      ),
-                    );
-                  }
-                  if (snapshot.hasData && snapshot.data != null) {
-                    final place = snapshot.data!;
-                    _cachedPlace = place;
-                    _syncResolvedPlace(place);
-                    return _buildPlaceDetail(_placeForDetailBody(place));
-                  }
-                  return _buildErrorState(Exception(l10n.placeDetailNotFound));
-                },
+
+    Widget bodyForAsync() {
+      return edgePlacesAsync.when(
+        data: (places) {
+          try {
+            final place = places.firstWhere(
+              (p) => p.id == widget.placeId,
+            );
+            _cachedPlace = place;
+            _syncResolvedPlace(place);
+            if (kDebugMode) debugPrint('✅ Place found in Edge Function cache');
+            final displayed = _placeForDetailBody(place);
+            return widget.quickViewLayout
+                ? _buildQuickViewForPlace(displayed)
+                : _buildPlaceDetail(displayed);
+          } catch (e) {
+            // Place not found in Edge Function cache - always attempt direct fetch fallback.
+            if (kDebugMode) {
+              debugPrint(
+                '🔄 Place not in Edge Function cache, trying direct fallback for: ${widget.placeId}',
               );
             }
-          },
-          loading: () => const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
-            ),
+            return FutureBuilder<Place>(
+              future: _fetchPlaceDirectly(widget.placeId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+                    ),
+                  );
+                }
+                if (snapshot.hasData && snapshot.data != null) {
+                  final place = snapshot.data!;
+                  _cachedPlace = place;
+                  _syncResolvedPlace(place);
+                  final displayed = _placeForDetailBody(place);
+                  return widget.quickViewLayout
+                      ? _buildQuickViewForPlace(displayed)
+                      : _buildPlaceDetail(displayed);
+                }
+                return _buildErrorState(Exception(l10n.placeDetailNotFound));
+              },
+            );
+          }
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
           ),
-          error: (error, stack) => _buildErrorState(error),
         ),
-        bottomNavigationBar: _cachedPlace != null
-            ? _buildBottomActionBar(_cachedPlace!)
-            : const SizedBox.shrink(),
+        error: (error, stack) => _buildErrorState(error),
       );
+    }
+
+    if (widget.quickViewLayout) {
+      return ColoredBox(
+        color: const Color(0xFFF5F0E8),
+        child: bodyForAsync(),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F0E8),
+      body: bodyForAsync(),
+      bottomNavigationBar: _cachedPlace != null
+          ? _buildBottomActionBar(_cachedPlace!)
+          : const SizedBox.shrink(),
+    );
   }
   
   /// Side effects when the resolved [Place] is known (reviews, booking state).
@@ -580,6 +643,22 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       final desc = details['description'] as String?;
       final website = details['website'] as String?;
       final phone = details['phone_number'] as String?;
+      PlaceOpeningHours? mergedHours;
+      final ohMap = details['opening_hours'] as Map<String, dynamic>?;
+      if (ohMap != null) {
+        mergedHours = PlaceOpeningHours(
+          isOpen: ohMap['open_now'] as bool? ?? false,
+          weekdayText: (ohMap['weekday_text'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              const [],
+        );
+      } else if (details.containsKey('open_now')) {
+        mergedHours = PlaceOpeningHours(
+          isOpen: details['open_now'] as bool? ?? false,
+          weekdayText: const [],
+        );
+      }
       setState(() {
         if (desc != null && desc.trim().isNotEmpty && !RegExp(r'^\d').hasMatch(desc.trim())) {
           _cachedPlace = _cachedPlace!.copyWith(description: desc);
@@ -587,6 +666,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         }
         if (website != null && website.trim().isNotEmpty) _enrichedWebsite = website;
         if (phone != null && phone.trim().isNotEmpty) _enrichedPhone = phone;
+        if (mergedHours != null) {
+          _cachedPlace = _cachedPlace!.copyWith(openingHours: mergedHours);
+          _currentPlace = _cachedPlace;
+        }
       });
     } catch (_) {
       // keep existing description
@@ -623,6 +706,177 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               ],
             ),
           ),
+    );
+  }
+
+  /// Bottom-sheet layout: hero carousel + pill [TabBar] + same [TabBarView] as full detail.
+  /// Uses [NestedScrollView] so the hero, tabs, and tab bodies scroll as one surface.
+  Widget _buildQuickViewForPlace(Place place) {
+    final p = _placeForDetailBody(place);
+    final photos = _displayPhotosForDetail(p);
+    final l10n = AppLocalizations.of(context)!;
+
+    final Widget heroBox;
+    if (photos.isNotEmpty) {
+      heroBox = SizedBox(
+        height: 220,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              controller: _photoController,
+              onPageChanged: (i) {
+                setState(() => _currentPhotoIndex = i);
+              },
+              itemCount: photos.length,
+              itemBuilder: (context, i) {
+                final url = photos[i];
+                if (p.isAsset) {
+                  return Image.asset(
+                    url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildImageFallback(),
+                  );
+                }
+                return WmPlacePhotoNetworkImage(
+                  url,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildImageFallback(),
+                );
+              },
+            ),
+            if (photos.length > 1)
+              Positioned(
+                bottom: 10,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    photos.length,
+                    (i) => Container(
+                      width: 7,
+                      height: 7,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentPhotoIndex == i
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    } else if (_unifiedDetailPhotosLoading) {
+      heroBox = const SizedBox(
+        height: 160,
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+          ),
+        ),
+      );
+    } else {
+      heroBox = SizedBox(height: 120, child: _buildImageFallback());
+    }
+
+    return NestedScrollView(
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return [
+          if (widget.scheduledTimeLabel != null &&
+              widget.scheduledTimeLabel!.trim().isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    Icon(Icons.event_available_outlined,
+                        size: 18, color: _pdWmForest.withValues(alpha: 0.85)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.plannerSheetScheduledPrefix(
+                            widget.scheduledTimeLabel!),
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _pdWmCharcoal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          SliverToBoxAdapter(child: heroBox),
+          SliverOverlapAbsorber(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+            sliver: SliverPersistentHeader(
+              pinned: true,
+              delegate: _PlaceDetailQuickViewTabsHeaderDelegate(
+                child: ColoredBox(
+                  color: const Color(0xFFF5F0E8),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+                    child: _buildTabBar(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ];
+      },
+      body: ColoredBox(
+        color: const Color(0xFFF5F0E8),
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            Builder(
+              builder: (context) => CustomScrollView(
+                key: PageStorageKey<String>('pd_qv_details_${p.id}'),
+                slivers: [
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+                    sliver: SliverToBoxAdapter(
+                      child: _buildDetailsTab(p,
+                          wrapInSingleChildScrollView: false),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) => _buildPhotosTabNestedScroll(context, p),
+            ),
+            Builder(
+              builder: (context) => CustomScrollView(
+                key: PageStorageKey<String>('pd_qv_reviews_${p.id}'),
+                slivers: [
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+                    sliver: SliverToBoxAdapter(
+                      child: _buildReviewsTab(p,
+                          wrapInSingleChildScrollView: false),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1111,10 +1365,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  Widget _buildDetailsTab(Place place) {
+  Widget _buildDetailsTab(Place place,
+      {bool wrapInSingleChildScrollView = true}) {
     final l10n = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      child: Column(
+    final column = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // v2: Duration / Price / Distance — uniform tiles (SCREEN 8)
@@ -1335,8 +1589,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           const SizedBox(height: 24),
           _buildImageCarousel(place),
         ],
-      ),
     );
+    if (wrapInSingleChildScrollView) {
+      return SingleChildScrollView(child: column);
+    }
+    return column;
   }
 
   /// Localize common English activity chips on the hero (Explore cache often ships English labels).
@@ -3048,7 +3305,126 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     );
   }
 
-  Widget _buildReviewsTab(Place place) {
+  /// Photos tab for quick-view [NestedScrollView] (sliver grid + overlap injector).
+  Widget _buildPhotosTabNestedScroll(BuildContext context, Place place) {
+    final l10n = AppLocalizations.of(context)!;
+    final allUrls = _displayPhotosForDetail(place);
+    final urls = _fotosTabPhotoUrlsExcludingHero(allUrls);
+    final handle =
+        NestedScrollView.sliverOverlapAbsorberHandleFor(context);
+
+    if (allUrls.isEmpty) {
+      if (_unifiedDetailPhotosLoading) {
+        return CustomScrollView(
+          key: PageStorageKey<String>('pd_qv_photos_loading_${place.id}'),
+          slivers: [
+            SliverOverlapInjector(handle: handle),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.placeDetailLoadingPhotos,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+      return CustomScrollView(
+        key: PageStorageKey<String>('pd_qv_photos_empty_${place.id}'),
+        slivers: [
+          SliverOverlapInjector(handle: handle),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.photo_library_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.placeDetailNoPhotos,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return CustomScrollView(
+      key: PageStorageKey<String>('pd_qv_photos_grid_${place.id}'),
+      slivers: [
+        SliverOverlapInjector(handle: handle),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return GestureDetector(
+                  onTap: () =>
+                      _showFullScreenPhoto(urls, index, place.isAsset),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: place.isAsset
+                        ? Image.asset(
+                            urls[index],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _buildImageFallback(),
+                          )
+                        : WmPlacePhotoNetworkImage(
+                            urls[index],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _buildImageFallback(),
+                          ),
+                  ),
+                );
+              },
+              childCount: urls.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviewsTab(Place place,
+      {bool wrapInSingleChildScrollView = true}) {
     final l10n = AppLocalizations.of(context)!;
     if (!_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -3057,9 +3433,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         }
       });
     }
-    
-    return SingleChildScrollView(
-      child: Column(
+
+    final column = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Reviews header with rating summary
@@ -3209,9 +3584,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           //     ),
           //   ),
           // ),
-                ],
-              ),
+        ],
     );
+    if (wrapInSingleChildScrollView) {
+      return SingleChildScrollView(child: column);
+    }
+    return column;
   }
 
   Widget _buildDetailedReviewCard(Map<String, dynamic> review) {
@@ -3815,4 +4193,34 @@ class _FullScreenPhotoViewState extends State<FullScreenPhotoView> {
       ),
     );
   }
-} 
+}
+
+/// Pinned tab bar height for quick-view [NestedScrollView] (pill [TabBar] + padding).
+class _PlaceDetailQuickViewTabsHeaderDelegate
+    extends SliverPersistentHeaderDelegate {
+  _PlaceDetailQuickViewTabsHeaderDelegate({required this.child});
+
+  final Widget child;
+
+  static const double _extent = 62;
+
+  @override
+  double get minExtent => _extent;
+
+  @override
+  double get maxExtent => _extent;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return SizedBox(height: _extent, child: child);
+  }
+
+  @override
+  bool shouldRebuild(covariant _PlaceDetailQuickViewTabsHeaderDelegate old) {
+    return old.child != child;
+  }
+}

@@ -152,6 +152,8 @@ class _ChatMsg {
   /// Quoted earlier message when this bubble is a thread reply (user only).
   final String? replyToText;
   final bool? replyToIsUser;
+  /// First Moody line in Explore / My Day place threads — uses opener layout, not the default bubble.
+  final bool moodyThreadOpener;
 
   _ChatMsg({
     required this.message,
@@ -160,6 +162,7 @@ class _ChatMsg {
     this.suggestedPlaces,
     this.replyToText,
     this.replyToIsUser,
+    this.moodyThreadOpener = false,
   });
 
   /// Text used when the user chooses Copy (includes quote block if present).
@@ -354,6 +357,7 @@ Map<String, dynamic> _chatMsgToJson(_ChatMsg m) {
     'timestamp': m.timestamp.toIso8601String(),
     'suggestedPlaces': m.suggestedPlaces?.map((e) => e.toJson()).toList(),
   };
+  if (m.moodyThreadOpener) o['threadOpener'] = true;
   final rt = m.replyToText?.trim();
   if (rt != null && rt.isNotEmpty) {
     o['replyToText'] = rt;
@@ -387,6 +391,7 @@ _ChatMsg _chatMsgFromJson(Map<String, dynamic> j) {
     suggestedPlaces: suggested,
     replyToText: (rt != null && rt.isNotEmpty) ? rt : null,
     replyToIsUser: (rt != null && rt.isNotEmpty) ? (ri ?? false) : null,
+    moodyThreadOpener: j['threadOpener'] == true,
   );
 }
 
@@ -451,6 +456,109 @@ void _seedDailyStarterIfNeeded({
   unawaited(_DailyMoodyChatCache.persistToPrefs(prefs, now));
 }
 
+/// Rotates opener copy + tone so place threads do not read like a generic assistant.
+String _moodyPlaceThreadOpenerLine({
+  required bool dutch,
+  required String source,
+  required String title,
+  required String placeKey,
+  required int hour,
+}) {
+  final t = title.trim();
+  final label = t.isEmpty ? (dutch ? 'deze plek' : 'this spot') : t;
+  final salt = '$placeKey|$source|$hour'.hashCode;
+  final v = salt.abs() % 6;
+
+  if (source == 'explore_place_card') {
+    if (dutch) {
+      switch (v) {
+        case 0:
+          return 'Oeh — $label. Ik zit erbij. Schiet: drukte, licht, beste moment… wat wil je weten?';
+        case 1:
+          return '$label… nice. Waar twijfel je — tijd, sfeer, of een plan B dichtbij?';
+        case 2:
+          return 'Oké, ik focus op $label. Geen folder-tekst — gewoon je vraag.';
+        case 3:
+          return 'Als je $label wilt uitspitten: wat heb je nú nodig — rust, energie, of iets anders in de buurt?';
+        case 4:
+          return '$label staat vast. Ik lees mee — wat wil je weten voordat je \'m in je dag smijt?';
+        default:
+          return 'Zeg het hardop over $label — kindproof? date? "ben ik hier dom aan begonnen?" Mag allemaal.';
+      }
+    }
+    switch (v) {
+      case 0:
+        return 'Ooh—$label. I\'m here with you. Crowd, light, best time… what do you want to know?';
+      case 1:
+        return '$label… nice. Where are you stuck—timing, vibe, or a backup nearby?';
+      case 2:
+        return 'Ok I\'m zoomed in on $label. No brochure voice—just ask.';
+      case 3:
+        return 'If you\'re stress-testing $label: what do you need right now—quiet, energy, plan B?';
+      case 4:
+        return '$label\'s pinned. What do you want to know before you drop it in your day?';
+      default:
+        return 'Say the awkward part about $label—kid chaos? date night? "is this dumb right now?" All fine.';
+    }
+  }
+
+  // my_day_free_time (and any future place-thread sources)
+  if (dutch) {
+    switch (v) {
+      case 0:
+        return t.isEmpty
+            ? 'Dit stukje vrije tijd — waar wil je scherp op: alternatief, timing, of gewoon "klopt dit"?'
+            : 'Je blok rond $label — zeg wat je wringt: alternatief, timing, sfeer…';
+      case 1:
+        return t.isEmpty
+            ? 'Ik kijk mee met je lege slot. Wat zou je vandaag wél willen voelen?'
+            : '$label in je schema — wil je het schaven of ruilen?';
+      case 2:
+        return t.isEmpty
+            ? 'Vrij moment. Geen stress-vraag is te klein.'
+            : 'Over $label: eerlijk — twijfel je of dit slim past vandaag?';
+      case 3:
+        return t.isEmpty
+            ? 'Laten we dit slot normaal houden: wat is je echte vraag?'
+            : '$label… vertel: backup, beter moment, of gewoon zekerheid?';
+      case 4:
+        return t.isEmpty
+            ? 'Ik ben er. Wat wil je weten over dit stuk van je dag?'
+            : 'Ik zit op $label. Waar krijg je hoofdpijn van in je planning?';
+      default:
+        return t.isEmpty
+            ? 'Schiet — ik fix context, jij fix je vibe.'
+            : '$label: zeg wat je nodig hebt. Ik werk mee.';
+    }
+  }
+  switch (v) {
+    case 0:
+      return t.isEmpty
+          ? 'This free slice—what do you want sharp on: swap, timing, or "does this even fit"?'
+          : 'That $label block—say what\'s bugging you: swap, timing, vibe…';
+    case 1:
+      return t.isEmpty
+          ? 'I\'m watching this empty slot with you. What would you *want* to feel today?'
+          : '$label on your day—tweak it or trade it?';
+    case 2:
+      return t.isEmpty
+          ? 'Free time. No question is too small.'
+          : 'About $label—real talk: are you unsure it fits today?';
+    case 3:
+      return t.isEmpty
+          ? 'Let\'s keep this slot human: what\'s the actual question?'
+          : '$label… backup, better timing, or just certainty?';
+    case 4:
+      return t.isEmpty
+          ? 'I\'m here. What do you want to know about this part of your day?'
+          : 'I\'m on $label. What part of the plan is giving you friction?';
+    default:
+      return t.isEmpty
+          ? "Go—I'll add context, you steer the vibe."
+          : '$label: say what you need. I\'ll match it.';
+  }
+}
+
 void _seedModalSharedPlaceStarterIfNeeded({
   required BuildContext context,
   required SharedPreferences prefs,
@@ -460,36 +568,24 @@ void _seedModalSharedPlaceStarterIfNeeded({
 }) {
   if (chatMessages.isNotEmpty) return;
   if (!context.mounted) return;
-  final nl = Localizations.localeOf(context).languageCode == 'nl';
+  final dutch = Localizations.localeOf(context).languageCode == 'nl';
   final title = (sharedPlace['title'] as String?)?.trim() ?? '';
   final source = sharedPlace['source'] as String? ?? '';
-  final String msg;
-  if (source == 'explore_place_card') {
-    if (nl) {
-      msg = title.isEmpty
-          ? 'Stel je vraag over deze plek — timing, sfeer of alternatieven.'
-          : 'Stel je vraag over $title — timing, sfeer of alternatieven.';
-    } else {
-      msg = title.isEmpty
-          ? 'Ask me anything about this spot—timing, vibe, or alternatives.'
-          : 'Ask me anything about $title—timing, vibe, or alternatives.';
-    }
-  } else {
-    if (nl) {
-      msg = title.isEmpty
-          ? 'Stel je vraag over dit vrije moment in je dag.'
-          : 'Stel je vraag over $title in je schema — alternatieven, timing of sfeer.';
-    } else {
-      msg = title.isEmpty
-          ? 'Ask me about this free slot in your day.'
-          : 'Ask me about $title in your day—alternatives, timing, or vibe.';
-    }
-  }
+  final pid = (sharedPlace['placeId'] as String?)?.trim() ?? '';
+  final placeKey = pid.isNotEmpty ? pid : title;
+  final msg = _moodyPlaceThreadOpenerLine(
+    dutch: dutch,
+    source: source,
+    title: title,
+    placeKey: placeKey,
+    hour: now.hour,
+  );
   chatMessages.add(
     _ChatMsg(
       message: msg,
       isUser: false,
       timestamp: now,
+      moodyThreadOpener: true,
     ),
   );
 }
@@ -914,7 +1010,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
       widget.placeThreadPlaceId!.trim().isNotEmpty &&
       (widget.placeThreadSource?.trim().isNotEmpty ?? false);
 
-  Future<void> _persistChat() async {
+  Future<void> _persistChat({bool refreshEarlierChats = true}) async {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       final now = MoodyClock.now();
@@ -931,10 +1027,16 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         await _DailyMoodyChatCache.persistToPrefs(prefs, now);
       }
     } catch (_) {}
-    if (mounted) _refreshEarlierChatsAvailability();
+    // After an `await`, [mounted]/[ref] may be invalid (e.g. [dispose] used [unawaited]).
+    if (!refreshEarlierChats) return;
+    try {
+      if (!mounted) return;
+      _refreshEarlierChatsAvailability();
+    } catch (_) {}
   }
 
   void _refreshEarlierChatsAvailability() {
+    if (!mounted) return;
     final prefs = ref.read(sharedPreferencesProvider);
     final now = MoodyClock.now();
     final todayStart = DateTime(now.year, now.month, now.day);
@@ -1367,7 +1469,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   @override
   void dispose() {
     _mainTabSubscription?.close();
-    unawaited(_persistChat());
+    unawaited(_persistChat(refreshEarlierChats: false));
     _sttSilenceTimer?.cancel();
     if (!kIsWeb) {
       try {
@@ -1534,8 +1636,19 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     ref.read(mainTabProvider.notifier).state = _moodyTabIndex;
   }
 
-  /// Modal sheet: back, Moody + online, earlier-chats menu (matches chat-only design).
-  Widget _modalChatAppBar() {
+  /// Moody tab: back expands the hub hero (MoodyActionSheet) when chat has focus.
+  void _embeddedBackToHubOverview() {
+    HapticFeedback.lightImpact();
+    if (!widget.embedded) return;
+    if (widget.chatMessages.isEmpty || _hubPeekOpen) return;
+    _setHubPeekOpenNextFrame(true);
+  }
+
+  /// Shared chrome: back, Moody + online, menu (Explore sheet + Moody Hub tab).
+  Widget _moodyChatChromeAppBar({
+    VoidCallback? onBack,
+    required String backTooltip,
+  }) {
     final l10n = AppLocalizations.of(context);
     final nl = Localizations.localeOf(context).languageCode == 'nl';
     final online = ref.watch(isConnectedProvider).valueOrNull ?? true;
@@ -1549,10 +1662,10 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         child: Row(
           children: [
             IconButton(
-              onPressed: _exitModalToMoodyHub,
+              onPressed: onBack,
               icon: const Icon(Icons.arrow_back_ios_new_rounded),
               color: _wmCharcoal,
-              tooltip: nl ? 'Terug naar Moody Hub' : 'Back to Moody Hub',
+              tooltip: backTooltip,
             ),
             Expanded(
               child: Row(
@@ -1615,6 +1728,25 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
           ],
         ),
       ),
+    );
+  }
+
+  Widget _modalChatAppBar() {
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
+    return _moodyChatChromeAppBar(
+      onBack: _exitModalToMoodyHub,
+      backTooltip: nl ? 'Terug naar Moody Hub' : 'Back to Moody Hub',
+    );
+  }
+
+  Widget _embeddedMoodyChatChromeAppBar() {
+    final nl = Localizations.localeOf(context).languageCode == 'nl';
+    final hasThread = widget.chatMessages.isNotEmpty;
+    return _moodyChatChromeAppBar(
+      onBack: (hasThread && !_hubPeekOpen) ? _embeddedBackToHubOverview : null,
+      backTooltip: nl
+          ? 'Terug naar Moody Hub-overzicht'
+          : 'Back to Moody Hub overview',
     );
   }
 
@@ -2094,6 +2226,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                         ),
                         child: Column(
                           children: [
+                            if (widget.embedded)
+                              _embeddedMoodyChatChromeAppBar(),
                             Expanded(
                               child: widget.embedded
                                   ? LayoutBuilder(
@@ -2103,8 +2237,14 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                           return const SizedBox.shrink();
                                         }
 
-                                        // Collapsed: narrow hub strip + chat fills the rest.
+                                        // Collapsed: hub strip + chat (modal only). Embedded
+                                        // Moody tab uses chrome back for hub — no ^ pill strip.
                                         if (hasThread && !sheetExpanded) {
+                                          if (widget.embedded) {
+                                            return _hubBelowPanel(
+                                              skipInlineMoodyHeader: true,
+                                            );
+                                          }
                                           return Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
@@ -2127,7 +2267,11 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                                   ),
                                                 ),
                                               ),
-                                              Expanded(child: _hubBelowPanel()),
+                                              Expanded(
+                                                child: _hubBelowPanel(
+                                                  skipInlineMoodyHeader: true,
+                                                ),
+                                              ),
                                             ],
                                           );
                                         }
@@ -2462,14 +2606,45 @@ class _MessageBubble extends StatelessWidget {
           ),
           const SizedBox(height: 10),
         ],
-        Text(
-          msg.message,
-          style: GoogleFonts.poppins(
-            fontSize: 15,
-            color: msg.isUser ? Colors.white : _wmCharcoal,
-            height: 1.4,
+        if (!msg.isUser && msg.moodyThreadOpener)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _wmForestTint,
+                  border: Border.all(
+                    color: _wmForest.withValues(alpha: 0.14),
+                  ),
+                ),
+                child: const Center(child: MoodyCharacter(size: 24)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  msg.message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    height: 1.42,
+                    fontWeight: FontWeight.w500,
+                    color: _wmCharcoal,
+                  ),
+                ),
+              ),
+            ],
+          )
+        else
+          Text(
+            msg.message,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              color: msg.isUser ? Colors.white : _wmCharcoal,
+              height: 1.4,
+            ),
           ),
-        ),
       ],
     );
 

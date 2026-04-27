@@ -10544,6 +10544,12 @@ abstract class AppLocalizations {
   /// **'Open full place'**
   String get myDayOpenFullPlaceDetails;
 
+  /// No description provided for @placeQuickSheetAddToMyDayCta.
+  ///
+  /// In en, this message translates to:
+  /// **'+add to my day'**
+  String get placeQuickSheetAddToMyDayCta;
+
   /// No description provided for @myDayMoodStreakBadge.
   ///
   /// In en, this message translates to:
@@ -14077,6 +14083,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tips from Moody:\n• Check opening hours (and weather if you\'ll be outside).\n• Arrive a few minutes early so you can settle in.\n• Stay hydrated and keep an open mind — enjoy the moment!'**
   String get plannerMoodyAdviceBlurb;
+
+  /// No description provided for @plannerMoodMatchQuickTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'You + {partner}'**
+  String plannerMoodMatchQuickTogether(String partner);
+
+  /// No description provided for @plannerMoodMatchQuickStory.
+  ///
+  /// In en, this message translates to:
+  /// **'{placeTitle} is in your shared day because it lines up with what you both shared with me — separately, just between us.'**
+  String plannerMoodMatchQuickStory(String placeTitle);
+
+  /// No description provided for @plannerMoodMatchQuickPlaceFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'This stop'**
+  String get plannerMoodMatchQuickPlaceFallback;
+
+  /// No description provided for @plannerMoodMatchQuickYouLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get plannerMoodMatchQuickYouLabel;
+
+  /// No description provided for @plannerMoodMatchQuickMoodyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m talking to both of you here — the tabs below are straight venue facts, same as always.'**
+  String get plannerMoodMatchQuickMoodyNote;
+
+  /// No description provided for @plannerMoodMatchPairStory_romantic_adventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} threads the needle — intimate atmosphere for the romantic mood, an unexpected menu or setting that satisfies the adventurous one.'**
+  String plannerMoodMatchPairStory_romantic_adventurous(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_adventurous_relaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} works because there\'s enough newness to keep one of you curious, and enough comfort to let the other breathe.'**
+  String plannerMoodMatchPairStory_adventurous_relaxed(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_cultural_social.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} gives you both something to discover and something to talk about — the kind of stop that turns into a real conversation.'**
+  String plannerMoodMatchPairStory_cultural_social(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_relaxed_social.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} is easy and open — room to unwind together without any pressure.'**
+  String plannerMoodMatchPairStory_relaxed_social(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_energetic_relaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} splits the difference — one of you stays energised, the other finds a moment to reset.'**
+  String plannerMoodMatchPairStory_energetic_relaxed(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_cultural_romantic.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} earns its place here by blending atmosphere with something worth looking at together.'**
+  String plannerMoodMatchPairStory_cultural_romantic(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_energetic_adventurous.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} keeps the tempo up — you both wanted something that moves, and this delivers.'**
+  String plannerMoodMatchPairStory_energetic_adventurous(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_contemplative_any.
+  ///
+  /// In en, this message translates to:
+  /// **'I picked {place} because it gives you both space — to talk, to sit with it, or just to be there together.'**
+  String plannerMoodMatchPairStory_contemplative_any(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_same_mood.
+  ///
+  /// In en, this message translates to:
+  /// **'You both came in with the same energy — {place} leans straight into that.'**
+  String plannerMoodMatchPairStory_same_mood(String place);
+
+  /// No description provided for @plannerMoodMatchPairStory_default.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} fits what you both shared with me separately — I lined it up so neither mood gets left behind.'**
+  String plannerMoodMatchPairStory_default(String place);
+
+  /// No description provided for @plannerMoodMatchNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a note for {partner}…'**
+  String plannerMoodMatchNoteHint(String partner);
+
+  /// No description provided for @plannerMoodMatchNoteSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get plannerMoodMatchNoteSave;
+
+  /// No description provided for @plannerMoodMatchNoteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent ✓'**
+  String get plannerMoodMatchNoteSaved;
+
+  /// No description provided for @plannerMoodMatchNoteSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get plannerMoodMatchNoteSaving;
+
+  /// No description provided for @plannerMoodMatchNotePartnerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{partner} says:'**
+  String plannerMoodMatchNotePartnerLabel(String partner);
+
+  /// No description provided for @plannerMoodMatchNoteYourLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note'**
+  String get plannerMoodMatchNoteYourLabel;
+
+  /// No description provided for @plannerMoodMatchNoteSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get plannerMoodMatchNoteSectionTitle;
+
+  /// No description provided for @plannerMoodMatchNoteSavedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved — {partner} will see this when they open this stop (or right away if their sheet is open).'**
+  String plannerMoodMatchNoteSavedSnackbar(String partner);
 
   /// No description provided for @moodyChatSubtitleEnergeticCity.
   ///

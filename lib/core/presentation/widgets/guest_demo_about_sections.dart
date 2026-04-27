@@ -17,6 +17,28 @@ class GuestDemoAboutSection {
 
 const String guestDemoAboutSectionDelimiter = '\n---\n';
 
+/// Drops leading "Tips van Moody" / "💬 Moody says" style lines inside the Moody block body.
+String wmStripMoodyTipsHeadingLine(String body) {
+  final lines = body.split('\n');
+  final out = <String>[];
+  for (var i = 0; i < lines.length; i++) {
+    final trimmed = lines[i].trim();
+    if (out.isEmpty && trimmed.isEmpty) continue;
+    if (out.isEmpty) {
+      final lower = trimmed.toLowerCase();
+      if ((lower.contains('tips') && lower.contains('moody')) ||
+          (trimmed.startsWith('💬') && lower.contains('moody')) ||
+          RegExp(r'^moody\s*[:\-—]', caseSensitive: false).hasMatch(lower) ||
+          RegExp(r'^sagt moody', caseSensitive: false).hasMatch(lower) ||
+          RegExp(r'^says moody', caseSensitive: false).hasMatch(lower)) {
+        continue;
+      }
+    }
+    out.add(lines[i]);
+  }
+  return out.join('\n').trim();
+}
+
 List<GuestDemoAboutSection> parseGuestDemoAboutSections(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) return [];
@@ -137,31 +159,63 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
       color: _charcoal,
       height: 1.55,
     );
-    final moodyBodyStyle = GoogleFonts.poppins(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      fontStyle: FontStyle.italic,
-      color: _forest.withValues(alpha: 0.92),
-      height: 1.5,
-    );
 
     if (s.isMoodySection) {
-      return Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF3EE),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFC5D9CE).withValues(alpha: 0.7)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const MoodyCharacter(size: 40, mood: 'happy'),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(s.body, style: moodyBodyStyle),
+      final bodyText = wmStripMoodyTipsHeadingLine(s.body);
+      final bubbleTextStyle = GoogleFonts.poppins(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        fontStyle: FontStyle.normal,
+        color: _charcoal,
+        height: 1.5,
+      );
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.92,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFEBF3EE), Color(0xFFE8F4FA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(4),
+                bottomRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: _forest.withValues(alpha: 0.16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1E1C18).withValues(alpha: 0.06),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const MoodyCharacter(size: 36, mood: 'happy'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      bodyText.isEmpty ? s.body.trim() : bodyText,
+                      style: bubbleTextStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }

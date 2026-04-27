@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 import { edgeRateLimitConsume, getServiceSupabase, logApiInvocationFireAndForget, traceEdgeResponse, userRateKey } from '../_shared/edge_guard.ts'
 import { corsHeaders } from './_shared/cors.ts'
+import { MOODY_FILTER_INTELLIGENCE } from './_shared/moody_filter_intelligence.ts'
 
 const MOODY_CORE = `You are Moody — the only voice of WanderMood.
 He/him. Mid-twenties. City-savvy, curious, warm.
@@ -249,6 +250,57 @@ Not:
 - playing safe
 - acting like a tool`
 
+/** Appended to specific system prompts — not part of MOODY_CORE (persona). */
+const FILTER_INTEL_HEADER =
+  '\n\n---\nFILTER INTELLIGENCE (interpretation & ranking — not voice; never quote raw filter labels to users; never invent places):\n'
+
+function appendFullFilterIntelligence(basePrompt: string): string {
+  return `${basePrompt}${FILTER_INTEL_HEADER}${MOODY_FILTER_INTELLIGENCE}`
+}
+
+function filterIntelDigest(named: string[], hard: Record<string, unknown> | null): string {
+  if (named.length === 0 && (!hard || Object.keys(hard).length === 0)) return ''
+  const s = `${[...named].sort().join('|')}|${JSON.stringify(hard || {})}`
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i)!, h |= 0
+  return `fi${Math.abs(h).toString(36)}`
+}
+
+function maybeAppendExploreFilterIntel(
+  basePrompt: string,
+  ctx?: { named?: string[]; filters?: Record<string, unknown> | null },
+): string {
+  const named = (ctx?.named || []).filter((x) => typeof x === 'string' && x.trim()).map((x) => x.trim())
+  const f = ctx?.filters
+  const hasHard = f && typeof f === 'object' && Object.keys(f).length > 0
+  if (named.length === 0 && !hasHard) return basePrompt
+  const lines: string[] = []
+  if (named.length) lines.push(`Named filter slugs: ${named.join(', ')}`)
+  if (hasHard) lines.push(`Hard filters: ${JSON.stringify(f).slice(0, 1200)}`)
+  return `${basePrompt}${FILTER_INTEL_HEADER}${MOODY_FILTER_INTELLIGENCE}\n\nActive explore filter context:\n${lines.join('\n')}`
+}
+
+function parseExploreFilterParams(params: Record<string, unknown>): {
+  activeExploreFilters: string[]
+  exploreHardFilters: Record<string, unknown> | null
+  digest: string
+} {
+  const raw = params.activeExploreFilters
+  const activeExploreFilters = Array.isArray(raw)
+    ? raw.filter((x): x is string => typeof x === 'string' && x.trim()).map((x) => x.trim())
+    : []
+  const fh = params.exploreHardFilters
+  const exploreHardFilters =
+    fh && typeof fh === 'object' && !Array.isArray(fh)
+      ? fh as Record<string, unknown>
+      : null
+  return {
+    activeExploreFilters,
+    exploreHardFilters,
+    digest: filterIntelDigest(activeExploreFilters, exploreHardFilters),
+  }
+}
+
 function getMoodyCardBlurbPrompt(outLang: string, communicationStyle: string): string {
   const styleNote = communicationStyle === 'energetic' ? 'Be high energy and punchy.' : communicationStyle === 'calm' ? 'Be soft and understated.' : communicationStyle === 'professional' ? 'Be clean and direct.' : communicationStyle === 'direct' ? 'One punchy sentence max.' : 'Be warm and friendly.'
   return `${MOODY_CORE}\n\nYou are writing a SHORT card teaser for the WanderMood explore screen. ${styleNote}\n\nROTATE between these 4 patterns — pick the one that fits the place best:\n1. FOOD-FIRST: Lead with the dish or drink.\n2. MOMENT-FIRST: Lead with the scene.\n3. ENERGY-FIRST: Lead with the vibe.\n4. TIP-FIRST: Lead with insider knowledge.\n\nRULES:\n- 1-2 sentences max\n- Never start with the place name\n- Never start with "I"\n- Output entirely in ${outLang}\n- Plain prose, no bullet points, no quotation marks`
@@ -283,10 +335,12 @@ function computeSocialSignal(place: PlaceCard, isLocalMode: boolean): 'trending'
 
 function computeBestTime(place: PlaceCard): 'morning' | 'afternoon' | 'evening' | 'all_day' | null {
   const types = (place.types || []).map(t => t.toLowerCase()), primary = (place.primaryType || '').toLowerCase(), name = (place.name || '').toLowerCase()
-  if (['bakery','cafe','coffee_shop'].some(t => types.includes(t) || primary === t) || name.includes('brunch') || name.includes('breakfast') || name.includes('coffee')) return 'morning'
-  if (['bar','night_club','cocktail_bar'].some(t => types.includes(t) || primary === t) || name.includes('bar') || name.includes('cocktail') || name.includes('wine') || name.includes('dinner') || name.includes('bistro')) return 'evening'
-  if (['park','museum','art_gallery','tourist_attraction'].some(t => types.includes(t) || primary === t)) return 'all_day'
-  if (['restaurant','food_court'].some(t => types.includes(t) || primary === t)) return 'afternoon'
+  const has = (t: string) => types.includes(t) || primary === t
+  if (['bakery', 'cafe', 'coffee_shop'].some(has) || name.includes('brunch') || name.includes('breakfast') || name.includes('coffee')) return 'morning'
+  if (['bar', 'night_club', 'cocktail_bar'].some(has) || name.includes('bar') || name.includes('cocktail') || name.includes('wine') || name.includes('dinner') || name.includes('bistro') || name.includes('rooftop') || name.includes('sunset')) return 'evening'
+  if (['park', 'museum', 'art_gallery', 'tourist_attraction', 'library', 'church'].some(has)) return 'all_day'
+  if (['restaurant', 'food_court', 'meal_takeaway', 'food'].some(has)) return 'afternoon'
+  if (['book_store'].some(has)) return 'morning'
   return null
 }
 
@@ -1001,7 +1055,10 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     else if (section === 'solo' || section === 'social') { const vibe = userContext.socialVibe?.[0]?.toLowerCase() || ''; exploreQueries = vibe.includes('solo') || vibe.includes('alone') ? ['quiet museum','solo cafe reading','bookstore cafe','gallery solo visit','peaceful park','cozy cafe solo','museum hidden gem'] : vibe.includes('group') || vibe.includes('friends') ? ['group restaurant lively','rooftop bar groups','food hall social','live music bar','cocktail bar','fun bar groups','lively terrace'] : ['cafe cozy','restaurant casual','bar relaxed','park','museum','gallery','terrace'] }
     else if (section === 'different') exploreQueries = ['unique experience city','street art neighbourhood','concept store design city','indie boutique hidden gem','experimental workshop city','gallery night opening','craft market hidden gem','bookstore event unusual','pottery workshop unusual','urban farm volunteer visit']
     else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || []); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...trendLayer, ...base].slice(0, 16) }
-    else { const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang); exploreQueries = aiQ ?? getMoodQueries(mood) }
+    else {
+      const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang, undefined, namedFilters, filters as Record<string, unknown>)
+      exploreQueries = aiQ ?? getMoodQueries(mood)
+    }
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
     if (!hasNamedFilters && places.length < 15) { const fb = await fetchFallbackPlaces(location, coordinates, lang); places = Array.from(new Map([...places, ...fb].map(p => [p.id, p])).values()) }
     // Larger seed pool so Explore can paginate locally for longer before any refill.
@@ -1116,7 +1173,15 @@ async function handleCreateDayPlan(supabase: any, userId: string, params: any): 
       const moodyMessage = lang === 'nl' ? `Goed idee ☕ ${pick.name} is vlakbij.` : `Good call ☕ ${pick.name} is close by.`
       return new Response(JSON.stringify({ success: true, activities: [activity], location: { city: location, latitude: coordinates.lat, longitude: coordinates.lng }, total_found: 1, moodyMessage, reasoning: 'quick_pick:coffee' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    const aiQueries = await getMoodySearchQueries(moods, location, userContext, lang, timeCtx.timeSlot)
+    const aiQueries = await getMoodySearchQueries(
+      moods,
+      location,
+      userContext,
+      lang,
+      timeCtx.timeSlot,
+      Array.isArray(params.namedFilters) ? params.namedFilters.filter((x: any) => typeof x === 'string') : undefined,
+      params.filters && typeof params.filters === 'object' ? params.filters as Record<string, unknown> : undefined,
+    )
     const MIN_DAY_PLAN_FROM_DB = 18
     let places: PlaceCard[]
     if (exploreDbPool.length >= MIN_DAY_PLAN_FROM_DB) {
@@ -1327,17 +1392,23 @@ async function handlePlaceCardBlurb(params: Record<string, unknown>): Promise<Re
   const outLang = placeCardBlurbOutputLanguageName(lang), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   const placeId = typeof params.placeId === 'string' ? params.placeId.trim() : ''
+  const { activeExploreFilters, exploreHardFilters, digest: fiDigest } = parseExploreFilterParams(params)
+  const cacheKeyCard = placeId ? `blurb_card_v1_${placeId}_${lang}${fiDigest ? `_${fiDigest}` : ''}` : ''
   const serviceDb = getServiceSupabase()
-  if (placeId) {
-    const hit = await checkBlurbCache(serviceDb, `blurb_card_v1_${placeId}_${lang}`)
+  if (placeId && cacheKeyCard) {
+    const hit = await checkBlurbCache(serviceDb, cacheKeyCard)
     if (hit?.blurb && typeof hit.blurb === 'string') { console.log(`blurb_card cache=HIT ${placeId}`); return new Response(JSON.stringify({ success: true, blurb: hit.blurb, cached: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
     console.log(`blurb_card cache=MISS ${placeId}`)
   }
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyCardBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a card teaser using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 120 }) })
+    const cardSystem = maybeAppendExploreFilterIntel(getMoodyCardBlurbPrompt(outLang, style), {
+      named: activeExploreFilters,
+      filters: exploreHardFilters,
+    })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: cardSystem }, { role: 'user', content: `Write a card teaser using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 120 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const data = await resp.json(); let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, ''); if (blurb.length > 300) blurb = `${blurb.slice(0, 280).trim()}…`
-    if (placeId && blurb) writeBlurbCache(serviceDb, `blurb_card_v1_${placeId}_${lang}`, { blurb })
+    if (placeId && blurb && cacheKeyCard) writeBlurbCache(serviceDb, cacheKeyCard, { blurb })
     return new Response(JSON.stringify({ success: true, blurb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
@@ -1349,17 +1420,23 @@ async function handlePlaceDetailBlurb(params: Record<string, unknown>): Promise<
   const outLang = placeCardBlurbOutputLanguageName(lang), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   const placeId = typeof params.placeId === 'string' ? params.placeId.trim() : ''
+  const { activeExploreFilters, exploreHardFilters, digest: fiDigest } = parseExploreFilterParams(params)
+  const cacheKeyDetail = placeId ? `blurb_detail_v1_${placeId}_${lang}${fiDigest ? `_${fiDigest}` : ''}` : ''
   const serviceDb = getServiceSupabase()
-  if (placeId) {
-    const hit = await checkBlurbCache(serviceDb, `blurb_detail_v1_${placeId}_${lang}`)
+  if (placeId && cacheKeyDetail) {
+    const hit = await checkBlurbCache(serviceDb, cacheKeyDetail)
     if (hit?.blurb && typeof hit.blurb === 'string') { console.log(`blurb_detail cache=HIT ${placeId}`); return new Response(JSON.stringify({ success: true, blurb: hit.blurb, cached: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
     console.log(`blurb_detail cache=MISS ${placeId}`)
   }
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyDetailBlurbPrompt(outLang, style) }, { role: 'user', content: `Write a detail screen description using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 400 }) })
+    const detailSystem = maybeAppendExploreFilterIntel(getMoodyDetailBlurbPrompt(outLang, style), {
+      named: activeExploreFilters,
+      filters: exploreHardFilters,
+    })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: detailSystem }, { role: 'user', content: `Write a detail screen description using only these facts. Do not invent anything.\n\n${facts}` }], temperature: 0.8, max_tokens: 400 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const data = await resp.json(); let blurb = String(data?.choices?.[0]?.message?.content || '').trim().replace(/^"|"$/g, ''); if (blurb.length > 1200) blurb = `${blurb.slice(0, 1180).trim()}…`
-    if (placeId && blurb) writeBlurbCache(serviceDb, `blurb_detail_v1_${placeId}_${lang}`, { blurb })
+    if (placeId && blurb && cacheKeyDetail) writeBlurbCache(serviceDb, cacheKeyDetail, { blurb })
     return new Response(JSON.stringify({ success: true, blurb }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, blurb: '' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
@@ -1381,28 +1458,49 @@ async function handlePlaceExploreRich(params: Record<string, unknown>): Promise<
   const outLang = placeCardBlurbOutputLanguageName(lang), style = typeof params.communicationStyle === 'string' ? params.communicationStyle : 'friendly', openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return new Response(JSON.stringify({ success: false, error: 'openai_not_configured', hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   const placeId = typeof params.placeId === 'string' ? params.placeId.trim() : ''
+  const { activeExploreFilters, exploreHardFilters, digest: fiDigest } = parseExploreFilterParams(params)
+  const cacheKeyRich = placeId ? `blurb_rich_v1_${placeId}_${lang}_${style}${fiDigest ? `_${fiDigest}` : ''}` : ''
   const serviceDb = getServiceSupabase()
-  if (placeId) {
-    const hit = await checkBlurbCache(serviceDb, `blurb_rich_v1_${placeId}_${lang}_${style}`)
+  if (placeId && cacheKeyRich) {
+    const hit = await checkBlurbCache(serviceDb, cacheKeyRich)
     if (hit?.hook && hit?.sections) { console.log(`blurb_rich cache=HIT ${placeId}`); return new Response(JSON.stringify({ success: true, hook: hit.hook, sections: hit.sections, cached: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
     console.log(`blurb_rich cache=MISS ${placeId}`)
   }
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: getMoodyExploreRichPrompt(outLang, style) }, { role: 'user', content: `Write JSON only using these facts. Do not invent anything.\n\n${facts}` }], response_format: { type: 'json_object' }, temperature: 0.6, max_tokens: 700 }) })
+    const richSystem = maybeAppendExploreFilterIntel(getMoodyExploreRichPrompt(outLang, style), {
+      named: activeExploreFilters,
+      filters: exploreHardFilters,
+    })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: richSystem }, { role: 'user', content: `Write JSON only using these facts. Do not invent anything.\n\n${facts}` }], response_format: { type: 'json_object' }, temperature: 0.6, max_tokens: 700 }) })
     if (!resp.ok) return new Response(JSON.stringify({ success: false, hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     const data = await resp.json(), parsed = parseExploreRichJsonContent(String(data?.choices?.[0]?.message?.content || ''))
     if (!parsed || parsed.sections.length < 2) return new Response(JSON.stringify({ success: false, error: 'parse_failed', hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    if (placeId) writeBlurbCache(serviceDb, `blurb_rich_v1_${placeId}_${lang}_${style}`, { hook: parsed.hook, sections: parsed.sections })
+    if (placeId && cacheKeyRich) writeBlurbCache(serviceDb, cacheKeyRich, { hook: parsed.hook, sections: parsed.sections })
     return new Response(JSON.stringify({ success: true, hook: parsed.hook, sections: parsed.sections }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch { return new Response(JSON.stringify({ success: false, hook: '', sections: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
 }
 
-async function getMoodySearchQueries(moods: string[], location: string, userContext: any, lang: 'nl' | 'en', timeSlot?: string): Promise<string[] | null> {
+async function getMoodySearchQueries(
+  moods: string[],
+  location: string,
+  userContext: any,
+  lang: 'nl' | 'en',
+  timeSlot?: string,
+  namedFilters?: string[],
+  filters?: Record<string, unknown>,
+): Promise<string[] | null> {
   const openaiKey = Deno.env.get('OPENAI_API_KEY'); if (!openaiKey?.trim()) return null
   const moodDefs: Record<string, string> = { relaxed: 'slow down, soft energy, cozy quiet spots — NOT gyms or spas', energetic: 'buzz, movement, lively areas, street food, food halls — NOT gyms', romantic: 'candlelit restaurants, waterfront dining, wine bars, sunset views', adventurous: 'hidden gems, underground bars, unusual venues, non-touristy spots', foodie: 'artisan bakeries, specialty coffee, authentic restaurants, food markets', cultural: 'museums, art galleries, heritage buildings, cultural centers', social: 'lively bars, rooftop bars, live music, cocktail bars, group-friendly spots', excited: 'rooftops with views, trending spots, buzzing popular places', curious: 'interactive museums, concept stores, hidden exhibitions, unusual cafes', cozy: 'cafes with sofas, small wine bars, candlelit spots, warm bakeries', happy: 'cute brunch spots, colorful cafes, sunny terraces, ice cream', surprise: 'mix of cozy cafe + authentic food + unusual experience + rooftop bar' }
   const moodDef = moods.map(m => normaliseMood(m)).map(m => moodDefs[m] || m).join(' + '), localHint = userContext.isLocalMode ? 'User is LOCAL — avoid tourist traps, prefer hidden gems, new openings, neighbourhood spots.' : 'User is TRAVELING — best of city, must-see iconic spots, mix of famous and local secrets.', diet = userContext.dietaryRestrictions?.length ? ` Dietary: ${userContext.dietaryRestrictions.join(', ')}.` : '', budget = userContext.budgetLevel && userContext.budgetLevel !== 'Mid-Range' ? ` Budget: ${userContext.budgetLevel}.` : '', timeHint = timeSlot ? ` Time of day: ${timeSlot}.` : ''
+  const nf = (namedFilters || []).filter((x) => typeof x === 'string' && x.trim())
+  const nfLine = nf.length ? `\nActive named Explore filters: ${nf.join(', ')}.` : ''
+  const filterBlock = filters && typeof filters === 'object' && Object.keys(filters).length
+    ? `\nActive hard Explore filters (JSON): ${JSON.stringify(filters).slice(0, 900)}`
+    : ''
+  const innerSystem = `${MOODY_CORE}\n\n${localHint}\nGenerate 6-8 short Google Places text search queries as JSON: {"queries":["...","..."]}.\nQueries should feel like a real person searching Google Maps. Be diverse, specific to the mood. No markdown.${nfLine}${filterBlock}`
+  const systemContent = appendFullFilterIntelligence(innerSystem)
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE}\n\n${localHint}\nGenerate 6-8 short Google Places text search queries as JSON: {"queries":["...","..."]}.\nQueries should feel like a real person searching Google Maps. Be diverse, specific to the mood. No markdown.` }, { role: 'user', content: `Mood: ${moodDef}. Location: ${location}. Interests: ${JSON.stringify(userContext.allInterests || [])}.${budget}${diet}${timeHint}` }], max_tokens: 220, temperature: 0.5, response_format: { type: 'json_object' } }) })
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemContent }, { role: 'user', content: `Mood: ${moodDef}. Location: ${location}. Interests: ${JSON.stringify(userContext.allInterests || [])}.${budget}${diet}${timeHint}` }], max_tokens: 220, temperature: 0.5, response_format: { type: 'json_object' } }) })
     if (!resp.ok) return null
     const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}'), queries = Array.isArray(parsed.queries) ? parsed.queries.filter((q: any) => typeof q === 'string').slice(0, 8) : []
     return queries.length ? queries : null
@@ -1468,7 +1566,10 @@ async function getMoodyPersonalityResponse(moods: string[], activities: Activity
   const fallback = (fb[lang] || fb.en)[style] || (fb[lang] || fb.en).friendly, openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey?.trim()) return fallback
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: `${MOODY_CORE}\n\nYou just planned someone's day. Write a short personal message in ${lang === 'nl' ? 'Dutch' : 'English'}. Use "I". Match the ${style} communication style. Return JSON only: {"moodyMessage":"<max 100 chars>","reasoning":"<max 60 chars>"}.` }, { role: 'user', content: `Mood: ${moods.join(', ')}. Location: ${location}. ${n} activities: ${activities.slice(0,3).map(a=>a.name).join(', ')}.` }], max_tokens: 150, temperature: 0.8, response_format: { type: 'json_object' } }) })
+    const dayPlanSystem = appendFullFilterIntelligence(
+      `${MOODY_CORE}\n\nYou just planned someone's day. Write a short personal message in ${lang === 'nl' ? 'Dutch' : 'English'}. Use "I". Match the ${style} communication style. Return JSON only: {"moodyMessage":"<max 100 chars>","reasoning":"<max 60 chars>"}.`,
+    )
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: dayPlanSystem }, { role: 'user', content: `Mood: ${moods.join(', ')}. Location: ${location}. ${n} activities: ${activities.slice(0,3).map(a=>a.name).join(', ')}.` }], max_tokens: 150, temperature: 0.8, response_format: { type: 'json_object' } }) })
     if (!resp.ok) throw new Error(`OpenAI ${resp.status}`)
     const data = await resp.json(), parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}')
     return { moodyMessage: parsed.moodyMessage || fallback.moodyMessage, reasoning: parsed.reasoning || fallback.reasoning }
@@ -1522,7 +1623,8 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
   let tasteContext = ''
   if (userContext.tasteProfile && userContext.tasteProfile.totalInteractions >= 3) { const topTypes = Object.entries(userContext.tasteProfile.savedPlaceTypes as Record<string,number>).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([type]) => type); if (topTypes.length > 0) tasteContext = `\nThis user tends to save/like: ${topTypes.join(', ')}.`; if (userContext.tasteProfile.topRatedPlaces?.length > 0) tasteContext += ` They've completed activities and rated them positively.` }
   const sharedBlock = sharedPlaceGroundingBlock(params.shared_place)
-  const systemPrompt = `${MOODY_CORE}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have strong options for that right now — check Explore"\nReply in the same language the user writes in.${sharedBlock}`
+  const systemPromptBase = `${MOODY_CORE}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have strong options for that right now — check Explore"\nReply in the same language the user writes in.${sharedBlock}`
+  const systemPrompt = appendFullFilterIntelligence(systemPromptBase)
   const { hasIntent } = detectChatPlaceIntent(message)
   const shouldSuggestPlaces = hasIntent && !!userCity && !!coordinates
   const placesPromise: Promise<PlaceCard[]> = shouldSuggestPlaces
@@ -1702,6 +1804,7 @@ async function handleSearch(supabase: any, userId: string, params: any): Promise
   if (!query) return new Response(JSON.stringify({ error: 'Query required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   if (!location || !coordinates?.lat || !coordinates?.lng) return new Response(JSON.stringify({ error: 'Location and coordinates required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   try {
+    const userContext = await fetchUserContext(supabase, userId)
     const lang = googlePlacesLanguageFromRequest(params)
     const normalizedQuery = normalizeSearchQuery(query)
     const related = relatedSearchOptions(query)
@@ -1730,10 +1833,11 @@ async function handleSearch(supabase: any, userId: string, params: any): Promise
       qualified = await enrichAndFilter(deduped, { minRating: 3.0, minReviews: 0 })
     }
 
+    const enriched = enrichWithSignals(qualified, !!userContext.isLocalMode)
     return new Response(
       JSON.stringify({
-        cards: qualified,
-        total_found: qualified.length,
+        cards: enriched,
+        total_found: enriched.length,
         related_searches: related,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

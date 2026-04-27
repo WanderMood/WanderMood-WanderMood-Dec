@@ -5947,6 +5947,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get myDayOpenFullPlaceDetails => 'Ouvrir la fiche lieu';
 
   @override
+  String get placeQuickSheetAddToMyDayCta => '+ajouter à ma journée';
+
+  @override
   String myDayMoodStreakBadge(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -7920,6 +7923,106 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get plannerMoodyAdviceBlurb =>
       'Conseils de Moody :\\n• Vérifie les horaires (et la météo si tu es dehors).\\n• Arrive quelques minutes en avance pour t’installer.\\n• Reste hydraté et garde l’esprit ouvert — profite du moment !';
+
+  @override
+  String plannerMoodMatchQuickTogether(String partner) {
+    return 'Toi + $partner';
+  }
+
+  @override
+  String plannerMoodMatchQuickStory(String placeTitle) {
+    return '$placeTitle figure dans votre journée partagée parce qu’elle colle à ce que vous m’avez chacun confié — séparément, entre nous.';
+  }
+
+  @override
+  String get plannerMoodMatchQuickPlaceFallback => 'Cette étape';
+
+  @override
+  String get plannerMoodMatchQuickYouLabel => 'Toi';
+
+  @override
+  String get plannerMoodMatchQuickMoodyNote =>
+      'Je m’adresse à vous deux ici — les onglets du bas restent des infos lieu, comme d’habitude.';
+
+  @override
+  String plannerMoodMatchPairStory_romantic_adventurous(String place) {
+    return '$place trouve le juste équilibre — une atmosphère intime pour l’humeur romantique, et assez de surprise pour l’esprit aventurier.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_adventurous_relaxed(String place) {
+    return '$place fonctionne car il y a assez de nouveauté pour celui qui veut explorer et assez de calme pour celui qui veut souffler.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_cultural_social(String place) {
+    return '$place vous donne à tous les deux quelque chose à découvrir et dont parler — le genre d’étape qui devient une vraie conversation.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_relaxed_social(String place) {
+    return '$place est décontracté et ouvert — se retrouver ensemble, sans pression.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_energetic_relaxed(String place) {
+    return '$place cherche l’équilibre — l’un reste dynamisé, l’autre trouve un moment de pause.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_cultural_romantic(String place) {
+    return '$place mérite sa place en combinant ambiance et quelque chose de beau à regarder ensemble.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_energetic_adventurous(String place) {
+    return '$place maintient le rythme élevé — vous vouliez tous les deux du mouvement, et c’est ce que ça donne.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_contemplative_any(String place) {
+    return 'J’ai choisi $place parce qu’il vous laisse de l’espace à tous les deux — pour parler, rester dans l’instant ou simplement être là ensemble.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_same_mood(String place) {
+    return 'Vous êtes arrivés avec la même énergie — $place s’y engouffre directement.';
+  }
+
+  @override
+  String plannerMoodMatchPairStory_default(String place) {
+    return '$place correspond à ce que vous m’avez chacun confié séparément — planifié pour qu’aucune humeur ne soit laissée de côté.';
+  }
+
+  @override
+  String plannerMoodMatchNoteHint(String partner) {
+    return 'Laisse un mot à $partner…';
+  }
+
+  @override
+  String get plannerMoodMatchNoteSave => 'Envoyer';
+
+  @override
+  String get plannerMoodMatchNoteSaved => 'Envoyé ✓';
+
+  @override
+  String get plannerMoodMatchNoteSaving => 'Enregistrement…';
+
+  @override
+  String plannerMoodMatchNotePartnerLabel(String partner) {
+    return '$partner dit :';
+  }
+
+  @override
+  String get plannerMoodMatchNoteYourLabel => 'Ta note';
+
+  @override
+  String get plannerMoodMatchNoteSectionTitle => 'Notes';
+
+  @override
+  String plannerMoodMatchNoteSavedSnackbar(String partner) {
+    return 'Enregistré — $partner verra ceci en ouvrant cette étape (ou tout de suite si cette feuille est déjà ouverte).';
+  }
 
   @override
   String moodyChatSubtitleEnergeticCity(String city) {

@@ -8,6 +8,8 @@ Future<String> moodyPlaceCardBlurbFromEdge({
   required String facts,
   required String languageCode,
   String? placeId,
+  List<String>? activeExploreFilters,
+  Map<String, dynamic>? exploreHardFilters,
 }) async {
   final trimmed = clampMoodyPlaceBlurbFactsForEdge(facts);
   if (trimmed.isEmpty) return '';
@@ -23,6 +25,12 @@ Future<String> moodyPlaceCardBlurbFromEdge({
       'languageCode': languageCode,
     };
     if (placeId != null && placeId.isNotEmpty) body['placeId'] = placeId;
+    if (activeExploreFilters != null && activeExploreFilters.isNotEmpty) {
+      body['activeExploreFilters'] = activeExploreFilters;
+    }
+    if (exploreHardFilters != null && exploreHardFilters.isNotEmpty) {
+      body['exploreHardFilters'] = exploreHardFilters;
+    }
     final res = await Supabase.instance.client.functions.invoke(
       'moody',
       body: body,
@@ -53,6 +61,8 @@ Future<PlaceExploreRichResult?> moodyPlaceExploreRichFromEdge({
   required String languageCode,
   String communicationStyle = 'friendly',
   String? placeId,
+  List<String>? activeExploreFilters,
+  Map<String, dynamic>? exploreHardFilters,
 }) async {
   final trimmed = clampMoodyPlaceBlurbFactsForEdge(facts);
   if (trimmed.isEmpty) return null;
@@ -69,6 +79,12 @@ Future<PlaceExploreRichResult?> moodyPlaceExploreRichFromEdge({
       'communicationStyle': communicationStyle,
     };
     if (placeId != null && placeId.isNotEmpty) body['placeId'] = placeId;
+    if (activeExploreFilters != null && activeExploreFilters.isNotEmpty) {
+      body['activeExploreFilters'] = activeExploreFilters;
+    }
+    if (exploreHardFilters != null && exploreHardFilters.isNotEmpty) {
+      body['exploreHardFilters'] = exploreHardFilters;
+    }
     final res = await Supabase.instance.client.functions.invoke(
       'moody',
       body: body,
@@ -111,6 +127,8 @@ Future<String> moodyPlaceDetailBlurbFromEdge({
   required String facts,
   required String languageCode,
   String? placeId,
+  List<String>? activeExploreFilters,
+  Map<String, dynamic>? exploreHardFilters,
 }) async {
   final trimmed = clampMoodyPlaceBlurbFactsForEdge(facts);
   if (trimmed.isEmpty) return '';
@@ -126,6 +144,12 @@ Future<String> moodyPlaceDetailBlurbFromEdge({
       'languageCode': languageCode,
     };
     if (placeId != null && placeId.isNotEmpty) body['placeId'] = placeId;
+    if (activeExploreFilters != null && activeExploreFilters.isNotEmpty) {
+      body['activeExploreFilters'] = activeExploreFilters;
+    }
+    if (exploreHardFilters != null && exploreHardFilters.isNotEmpty) {
+      body['exploreHardFilters'] = exploreHardFilters;
+    }
     final res = await Supabase.instance.client.functions.invoke(
       'moody',
       body: body,

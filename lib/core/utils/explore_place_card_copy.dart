@@ -331,6 +331,77 @@ class ExplorePlaceCardCopy {
     }
   }
 
+  /// Normalizes API/cache strings into slugs [bestTimeDisplayLabel] understands.
+  static String? _normalizeBestTimeSlug(String? raw) {
+    if (raw == null) return null;
+    final n = raw.trim().toLowerCase();
+    if (n.isEmpty) return null;
+    switch (n) {
+      case 'morning':
+      case 'afternoon':
+      case 'evening':
+      case 'all_day':
+        return n;
+      case 'sunset':
+      case 'golden_hour':
+      case 'golden hour':
+      case 'night':
+      case 'late_night':
+        return 'evening';
+      default:
+        return null;
+    }
+  }
+
+  /// Same heuristics as moody `computeBestTime` (plus common Google types) when
+  /// [Place.bestTime] is missing — e.g. offline cache, search, or older rows.
+  static String? inferBestTimeSlugFromPlace(Place place) {
+    final types = place.types.map((t) => t.toLowerCase()).toList();
+    final primary = (place.primaryType ?? '').toLowerCase();
+    final name = place.name.toLowerCase();
+    bool has(String t) => types.contains(t) || primary == t;
+
+    if (['bakery', 'cafe', 'coffee_shop'].any(has) ||
+        name.contains('brunch') ||
+        name.contains('breakfast') ||
+        name.contains('coffee')) {
+      return 'morning';
+    }
+    if (['bar', 'night_club'].any(has) ||
+        primary == 'cocktail_bar' ||
+        name.contains('bar') ||
+        name.contains('cocktail') ||
+        name.contains('wine') ||
+        name.contains('dinner') ||
+        name.contains('bistro') ||
+        name.contains('rooftop') ||
+        name.contains('sunset')) {
+      return 'evening';
+    }
+    if (['park', 'museum', 'art_gallery', 'tourist_attraction', 'library', 'church']
+        .any(has)) {
+      return 'all_day';
+    }
+    if (['restaurant', 'food_court', 'meal_takeaway', 'food'].any(has)) {
+      return 'afternoon';
+    }
+    if (['book_store'].any(has)) {
+      return 'morning';
+    }
+    return null;
+  }
+
+  static String? _resolvedBestTimeSlug(Place place) {
+    final fromApi = _normalizeBestTimeSlug(place.bestTime);
+    if (fromApi != null) return fromApi;
+    return inferBestTimeSlugFromPlace(place);
+  }
+
+  /// Use for Explore cards so the pill is stable even without `best_time` on the payload.
+  static String? bestTimePillForExploreCard(Place place, AppLocalizations l10n) {
+    return bestTimeDisplayLabel(_resolvedBestTimeSlug(place), l10n);
+  }
+
   /// Rough typical visit length for Explore cards (same heuristics as My Day free-time carousel).
   static int estimateVisitMinutes(Place place) {
     final types = _typesLower(place);

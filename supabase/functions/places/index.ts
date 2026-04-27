@@ -29,6 +29,53 @@ interface PlacesRequest {
   language?: string
 }
 
+/** Aligns with Flutter `google_` prefix so one place never splits across two cache rows. */
+function normalizePlaceIdForCache(placeId: string): string {
+  let t = placeId.trim()
+  if (t.toLowerCase().startsWith('google_')) t = t.slice('google_'.length)
+  return t
+}
+
+function normalizeLanguageForDetails(language: string | undefined): string {
+  const l = (language ?? 'en').trim().toLowerCase()
+  return l ? l.slice(0, 10) : 'en'
+}
+
+/** DB row TTL for Place Details (editorial/reviews are language-specific). */
+const PLACES_DETAILS_DB_CACHE_DAYS = 21
+
+/** Same-instance burst dedupe before Postgres read (cold starts miss; hot scroll wins). */
+const detailsHotMemory = new Map<string, { exp: number; data: unknown }>()
+const DETAILS_MEMORY_TTL_MS = 120_000
+const DETAILS_MEMORY_MAX = 200
+
+function detailsHotMemoryGet(key: string): unknown | null {
+  const row = detailsHotMemory.get(key)
+  if (!row) return null
+  if (row.exp < Date.now()) {
+    detailsHotMemory.delete(key)
+    return null
+  }
+  return row.data
+}
+
+function detailsHotMemoryPut(key: string, data: unknown) {
+  while (detailsHotMemory.size >= DETAILS_MEMORY_MAX && !detailsHotMemory.has(key)) {
+    const first = detailsHotMemory.keys().next().value
+    if (first) detailsHotMemory.delete(first)
+  }
+  detailsHotMemory.set(key, { exp: Date.now() + DETAILS_MEMORY_TTL_MS, data })
+}
+
+function jsonDetailsSuccessResponse(data: unknown, cachedUntilIso: string, cached: boolean): string {
+  return JSON.stringify({
+    success: true,
+    data,
+    cached_until: cachedUntilIso,
+    ...(cached ? { cached: true } : {}),
+  })
+}
+
 /** Maps Places API (New) GET Place response to the legacy `details/json` shape the Flutter client expects. */
 function mapNewPlaceDetailsToLegacyData(p: Record<string, unknown>, _language: string) {
   const displayName = (p.displayName as { text?: string } | undefined)?.text ?? ''
@@ -72,7 +119,9 @@ function mapNewPlaceDetailsToLegacyData(p: Record<string, unknown>, _language: s
         }
       })
     : []
-  const opening = p.currentOpeningHours as { openNow?: boolean } | undefined
+  const opening = p.currentOpeningHours as
+    | { openNow?: boolean; weekdayDescriptions?: string[] }
+    | undefined
   const editorial = p.editorialSummary as { text?: string } | undefined
 
   const result: Record<string, unknown> = {
@@ -86,7 +135,14 @@ function mapNewPlaceDetailsToLegacyData(p: Record<string, unknown>, _language: s
     user_ratings_total: (p.userRatingCount as number) ?? 0,
     types: Array.isArray(p.types) ? p.types : [],
     price_level: priceLevel,
-    opening_hours: opening ? { open_now: opening.openNow ?? false } : undefined,
+    opening_hours: opening
+      ? {
+          open_now: opening.openNow ?? false,
+          weekday_text: Array.isArray(opening.weekdayDescriptions)
+            ? opening.weekdayDescriptions
+            : [],
+        }
+      : undefined,
     website: (p.websiteUri as string) ?? undefined,
     formatted_phone_number: (p.nationalPhoneNumber as string) ?? undefined,
     reviews,
@@ -239,9 +295,22 @@ async function processPlacesBody(
     case 'details':
       if (!placeId) throw new Error('Place ID required for details')
       {
-        // Global shared cache — not user-scoped so ANY user gets the same cached row.
         const serviceDb = getServiceSupabase()
-        const cacheKey = `places_details_${placeId}`
+        const pid = normalizePlaceIdForCache(placeId)
+        const lang = normalizeLanguageForDetails(language)
+        const cacheKey = `places_details_v2_${pid}_${lang}`
+
+        const hot = detailsHotMemoryGet(cacheKey)
+        const hotRec = hot as { status?: string } | null
+        if (hotRec?.status === 'OK') {
+          const until = new Date(Date.now() + DETAILS_MEMORY_TTL_MS).toISOString()
+          console.log(`places.details hot_memory=HIT placeId=${pid} lang=${lang}`)
+          return new Response(jsonDetailsSuccessResponse(hot, until, true), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          })
+        }
+
         if (serviceDb) {
           try {
             const { data: cachedRow } = await serviceDb
@@ -259,34 +328,30 @@ async function processPlacesBody(
               expiresAt.getTime() > Date.now()
 
             if (isFresh) {
-              console.log(`places.details cache=HIT placeId=${placeId}`)
+              detailsHotMemoryPut(cacheKey, cachedRow.data)
+              console.log(`places.details cache=HIT_DB placeId=${pid} lang=${lang}`)
               return new Response(
-                JSON.stringify({
-                  success: true,
-                  data: cachedRow.data,
-                  cached_until: expiresAt.toISOString(),
-                  cached: true,
-                }),
+                jsonDetailsSuccessResponse(cachedRow.data, expiresAt.toISOString(), true),
                 {
                   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                   status: 200,
                 },
               )
             }
-            console.log(`places.details cache=MISS placeId=${placeId}`)
+            console.log(`places.details cache=MISS_DB placeId=${pid} lang=${lang}`)
           } catch (cacheReadError) {
             console.warn('places.details cache read failed:', cacheReadError)
           }
         }
 
-        const r = await fetchPlaceDetailsWithFallback(placeId, language, GOOGLE_PLACES_API_KEY)
+        const r = await fetchPlaceDetailsWithFallback(pid, lang, GOOGLE_PLACES_API_KEY)
         data = r.data
         response = r.response
 
-        // Write globally so every user benefits from this fetch.
         if (serviceDb && data?.status === 'OK') {
           try {
-            const exp = new Date(); exp.setDate(exp.getDate() + 7)
+            const exp = new Date()
+            exp.setDate(exp.getDate() + PLACES_DETAILS_DB_CACHE_DAYS)
             await serviceDb.from('places_cache').upsert(
               {
                 cache_key: cacheKey,
@@ -298,10 +363,13 @@ async function processPlacesBody(
               },
               { onConflict: 'cache_key' },
             )
-            console.log(`places.details cache=WRITE placeId=${placeId}`)
+            console.log(`places.details cache=WRITE_DB placeId=${pid} lang=${lang}`)
           } catch (cacheWriteErr) {
             console.warn('places.details cache write failed:', cacheWriteErr)
           }
+        }
+        if (data?.status === 'OK') {
+          detailsHotMemoryPut(cacheKey, data)
         }
       }
       break

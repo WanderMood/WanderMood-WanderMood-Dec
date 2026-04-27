@@ -100,10 +100,12 @@ class MoodyPlaceCardUiCache {
   static String stableCacheKey(
     String placeId,
     String languageCode,
-    String communicationStyle,
-  ) {
-    final h = Object.hash(communicationStyle, 0);
-    return '$placeId|$languageCode|${h}_card_ui_stable_v2';
+    String communicationStyle, [
+    String filterDigest = '',
+  ]) {
+    final h = Object.hash(communicationStyle, filterDigest.hashCode);
+    final fi = filterDigest.trim().isEmpty ? '' : '_$filterDigest';
+    return '$placeId|$languageCode|${h}_card_ui_stable_v3$fi';
   }
 
   /// Synchronous lookup against [stableCacheKey]. Returns null if [_hydrated]
@@ -112,10 +114,11 @@ class MoodyPlaceCardUiCache {
   static PlaceCardUiDescription? peekStable(
     String placeId,
     String languageCode,
-    String communicationStyle,
-  ) {
+    String communicationStyle, [
+    String filterDigest = '',
+  ]) {
     if (!_hydrated) return null;
-    return get(stableCacheKey(placeId, languageCode, communicationStyle));
+    return get(stableCacheKey(placeId, languageCode, communicationStyle, filterDigest));
   }
 
   static void putWithStableAlias(

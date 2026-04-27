@@ -29,21 +29,8 @@ linter:
 
 analyzer:
   exclude:
-    # Local debug script (prints only; not part of the app).
-    - clear_cache_debug.dart
-    # Alternate / unused entry (real app uses lib/main.dart → WanderMoodApp).
-    - lib/app.dart
-    # Legacy UI; notifier API drift — nothing in the live tree imports this file.
-    - lib/core/presentation/widgets/theme_switch.dart
-    # Stub / experimental services not referenced from main.dart or go_router.
-    - lib/core/services/day_plan_service.dart
-    - lib/core/services/optimized_places_service.dart
-    - lib/core/services/smart_prefetch_manager.dart
-    # Old app shell; not wired to current router.
-    - lib/features/app/**
-    # Legacy location picker (not on go_router; uses removed GooglePlaces API).
-    - lib/features/location/presentation/screens/location_selection_screen.dart
-    # Orphan plan-generation stack (broken relative imports; unused by router).
-    - lib/features/plans/presentation/providers/plan_providers.dart
-    - lib/features/plans/presentation/widgets/activity_payment_info.dart
-    - lib/features/plans/domain/notifiers/plan_generation_notifier.dart
+    # Archived / non-shipping tree (see Not-In-Use/README.md). Includes Step 1
+    # analyzer-excluded sources moved to Not-In-Use/orphan-lib/lib/...
+    - Not-In-Use/**
+    # Staging for removed scaffolds / review copies (see unused_files_review/README.md)
+    - unused_files_review/**

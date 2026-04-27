@@ -21,6 +21,7 @@ import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/core/utils/reverse_geocode_settlement.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/features/settings/presentation/providers/user_preferences_provider.dart';
 import 'dart:async';
 
 /// Narrow plan intents that change backend behaviour (e.g. coffee = now + this part of day).
@@ -31,11 +32,16 @@ class PlanLoadingScreen extends ConsumerStatefulWidget {
   final DateTime? targetDate;
   final DayPlanQuickPick? quickPick;
 
+  /// When true, skips the device-local `create_day_plan` response cache so moody
+  /// always runs (e.g. user explicitly chose a new plan).
+  final bool forceRefresh;
+
   const PlanLoadingScreen({
     super.key,
     required this.selectedMoods,
     this.targetDate,
     this.quickPick,
+    this.forceRefresh = false,
   });
 
   @override
@@ -164,6 +170,7 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
       );
 
       final moody = ref.read(moodyEdgeFunctionServiceProvider);
+      final planPrefs = ref.read(sharedPreferencesProvider);
       final responseData = await moody.createDayPlan(
         moods: widget.selectedMoods,
         location: city.trim(),
@@ -173,6 +180,8 @@ class _PlanLoadingScreenState extends ConsumerState<PlanLoadingScreen> with Tick
         targetDate: widget.targetDate,
         quickPick: widget.quickPick == DayPlanQuickPick.coffee ? 'coffee' : null,
         allowedSlots: allowedSlots.map(_timeSlotApiValue).toList(),
+        planResponseCache: planPrefs,
+        bypassPlanResponseCache: widget.forceRefresh,
       );
       
       // CRITICAL: Check if Edge Function returned empty state

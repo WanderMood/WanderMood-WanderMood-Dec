@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/utils/auth_helper.dart';
 import 'package:wandermood/features/places/models/place.dart';
@@ -291,6 +294,11 @@ class MoodyEdgeFunctionService {
   ///
   /// [languageCode] is normalized like Explore (`normalizeExploreLanguageCode`).
   ///
+  /// When [planResponseCache] is set and [bypassPlanResponseCache] is false, a recent
+  /// successful response is read from disk **before** calling moody. Cache key is
+  /// **location + moods + date + slots + filters** (device-local; reusable across
+  /// accounts on the same install when inputs match).
+  ///
   /// Returns the parsed JSON body (includes `activities`, `success`, `moodyMessage`, etc.).
   Future<Map<String, dynamic>> createDayPlan({
     required List<String> moods,
@@ -303,6 +311,8 @@ class MoodyEdgeFunctionService {
     String? quickPick,
     /// Moody `allowed_slots` (`morning` / `afternoon` / `evening`).
     List<String>? allowedSlots,
+    SharedPreferences? planResponseCache,
+    bool bypassPlanResponseCache = false,
   }) async {
     await AuthHelper.ensureValidSession();
     await _waitForSessionReady();
@@ -327,13 +337,36 @@ class MoodyEdgeFunctionService {
         ? PlacesCacheUtils.normalizeExploreLanguageCode(languageCode)
         : null;
 
+    final effectiveFilters = filters ?? <String, dynamic>{};
+    if (planResponseCache != null && !bypassPlanResponseCache) {
+      final cached = _tryReadDayPlanResponseCache(
+        planResponseCache,
+        moods: moods,
+        location: location.trim(),
+        latitude: latitude,
+        longitude: longitude,
+        filters: effectiveFilters,
+        languageTag: moodyLang ?? 'en',
+        isLocalMode: isLocal,
+        targetDate: targetDate,
+        quickPick: quickPick,
+        allowedSlots: allowedSlots,
+      );
+      if (cached != null) {
+        if (kDebugMode) {
+          debugPrint('✅ create_day_plan: using local cached response (moody Edge skipped)');
+        }
+        return cached;
+      }
+    }
+
     final payload = <String, dynamic>{
       'action': 'create_day_plan',
       'moods': moods,
       'location': location.trim(),
       'is_local': isLocal,
       'coordinates': {'lat': latitude, 'lng': longitude},
-      'filters': filters ?? <String, dynamic>{},
+      'filters': effectiveFilters,
       if (moodyLang != null) 'language_code': moodyLang,
       if (targetDate != null)
         'target_date': DateTime(
@@ -410,7 +443,143 @@ class MoodyEdgeFunctionService {
           'create_day_plan failed';
       throw Exception(err);
     }
+    if (planResponseCache != null &&
+        !bypassPlanResponseCache &&
+        data['success'] == true) {
+      final total = data['total_found'];
+      final okTotal = total is num && total > 0;
+      final activities = data['activities'];
+      final okActivities = activities is List && activities.isNotEmpty;
+      if (okTotal || okActivities) {
+        await _writeDayPlanResponseCache(
+          planResponseCache,
+          moods: moods,
+          location: location.trim(),
+          latitude: latitude,
+          longitude: longitude,
+          filters: effectiveFilters,
+          languageTag: moodyLang ?? 'en',
+          isLocalMode: isLocal,
+          targetDate: targetDate,
+          quickPick: quickPick,
+          allowedSlots: allowedSlots,
+          payload: data,
+        );
+      }
+    }
     return data;
+  }
+
+  static const Duration _dayPlanLocalCacheTtl = Duration(days: 7);
+
+  String _dayPlanResponseCacheStorageKey({
+    required List<String> moods,
+    required String location,
+    required double latitude,
+    required double longitude,
+    required Map<String, dynamic> filters,
+    required String languageTag,
+    required bool isLocalMode,
+    required DateTime? targetDate,
+    required String? quickPick,
+    required List<String>? allowedSlots,
+  }) {
+    final moodsKey = moods.map((e) => e.toLowerCase().trim()).toList()..sort();
+    final latK = (latitude * 10000).round() / 10000;
+    final lngK = (longitude * 10000).round() / 10000;
+    final dateKey = targetDate != null
+        ? DateTime(targetDate.year, targetDate.month, targetDate.day)
+            .toIso8601String()
+            .split('T')
+            .first
+        : '';
+    final slots = [...?allowedSlots]..sort();
+    final filt = jsonEncode(filters);
+    return 'wandermood_day_plan_v1|${location.toLowerCase().trim()}|'
+        '$latK|$lngK|${moodsKey.join(',')}|$languageTag|${isLocalMode ? 'L' : 'G'}|$dateKey|'
+        '${quickPick ?? ''}|${slots.join(',')}|$filt';
+  }
+
+  Map<String, dynamic>? _tryReadDayPlanResponseCache(
+    SharedPreferences prefs, {
+    required List<String> moods,
+    required String location,
+    required double latitude,
+    required double longitude,
+    required Map<String, dynamic> filters,
+    required String languageTag,
+    required bool isLocalMode,
+    required DateTime? targetDate,
+    required String? quickPick,
+    required List<String>? allowedSlots,
+  }) {
+    final key = _dayPlanResponseCacheStorageKey(
+      moods: moods,
+      location: location,
+      latitude: latitude,
+      longitude: longitude,
+      filters: filters,
+      languageTag: languageTag,
+      isLocalMode: isLocalMode,
+      targetDate: targetDate,
+      quickPick: quickPick,
+      allowedSlots: allowedSlots,
+    );
+    final raw = prefs.getString(key);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final wrap = jsonDecode(raw) as Map<String, dynamic>;
+      final savedAt = DateTime.tryParse(wrap['savedAt'] as String? ?? '');
+      if (savedAt == null) return null;
+      if (DateTime.now().difference(savedAt) > _dayPlanLocalCacheTtl) {
+        return null;
+      }
+      final body = wrap['payload'];
+      if (body is! Map<String, dynamic>) return null;
+      final out = Map<String, dynamic>.from(body);
+      if (out['success'] != true) return null;
+      final total = out['total_found'];
+      final activities = out['activities'];
+      final hasActivities = activities is List && activities.isNotEmpty;
+      final hasTotal = total is num && total > 0;
+      if (!hasActivities && !hasTotal) return null;
+      return out;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _writeDayPlanResponseCache(
+    SharedPreferences prefs, {
+    required List<String> moods,
+    required String location,
+    required double latitude,
+    required double longitude,
+    required Map<String, dynamic> filters,
+    required String languageTag,
+    required bool isLocalMode,
+    required DateTime? targetDate,
+    required String? quickPick,
+    required List<String>? allowedSlots,
+    required Map<String, dynamic> payload,
+  }) async {
+    final key = _dayPlanResponseCacheStorageKey(
+      moods: moods,
+      location: location,
+      latitude: latitude,
+      longitude: longitude,
+      filters: filters,
+      languageTag: languageTag,
+      isLocalMode: isLocalMode,
+      targetDate: targetDate,
+      quickPick: quickPick,
+      allowedSlots: allowedSlots,
+    );
+    final wrap = <String, dynamic>{
+      'savedAt': DateTime.now().toIso8601String(),
+      'payload': payload,
+    };
+    await prefs.setString(key, jsonEncode(wrap));
   }
 
 }
