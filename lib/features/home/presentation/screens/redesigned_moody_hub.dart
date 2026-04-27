@@ -31,6 +31,7 @@ import 'package:wandermood/features/group_planning/domain/group_session_models.d
     show GroupSessionRow, GroupMemberView;
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
 import 'package:wandermood/features/home/presentation/widgets/mood_change_plan_bottom_sheet.dart';
+import 'package:wandermood/features/home/presentation/utils/activity_image_fallback.dart';
 
 /// WanderMood v2 design tokens (Moody Hub — active plan)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -1295,11 +1296,12 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
   String? _selectedEmoji;
   final TextEditingController _noteController = TextEditingController();
 
+  /// Left → right: meh → amazing (same scale direction as stars low → high).
   List<_EmojiOption> _emojiOptions(AppLocalizations l10n) => [
-        _EmojiOption('🤩', l10n.moodyReviewVibeAmazing),
-        _EmojiOption('😊', l10n.moodyReviewVibeGood),
-        _EmojiOption('😐', l10n.moodyReviewVibeOkay),
         _EmojiOption('😞', l10n.moodyReviewVibeMeh),
+        _EmojiOption('😐', l10n.moodyReviewVibeOkay),
+        _EmojiOption('😊', l10n.moodyReviewVibeGood),
+        _EmojiOption('🤩', l10n.moodyReviewVibeAmazing),
       ];
 
   String _ratingFeedbackText(AppLocalizations l10n) {
@@ -1661,6 +1663,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                               completedAt: MoodyClock.now(),
                               mood: mood,
                               googlePlaceId: raw['placeId'] as String?,
+                              heroImageUrl: activityHeroDirectUrlFromRaw(raw),
                             );
 
                             await ref
@@ -1670,9 +1673,10 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                             // Mark activity as completed in the shared activity status layer
                             ref
                                 .read(activityManagerProvider.notifier)
-                                .updateActivityStatus(
+                                .updateActivityStatusForDay(
                                   activityId,
                                   ActivityStatus.completed,
+                                  myDayDateOnly(widget.activity.startTime),
                                 );
 
                             // Refresh providers so My Day and Moody Hub stay in sync
@@ -1682,6 +1686,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                             ref.invalidate(
                               activityRatingForActivityProvider(activityId),
                             );
+                            ref.invalidate(userActivityMomentsProvider);
 
                             if (!mounted) return;
                             Navigator.of(context).pop();

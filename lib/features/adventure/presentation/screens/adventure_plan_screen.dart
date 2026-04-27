@@ -50,7 +50,8 @@ class AdventurePlanScreen extends ConsumerWidget {
                         children: [
                           const Icon(Icons.wb_sunny, size: 20),
                           const SizedBox(width: 4),
-                          Text('32°', style: GoogleFonts.poppins()),
+                          Text(l10n.adventurePlanDemoTemperatureLabel,
+                              style: GoogleFonts.poppins()),
                         ],
                       ),
                     ),
@@ -58,7 +59,7 @@ class AdventurePlanScreen extends ConsumerWidget {
                     Row(
                       children: [
                         Text(
-                          'Washington DC',
+                          l10n.adventurePlanDemoCityLabel,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             color: Colors.green,

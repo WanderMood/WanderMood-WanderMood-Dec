@@ -182,6 +182,84 @@ abstract class AppLocalizations {
   /// **'Let\'s find the right vibe for today.'**
   String get moodHomeCtxFallback;
 
+  /// No description provided for @moodHomeHeroGreetingEarlyMorningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise and shine! ☀️'**
+  String get moodHomeHeroGreetingEarlyMorningTitle;
+
+  /// No description provided for @moodHomeHeroGreetingEarlyMorningSubWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect weekend morning for adventures'**
+  String get moodHomeHeroGreetingEarlyMorningSubWeekend;
+
+  /// No description provided for @moodHomeHeroGreetingEarlyMorningSubWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to make today amazing?'**
+  String get moodHomeHeroGreetingEarlyMorningSubWeekday;
+
+  /// No description provided for @moodHomeHeroGreetingLateMorningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey there! 👋'**
+  String get moodHomeHeroGreetingLateMorningTitle;
+
+  /// No description provided for @moodHomeHeroGreetingLateMorningSub.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve been thinking about your perfect day'**
+  String get moodHomeHeroGreetingLateMorningSub;
+
+  /// No description provided for @moodHomeHeroGreetingAfternoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon vibes! ✨'**
+  String get moodHomeHeroGreetingAfternoonTitle;
+
+  /// No description provided for @moodHomeHeroGreetingAfternoonSub.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind for today?'**
+  String get moodHomeHeroGreetingAfternoonSub;
+
+  /// No description provided for @moodHomeHeroGreetingEarlyEveningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening explorer! 🌆'**
+  String get moodHomeHeroGreetingEarlyEveningTitle;
+
+  /// No description provided for @moodHomeHeroGreetingEarlyEveningSubWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend nights are the best for discoveries'**
+  String get moodHomeHeroGreetingEarlyEveningSubWeekend;
+
+  /// No description provided for @moodHomeHeroGreetingEarlyEveningSubWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'How did your day treat you?'**
+  String get moodHomeHeroGreetingEarlyEveningSubWeekday;
+
+  /// No description provided for @moodHomeHeroGreetingNightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Night owl! 🌙'**
+  String get moodHomeHeroGreetingNightTitle;
+
+  /// No description provided for @moodHomeHeroGreetingNightSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night adventures calling?'**
+  String get moodHomeHeroGreetingNightSub;
+
+  /// No description provided for @moodHomeEmptyChatPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'I know {city} like the back of my hand! Tell me your mood, and I\'ll craft the perfect day just for you. Whether you\'re feeling adventurous, romantic, or need some chill vibes — I\'ve got you covered! 🎯'**
+  String moodHomeEmptyChatPitch(String city);
+
   /// No description provided for @splashTagline.
   ///
   /// In en, this message translates to:
@@ -6776,6 +6854,66 @@ abstract class AppLocalizations {
   /// **'Quiet hours… Moody was almost asleep 😴'**
   String get moodyIdleFallbackNight;
 
+  /// No description provided for @moodyIdleGateMorning0.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning. Ready to shape today?'**
+  String get moodyIdleGateMorning0;
+
+  /// No description provided for @moodyIdleGateMorning1.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning — want to see what’s on your list?'**
+  String get moodyIdleGateMorning1;
+
+  /// No description provided for @moodyIdleGateMorning2.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re up. Open your day whenever you’re ready.'**
+  String get moodyIdleGateMorning2;
+
+  /// No description provided for @moodyIdleGateMorning3.
+  ///
+  /// In en, this message translates to:
+  /// **'New day. Tap when you want to get started.'**
+  String get moodyIdleGateMorning3;
+
+  /// No description provided for @moodyIdleGateMorning4.
+  ///
+  /// In en, this message translates to:
+  /// **'Still easing in? No rush — tap Moody when you’re ready.'**
+  String get moodyIdleGateMorning4;
+
+  /// No description provided for @moodyIdleGateEvening0.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening. Want to pick up your plan?'**
+  String get moodyIdleGateEvening0;
+
+  /// No description provided for @moodyIdleGateEvening1.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening — here when you want to close the loop.'**
+  String get moodyIdleGateEvening1;
+
+  /// No description provided for @moodyIdleGateEvening2.
+  ///
+  /// In en, this message translates to:
+  /// **'Winding down? Your day is a tap away.'**
+  String get moodyIdleGateEvening2;
+
+  /// No description provided for @moodyIdleGateEvening3.
+  ///
+  /// In en, this message translates to:
+  /// **'Back for a bit? Moody’s here to help.'**
+  String get moodyIdleGateEvening3;
+
+  /// No description provided for @moodyIdleGateEvening4.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a breath — open your plan if it helps.'**
+  String get moodyIdleGateEvening4;
+
   /// No description provided for @moodyHubNewConversation.
   ///
   /// In en, this message translates to:
@@ -8144,6 +8282,12 @@ abstract class AppLocalizations {
   /// **'DONE'**
   String get myDayTimelineStatusDone;
 
+  /// No description provided for @myDayTimelineStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCELLED'**
+  String get myDayTimelineStatusCancelled;
+
   /// No description provided for @myDayActivityFallbackLabel.
   ///
   /// In en, this message translates to:
@@ -8204,6 +8348,12 @@ abstract class AppLocalizations {
   /// **'UP NEXT'**
   String get myDayExecutionHeroUpNextBadge;
 
+  /// No description provided for @myDayExecutionHeroUpNextAfterSlotBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT'**
+  String get myDayExecutionHeroUpNextAfterSlotBadge;
+
   /// No description provided for @myDayExecutionHeroTapImHereWhenArrive.
   ///
   /// In en, this message translates to:
@@ -8215,6 +8365,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'🌅 Morning'**
   String get myDayTimelineSectionMorningTitle;
+
+  /// No description provided for @myDayTimelineSectionMorningFocusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌅 This morning'**
+  String get myDayTimelineSectionMorningFocusTitle;
 
   /// No description provided for @myDayTimelineSectionMorningSubtitle.
   ///
@@ -8228,6 +8384,12 @@ abstract class AppLocalizations {
   /// **'🌞 Afternoon'**
   String get myDayTimelineSectionAfternoonTitle;
 
+  /// No description provided for @myDayTimelineSectionAfternoonFocusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌞 This afternoon'**
+  String get myDayTimelineSectionAfternoonFocusTitle;
+
   /// No description provided for @myDayTimelineSectionAfternoonSubtitle.
   ///
   /// In en, this message translates to:
@@ -8240,11 +8402,23 @@ abstract class AppLocalizations {
   /// **'🌆 Evening'**
   String get myDayTimelineSectionEveningTitle;
 
+  /// No description provided for @myDayTimelineSectionEveningFocusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🌆 This evening'**
+  String get myDayTimelineSectionEveningFocusTitle;
+
   /// No description provided for @myDayTimelineSectionEveningSubtitle.
   ///
   /// In en, this message translates to:
   /// **'Wind down and enjoy'**
   String get myDayTimelineSectionEveningSubtitle;
+
+  /// No description provided for @myDayTimelineSectionEarlierTodaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier in your day'**
+  String get myDayTimelineSectionEarlierTodaySubtitle;
 
   /// No description provided for @myDaySlotPlannedForMorning.
   ///
@@ -8258,16 +8432,22 @@ abstract class AppLocalizations {
   /// **'This afternoon'**
   String get myDaySlotPlannedForAfternoon;
 
+  /// No description provided for @myDaySlotThisEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'This evening'**
+  String get myDaySlotThisEvening;
+
   /// No description provided for @myDayTimelineSectionMorningPastTitle.
   ///
   /// In en, this message translates to:
-  /// **'🌅 This morning'**
+  /// **'🌅 Morning'**
   String get myDayTimelineSectionMorningPastTitle;
 
   /// No description provided for @myDayTimelineSectionAfternoonPastTitle.
   ///
   /// In en, this message translates to:
-  /// **'🌞 This afternoon'**
+  /// **'🌞 Afternoon'**
   String get myDayTimelineSectionAfternoonPastTitle;
 
   /// No description provided for @myDayWeekendEmptyTitle.
@@ -8791,6 +8971,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'• New travel story from Luna'**
   String get socialSampleNotificationStory;
+
+  /// No description provided for @notificationCardDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get notificationCardDeleteTooltip;
+
+  /// No description provided for @notificationCentreMoodMatchTimelineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning together'**
+  String get notificationCentreMoodMatchTimelineTitle;
+
+  /// No description provided for @notificationCentreMoodMatchTimelineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A calm timeline of your Mood Match.'**
+  String get notificationCentreMoodMatchTimelineSubtitle;
+
+  /// No description provided for @notificationCentreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get notificationCentreTitle;
+
+  /// No description provided for @notificationCentreEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new — you\'re all caught up. I\'ll let you know when something happens.'**
+  String get notificationCentreEmptyState;
+
+  /// No description provided for @notificationCentreMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get notificationCentreMarkAllRead;
+
+  /// No description provided for @notificationCentreSectionNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get notificationCentreSectionNew;
+
+  /// No description provided for @notificationCentreSectionEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get notificationCentreSectionEarlier;
+
+  /// No description provided for @notificationCentreReadDividerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get notificationCentreReadDividerLabel;
+
+  /// No description provided for @notificationCentreAllFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notificationCentreAllFilter;
+
+  /// No description provided for @notificationCentreActivitiesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get notificationCentreActivitiesLabel;
+
+  /// No description provided for @notificationCentreSocialLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get notificationCentreSocialLabel;
+
+  /// No description provided for @notificationCentreMoodyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody'**
+  String get notificationCentreMoodyLabel;
+
+  /// No description provided for @notificationCentreCategoryMoodMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Match'**
+  String get notificationCentreCategoryMoodMatch;
+
+  /// No description provided for @notificationCentreRelativeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String notificationCentreRelativeMinutesAgo(int count);
 
   /// No description provided for @socialOpeningAllTravelStories.
   ///
@@ -11756,6 +12026,240 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get checkInClose;
 
+  /// No description provided for @checkInWithMoodyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in with Moody'**
+  String get checkInWithMoodyTitle;
+
+  /// No description provided for @checkInGreetingDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey! How\'s your day going?'**
+  String get checkInGreetingDefault;
+
+  /// No description provided for @checkInGreetingMorningAfterTired.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! Did you sleep well? 🌅'**
+  String get checkInGreetingMorningAfterTired;
+
+  /// No description provided for @checkInGreetingMorningFresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! How are you feeling today? ☀️'**
+  String get checkInGreetingMorningFresh;
+
+  /// No description provided for @checkInTellMeEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me everything! 💚'**
+  String get checkInTellMeEverything;
+
+  /// No description provided for @checkInHowAreYouFeeling.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you feeling?'**
+  String get checkInHowAreYouFeeling;
+
+  /// No description provided for @checkInWhatDidYouDoToday.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you do today?'**
+  String get checkInWhatDidYouDoToday;
+
+  /// No description provided for @checkInQuickReactionsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick reactions'**
+  String get checkInQuickReactionsHeading;
+
+  /// No description provided for @checkInTellMeMoreHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me more... (optional)'**
+  String get checkInTellMeMoreHeading;
+
+  /// No description provided for @checkInTextFieldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind? Share anything! 💭'**
+  String get checkInTextFieldHint;
+
+  /// No description provided for @checkInSendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Moody'**
+  String get checkInSendButton;
+
+  /// No description provided for @checkInThanksMoodyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks Moody! 💚'**
+  String get checkInThanksMoodyButton;
+
+  /// No description provided for @checkInAiFallbackThankYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for checking in! I love hearing about your day 💛'**
+  String get checkInAiFallbackThankYou;
+
+  /// No description provided for @checkInMoodGreatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Great'**
+  String get checkInMoodGreatLabel;
+
+  /// No description provided for @checkInMoodGreatSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Living my best life!'**
+  String get checkInMoodGreatSubtitle;
+
+  /// No description provided for @checkInMoodTiredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tired'**
+  String get checkInMoodTiredLabel;
+
+  /// No description provided for @checkInMoodTiredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Need some rest'**
+  String get checkInMoodTiredSubtitle;
+
+  /// No description provided for @checkInMoodAmazingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazing'**
+  String get checkInMoodAmazingLabel;
+
+  /// No description provided for @checkInMoodAmazingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Best day ever!'**
+  String get checkInMoodAmazingSubtitle;
+
+  /// No description provided for @checkInMoodOkayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay'**
+  String get checkInMoodOkayLabel;
+
+  /// No description provided for @checkInMoodOkaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Just coasting'**
+  String get checkInMoodOkaySubtitle;
+
+  /// No description provided for @checkInMoodThoughtfulLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Thoughtful'**
+  String get checkInMoodThoughtfulLabel;
+
+  /// No description provided for @checkInMoodThoughtfulSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In my feels'**
+  String get checkInMoodThoughtfulSubtitle;
+
+  /// No description provided for @checkInMoodChillLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chill'**
+  String get checkInMoodChillLabel;
+
+  /// No description provided for @checkInMoodChillSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking it easy'**
+  String get checkInMoodChillSubtitle;
+
+  /// No description provided for @checkInTagExploredPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Explored places'**
+  String get checkInTagExploredPlaces;
+
+  /// No description provided for @checkInTagGreatFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Had great food'**
+  String get checkInTagGreatFood;
+
+  /// No description provided for @checkInTagMetFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Met friends'**
+  String get checkInTagMetFriends;
+
+  /// No description provided for @checkInTagRelaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get checkInTagRelaxed;
+
+  /// No description provided for @checkInTagWorkedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked out'**
+  String get checkInTagWorkedOut;
+
+  /// No description provided for @checkInTagCreativeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative time'**
+  String get checkInTagCreativeTime;
+
+  /// No description provided for @checkInTagAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure'**
+  String get checkInTagAdventure;
+
+  /// No description provided for @checkInTagSelfCare.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-care'**
+  String get checkInTagSelfCare;
+
+  /// No description provided for @checkInReactionLovedIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Loved it'**
+  String get checkInReactionLovedIt;
+
+  /// No description provided for @checkInReactionOnFire.
+  ///
+  /// In en, this message translates to:
+  /// **'On fire'**
+  String get checkInReactionOnFire;
+
+  /// No description provided for @checkInReactionMagical.
+  ///
+  /// In en, this message translates to:
+  /// **'Magical'**
+  String get checkInReactionMagical;
+
+  /// No description provided for @checkInReactionExhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'Exhausted'**
+  String get checkInReactionExhausted;
+
+  /// No description provided for @checkInReactionAmazing.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazing'**
+  String get checkInReactionAmazing;
+
+  /// No description provided for @checkInReactionPeaceful.
+  ///
+  /// In en, this message translates to:
+  /// **'Peaceful'**
+  String get checkInReactionPeaceful;
+
   /// No description provided for @dagSheetOpener1.
   ///
   /// In en, this message translates to:
@@ -14342,6 +14846,12 @@ abstract class AppLocalizations {
   /// **'Quick Review'**
   String get moodyReviewTitle;
 
+  /// No description provided for @moodyReviewHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How did it land? I\'m listening.'**
+  String get moodyReviewHeroSubtitle;
+
   /// No description provided for @moodyReviewHowWasIt.
   ///
   /// In en, this message translates to:
@@ -14417,38 +14927,122 @@ abstract class AppLocalizations {
   /// No description provided for @moodyReviewNoteHint.
   ///
   /// In en, this message translates to:
-  /// **'What stood out? Any tips for others?'**
+  /// **'What stood out while it’s fresh?'**
   String get moodyReviewNoteHint;
 
   /// No description provided for @moodyReviewNoteHelper.
   ///
   /// In en, this message translates to:
-  /// **'💡 This helps others discover great spots!'**
+  /// **'💡 I use this to tune your next days — private to you and WanderMood.'**
   String get moodyReviewNoteHelper;
 
   /// No description provided for @moodyReviewSave.
   ///
   /// In en, this message translates to:
-  /// **'Save Review'**
+  /// **'Save'**
   String get moodyReviewSave;
 
   /// No description provided for @moodyReviewNeedStars.
   ///
   /// In en, this message translates to:
-  /// **'Please add a star rating to continue'**
+  /// **'Pick a star rating to continue'**
   String get moodyReviewNeedStars;
 
   /// No description provided for @moodyReviewHelpsMoody.
   ///
   /// In en, this message translates to:
-  /// **'Your feedback helps Moody learn!'**
+  /// **'This stays between us — and shapes better picks for you.'**
   String get moodyReviewHelpsMoody;
 
   /// No description provided for @moodyReviewThanksToast.
   ///
   /// In en, this message translates to:
-  /// **'Thanks for your review! 🚀'**
+  /// **'Saved — thank you!'**
   String get moodyReviewThanksToast;
+
+  /// No description provided for @profileMomentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your visits'**
+  String get profileMomentsTitle;
+
+  /// No description provided for @profileMomentsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Places you rated after My Day — private, yours to change'**
+  String get profileMomentsSubtitle;
+
+  /// No description provided for @profileMomentsSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get profileMomentsSeeAll;
+
+  /// No description provided for @profileMomentsEmptyCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate a stop on My Day and it shows up here.'**
+  String get profileMomentsEmptyCta;
+
+  /// No description provided for @momentsListHeroLine.
+  ///
+  /// In en, this message translates to:
+  /// **'How places felt for you — private unless you choose a partner perk.'**
+  String get momentsListHeroLine;
+
+  /// No description provided for @momentsListEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No visits yet'**
+  String get momentsListEmptyTitle;
+
+  /// No description provided for @momentsListEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When you finish a stop on My Day and tap Review, your note appears here. It stays private unless you opt into a partner perk later.'**
+  String get momentsListEmptySubtitle;
+
+  /// No description provided for @momentsListError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your visits'**
+  String get momentsListError;
+
+  /// No description provided for @momentsDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this visit?'**
+  String get momentsDeleteConfirmTitle;
+
+  /// No description provided for @momentsDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes your rating for {place}. You can add a new one after your next visit.'**
+  String momentsDeleteConfirmBody(Object place);
+
+  /// No description provided for @momentsRemovedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit removed'**
+  String get momentsRemovedToast;
+
+  /// No description provided for @momentsRemoveCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get momentsRemoveCta;
+
+  /// No description provided for @momentsTapToEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to update'**
+  String get momentsTapToEdit;
+
+  /// No description provided for @momentsStarsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} star} other{{count} stars}}'**
+  String momentsStarsCount(int count);
 
   /// No description provided for @getReadyChecklistItemReady.
   ///
@@ -18333,6 +18927,78 @@ abstract class AppLocalizations {
   /// **'Error loading adventures: {error}'**
   String adventurePlanLoadError(String error);
 
+  /// No description provided for @adventurePlanDemoTemperatureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'32°'**
+  String get adventurePlanDemoTemperatureLabel;
+
+  /// No description provided for @adventurePlanDemoCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Washington DC'**
+  String get adventurePlanDemoCityLabel;
+
+  /// No description provided for @trendingDetailNoRelatedPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'No related places found'**
+  String get trendingDetailNoRelatedPlaces;
+
+  /// No description provided for @trendingDetailRelatedPlacesError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load related places'**
+  String get trendingDetailRelatedPlacesError;
+
+  /// No description provided for @trendingDetailSimilarPlacesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar places'**
+  String get trendingDetailSimilarPlacesSection;
+
+  /// No description provided for @trendingDetailLongDining.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience the culinary delights at {title}! Join locals and visitors as they savor amazing flavors and create memorable dining moments. Perfect for food lovers exploring the area. 🍽️✨'**
+  String trendingDetailLongDining(String title);
+
+  /// No description provided for @trendingDetailLongCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'Immerse yourself in the rich cultural heritage at {title}. Discover art, history, and creativity that defines the local landscape. A must-visit for anyone seeking inspiration and knowledge. 🎨🏛️'**
+  String trendingDetailLongCulture(String title);
+
+  /// No description provided for @trendingDetailLongOutdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with nature and enjoy the fresh air at {title}. Whether you\'re looking for a peaceful walk or an active adventure, this outdoor destination offers the perfect escape. 🌳🚶‍♀️'**
+  String trendingDetailLongOutdoor(String title);
+
+  /// No description provided for @trendingDetailLongSightseeing.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture breathtaking views and iconic moments at {title}. This scenic spot offers some of the best photography opportunities and unforgettable vistas nearby. Don\'t forget your camera! 📸🌅'**
+  String trendingDetailLongSightseeing(String title);
+
+  /// No description provided for @trendingDetailLongShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover unique finds and local treasures at {title}. From boutique stores to local markets, this shopping destination offers something special for every taste and budget. 🛍️💎'**
+  String trendingDetailLongShopping(String title);
+
+  /// No description provided for @trendingDetailLongFitness.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay active and energized at {title}. Whether you\'re maintaining your fitness routine or trying something new, this location provides excellent facilities for health and wellness. 💪🏃‍♀️'**
+  String trendingDetailLongFitness(String title);
+
+  /// No description provided for @trendingDetailLongDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the trending excitement at {title}! This popular destination is capturing the attention of locals and visitors alike. Discover what makes this place special and create your own memorable experience. ⭐🎉'**
+  String trendingDetailLongDefault(String title);
+
   /// No description provided for @receiptDownloadPdf.
   ///
   /// In en, this message translates to:
@@ -18429,6 +19095,132 @@ abstract class AppLocalizations {
   /// **'Feels like {degrees}°'**
   String weatherDetailFeelsLike(int degrees);
 
+  /// No description provided for @weatherMoodyTipTimeTonight.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonight'**
+  String get weatherMoodyTipTimeTonight;
+
+  /// No description provided for @weatherMoodyTipRainMorningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain this morning — grab your umbrella before heading out.'**
+  String get weatherMoodyTipRainMorningBody;
+
+  /// No description provided for @weatherMoodyTipRainAfternoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s raining outside. A café or museum visit hits different on a day like this.'**
+  String get weatherMoodyTipRainAfternoonBody;
+
+  /// No description provided for @weatherMoodyTipRainEveningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain tonight — the perfect excuse to find a cosy spot inside.'**
+  String get weatherMoodyTipRainEveningBody;
+
+  /// No description provided for @weatherMoodyTipRainNightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s raining and dark out. Stay cosy — outdoor plans can wait till tomorrow.'**
+  String get weatherMoodyTipRainNightBody;
+
+  /// No description provided for @weatherMoodyTipSunnyHighUvMorningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Great start! Apply sunscreen — UV builds fast once the sun is up.'**
+  String get weatherMoodyTipSunnyHighUvMorningBody;
+
+  /// No description provided for @weatherMoodyTipSunnyHighUvAfternoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'UV is high right now. Find shade for a break and keep your water bottle close.'**
+  String get weatherMoodyTipSunnyHighUvAfternoonBody;
+
+  /// No description provided for @weatherMoodyTipSunnyHighUvEveningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The sun is lower now — a perfect time for a walk or terrace visit.'**
+  String get weatherMoodyTipSunnyHighUvEveningBody;
+
+  /// No description provided for @weatherMoodyTipSunnyHighUvNightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear skies tonight — a great evening for a stroll under the stars.'**
+  String get weatherMoodyTipSunnyHighUvNightBody;
+
+  /// No description provided for @weatherMoodyTipSunnyMildMorningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Mild and dry — a great morning for a walk or breakfast outside.'**
+  String get weatherMoodyTipSunnyMildMorningBody;
+
+  /// No description provided for @weatherMoodyTipSunnyMildAfternoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry and comfortable out there. Terraces and parks are calling.'**
+  String get weatherMoodyTipSunnyMildAfternoonBody;
+
+  /// No description provided for @weatherMoodyTipSunnyMildEveningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A lovely evening for a walk, a bite outside, or just some fresh air.'**
+  String get weatherMoodyTipSunnyMildEveningBody;
+
+  /// No description provided for @weatherMoodyTipSunnyMildNightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice and calm out there. A quiet evening walk might be just what you need.'**
+  String get weatherMoodyTipSunnyMildNightBody;
+
+  /// No description provided for @weatherMoodyTipCloudyMorningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Grey skies this morning — bring an extra layer and maybe a warm coffee.'**
+  String get weatherMoodyTipCloudyMorningBody;
+
+  /// No description provided for @weatherMoodyTipCloudyAfternoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudy and a bit cool. Good day for indoor spots or a museum.'**
+  String get weatherMoodyTipCloudyAfternoonBody;
+
+  /// No description provided for @weatherMoodyTipCloudyEveningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The clouds are in for the evening. A cosy dinner inside sounds perfect.'**
+  String get weatherMoodyTipCloudyEveningBody;
+
+  /// No description provided for @weatherMoodyTipCloudyNightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Overcast and still. Wrap up if you\'re heading out — it feels cooler than it looks.'**
+  String get weatherMoodyTipCloudyNightBody;
+
+  /// No description provided for @weatherMoodyTipDefaultMorningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed conditions today — layer up so you\'re ready for anything.'**
+  String get weatherMoodyTipDefaultMorningBody;
+
+  /// No description provided for @weatherMoodyTipDefaultAfternoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditions may shift this afternoon. Keep an eye on the forecast.'**
+  String get weatherMoodyTipDefaultAfternoonBody;
+
+  /// No description provided for @weatherMoodyTipDefaultEveningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The evening is here — check the latest forecast before heading out.'**
+  String get weatherMoodyTipDefaultEveningBody;
+
+  /// No description provided for @weatherMoodyTipDefaultNightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet outside for now. Check tomorrow\'s forecast in the morning.'**
+  String get weatherMoodyTipDefaultNightBody;
+
   /// No description provided for @weatherNoDataAvailable.
   ///
   /// In en, this message translates to:
@@ -18452,6 +19244,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Location'**
   String get locationPickerSelectTitle;
+
+  /// No description provided for @locationDropdownSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Search results'**
+  String get locationDropdownSearchResults;
+
+  /// No description provided for @locationDropdownPopularCities.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular cities'**
+  String get locationDropdownPopularCities;
+
+  /// No description provided for @locationDropdownNoCitiesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No cities found'**
+  String get locationDropdownNoCitiesFound;
+
+  /// No description provided for @locationDropdownSearchCitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cities'**
+  String get locationDropdownSearchCitiesTitle;
+
+  /// No description provided for @locationDropdownUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get locationDropdownUseCurrentLocation;
+
+  /// No description provided for @locationDropdownDetectExactLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect your exact location'**
+  String get locationDropdownDetectExactLocation;
+
+  /// No description provided for @locationDropdownFindCitiesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find cities in {country}'**
+  String locationDropdownFindCitiesSubtitle(String country);
+
+  /// No description provided for @locationDropdownErrorLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your city'**
+  String get locationDropdownErrorLocationLabel;
 
   /// No description provided for @weatherLoadError.
   ///

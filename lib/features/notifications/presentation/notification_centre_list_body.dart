@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 import 'notification_centre_mood_match.dart';
 
@@ -13,7 +14,7 @@ typedef NotificationCentreItemBuilder = Widget Function(
 class NotificationCentreListBody extends StatelessWidget {
   const NotificationCentreListBody({
     super.key,
-    required this.nl,
+    required this.l10n,
     required this.emptyText,
     required this.showLoading,
     required this.showEmpty,
@@ -30,7 +31,7 @@ class NotificationCentreListBody extends StatelessWidget {
     this.enableMoodMatchSpacingHints = false,
   });
 
-  final bool nl;
+  final AppLocalizations l10n;
   final String emptyText;
   final bool showLoading;
   final bool showEmpty;
@@ -91,7 +92,7 @@ class NotificationCentreListBody extends StatelessWidget {
                   items[i].isRead != items[i - 1].isRead &&
                   !items[i - 1].isRead &&
                   items[i].isRead)
-                _readTransitionMarker(nl, cream),
+                _readTransitionMarker(l10n, cream),
               itemBuilder(
                 items[i],
                 NotificationCentreRowContext(
@@ -118,7 +119,7 @@ class NotificationCentreListBody extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           if (unread.isNotEmpty) ...[
-            _section(nl ? 'Nieuw' : 'New'),
+            _section(l10n.notificationCentreSectionNew),
             for (var i = 0; i < unread.length; i++)
               itemBuilder(
                 unread[i],
@@ -132,7 +133,7 @@ class NotificationCentreListBody extends StatelessWidget {
             const SizedBox(height: 16),
           ],
           if (read.isNotEmpty) ...[
-            _section(nl ? 'Eerder' : 'Earlier'),
+            _section(l10n.notificationCentreSectionEarlier),
             for (var i = 0; i < read.length; i++)
               itemBuilder(
                 read[i],
@@ -149,7 +150,7 @@ class NotificationCentreListBody extends StatelessWidget {
     );
   }
 
-  Widget _readTransitionMarker(bool nl, Color cream) => Padding(
+  Widget _readTransitionMarker(AppLocalizations l10n, Color cream) => Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 10),
         child: Row(
           children: [
@@ -157,7 +158,7 @@ class NotificationCentreListBody extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Text(
-                nl ? 'Gelezen' : 'Read',
+                l10n.notificationCentreReadDividerLabel,
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,

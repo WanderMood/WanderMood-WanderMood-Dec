@@ -255,6 +255,9 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
     } else if (activity.status == ActivityStatus.activeNow) {
       primaryLabel = l10n.myDayTimelinePrimaryDone;
       primaryAction = () { HapticFeedback.mediumImpact(); onMarkDone(); };
+    } else if (activity.status == ActivityStatus.cancelled) {
+      primaryLabel = l10n.myDayTimelineStatusCancelled;
+      primaryAction = () {};
     } else {
       primaryLabel = l10n.myDayTimelinePrimaryImHere;
       primaryAction = () { HapticFeedback.mediumImpact(); onCheckIn(); };
@@ -528,7 +531,9 @@ class MyDayTimelineActivityCard extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: activity.status == ActivityStatus.activeNow
                                 ? _kWmSunset
-                                : _kWmForest,
+                                : activity.status == ActivityStatus.cancelled
+                                    ? _kWmStone
+                                    : _kWmForest,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Colors.white.withValues(alpha: 0.55),
@@ -677,6 +682,12 @@ _ActivityCardStatus _buildCardStatus(EnhancedActivityData activity, AppLocalizat
         color: _kWmForest,
         label: l10n.myDayTimelineStatusDone,
         icon: Icons.check_circle,
+      );
+    case ActivityStatus.cancelled:
+      return _ActivityCardStatus(
+        color: _kWmStone,
+        label: l10n.myDayTimelineStatusCancelled,
+        icon: Icons.not_interested_rounded,
       );
     default:
       return _ActivityCardStatus(

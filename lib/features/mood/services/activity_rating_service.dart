@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,10 +20,37 @@ final activityRatingForActivityProvider =
   return service.getRatingForActivity(activityId);
 });
 
+/// Recent place moments (ratings) for Profile — edit/remove in [MyMomentsScreen].
+final userActivityMomentsProvider =
+    FutureProvider.autoDispose<List<ActivityRating>>((ref) async {
+  final service = ref.watch(activityRatingServiceProvider);
+  return service.getRecentRatings(limit: 100);
+});
+
 class ActivityRatingService {
   final SupabaseClient _client;
 
   ActivityRatingService(this._client);
+
+  /// Deletes the current user's rating for [activityId] (server + local cache).
+  Future<void> deleteRatingForActivity(String activityId) async {
+    if (activityId.isEmpty) return;
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await _client
+          .from('activity_ratings')
+          .delete()
+          .eq('user_id', userId)
+          .eq('activity_id', activityId);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ActivityRatingService.deleteRatingForActivity: $e');
+      }
+    }
+    await _removeFromLocalCache(userId, activityId);
+    unawaited(_updateUserPatterns(userId));
+  }
 
   /// Save an activity rating
   Future<void> saveRating(ActivityRating rating) async {
@@ -337,6 +365,25 @@ class ActivityRatingService {
     }
     
     return areas;
+  }
+
+  Future<void> _removeFromLocalCache(String userId, String activityId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final ratings = await _loadRatingsLocally();
+      final filtered = ratings
+          .where((r) =>
+              !(r.userId == userId && r.activityId == activityId))
+          .toList();
+      await prefs.setString(
+        'activity_ratings',
+        jsonEncode(filtered.map((r) => r.toJson()).toList()),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ActivityRatingService._removeFromLocalCache: $e');
+      }
+    }
   }
 
   /// Keeps one row per (user_id, activity_id) in SharedPreferences for offline reads.

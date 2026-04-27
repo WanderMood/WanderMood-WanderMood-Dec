@@ -1,8 +1,68 @@
+import 'package:intl/intl.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
 
 /// In-app + push copy (EN/NL). Placeholders: [name] [place] [day] [slot] …
 class InAppNotificationCopy {
   InAppNotificationCopy._();
+
+  /// Normalizes plan date fields in [data] to a short weekday date in [localeName].
+  /// Handles ISO `yyyy-MM-dd` and legacy English strings like `Thu 23 Apr` stored at send time.
+  static Map<String, dynamic> withLocaleFormattedIsoDates(
+    Map<String, dynamic> data,
+    String localeName,
+  ) {
+    final out = Map<String, dynamic>.from(data);
+    const keys = <String>[
+      'day',
+      'proposed_date',
+      'previous_day',
+      'previous_date',
+      'new_day',
+    ];
+    for (final key in keys) {
+      final raw = out[key]?.toString().trim();
+      if (raw == null || raw.isEmpty) continue;
+      final dt = _parsePlanDateField(raw);
+      if (dt == null) continue;
+      out[key] = DateFormat('EEE d MMM', localeName).format(dt);
+    }
+    return out;
+  }
+
+  static DateTime? _parsePlanDateField(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty) return null;
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(t)) {
+      return DateTime.tryParse(t);
+    }
+    const parseLocales = ['en_US', 'nl_NL', 'de_DE', 'fr_FR', 'es_ES'];
+    const withYear = ['EEE d MMM y', 'EEE d MMMM y'];
+    const noYear = ['EEE d MMM', 'EEE d MMMM'];
+    for (final loc in parseLocales) {
+      for (final p in withYear) {
+        try {
+          return DateFormat(p, loc).parseLoose(t);
+        } catch (_) {}
+      }
+    }
+    for (final loc in parseLocales) {
+      for (final p in noYear) {
+        try {
+          var dt = DateFormat(p, loc).parseLoose(t);
+          final now = DateTime.now();
+          if (dt.year < 1980) {
+            var candidate = DateTime(now.year, dt.month, dt.day);
+            if (candidate.isBefore(now.subtract(const Duration(days: 400)))) {
+              candidate = DateTime(now.year + 1, dt.month, dt.day);
+            }
+            dt = candidate;
+          }
+          return dt;
+        } catch (_) {}
+      }
+    }
+    return null;
+  }
 
   static String sub(String tpl, Map<String, String> v) {
     var s = tpl;
@@ -167,21 +227,119 @@ class InAppNotificationCopy {
     }
   }
 
+  /// Seasonal / public-day greetings (`kings_day_nl`, `new_year_nl`, …).
+  static String engagementHolidayBody({required bool nl, required String holidayId}) {
+    switch (holidayId) {
+      case 'kings_day_nl':
+        return nl
+            ? 'Fijne Koningsdag! Zin om je dag samen wat kleur te geven?'
+            : 'Happy King\'s Day! Want to add some color to your day together?';
+      case 'new_year_nl':
+        return nl
+            ? 'Gelukkig nieuwjaar! Zullen we samen iets leuks plannen?'
+            : 'Happy New Year! Want to plan something fun together?';
+      case 'liberation_day_nl':
+        return nl
+            ? 'Fijne Bevrijdingsdag — rustig aan, of zin om samen iets te plannen?'
+            : 'Happy Liberation Day — take it easy, or want to plan something together?';
+      default:
+        return nl
+            ? 'Ik wens je een fijne dag.'
+            : 'Wishing you a great day.';
+    }
+  }
+
   static String moodyMessage({
     required bool nl,
     required String event,
     required Map<String, dynamic> data,
   }) {
+    if (event == 'moody_holiday_greeting') {
+      final id = (data['holiday_id'] ?? '').toString();
+      return engagementHolidayBody(nl: nl, holidayId: id);
+    }
+    if (event == 'moody_nudge_check_in') {
+      return nl
+          ? 'Je bent vandaag nog niet bij mij ingecheckt — hoe voel je je?'
+          : 'You haven\'t checked in with me today — how are you feeling?';
+    }
+    if (event == 'moody_nudge_plan_today') {
+      return nl
+          ? 'Je hebt nog niks vandaag in je dag — zal ik helpen plannen?'
+          : 'Nothing on your day yet — want help planning?';
+    }
+    if (event == 'moody_post_trip_reflection') {
+      return nl
+          ? 'Je dag zit erop — even samen reflecteren?'
+          : 'Your day is wrapped — want a quick reflection together?';
+    }
+    if (event == 'moody_saved_place_interest') {
+      final place =
+          (data['place_name'] ?? data['place'] ?? '').toString().trim();
+      if (place.isEmpty) {
+        return nl
+            ? 'Je hebt iets opgeslagen — wil je het aan je dag toevoegen?'
+            : 'You saved a spot — want to add it to your day?';
+      }
+      return nl
+          ? 'Ik zie dat je $place hebt opgeslagen — zin om het dit weekend (of vandaag) te plannen?'
+          : 'I noticed you saved $place — want to add it to your day or this weekend?';
+    }
     if (event == 'moody_chat_reminder') {
       final when = (data['when_label'] ?? '').toString().trim();
       if (when.isEmpty) {
         return nl
-            ? 'Moody heeft een herinnering voor je klaargezet.'
-            : 'Moody set a reminder for you.';
+            ? 'Ik heb een herinnering voor je klaargezet.'
+            : 'I set a reminder for you.';
       }
       return nl
           ? 'Herinnering gepland voor $when.'
           : 'Reminder set for $when.';
+    }
+    if (event == 'daily_mood_check_in') {
+      return nl
+          ? 'Hoe voel je je vandaag? Tik om in te checken.'
+          : 'How are you feeling today? Tap to check in.';
+    }
+    if (event == 'companion_check_in') {
+      return nl
+          ? 'Hoe was je dag? Zin om even bij te praten?'
+          : 'How was your day? Want to check in and chat?';
+    }
+    if (event == 'mood_follow_up') {
+      return nl
+          ? 'Even een snelle mood-check van mij.'
+          : 'Quick mood check-in from me.';
+    }
+    if (event == 'generate_my_day') {
+      return nl
+          ? 'Zin om je dag samen te vullen?'
+          : 'Want to fill in your day together?';
+    }
+    if (event == 'moody_place_pick' || event == 'place_suggestion') {
+      final place =
+          (data['place_name'] ?? data['place'] ?? '').toString().trim();
+      if (place.isEmpty) {
+        return nl
+            ? 'Ik heb een plek uitgezocht die misschien bij je past.'
+            : 'I picked a spot you might like.';
+      }
+      return nl
+          ? 'Ik denk dat $place bij je past — even kijken?'
+          : 'I think you might like $place — take a look?';
+    }
+    if (event == 'activity_upcoming' || event == 'activity_reminder') {
+      final title = (data['activity_title'] ?? data['title'] ?? '')
+          .toString()
+          .trim();
+      if (title.isEmpty) {
+        return nl
+            ? 'Je hebt straks iets gepland — even je dag bekijken?'
+            : 'You have something coming up — peek at your day?';
+      }
+      return nl
+          ? 'Straks: $title — klaar om te gaan?'
+          : 'Coming up: $title — ready when you are?';
     }
     if (event == 'morning_summary') {
       return sub(
@@ -207,6 +365,6 @@ class InAppNotificationCopy {
           ? (data['message_nl'] ?? data['message'] ?? '').toString()
           : (data['message_en'] ?? data['message'] ?? '').toString();
     }
-    return nl ? 'Moody heeft een tip voor je.' : 'Moody has a nudge for you.';
+    return nl ? 'Ik heb een tip voor je.' : 'I have a nudge for you.';
   }
 }

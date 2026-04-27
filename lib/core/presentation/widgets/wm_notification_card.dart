@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_notification_leading.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
 
@@ -101,6 +102,7 @@ class WmNotificationCard extends StatelessWidget {
     this.deleteTooltip,
     this.senderAvatarUrl,
     this.showSenderAvatar = false,
+    this.showMoodyAppIcon = false,
     this.presentation,
   });
 
@@ -116,6 +118,7 @@ class WmNotificationCard extends StatelessWidget {
   final String? deleteTooltip;
   final String? senderAvatarUrl;
   final bool showSenderAvatar;
+  final bool showMoodyAppIcon;
   final WmNotificationPresentation? presentation;
 
   static const Color _cream = Color(0xFFF5F0E8);
@@ -172,7 +175,7 @@ class WmNotificationCard extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
-              tooltip: deleteTooltip ?? 'Remove',
+              tooltip: deleteTooltip ?? AppLocalizations.of(context)!.notificationCardDeleteTooltip,
               onPressed: onDelete,
             ),
         ],
@@ -197,6 +200,7 @@ class WmNotificationCard extends StatelessWidget {
           event: event,
           senderAvatarUrl: senderAvatarUrl,
           showSenderAvatar: showSenderAvatar,
+          showMoodyAppIcon: showMoodyAppIcon,
         ),
       ),
       title: Text(body, style: titleStyle),

@@ -27,6 +27,7 @@ class MoodyIdleScreen extends StatefulWidget {
     super.key,
     required this.idleState,
     required this.wakeMessage,
+    this.idleOpeningLine,
     this.dayInterestCategory,
     this.userPreferences,
     this.topInterest,
@@ -37,6 +38,9 @@ class MoodyIdleScreen extends StatefulWidget {
 
   /// Shown after the wake animation — must align with [onComplete] (plan vs mood).
   final String wakeMessage;
+
+  /// When set (e.g. morning/evening gate), used as the opening line instead of edge AI.
+  final String? idleOpeningLine;
 
   /// Optional interest hint for the [MoodyIdleState.day] bucket (floating props).
   final String? dayInterestCategory;
@@ -180,9 +184,14 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
       widget.idleState,
       wakeMessage: widget.wakeMessage,
     );
-    _fetchIdleLine(
-      languageCode: Localizations.localeOf(context).languageCode,
-    );
+    final preset = widget.idleOpeningLine?.trim();
+    if (preset != null && preset.isNotEmpty) {
+      _idleAiText = preset;
+    } else {
+      _fetchIdleLine(
+        languageCode: Localizations.localeOf(context).languageCode,
+      );
+    }
   }
 
   Future<void> _fetchIdleLine({required String languageCode}) async {
@@ -306,7 +315,7 @@ class _MoodyIdleScreenState extends State<MoodyIdleScreen>
     if (!mounted) return;
     setState(() => _showWakeLine = true);
 
-    await Future<void>.delayed(const Duration(milliseconds: 2500));
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
 
     // Prefer handing off (pop) while this route is still opaque. Fading to 0

@@ -22,7 +22,9 @@ void mirrorMoodyChatReminderToInAppNotification({
 
       final nl =
           (await wandermoodNotificationLangCode()).toLowerCase().startsWith('nl');
-      final whenLabel = DateFormat.yMMMd().add_jm().format(fireAt.toLocal());
+      final locale = nl ? 'nl_NL' : 'en_US';
+      final whenLabel =
+          DateFormat.yMMMd(locale).add_jm().format(fireAt.toLocal());
       const title = 'Moody';
       final message = InAppNotificationCopy.moodyMessage(
         nl: nl,

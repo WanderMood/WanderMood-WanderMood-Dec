@@ -26,6 +26,7 @@ import '../../features/weather/presentation/pages/weather_page.dart';
 import '../../features/recommendations/presentation/pages/recommendations_page.dart';
 import '../../features/profile/presentation/screens/user_profile_screen.dart' as profile;
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/my_moments_screen.dart';
 import '../../features/profile/presentation/screens/share_profile_screen.dart';
 import '../../features/profile/presentation/screens/globe_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
@@ -548,6 +549,11 @@ GoRouter router(RouterRef ref) {
         path: '/profile',
         name: 'profile',
         builder: (context, state) => const profile.UserProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/moments',
+        name: 'profile-moments',
+        builder: (context, state) => const MyMomentsScreen(),
       ),
       GoRoute(
         path: '/profile/edit',

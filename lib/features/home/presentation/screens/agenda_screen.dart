@@ -130,30 +130,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               elevation: 0,
               floating: true,
               snap: true,
-              leading: IconButton(
-                onPressed: () {
-                  print('🔙 Back button pressed on agenda screen');
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.of(context).pop();
-                  } else {
-                    context.go('/home');
-                  }
-                },
-                icon: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: const [],
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Color(0xFF2A6049),
-                    size: 20,
-                  ),
-                ),
-              ),
+              automaticallyImplyLeading: false,
+              centerTitle: true,
               title: Text(
                 AppLocalizations.of(context)!.agendaTitle,
                 style: GoogleFonts.poppins(
@@ -1712,7 +1690,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   
   String _getActivityStatus(Map<String, dynamic> activity, ActivityManagerState activityManager) {
     final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
-    final managerStatus = activityManager.statusUpdates[activityId];
+    final startTimeStr0 = activity['startTime'] as String?;
+    final startTime0 =
+        startTimeStr0 != null ? DateTime.parse(startTimeStr0) : DateTime.now();
+    final managerStatus = activityStatusForScheduledDay(
+      manager: activityManager,
+      activityStartTime: startTime0,
+      activityId: activityId,
+    );
     
     if (managerStatus == ActivityStatus.cancelled) {
       // Unbooked items were incorrectly "cancelled" in memory only; keep showing real time state.

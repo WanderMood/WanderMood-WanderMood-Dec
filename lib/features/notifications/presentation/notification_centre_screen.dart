@@ -12,6 +12,7 @@ import 'package:wandermood/core/presentation/widgets/wm_notification_card.dart';
 import 'package:wandermood/core/providers/supabase_provider.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event_from_supabase.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 import 'notification_centre_filters.dart';
 import 'notification_centre_list_body.dart';
 import 'notification_centre_mood_match.dart';
@@ -211,14 +212,14 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
     }
   }
 
-  Widget _moodMatchTimelineHeader(bool nl) {
+  Widget _moodMatchTimelineHeader(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            nl ? 'Samen plannen' : 'Planning together',
+            l10n.notificationCentreMoodMatchTimelineTitle,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -228,9 +229,7 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
           ),
           const SizedBox(height: 4),
           Text(
-            nl
-                ? 'Chronologisch overzicht van jullie Mood Match.'
-                : 'A calm timeline of your Mood Match.',
+            l10n.notificationCentreMoodMatchTimelineSubtitle,
             style: GoogleFonts.poppins(
               fontSize: 11.5,
               fontWeight: FontWeight.w400,
@@ -244,8 +243,7 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
   }
 
   Widget _tileWithContext(RealtimeEvent e, NotificationCentreRowContext ctx) {
-    final nl = Localizations.localeOf(context).languageCode == 'nl';
-    final deleteHint = nl ? 'Verwijderen' : 'Remove';
+    final l10n = AppLocalizations.of(context)!;
     final router = GoRouter.of(context);
     Future<void> onOpen() async {
       await _markRead(e);
@@ -263,23 +261,38 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
       if (mounted) setState(() {});
     }
 
+    final useMoodyIcon = notificationCentreUseMoodyAppIcon(e);
     final sid = notificationSenderUserId(e);
     final payloadImg = e.imageUrl?.trim();
     void onDelete() => unawaited(_removeNotification(e));
     final presentation = _moodMatchPresentation(e);
 
     Widget card;
-    if (sid == null && (payloadImg == null || payloadImg.isEmpty)) {
+    if (useMoodyIcon) {
       card = WmNotificationCard(
         event: e,
-        body: e.message,
-        meta: e.timeAgo,
-        categoryLabel: notificationCentreCategoryLabel(e.type),
+        body: notificationCentreDisplayBody(e, l10n),
+        meta: notificationCentreTimeAgo(e, l10n),
+        categoryLabel: notificationCentreCategoryLabel(e.type, l10n),
+        unread: !e.isRead,
+        iconBg: notificationCentreIconBg(e.type, sunset: _sunset, cream: _cream),
+        showMoodyAppIcon: true,
+        onTap: onOpen,
+        onDelete: onDelete,
+        deleteTooltip: l10n.notificationCardDeleteTooltip,
+        presentation: presentation,
+      );
+    } else if (sid == null && (payloadImg == null || payloadImg.isEmpty)) {
+      card = WmNotificationCard(
+        event: e,
+        body: notificationCentreDisplayBody(e, l10n),
+        meta: notificationCentreTimeAgo(e, l10n),
+        categoryLabel: notificationCentreCategoryLabel(e.type, l10n),
         unread: !e.isRead,
         iconBg: notificationCentreIconBg(e.type, sunset: _sunset, cream: _cream),
         onTap: onOpen,
         onDelete: onDelete,
-        deleteTooltip: deleteHint,
+        deleteTooltip: l10n.notificationCardDeleteTooltip,
         presentation: presentation,
       );
     } else {
@@ -289,16 +302,16 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
           : (payloadImg != null && payloadImg.isNotEmpty ? payloadImg : null);
       card = WmNotificationCard(
         event: e,
-        body: e.message,
-        meta: e.timeAgo,
-        categoryLabel: notificationCentreCategoryLabel(e.type),
+        body: notificationCentreDisplayBody(e, l10n),
+        meta: notificationCentreTimeAgo(e, l10n),
+        categoryLabel: notificationCentreCategoryLabel(e.type, l10n),
         unread: !e.isRead,
         iconBg: notificationCentreIconBg(e.type, sunset: _sunset, cream: _cream),
         showSenderAvatar: true,
         senderAvatarUrl: photo,
         onTap: onOpen,
         onDelete: onDelete,
-        deleteTooltip: deleteHint,
+        deleteTooltip: l10n.notificationCardDeleteTooltip,
         presentation: presentation,
       );
     }
@@ -330,11 +343,9 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
 
   @override
   Widget build(BuildContext context) {
-    final nl = Localizations.localeOf(context).languageCode == 'nl';
-    final title = nl ? 'Meldingen' : 'Updates';
-    final empty = nl
-        ? 'Alles bijgewerkt — ik laat je weten als er iets is.'
-        : 'Nothing new — you\'re all caught up. I\'ll let you know when something happens.';
+    final l10n = AppLocalizations.of(context)!;
+    final title = l10n.notificationCentreTitle;
+    final empty = l10n.notificationCentreEmptyState;
 
     final vis = _all
         .where((e) => !_dismissedIds.contains(e.id))
@@ -349,7 +360,7 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
         : null;
 
     final listChild = NotificationCentreListBody(
-      nl: nl,
+      l10n: l10n,
       emptyText: empty,
       showLoading: _loading && _all.isEmpty,
       showEmpty: vis.isEmpty && !_loading,
@@ -362,7 +373,7 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
       cream: _cream,
       moodMatchMergedTimeline: moodMatchTimeline,
       moodMatchOrderedItems: moodMatchOrdered,
-      moodMatchHeader: moodMatchTimeline ? _moodMatchTimelineHeader(nl) : null,
+      moodMatchHeader: moodMatchTimeline ? _moodMatchTimelineHeader(l10n) : null,
       enableMoodMatchSpacingHints: moodMatchTimeline,
     );
 
@@ -393,7 +404,7 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
                   TextButton(
                     onPressed: _markAllRead,
                     child: Text(
-                      nl ? 'Alles gelezen' : 'Mark all read',
+                      l10n.notificationCentreMarkAllRead,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: _sunset,
@@ -415,7 +426,7 @@ class _NotificationCentreScreenState extends ConsumerState<NotificationCentreScr
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: NotificationCentrePill(
-                        label: notificationCentrePillLabel(NotificationCentreFilter.values[i], nl),
+                        label: notificationCentrePillLabel(NotificationCentreFilter.values[i], l10n),
                         selected: _filter == NotificationCentreFilter.values[i],
                         onTap: () => _selectFilter(NotificationCentreFilter.values[i], i),
                       ),

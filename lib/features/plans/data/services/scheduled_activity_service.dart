@@ -158,6 +158,8 @@ class ScheduledActivityService {
         'rating': activity.rating,
         'scheduled_date': scheduledDate,
         'created_at': DateTime.now().toIso8601String(),
+        'visit_status': 'planned',
+        'verified_location': false,
       };
     }).toList();
   }
@@ -347,6 +349,16 @@ class ScheduledActivityService {
       isPaid: paymentType != PaymentType.free,
       placeId: json['place_id'] as String?,
       groupSessionId: json['group_session_id'] as String?,
+      visitStatus: json['visit_status'] as String?,
+      checkInTime: json['check_in_time'] != null
+          ? DateTime.tryParse(json['check_in_time'] as String)
+          : null,
+      checkOutTime: json['check_out_time'] != null
+          ? DateTime.tryParse(json['check_out_time'] as String)
+          : null,
+      checkInMethod: json['check_in_method'] as String?,
+      visitDurationMinutes: (json['visit_duration_minutes'] as num?)?.toInt(),
+      verifiedLocation: json['verified_location'] as bool? ?? false,
     );
   }
   
@@ -450,6 +462,42 @@ class ScheduledActivityService {
     }
   }
   
+  /// Persists geofence / manual visit metadata (`visit_*` columns).
+  Future<void> updateVisitTracking({
+    required String activityId,
+    required String visitStatus,
+    DateTime? checkInTime,
+    DateTime? checkOutTime,
+    String? checkInMethod,
+    int? visitDurationMinutes,
+    bool? verifiedLocation,
+  }) async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      final patch = <String, dynamic>{
+        'visit_status': visitStatus,
+        if (checkInTime != null) 'check_in_time': checkInTime.toIso8601String(),
+        if (checkOutTime != null) 'check_out_time': checkOutTime.toIso8601String(),
+        if (checkInMethod != null) 'check_in_method': checkInMethod,
+        if (visitDurationMinutes != null) 'visit_duration_minutes': visitDurationMinutes,
+        if (verifiedLocation != null) 'verified_location': verifiedLocation,
+      };
+
+      await _client
+          .from('scheduled_activities')
+          .update(patch)
+          .eq('user_id', userId)
+          .eq('activity_id', activityId);
+    } catch (e) {
+      debugPrint('ScheduledActivityService: updateVisitTracking failed: $e');
+      rethrow;
+    }
+  }
+
   /// Update the confirmation status of an activity
   Future<void> updateActivityConfirmation(String activityId, bool isConfirmed) async {
     try {

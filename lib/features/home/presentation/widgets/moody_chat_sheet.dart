@@ -154,6 +154,8 @@ class _ChatMsg {
   final bool? replyToIsUser;
   /// First Moody line in Explore / My Day place threads — uses opener layout, not the default bubble.
   final bool moodyThreadOpener;
+  /// Visit celebration line from `MoodyCelebrationService` (persists in daily prefs JSON).
+  final bool visitCelebration;
 
   _ChatMsg({
     required this.message,
@@ -163,6 +165,7 @@ class _ChatMsg {
     this.replyToText,
     this.replyToIsUser,
     this.moodyThreadOpener = false,
+    this.visitCelebration = false,
   });
 
   /// Text used when the user chooses Copy (includes quote block if present).
@@ -358,6 +361,7 @@ Map<String, dynamic> _chatMsgToJson(_ChatMsg m) {
     'suggestedPlaces': m.suggestedPlaces?.map((e) => e.toJson()).toList(),
   };
   if (m.moodyThreadOpener) o['threadOpener'] = true;
+  if (m.visitCelebration) o['visitCelebration'] = true;
   final rt = m.replyToText?.trim();
   if (rt != null && rt.isNotEmpty) {
     o['replyToText'] = rt;
@@ -392,6 +396,7 @@ _ChatMsg _chatMsgFromJson(Map<String, dynamic> j) {
     replyToText: (rt != null && rt.isNotEmpty) ? rt : null,
     replyToIsUser: (rt != null && rt.isNotEmpty) ? (ri ?? false) : null,
     moodyThreadOpener: j['threadOpener'] == true,
+    visitCelebration: j['visitCelebration'] == true,
   );
 }
 
@@ -1075,6 +1080,29 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     }
     _composerFocusNode = FocusNode();
     _composerFocusNode.addListener(_onComposerFocusForHubCollapse);
+    if (widget.embedded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (ref.read(mainTabProvider) == _moodyTabIndex) {
+          _scheduleVisitCelebrationCheck();
+        }
+      });
+    }
+  }
+
+  void _scheduleVisitCelebrationCheck() {
+    if (!widget.embedded) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (ref.read(mainTabProvider) != _moodyTabIndex) return;
+      unawaited(_tryInjectVisitCelebration());
+    });
+  }
+
+  Future<void> _tryInjectVisitCelebration() async {
+    // Visit/geofence celebration copy lived in `core/visit/`; that module was removed.
+    // Keep hook so embedded hub can re-enable without reshaping call sites.
+    return;
   }
 
   /// Collapse expanded hub so the chat thread is visible. Called from composer
@@ -1117,7 +1145,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
   }
 
   Future<void> _openArchiveCopyOnly(_ChatMsg msg) async {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -1128,7 +1156,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         child: ListTile(
           leading: const Icon(Icons.copy_rounded, color: _wmForest),
           title: Text(
-            l10n?.chatSheetMessageCopy ?? 'Copy',
+            l10n.chatSheetMessageCopy,
             style: GoogleFonts.poppins(fontSize: 16, color: _wmCharcoal),
           ),
           onTap: () async {
@@ -1137,7 +1165,7 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(l10n?.chatSheetCopied ?? 'Copied'),
+                content: Text(l10n.chatSheetCopied),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -2157,6 +2185,12 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
 
   @override
   Widget build(BuildContext context) {
+    if (widget.embedded) {
+      ref.listen<int>(mainTabProvider, (prev, next) {
+        if (next == _moodyTabIndex) _scheduleVisitCelebrationCheck();
+      });
+    }
+
     final hasThread = widget.chatMessages.isNotEmpty;
     final sheetExpanded = !hasThread || _hubPeekOpen;
 

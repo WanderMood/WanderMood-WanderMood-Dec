@@ -270,6 +270,81 @@ Future<void> applyWmFcmDataNavigation(
       ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
       router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
       break;
+    // OS/local notification mirror + Moody hub (see [NotificationService._mapLocalNotificationToRealtime]).
+    case 'moody_chat_reminder':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go('/main?tab=2', extra: <String, dynamic>{'tab': 2});
+      break;
+    case 'daily_mood_check_in':
+    case 'companion_check_in':
+    case 'mood_follow_up':
+    case 'generate_my_day':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go(
+        '/main?tab=2&moodAction=moodCheckIn',
+        extra: <String, dynamic>{'tab': 2, 'moodAction': 'moodCheckIn'},
+      );
+      break;
+    case 'moody_holiday_greeting':
+      // Seasonal copy is about the user's day — land on My Day, not the Moody tab.
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      break;
+    case 'moody_nudge_check_in':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go(
+        '/main?tab=2&moodAction=moodCheckIn',
+        extra: <String, dynamic>{'tab': 2, 'moodAction': 'moodCheckIn'},
+      );
+      break;
+    case 'moody_nudge_plan_today':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      break;
+    case 'moody_post_trip_reflection':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      router.go(
+        '/main?tab=2&moodAction=moodCheckIn',
+        extra: <String, dynamic>{'tab': 2, 'moodAction': 'moodCheckIn'},
+      );
+      break;
+    case 'moody_saved_place_interest':
+      final savedPlaceId = data['place_id']?.toString().trim();
+      if (savedPlaceId != null && savedPlaceId.isNotEmpty) {
+        router.push('/place/$savedPlaceId');
+      } else {
+        ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+        router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      }
+      break;
+    // Future: server- or client-sent “Moody thinks you’ll like this place” (B2B can reuse with partner_id).
+    case 'moody_place_pick':
+    case 'place_suggestion':
+    case 'placeRecommendation':
+      final placeId = data['place_id']?.toString().trim();
+      if (placeId != null && placeId.isNotEmpty) {
+        router.push('/place/$placeId');
+      } else {
+        ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+        router.go('/main?tab=1', extra: <String, dynamic>{'tab': 1});
+      }
+      break;
+    case 'activity_upcoming':
+    case 'activity_reminder':
+    case 'activityReminder':
+      ref.read(suppressMoodyIdleOnceProvider.notifier).state = true;
+      final dateStr = (data['scheduled_date'] ?? data['target_date'] ?? '')
+          .toString()
+          .trim();
+      if (dateStr.isNotEmpty) {
+        router.go(
+          '/main?tab=0',
+          extra: <String, dynamic>{'tab': 0, 'targetDate': dateStr},
+        );
+      } else {
+        router.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
+      }
+      break;
     case 'milestone':
       router.go('/main?tab=4', extra: <String, dynamic>{'tab': 4});
       break;

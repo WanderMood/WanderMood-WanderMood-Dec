@@ -13,6 +13,26 @@
   "moodHomeCtxReturnEveningWeekday": "Feierabend — wie ist deine Abendstimmung?",
   "moodHomeCtxReturnNight": "Späte Stunden — lass uns sehen, was dich anspricht.",
   "moodHomeCtxFallback": "Lass uns die richtige Stimmung für heute finden.",
+  "moodHomeHeroGreetingEarlyMorningTitle": "Guten Start! ☀️",
+  "moodHomeHeroGreetingEarlyMorningSubWeekend": "Perfekter Wochenendmorgen für Abenteuer",
+  "moodHomeHeroGreetingEarlyMorningSubWeekday": "Bereit für einen tollen Tag?",
+  "moodHomeHeroGreetingLateMorningTitle": "Hey du! 👋",
+  "moodHomeHeroGreetingLateMorningSub": "Ich habe schon über deinen perfekten Tag nachgedacht",
+  "moodHomeHeroGreetingAfternoonTitle": "Nachmittags-Vibes! ✨",
+  "moodHomeHeroGreetingAfternoonSub": "Was liegt dir heute auf dem Herzen?",
+  "moodHomeHeroGreetingEarlyEveningTitle": "Abendentdecker! 🌆",
+  "moodHomeHeroGreetingEarlyEveningSubWeekend": "Wochenendabende sind perfekt zum Entdecken",
+  "moodHomeHeroGreetingEarlyEveningSubWeekday": "Wie war dein Tag?",
+  "moodHomeHeroGreetingNightTitle": "Nachteule! 🌙",
+  "moodHomeHeroGreetingNightSub": "Lust auf ein spätes Abenteuer?",
+  "moodHomeEmptyChatPitch": "Ich kenne {city} in- und auswendig! Sag mir deine Stimmung – ich gestalte den perfekten Tag für dich: abenteuerlich, romantisch oder entspannt. Ich hab dich! 🎯",
+  "@moodHomeEmptyChatPitch": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "splashTagline": "Dein Reisebegleiter nach Stimmung",
   "splashPlanYourDayByFeeling": "Plane deinen Tag nach dem, was du fühlst",
   "welcome": "Willkommen",
@@ -1330,6 +1350,16 @@
   "moodyIdleFallbackDay": "Moody war unterwegs — bereit für dich ✨",
   "moodyIdleFallbackEvening": "Moody hat runtergefahren 🌙",
   "moodyIdleFallbackNight": "Ruhige Stunden… Moody war fast eingeschlafen 😴",
+  "moodyIdleGateMorning0": "Guten Morgen. Bereit, den Tag zu gestalten?",
+  "moodyIdleGateMorning1": "Morgen — willst du sehen, was auf deiner Liste steht?",
+  "moodyIdleGateMorning2": "Du bist wach. Öffne deinen Tag, wenn du soweit bist.",
+  "moodyIdleGateMorning3": "Neuer Tag. Tippe, wenn du starten willst.",
+  "moodyIdleGateMorning4": "Noch langsam? Kein Stress — tippe auf Moody, wenn du bereit bist.",
+  "moodyIdleGateEvening0": "Guten Abend. Willst du deinen Plan aufnehmen?",
+  "moodyIdleGateEvening1": "Abend — hier, wenn du den Tag abschließen willst.",
+  "moodyIdleGateEvening2": "Runterfahren? Dein Tag ist nur einen Tap entfernt.",
+  "moodyIdleGateEvening3": "Kurz wieder da? Moody hilft gern.",
+  "moodyIdleGateEvening4": "Atme kurz — öffne deinen Plan, wenn es hilft.",
   "moodyHubNewConversation": "New conversation",
   "moodHubCreatePlan": "Erstelle deinen perfekten Plan! 🎯",
   "moodHubBackToHub": "Zurück zur Hub",
@@ -1657,6 +1687,7 @@
   "myDayTimelineStatusImHere": "ICH BIN DA",
   "myDayTimelineStatusPlanned": "GEPLANT",
   "myDayTimelineStatusDone": "FERTIG",
+  "myDayTimelineStatusCancelled": "ABGESAGT",
   "myDayActivityFallbackLabel": "Aktivität",
   "myDayExecutionHeroYoureHereBadge": "Du bist da!",
   "myDayExecutionHeroInProgressBadge": "LÄUFT",
@@ -1674,17 +1705,23 @@
   "myDayExecutionHeroBadgeReadyToReviewCaps": "BEREIT ZUR BEWERTUNG",
   "myDayExecutionHeroReviewCaptureHint": "Halte fest, wie es sich angefühlt hat, solange es noch frisch ist.",
   "myDayExecutionHeroUpNextBadge": "ALS NÄCHSTES",
+  "myDayExecutionHeroUpNextAfterSlotBadge": "NÄCHSTER",
   "myDayExecutionHeroTapImHereWhenArrive": "Tippe auf „Ich bin da“, wenn du angekommen bist.",
   "myDayTimelineSectionMorningTitle": "🌅 Morgen",
+  "myDayTimelineSectionMorningFocusTitle": "🌅 Heute Morgen",
   "myDayTimelineSectionMorningSubtitle": "Starte gut in den Tag",
   "myDayTimelineSectionAfternoonTitle": "🌞 Nachmittag",
+  "myDayTimelineSectionAfternoonFocusTitle": "🌞 Heute Nachmittag",
   "myDayTimelineSectionAfternoonSubtitle": "Zeit für Abenteuer",
   "myDayTimelineSectionEveningTitle": "🌆 Abend",
+  "myDayTimelineSectionEveningFocusTitle": "🌆 Heute Abend",
   "myDayTimelineSectionEveningSubtitle": "Runterkommen und genießen",
-  "myDaySlotPlannedForMorning": "Heute Vormittag",
+  "myDayTimelineSectionEarlierTodaySubtitle": "Früher am Tag",
+  "myDaySlotPlannedForMorning": "Heute Morgen",
   "myDaySlotPlannedForAfternoon": "Heute Nachmittag",
-  "myDayTimelineSectionMorningPastTitle": "🌅 Heute Vormittag",
-  "myDayTimelineSectionAfternoonPastTitle": "🌞 Heute Nachmittag",
+  "myDaySlotThisEvening": "Heute Abend",
+  "myDayTimelineSectionMorningPastTitle": "🌅 Morgen",
+  "myDayTimelineSectionAfternoonPastTitle": "🌞 Nachmittag",
   "myDayWeekendEmptyTitle": "Dein Wochenende ist noch leer!",
   "myDayWeekendEmptySubtitle": "Möchtest du Samstag oder Sonntag schon planen?",
   "myDayWeekendSaturdayShort": "Sa {day}",
@@ -1800,6 +1837,28 @@
   "socialSampleNotificationLiked": "• Sarah liked your post",
   "socialSampleNotificationFollowed": "• Marco started following you",
   "socialSampleNotificationStory": "• New travel story from Luna",
+  "notificationCardDeleteTooltip": "Entfernen",
+  "notificationCentreMoodMatchTimelineTitle": "Gemeinsam planen",
+  "notificationCentreMoodMatchTimelineSubtitle": "Eine ruhige Timeline eures Mood Match.",
+  "notificationCentreTitle": "Updates",
+  "notificationCentreEmptyState": "Alles aktuell — wir melden uns, wenn es Neues gibt.",
+  "notificationCentreMarkAllRead": "Alle als gelesen markieren",
+  "notificationCentreSectionNew": "Neu",
+  "notificationCentreSectionEarlier": "Früher",
+  "notificationCentreReadDividerLabel": "Gelesen",
+  "notificationCentreAllFilter": "Alle",
+  "notificationCentreActivitiesLabel": "Aktivitäten",
+  "notificationCentreSocialLabel": "Social",
+  "notificationCentreMoodyLabel": "Moody",
+  "notificationCentreCategoryMoodMatch": "Mood Match",
+  "notificationCentreRelativeMinutesAgo": "vor {count} Min.",
+  "@notificationCentreRelativeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialOpeningAllTravelStories": "Opening all travel stories...",
   "socialOpeningUserStory": "Opening {name}'s story...",
   "socialSavePost": "Save Post",
@@ -2258,6 +2317,45 @@
   "checkInDoneSubtitle": "Moody merkt sich das für das nächste Mal",
   "checkInSaveError": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
   "checkInClose": "Schließen",
+  "checkInWithMoodyTitle": "Check-in bei Moody",
+  "checkInGreetingDefault": "Hey! Wie läuft dein Tag?",
+  "checkInGreetingMorningAfterTired": "Guten Morgen! Hast du gut geschlafen? 🌅",
+  "checkInGreetingMorningFresh": "Guten Morgen! Wie fühlst du dich heute? ☀️",
+  "checkInTellMeEverything": "Erzähl mir alles! 💚",
+  "checkInHowAreYouFeeling": "Wie fühlst du dich?",
+  "checkInWhatDidYouDoToday": "Was hast du heute gemacht?",
+  "checkInQuickReactionsHeading": "Schnelle Reaktionen",
+  "checkInTellMeMoreHeading": "Erzähl mehr … (optional)",
+  "checkInTextFieldHint": "Was beschäftigt dich? Erzähl gerne alles! 💭",
+  "checkInSendButton": "An Moody senden",
+  "checkInThanksMoodyButton": "Danke, Moody! 💚",
+  "checkInAiFallbackThankYou": "Danke für dein Check-in! Ich höre gern, wie dein Tag war 💛",
+  "checkInMoodGreatLabel": "Super",
+  "checkInMoodGreatSubtitle": "Bestes Leben!",
+  "checkInMoodTiredLabel": "Müde",
+  "checkInMoodTiredSubtitle": "Brauche Pause",
+  "checkInMoodAmazingLabel": "Großartig",
+  "checkInMoodAmazingSubtitle": "Bester Tag überhaupt!",
+  "checkInMoodOkayLabel": "Okay",
+  "checkInMoodOkaySubtitle": "Geht so weiter",
+  "checkInMoodThoughtfulLabel": "Nachdenklich",
+  "checkInMoodThoughtfulSubtitle": "Voller Gefühl",
+  "checkInMoodChillLabel": "Chill",
+  "checkInMoodChillSubtitle": "Alles entspannt",
+  "checkInTagExploredPlaces": "Orte erkundet",
+  "checkInTagGreatFood": "Lecker gegessen",
+  "checkInTagMetFriends": "Freunde getroffen",
+  "checkInTagRelaxed": "Entspannt",
+  "checkInTagWorkedOut": "Sport gemacht",
+  "checkInTagCreativeTime": "Kreativzeit",
+  "checkInTagAdventure": "Abenteuer",
+  "checkInTagSelfCare": "Selfcare",
+  "checkInReactionLovedIt": "Geliebt",
+  "checkInReactionOnFire": "On fire",
+  "checkInReactionMagical": "Magisch",
+  "checkInReactionExhausted": "Erschöpft",
+  "checkInReactionAmazing": "Großartig",
+  "checkInReactionPeaceful": "Ruhig",
   "dagSheetOpener1": "Du bist zu Hause! Wie war dein Tag?",
   "dagSheetOpener2": "Erzähl! Wie war es heute?",
   "dagSheetOpener3": "Wie lief es heute?",
@@ -2812,6 +2910,7 @@
   "moodyHubListComma": ", ",
   "moodyHubListAnd": " und ",
   "moodyReviewTitle": "Kurzes Feedback",
+  "moodyReviewHeroSubtitle": "Wie hat es sich angefühlt? Ich bin ganz Ohr.",
   "moodyReviewHowWasIt": "Wie war's?",
   "moodyReviewStarsFeedback5": "🌟 Großartig!",
   "moodyReviewStarsFeedback4": "😊 Sehr gut!",
@@ -2824,12 +2923,38 @@
   "moodyReviewVibeOkay": "Okay",
   "moodyReviewVibeMeh": "Meh",
   "moodyReviewOptionalNote": "Noch etwas? (optional)",
-  "moodyReviewNoteHint": "Was ist aufgefallen? Tipps für andere?",
-  "moodyReviewNoteHelper": "💡 So helfen andere tolle Orte zu finden!",
-  "moodyReviewSave": "Bewertung speichern",
-  "moodyReviewNeedStars": "Bitte Sterne vergeben, um fortzufahren",
-  "moodyReviewHelpsMoody": "Dein Feedback hilft Moody zu lernen!",
-  "moodyReviewThanksToast": "Danke für deine Bewertung! 🚀",
+  "moodyReviewNoteHint": "Was ist dir aufgefallen, solange es noch frisch ist?",
+  "moodyReviewNoteHelper": "💡 Damit stelle ich deine nächsten Tage schärfer ein — nur für dich und WanderMood.",
+  "moodyReviewSave": "Speichern",
+  "moodyReviewNeedStars": "Bitte Sterne wählen, um fortzufahren",
+  "moodyReviewHelpsMoody": "Bleibt unter uns — und verbessert meine Vorschläge für dich.",
+  "moodyReviewThanksToast": "Gespeichert — danke!",
+  "profileMomentsTitle": "Deine Besuche",
+  "profileMomentsSubtitle": "Orte, die du nach „Mein Tag“ bewertet hast — privat, änderbar",
+  "profileMomentsSeeAll": "Alle anzeigen",
+  "profileMomentsEmptyCta": "Bewerte einen Stopp in „Mein Tag“ — dann erscheint er hier.",
+  "momentsListHeroLine": "Wie sich Orte für dich angefühlt haben — privat, außer du nutzt ein Partnerangebot.",
+  "momentsListEmptyTitle": "Noch keine Besuche",
+  "momentsListEmptySubtitle": "Schließ einen Stopp unter „Mein Tag“ ab und tippe auf Bewerten. Deine Notiz landet hier — privat, außer du nimmst später an einem Partner-Angebot teil.",
+  "momentsListError": "Besuche konnten nicht geladen werden",
+  "momentsDeleteConfirmTitle": "Diesen Besuch entfernen?",
+  "momentsDeleteConfirmBody": "Damit löscht du deine Bewertung für {place}. Nach dem nächsten Besuch kannst du neu eintragen.",
+  "@momentsDeleteConfirmBody": {
+    "placeholders": {
+      "place": {}
+    }
+  },
+  "momentsRemovedToast": "Besuch entfernt",
+  "momentsRemoveCta": "Entfernen",
+  "momentsTapToEdit": "Tippen zum Aktualisieren",
+  "momentsStarsCount": "{count, plural, one{{count} Stern} other{{count} Sterne}}",
+  "@momentsStarsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "getReadyChecklistItemReady": "Bereit!",
   "getReadyShareInvite": "Komm mit zu {title} gegen {time} – geplant mit WanderMood.",
   "@getReadyShareInvite": {
@@ -4158,6 +4283,67 @@
   "adventurePlanTitleHighlight": "Abenteuerplan",
   "adventurePlanTitleForToday": " für heute",
   "adventurePlanLoadError": "Fehler beim Laden der Abenteuer: {error}",
+  "adventurePlanDemoTemperatureLabel": "32°",
+  "adventurePlanDemoCityLabel": "Washington DC",
+  "trendingDetailNoRelatedPlaces": "Keine passenden Orte gefunden",
+  "trendingDetailRelatedPlacesError": "Verwandte Orte konnten nicht geladen werden",
+  "trendingDetailSimilarPlacesSection": "Ähnliche Orte",
+  "trendingDetailLongDining": "Genieß die kulinarischen Highlights bei {title}! Zusammen mit Einheimischen und Besuchern — perfekt für Feinschmecker in der Gegend. 🍽️✨",
+  "@trendingDetailLongDining": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongCulture": "Tauche ein in das kulturelle Erbe bei {title}. Kunst, Geschichte und Kreativität — Inspiration pur. 🎨🏛️",
+  "@trendingDetailLongCulture": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongOutdoor": "Atme frische Luft bei {title}. Ruhiger Spaziergang oder aktives Abenteuer — perfekte Auszeit. 🌳🚶‍♀️",
+  "@trendingDetailLongOutdoor": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongSightseeing": "Halte Momente bei {title} fest. Fotogen und unvergesslich — Kamera nicht vergessen! 📸🌅",
+  "@trendingDetailLongSightseeing": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongShopping": "Finde Besonderes bei {title}. Boutiquen und lokale Märkte — für jeden Geschmack. 🛍️💎",
+  "@trendingDetailLongShopping": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongFitness": "Bleib aktiv bei {title}. Training halten oder Neues ausprobieren — ideal für Bewegung. 💪🏃‍♀️",
+  "@trendingDetailLongFitness": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongDefault": "Vergiss den Trend bei {title} nicht! Einheimische und Besucher sind begeistert — finde selbst heraus warum. ⭐🎉",
+  "@trendingDetailLongDefault": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "receiptDownloadPdf": "PDF herunterladen",
   "receiptShare": "Beleg teilen",
   "placePhotoTapToView": "Tippen zum Anzeigen",
@@ -4180,10 +4366,46 @@
       }
     }
   },
+  "weatherMoodyTipTimeTonight": "Heute Nacht",
+  "weatherMoodyTipRainMorningBody": "Regen am Morgen — nimm einen Schirm mit, bevor du gehst.",
+  "weatherMoodyTipRainAfternoonBody": "Es regnet draußen. Café oder Museum passen heute besonders gut.",
+  "weatherMoodyTipRainEveningBody": "Regen heute Abend — perfekte Ausrede für ein gemütliches Plätzchen drinnen.",
+  "weatherMoodyTipRainNightBody": "Regen und Dunkelheit. Bleib warm drinnen — draußen kann warten.",
+  "weatherMoodyTipSunnyHighUvMorningBody": "Starker Start! Sonnenschutz nicht vergessen — UV steigt schnell.",
+  "weatherMoodyTipSunnyHighUvAfternoonBody": "UV ist hoch. Such Schatten und trink genug.",
+  "weatherMoodyTipSunnyHighUvEveningBody": "Die Sonne steht tiefer — ideal für einen Spaziergang oder Terrasse.",
+  "weatherMoodyTipSunnyHighUvNightBody": "Klarer Himmel heute Nacht — toll für einen Spaziergang unter den Sternen.",
+  "weatherMoodyTipSunnyMildMorningBody": "Mild und trocken — schöner Morgen für Spaziergang oder Frühstück draußen.",
+  "weatherMoodyTipSunnyMildAfternoonBody": "Angenehm draußen. Terrassen und Parks rufen.",
+  "weatherMoodyTipSunnyMildEveningBody": "Schöner Abend für einen Spaziergang, Essen draußen oder frische Luft.",
+  "weatherMoodyTipSunnyMildNightBody": "Ruhig draußen. Ein leiser Abendspaziergang kann genau das Richtige sein.",
+  "weatherMoodyTipCloudyMorningBody": "Grauer Himmel am Morgen — extra Schicht und warmer Kaffee.",
+  "weatherMoodyTipCloudyAfternoonBody": "Bewölkt und etwas kühl. Gut für drinnen oder ein Museum.",
+  "weatherMoodyTipCloudyEveningBody": "Wolken bleiben — gemütliches Dinner drinnen passt gut.",
+  "weatherMoodyTipCloudyNightBody": "Bewölkt und still. Warm anziehen — es wirkt kälter als es aussieht.",
+  "weatherMoodyTipDefaultMorningBody": "Wechselhaft — schicht dich ein für alles.",
+  "weatherMoodyTipDefaultAfternoonBody": "Das Wetter kann nachmittags wechseln. Vorhersage im Blick behalten.",
+  "weatherMoodyTipDefaultEveningBody": "Der Abend ist da — kurz die Vorhersage checken vor dem Losgehen.",
+  "weatherMoodyTipDefaultNightBody": "Ruhig draußen. Morgen früh die Vorhersage für morgen checken.",
   "weatherNoDataAvailable": "Keine Wetterdaten verfügbar",
   "weatherShowMore": "Mehr anzeigen",
   "weatherShowLess": "Weniger anzeigen",
   "locationPickerSelectTitle": "Standort wählen",
+  "locationDropdownSearchResults": "Suchergebnisse",
+  "locationDropdownPopularCities": "Beliebte Städte",
+  "locationDropdownNoCitiesFound": "Keine Städte gefunden",
+  "locationDropdownSearchCitiesTitle": "Städte suchen",
+  "locationDropdownUseCurrentLocation": "Aktuellen Standort verwenden",
+  "locationDropdownDetectExactLocation": "Genauen Standort ermitteln",
+  "locationDropdownFindCitiesSubtitle": "Städte finden in {country}",
+  "@locationDropdownFindCitiesSubtitle": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "locationDropdownErrorLocationLabel": "Deine Stadt",
   "weatherLoadError": "Fehler beim Laden der Wetterdaten: {error}",
   "weatherStatsTitle": "Wetterstatistik",
   "weatherHistoryTitle": "Wetterverlauf",

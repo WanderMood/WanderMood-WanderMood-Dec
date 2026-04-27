@@ -4,6 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/plans/presentation/providers/place_photo_url_provider.dart';
 
+/// First HTTP(S) image URL on a My Day / planner activity row (Place photo or Unsplash).
+String? activityHeroDirectUrlFromRaw(Map<String, dynamic> raw) {
+  for (final key in ['imageUrl', 'image_url', 'photo_url', 'photoUrl']) {
+    final v = raw[key]?.toString().trim();
+    if (v != null && v.isNotEmpty && v.startsWith('http')) return v;
+  }
+  return null;
+}
+
 /// Category/title-based Unsplash fallback when a scheduled activity has no
 /// real photo (e.g. AI recommendation without a Google Place match, or a
 /// Mood Match plan saved before the image pipeline forwarded photos).

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/notifications/engagement_in_app_nudges.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import '../models/place.dart';
@@ -134,6 +137,14 @@ class SavedPlacesService {
         place,
         interactionType: 'saved',
         timeSlot: TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
+      );
+
+      unawaited(
+        EngagementInAppNudges.onPlaceSaved(
+          userId: userId,
+          placeId: place.id,
+          placeName: place.name,
+        ),
       );
 
       if (kDebugMode) debugPrint('✅ Place saved: ${place.name}');

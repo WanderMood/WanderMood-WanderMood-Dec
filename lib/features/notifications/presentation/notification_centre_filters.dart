@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:wandermood/core/notifications/in_app_notification_copy.dart';
 import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 enum NotificationCentreFilter { all, moodMatch, activities, social, moody }
 
@@ -57,18 +60,18 @@ bool notificationCentrePasses(NotificationCentreFilter filter, RealtimeEvent e) 
   }
 }
 
-String notificationCentrePillLabel(NotificationCentreFilter f, bool nl) {
+String notificationCentrePillLabel(NotificationCentreFilter f, AppLocalizations l10n) {
   switch (f) {
     case NotificationCentreFilter.all:
-      return nl ? 'Alles' : 'All';
+      return l10n.notificationCentreAllFilter;
     case NotificationCentreFilter.moodMatch:
-      return 'Mood Match';
+      return l10n.notificationCentreCategoryMoodMatch;
     case NotificationCentreFilter.activities:
-      return nl ? 'Activiteiten' : 'Activities';
+      return l10n.notificationCentreActivitiesLabel;
     case NotificationCentreFilter.social:
-      return 'Social';
+      return l10n.notificationCentreSocialLabel;
     case NotificationCentreFilter.moody:
-      return 'Moody';
+      return l10n.notificationCentreMoodyLabel;
   }
 }
 
@@ -94,24 +97,112 @@ Color notificationCentreIconBg(RealtimeEventType t, {Color sunset = const Color(
   }
 }
 
-String notificationCentreCategoryLabel(RealtimeEventType t) {
+String notificationCentreCategoryLabel(RealtimeEventType t, AppLocalizations l10n) {
   switch (t) {
     case RealtimeEventType.groupTravelUpdate:
     case RealtimeEventType.planUpdate:
-      return 'Mood Match';
+      return l10n.notificationCentreCategoryMoodMatch;
     case RealtimeEventType.activityReminder:
     case RealtimeEventType.activityReview:
-      return 'Activities';
+      return l10n.notificationCentreActivitiesLabel;
     case RealtimeEventType.postComment:
     case RealtimeEventType.postLike:
     case RealtimeEventType.postReaction:
     case RealtimeEventType.newFollower:
     case RealtimeEventType.friendRequest:
-      return 'Social';
+      return l10n.notificationCentreSocialLabel;
     case RealtimeEventType.moodySuggestion:
     case RealtimeEventType.milestone:
-      return 'Moody';
+      return l10n.notificationCentreMoodyLabel;
     default:
-      return 'Moody';
+      return l10n.notificationCentreMoodyLabel;
+  }
+}
+
+/// Relative time for the notification list (uses app [l10n], not hardcoded English).
+String notificationCentreTimeAgo(RealtimeEvent e, AppLocalizations l10n) {
+  final now = DateTime.now();
+  final difference = now.difference(e.timestamp);
+  if (difference.inMinutes < 1) {
+    return l10n.activeSessionsTimeJustNow;
+  }
+  if (difference.inMinutes < 60) {
+    return l10n.notificationCentreRelativeMinutesAgo(difference.inMinutes);
+  }
+  if (difference.inHours < 24) {
+    return l10n.savedPlacesTimeHoursAgo(difference.inHours);
+  }
+  if (difference.inDays < 7) {
+    return l10n.savedPlacesTimeDaysAgo(difference.inDays);
+  }
+  final weeks = (difference.inDays / 7).floor();
+  return l10n.activeSessionsTimeWeeksAgo(weeks);
+}
+
+/// Body line: recomputes Mood Match / Moody / social copy from payload + current locale
+/// so inbox matches the user’s language even if the row was stored with another language.
+String notificationCentreDisplayBody(RealtimeEvent e, AppLocalizations l10n) {
+  final nl = l10n.localeName.toLowerCase().startsWith('nl');
+  final locale = l10n.localeName;
+  final t = e.type;
+  final sub =
+      (e.data['event'] ?? e.data['kind'] ?? '').toString().trim();
+
+  if (t == RealtimeEventType.groupTravelUpdate ||
+      t == RealtimeEventType.planUpdate ||
+      _isMoodMatchByPayload(e)) {
+    final d = InAppNotificationCopy.withLocaleFormattedIsoDates(e.data, locale);
+    return InAppNotificationCopy.planMessage(
+      nl: nl,
+      event: sub.isNotEmpty ? sub : '_',
+      data: d,
+    );
+  }
+
+  if (t == RealtimeEventType.activityReminder) {
+    final ev = sub.isNotEmpty ? sub : 'activity_reminder';
+    final d = InAppNotificationCopy.withLocaleFormattedIsoDates(e.data, locale);
+    return InAppNotificationCopy.moodyMessage(nl: nl, event: ev, data: d);
+  }
+  if (t == RealtimeEventType.activityReview) {
+    final ev = sub.isNotEmpty ? sub : 'rate_activity';
+    final d = InAppNotificationCopy.withLocaleFormattedIsoDates(e.data, locale);
+    return InAppNotificationCopy.planMessage(nl: nl, event: ev, data: d);
+  }
+  if (t == RealtimeEventType.placeRecommendation) {
+    final ev = sub.isNotEmpty ? sub : 'moody_place_pick';
+    return InAppNotificationCopy.moodyMessage(nl: nl, event: ev, data: e.data);
+  }
+
+  if (t == RealtimeEventType.systemUpdate ||
+      t == RealtimeEventType.moodySuggestion ||
+      t == RealtimeEventType.milestone) {
+    final ev = (e.data['event'] ?? '').toString().trim();
+    if (ev.isNotEmpty) {
+      final d = Map<String, dynamic>.from(e.data);
+      if (ev == 'moody_chat_reminder') {
+        final iso = d['fire_at']?.toString();
+        final dt = iso != null ? DateTime.tryParse(iso) : null;
+        if (dt != null) {
+          d['when_label'] =
+              DateFormat.yMMMd(locale).add_jm().format(dt.toLocal());
+        }
+      }
+      return InAppNotificationCopy.moodyMessage(nl: nl, event: ev, data: d);
+    }
+  }
+
+  switch (t) {
+    case RealtimeEventType.postReaction:
+    case RealtimeEventType.postLike:
+    case RealtimeEventType.postComment:
+    case RealtimeEventType.newFollower:
+      return InAppNotificationCopy.socialMessage(
+        nl: nl,
+        type: t,
+        data: e.data,
+      );
+    default:
+      return e.message;
   }
 }

@@ -149,6 +149,7 @@ flutter:
   generate: true
 
   assets:
+    - assets/icons/app_icon.png
     - assets/images/
     - assets/images/fallbacks/
     - assets/images/weather_icons/

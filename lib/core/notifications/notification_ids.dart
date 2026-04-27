@@ -26,6 +26,11 @@ abstract class NotificationIds {
   /// Host: friend joined the Mood Match session (one-shot per session).
   static const int moodMatchPartnerJoined = 507;
 
+  /// Geofence-validated visit (celebratory; tiered prefs + caps).
+  static const int visitGeofenceFirstCelebrate = 520;
+  /// Optional end-of-day digest (planned; wired when scheduler calls it).
+  static const int visitDailySummary = 521;
+
   // ── Event-triggered per-item ranges ──────────────────────────────────────
   // streak milestones  : 100 – 109  (10 milestone levels)
   // achievements       : 200 – 249  (up to 50 achievements)

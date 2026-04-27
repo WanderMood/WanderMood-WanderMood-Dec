@@ -13,6 +13,26 @@
   "moodHomeCtxReturnEveningWeekday": "Werkdag voorbij — wat is je avondvibe?",
   "moodHomeCtxReturnNight": "Late-night energie — laten we zien wat je aanspreekt.",
   "moodHomeCtxFallback": "Laten we de juiste vibe voor vandaag vinden.",
+  "moodHomeHeroGreetingEarlyMorningTitle": "Goedemorgen! ☀️",
+  "moodHomeHeroGreetingEarlyMorningSubWeekend": "Perfecte weekendochtend voor avontuur",
+  "moodHomeHeroGreetingEarlyMorningSubWeekday": "Klaar om er een mooie dag van te maken?",
+  "moodHomeHeroGreetingLateMorningTitle": "Hoi! 👋",
+  "moodHomeHeroGreetingLateMorningSub": "Ik dacht al na over jouw perfecte dag",
+  "moodHomeHeroGreetingAfternoonTitle": "Middag vibes! ✨",
+  "moodHomeHeroGreetingAfternoonSub": "Wat zit er vandaag in je hoofd?",
+  "moodHomeHeroGreetingEarlyEveningTitle": "Avondontdekker! 🌆",
+  "moodHomeHeroGreetingEarlyEveningSubWeekend": "Weekendavonden zijn perfect om te ontdekken",
+  "moodHomeHeroGreetingEarlyEveningSubWeekday": "Hoe was je dag voor je?",
+  "moodHomeHeroGreetingNightTitle": "Nachtuil! 🌙",
+  "moodHomeHeroGreetingNightSub": "Nog zin in een laat avontuur?",
+  "moodHomeEmptyChatPitch": "Ik ken {city} als mijn broekzak! Vertel je mood, dan maak ik de perfecte dag voor jou — avontuurlijk, romantisch of relaxed. Ik regel het! 🎯",
+  "@moodHomeEmptyChatPitch": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
   "splashTagline": "Je reisgezel op basis van je mood",
   "splashPlanYourDayByFeeling": "Plan je dag op basis van je gevoel",
   "welcome": "Welkom",
@@ -1413,6 +1433,16 @@
   "moodyIdleFallbackDay": "Moody was onderweg — klaar voor jou ✨",
   "moodyIdleFallbackEvening": "Moody was even aan het ontspannen 🌙",
   "moodyIdleFallbackNight": "Stille uren… Moody was bijna in dromenland 😴",
+  "moodyIdleGateMorning0": "Goedemorgen. Klaar om vandaag vorm te geven?",
+  "moodyIdleGateMorning1": "Ochtend — wil je zien wat er op je lijst staat?",
+  "moodyIdleGateMorning2": "Je bent wakker. Open je dag wanneer je wilt.",
+  "moodyIdleGateMorning3": "Nieuwe dag. Tik wanneer je wilt beginnen.",
+  "moodyIdleGateMorning4": "Rustig op gang? Geen haast — tik op Moody als je klaar bent.",
+  "moodyIdleGateEvening0": "Goedenavond. Wil je je plan oppakken?",
+  "moodyIdleGateEvening1": "Avond — hier als je de dag wilt afsluiten.",
+  "moodyIdleGateEvening2": "Even uitwinden? Je dag is één tik weg.",
+  "moodyIdleGateEvening3": "Even terug? Moody helpt graag.",
+  "moodyIdleGateEvening4": "Adem even — open je plan als het helpt.",
   "moodyHubNewConversation": "Nieuw gesprek",
   "moodHubCreatePlan": "Maak je perfecte plan! 🎯",
   "moodHubBackToHub": "Terug naar Hub",
@@ -1713,6 +1743,7 @@
   "myDayTimelineStatusImHere": "IK BEN ER",
   "myDayTimelineStatusPlanned": "GEPLAND",
   "myDayTimelineStatusDone": "KLAAR",
+  "myDayTimelineStatusCancelled": "GEANNULEERD",
   "myDayActivityFallbackLabel": "Activiteit",
   "myDayExecutionHeroYoureHereBadge": "Je bent er!",
   "myDayExecutionHeroInProgressBadge": "BEZIG",
@@ -1730,17 +1761,23 @@
   "myDayExecutionHeroBadgeReadyToReviewCaps": "KLAAR OM TE BEOORDELEN",
   "myDayExecutionHeroReviewCaptureHint": "Leg vast hoe het voelde terwijl het nog vers is.",
   "myDayExecutionHeroUpNextBadge": "STRAKS",
+  "myDayExecutionHeroUpNextAfterSlotBadge": "VOLGENDE",
   "myDayExecutionHeroTapImHereWhenArrive": "Tik op \"Ik ben er\" zodra je aankomt.",
   "myDayTimelineSectionMorningTitle": "🌅 Ochtend",
+  "myDayTimelineSectionMorningFocusTitle": "🌅 Vanochtend",
   "myDayTimelineSectionMorningSubtitle": "Begin je dag goed",
   "myDayTimelineSectionAfternoonTitle": "🌞 Middag",
+  "myDayTimelineSectionAfternoonFocusTitle": "🌞 Vanmiddag",
   "myDayTimelineSectionAfternoonSubtitle": "Tijd voor avontuur",
   "myDayTimelineSectionEveningTitle": "🌆 Avond",
+  "myDayTimelineSectionEveningFocusTitle": "🌆 Vanavond",
   "myDayTimelineSectionEveningSubtitle": "Kom tot rust en geniet",
-  "myDaySlotPlannedForMorning": "Vanochtend gepland",
-  "myDaySlotPlannedForAfternoon": "Vanmiddag gepland",
-  "myDayTimelineSectionMorningPastTitle": "🌅 Vanochtend gepland",
-  "myDayTimelineSectionAfternoonPastTitle": "🌞 Vanmiddag gepland",
+  "myDayTimelineSectionEarlierTodaySubtitle": "Eerder vandaag",
+  "myDaySlotPlannedForMorning": "Vanochtend",
+  "myDaySlotPlannedForAfternoon": "Vanmiddag",
+  "myDaySlotThisEvening": "Vanavond",
+  "myDayTimelineSectionMorningPastTitle": "🌅 Ochtend",
+  "myDayTimelineSectionAfternoonPastTitle": "🌞 Middag",
   "myDayWeekendEmptyTitle": "Je weekend is nog leeg!",
   "myDayWeekendEmptySubtitle": "Wil je zaterdag of zondag alvast plannen?",
   "myDayWeekendSaturdayShort": "Za {day}",
@@ -1856,6 +1893,28 @@
   "socialSampleNotificationLiked": "• Sarah liked your post",
   "socialSampleNotificationFollowed": "• Marco started following you",
   "socialSampleNotificationStory": "• New travel story from Luna",
+  "notificationCardDeleteTooltip": "Verwijderen",
+  "notificationCentreMoodMatchTimelineTitle": "Samen plannen",
+  "notificationCentreMoodMatchTimelineSubtitle": "Chronologisch overzicht van jullie Mood Match.",
+  "notificationCentreTitle": "Meldingen",
+  "notificationCentreEmptyState": "Alles bijgewerkt — ik laat je weten als er iets is.",
+  "notificationCentreMarkAllRead": "Alles gelezen",
+  "notificationCentreSectionNew": "Nieuw",
+  "notificationCentreSectionEarlier": "Eerder",
+  "notificationCentreReadDividerLabel": "Gelezen",
+  "notificationCentreAllFilter": "Alles",
+  "notificationCentreActivitiesLabel": "Activiteiten",
+  "notificationCentreSocialLabel": "Social",
+  "notificationCentreMoodyLabel": "Moody",
+  "notificationCentreCategoryMoodMatch": "Mood Match",
+  "notificationCentreRelativeMinutesAgo": "{count} min geleden",
+  "@notificationCentreRelativeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialOpeningAllTravelStories": "Opening all travel stories...",
   "socialOpeningUserStory": "Opening {name}'s story...",
   "socialSavePost": "Save Post",
@@ -2314,6 +2373,45 @@
   "checkInDoneSubtitle": "Moody onthoudt dit voor de volgende keer",
   "checkInSaveError": "Opslaan lukte niet. Probeer het nog eens.",
   "checkInClose": "Sluiten",
+  "checkInWithMoodyTitle": "Check in met Moody",
+  "checkInGreetingDefault": "Hey! Hoe gaat je dag?",
+  "checkInGreetingMorningAfterTired": "Goedemorgen! Heb je goed geslapen? 🌅",
+  "checkInGreetingMorningFresh": "Goedemorgen! Hoe voel je je vandaag? ☀️",
+  "checkInTellMeEverything": "Vertel me alles! 💚",
+  "checkInHowAreYouFeeling": "Hoe voel je je?",
+  "checkInWhatDidYouDoToday": "Wat heb je vandaag gedaan?",
+  "checkInQuickReactionsHeading": "Snelle reacties",
+  "checkInTellMeMoreHeading": "Vertel meer… (optioneel)",
+  "checkInTextFieldHint": "Wat speelt er in je hoofd? Deel gerust iets! 💭",
+  "checkInSendButton": "Verstuur naar Moody",
+  "checkInThanksMoodyButton": "Thanks Moody! 💚",
+  "checkInAiFallbackThankYou": "Bedankt voor je check-in! Ik hoor graag hoe je dag was 💛",
+  "checkInMoodGreatLabel": "Top",
+  "checkInMoodGreatSubtitle": "Beste dag ooit!",
+  "checkInMoodTiredLabel": "Moe",
+  "checkInMoodTiredSubtitle": "Even rust nodig",
+  "checkInMoodAmazingLabel": "Geweldig",
+  "checkInMoodAmazingSubtitle": "Beste dag aller tijden!",
+  "checkInMoodOkayLabel": "Oké",
+  "checkInMoodOkaySubtitle": "Op de automatische piloot",
+  "checkInMoodThoughtfulLabel": "Reflectief",
+  "checkInMoodThoughtfulSubtitle": "Vol gevoel",
+  "checkInMoodChillLabel": "Chill",
+  "checkInMoodChillSubtitle": "Rustig aan",
+  "checkInTagExploredPlaces": "Plekken verkend",
+  "checkInTagGreatFood": "Lekker gegeten",
+  "checkInTagMetFriends": "Vrienden gezien",
+  "checkInTagRelaxed": "Ontspannen",
+  "checkInTagWorkedOut": "Getraind",
+  "checkInTagCreativeTime": "Creatief bezig",
+  "checkInTagAdventure": "Avontuur",
+  "checkInTagSelfCare": "Self-care",
+  "checkInReactionLovedIt": "Hield ervan",
+  "checkInReactionOnFire": "On fire",
+  "checkInReactionMagical": "Magisch",
+  "checkInReactionExhausted": "Uitgeput",
+  "checkInReactionAmazing": "Geweldig",
+  "checkInReactionPeaceful": "Rustig",
   "dagSheetOpener1": "Je bent thuis! Hoe was je dag?",
   "dagSheetOpener2": "Vertel! Hoe was het vandaag?",
   "dagSheetOpener3": "Hoe ging het vandaag?",
@@ -2974,6 +3072,7 @@
   "moodyHubListComma": ", ",
   "moodyHubListAnd": " en ",
   "moodyReviewTitle": "Snelle review",
+  "moodyReviewHeroSubtitle": "Hoe zit het bij je? Ik luister mee.",
   "moodyReviewHowWasIt": "Hoe was het?",
   "moodyReviewStarsFeedback5": "🌟 Geweldig!",
   "moodyReviewStarsFeedback4": "😊 Heel goed!",
@@ -2986,12 +3085,38 @@
   "moodyReviewVibeOkay": "Oké",
   "moodyReviewVibeMeh": "Meh",
   "moodyReviewOptionalNote": "Nog iets? (optioneel)",
-  "moodyReviewNoteHint": "Wat viel op? Tips voor anderen?",
-  "moodyReviewNoteHelper": "💡 Zo help je anderen topplekken te vinden!",
-  "moodyReviewSave": "Review opslaan",
-  "moodyReviewNeedStars": "Geef sterren om door te gaan",
-  "moodyReviewHelpsMoody": "Jouw feedback helpt Moody leren!",
-  "moodyReviewThanksToast": "Bedankt voor je review! 🚀",
+  "moodyReviewNoteHint": "Wat viel op, nu het nog vers is?",
+  "moodyReviewNoteHelper": "💡 Ik gebruik dit om je volgende dagen scherper te zetten — privé voor jou en WanderMood.",
+  "moodyReviewSave": "Opslaan",
+  "moodyReviewNeedStars": "Kies een sterrenscore om door te gaan",
+  "moodyReviewHelpsMoody": "Tussen ons — en het maakt mijn tips beter voor jou.",
+  "moodyReviewThanksToast": "Opgeslagen — dank je!",
+  "profileMomentsTitle": "Jouw bezoeken",
+  "profileMomentsSubtitle": "Plekken die je na Mijn Dag beoordeelde — privé, aan te passen",
+  "profileMomentsSeeAll": "Alles bekijken",
+  "profileMomentsEmptyCta": "Beoordeel een stop op Mijn Dag en hij verschijnt hier.",
+  "momentsListHeroLine": "Hoe plekken voor je voelden — privé, tenzij je kiest voor een partnervoordeel.",
+  "momentsListEmptyTitle": "Nog geen bezoeken",
+  "momentsListEmptySubtitle": "Rond een stop op Mijn Dag af en tik op Beoordelen. Je notitie staat hier — privé, tenzij je later meedoet met een partneraanbieding.",
+  "momentsListError": "Bezoeken laden lukt niet",
+  "momentsDeleteConfirmTitle": "Dit bezoek verwijderen?",
+  "momentsDeleteConfirmBody": "Hiermee verwijder je je beoordeling voor {place}. Na een volgend bezoek kun je opnieuw iets toevoegen.",
+  "@momentsDeleteConfirmBody": {
+    "placeholders": {
+      "place": {}
+    }
+  },
+  "momentsRemovedToast": "Bezoek verwijderd",
+  "momentsRemoveCta": "Verwijderen",
+  "momentsTapToEdit": "Tik om aan te passen",
+  "momentsStarsCount": "{count, plural, one{{count} ster} other{{count} sterren}}",
+  "@momentsStarsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "getReadyChecklistItemReady": "Klaar om te gaan!",
   "getReadyShareInvite": "Zin om mee te gaan naar {title} rond {time} – gepland met WanderMood.",
   "@getReadyShareInvite": {
@@ -4244,6 +4369,67 @@
   "adventurePlanTitleHighlight": "avonturenplan",
   "adventurePlanTitleForToday": " voor vandaag",
   "adventurePlanLoadError": "Fout bij laden van avonturen: {error}",
+  "adventurePlanDemoTemperatureLabel": "32°",
+  "adventurePlanDemoCityLabel": "Washington DC",
+  "trendingDetailNoRelatedPlaces": "Geen gerelateerde plekken gevonden",
+  "trendingDetailRelatedPlacesError": "Gerelateerde plekken laden mislukt",
+  "trendingDetailSimilarPlacesSection": "Vergelijkbare plekken",
+  "trendingDetailLongDining": "Proef de culinaire hoogstandjes bij {title}! Samen met locals en bezoekers geniet je van smaakvolle momenten — perfect voor foodies in de buurt. 🍽️✨",
+  "@trendingDetailLongDining": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongCulture": "Dompel je onder in het culturele erfgoed bij {title}. Kunst, geschiedenis en creativiteit — inspiratie en ontdekking gegarandeerd. 🎨🏛️",
+  "@trendingDetailLongCulture": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongOutdoor": "Kom tot rust in de frisse lucht bij {title}. Van een rustige wandeling tot een actief uitje — even ontsnappen aan de stad. 🌳🚶‍♀️",
+  "@trendingDetailLongOutdoor": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongSightseeing": "Vang iconische momenten bij {title}. Fotogeniek en onvergetelijk — vergeet je camera niet! 📸🌅",
+  "@trendingDetailLongSightseeing": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongShopping": "Ontdek unieke vondsten bij {title}. Van boutiques tot lokale markten — voor elke smaak wat wils. 🛍️💎",
+  "@trendingDetailLongShopping": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongFitness": "Blijf fit en energiek bij {title}. Of je nu je routine vasthoudt of iets nieuws probeert — topplek voor beweging. 💪🏃‍♀️",
+  "@trendingDetailLongFitness": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trendingDetailLongDefault": "Mis de hype bij {title} niet! Locals en bezoekers zijn enthousiast — ontdek waarom en maak je eigen herinnering. ⭐🎉",
+  "@trendingDetailLongDefault": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "receiptDownloadPdf": "PDF downloaden",
   "receiptShare": "Bon delen",
   "placePhotoTapToView": "Tik om te bekijken",
@@ -4266,10 +4452,46 @@
       }
     }
   },
+  "weatherMoodyTipTimeTonight": "Vanavond laat",
+  "weatherMoodyTipRainMorningBody": "Regen vanochtend — neem een paraplu mee voor je vertrekt.",
+  "weatherMoodyTipRainAfternoonBody": "Het regent buiten. Een café of museum past perfect bij zo’n dag.",
+  "weatherMoodyTipRainEveningBody": "Regen vanavond — het perfecte excuus voor een gezellig plekje binnen.",
+  "weatherMoodyTipRainNightBody": "Het regent en het is donker. Lekker binnen blijven — buitenplannen zijn voor morgen.",
+  "weatherMoodyTipSunnyHighUvMorningBody": "Mooie start! Smeer je in — de UV loopt snel op zodra de zon schijnt.",
+  "weatherMoodyTipSunnyHighUvAfternoonBody": "UV is nu hoog. Zoek schaduw en houd je fles bij de hand.",
+  "weatherMoodyTipSunnyHighUvEveningBody": "De zon staat lager — ideaal voor een wandeling of een terrasje.",
+  "weatherMoodyTipSunnyHighUvNightBody": "Heldere lucht vanavond — perfect om even onder de sterren te lopen.",
+  "weatherMoodyTipSunnyMildMorningBody": "Zacht en droog — fijne ochtend voor een wandeling of ontbijt buiten.",
+  "weatherMoodyTipSunnyMildAfternoonBody": "Lekker weer buiten. Terrassen en parken lonken.",
+  "weatherMoodyTipSunnyMildEveningBody": "Heerlijke avond voor een wandeling, een hapje buiten of frisse lucht.",
+  "weatherMoodyTipSunnyMildNightBody": "Rustig buiten. Een stille avondwandeling kan precies zijn wat je zoekt.",
+  "weatherMoodyTipCloudyMorningBody": "Grijze lucht vanochtend — extra laagje en een warme koffie.",
+  "weatherMoodyTipCloudyAfternoonBody": "Bewolkt en wat fris. Ideaal voor binnen of een museum.",
+  "weatherMoodyTipCloudyEveningBody": "De wolken blijven — een gezellig diner binnen klinkt goed.",
+  "weatherMoodyTipCloudyNightBody": "Bewolkt en stil. Kleed warm als je uitgaat — het voelt kouder dan het lijkt.",
+  "weatherMoodyTipDefaultMorningBody": "Wisselvallig—kleed je in laagjes zodat je klaar bent voor alles.",
+  "weatherMoodyTipDefaultAfternoonBody": "Het weer kan vanmiddag veranderen. Houd de voorspelling in de gaten.",
+  "weatherMoodyTipDefaultEveningBody": "De avond is daar — check even de laatste voorspelling voordat je gaat.",
+  "weatherMoodyTipDefaultNightBody": "Rustig buiten voor nu. Check morgenochtend de voorspelling voor morgen.",
   "weatherNoDataAvailable": "Geen weergegevens beschikbaar",
   "weatherShowMore": "Meer weergeven",
   "weatherShowLess": "Minder weergeven",
   "locationPickerSelectTitle": "Locatie kiezen",
+  "locationDropdownSearchResults": "Zoekresultaten",
+  "locationDropdownPopularCities": "Populaire steden",
+  "locationDropdownNoCitiesFound": "Geen steden gevonden",
+  "locationDropdownSearchCitiesTitle": "Steden zoeken",
+  "locationDropdownUseCurrentLocation": "Huidige locatie gebruiken",
+  "locationDropdownDetectExactLocation": "Je exacte locatie bepalen",
+  "locationDropdownFindCitiesSubtitle": "Steden zoeken in {country}",
+  "@locationDropdownFindCitiesSubtitle": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "locationDropdownErrorLocationLabel": "Je stad",
   "weatherLoadError": "Fout bij laden van weergegevens: {error}",
   "weatherStatsTitle": "Weerstatistieken",
   "weatherHistoryTitle": "Weergeschiedenis",

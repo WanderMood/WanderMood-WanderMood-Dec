@@ -46,6 +46,15 @@ class Activity {
   int refreshCount;
   final String? groupSessionId;
 
+  /// DB-backed visit lifecycle (`scheduled_activities.visit_status`).
+  /// `null` means legacy row before migration — treat as `planned`.
+  final String? visitStatus;
+  final DateTime? checkInTime;
+  final DateTime? checkOutTime;
+  final String? checkInMethod;
+  final int? visitDurationMinutes;
+  final bool verifiedLocation;
+
   Activity({
     required this.id,
     required this.name,
@@ -73,6 +82,12 @@ class Activity {
     this.dietaryOptions = const [],
     this.inclusivityTags = const [],
     this.groupSessionId,
+    this.visitStatus,
+    this.checkInTime,
+    this.checkOutTime,
+    this.checkInMethod,
+    this.visitDurationMinutes,
+    this.verifiedLocation = false,
   });
 
   // Helper method to check if this activity is a restaurant or dining-related
@@ -139,6 +154,12 @@ class Activity {
     int? refreshCount,
     List<DietaryOption>? dietaryOptions,
     List<InclusivityTag>? inclusivityTags,
+    String? visitStatus,
+    DateTime? checkInTime,
+    DateTime? checkOutTime,
+    String? checkInMethod,
+    int? visitDurationMinutes,
+    bool? verifiedLocation,
   }) {
     return Activity(
       id: id ?? this.id,
@@ -166,6 +187,12 @@ class Activity {
       refreshCount: refreshCount ?? this.refreshCount,
       dietaryOptions: dietaryOptions ?? this.dietaryOptions,
       inclusivityTags: inclusivityTags ?? this.inclusivityTags,
+      visitStatus: visitStatus ?? this.visitStatus,
+      checkInTime: checkInTime ?? this.checkInTime,
+      checkOutTime: checkOutTime ?? this.checkOutTime,
+      checkInMethod: checkInMethod ?? this.checkInMethod,
+      visitDurationMinutes: visitDurationMinutes ?? this.visitDurationMinutes,
+      verifiedLocation: verifiedLocation ?? this.verifiedLocation,
     );
   }
 } 

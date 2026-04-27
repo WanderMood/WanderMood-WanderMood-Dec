@@ -7,6 +7,7 @@ import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/config/explore_launch_config.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class LocationDropdown extends ConsumerStatefulWidget {
   const LocationDropdown({super.key});
@@ -245,6 +246,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final locationAsync = ref.watch(locationNotifierProvider);
     
     // Update country when location changes
@@ -321,14 +323,14 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Use Current Location',
+                    l10n.locationDropdownUseCurrentLocation,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
                   Text(
-                    'Detect your exact location',
+                    l10n.locationDropdownDetectExactLocation,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -362,14 +364,14 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Search Cities',
+                    l10n.locationDropdownSearchCitiesTitle,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
                   Text(
-                    'Find cities in ${_getCountryName()}',
+                    l10n.locationDropdownFindCitiesSubtitle(_getCountryName()),
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -394,7 +396,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Popular Cities',
+                l10n.locationDropdownPopularCities,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -433,7 +435,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                   const Icon(Icons.location_on, size: 16, color: Colors.white),
                   const SizedBox(width: 6),
                   Text(
-                    location ?? 'Select Location',
+                    location ?? l10n.locationPickerSelectTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -450,7 +452,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                   const Icon(Icons.location_on, size: 16, color: Colors.white),
                   const SizedBox(width: 6),
                   Text(
-                    'Locating...',
+                    l10n.loading,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -467,7 +469,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                   const Icon(Icons.location_on, size: 16, color: Colors.white),
                   const SizedBox(width: 6),
                   Text(
-                    'Your city',
+                    l10n.locationDropdownErrorLocationLabel,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -494,6 +496,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final dlgL10n = AppLocalizations.of(context)!;
             return AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -506,7 +509,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Search Cities',
+                    dlgL10n.locationDropdownSearchCitiesTitle,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 18,
@@ -561,7 +564,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                                 children: [
                                   if (searchResults.isNotEmpty) ...[
                                     Text(
-                                      'Search Results',
+                                      dlgL10n.locationDropdownSearchResults,
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -582,7 +585,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                                     )),
                                   ] else if (_searchController.text.isEmpty) ...[
                                     Text(
-                                      'Popular Cities',
+                                      dlgL10n.locationDropdownPopularCities,
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -608,7 +611,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                                           Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
                                           const SizedBox(height: 8),
                                           Text(
-                                            'No cities found',
+                                            dlgL10n.locationDropdownNoCitiesFound,
                                             style: GoogleFonts.poppins(color: Colors.grey[600]),
                                           ),
                                         ],
@@ -629,7 +632,7 @@ class _LocationDropdownState extends ConsumerState<LocationDropdown> {
                     _searchController.clear();
                   },
                   child: Text(
-                    'Cancel',
+                    dlgL10n.cancel,
                     style: GoogleFonts.poppins(color: Colors.grey[600]),
                   ),
                 ),

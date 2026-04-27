@@ -562,7 +562,7 @@ class _WeatherDetailScreenState extends ConsumerState<WeatherDetailScreen> {
   }) {
     if (weather == null) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
-    final tip = _weatherTipFor(weather);
+    final tip = _weatherTipFor(weather, l10n);
     final titleColor = isModal ? _wmModalCharcoal : _weatherMintText;
     final bodyColor = isModal ? _wmHubInkMuted : _weatherMintText.withValues(alpha: 0.86);
     final weatherMood = _moodyMoodForWeather(weather);
@@ -624,7 +624,7 @@ class _WeatherDetailScreenState extends ConsumerState<WeatherDetailScreen> {
     );
   }
 
-  _WeatherTip _weatherTipFor(WeatherData weather) {
+  _WeatherTip _weatherTipFor(WeatherData weather, AppLocalizations l10n) {
     final cond = weather.condition.toLowerCase();
     final description = (weather.details['description']?.toString() ?? '').toLowerCase();
     final uv = (weather.details['uv'] as num?)?.toDouble() ?? 0.0;
@@ -636,37 +636,40 @@ class _WeatherDetailScreenState extends ConsumerState<WeatherDetailScreen> {
     final isMorning = hour >= 6 && hour < 12;
     final isAfternoon = hour >= 12 && hour < 18;
     final isEvening = hour >= 18 && hour < 22;
-    // night: 22-5
+
+    String tMorning() => l10n.goodMorning;
+    String tAfternoon() => l10n.myDaySlotPlannedForAfternoon;
+    String tEvening() => l10n.myDaySlotThisEvening;
+    String tTonight() => l10n.weatherMoodyTipTimeTonight;
 
     if (rainy) {
-      if (isMorning) return const _WeatherTip(emoji: '☔', title: 'Good morning', body: 'Rain this morning — grab your umbrella before heading out.');
-      if (isAfternoon) return const _WeatherTip(emoji: '🌧️', title: 'This afternoon', body: "It's raining outside. A café or museum visit hits different on a day like this.");
-      if (isEvening) return const _WeatherTip(emoji: '🌧️', title: 'This evening', body: 'Rain tonight — the perfect excuse to find a cosy spot inside.');
-      return const _WeatherTip(emoji: '🌧️', title: 'Tonight', body: "It's raining and dark out. Stay cosy — outdoor plans can wait till tomorrow.");
+      if (isMorning) return _WeatherTip(emoji: '☔', title: tMorning(), body: l10n.weatherMoodyTipRainMorningBody);
+      if (isAfternoon) return _WeatherTip(emoji: '🌧️', title: tAfternoon(), body: l10n.weatherMoodyTipRainAfternoonBody);
+      if (isEvening) return _WeatherTip(emoji: '🌧️', title: tEvening(), body: l10n.weatherMoodyTipRainEveningBody);
+      return _WeatherTip(emoji: '🌧️', title: tTonight(), body: l10n.weatherMoodyTipRainNightBody);
     }
     if (sunny && uv >= 6) {
-      if (isMorning) return const _WeatherTip(emoji: '☀️', title: 'Good morning', body: 'Great start! Apply sunscreen — UV builds fast once the sun is up.');
-      if (isAfternoon) return const _WeatherTip(emoji: '☀️', title: 'This afternoon', body: 'UV is high right now. Find shade for a break and keep your water bottle close.');
-      if (isEvening) return const _WeatherTip(emoji: '🌅', title: 'This evening', body: "The sun is lower now — a perfect time for a walk or terrace visit.");
-      return const _WeatherTip(emoji: '✨', title: 'Tonight', body: 'Clear skies tonight — a great evening for a stroll under the stars.');
+      if (isMorning) return _WeatherTip(emoji: '☀️', title: tMorning(), body: l10n.weatherMoodyTipSunnyHighUvMorningBody);
+      if (isAfternoon) return _WeatherTip(emoji: '☀️', title: tAfternoon(), body: l10n.weatherMoodyTipSunnyHighUvAfternoonBody);
+      if (isEvening) return _WeatherTip(emoji: '🌅', title: tEvening(), body: l10n.weatherMoodyTipSunnyHighUvEveningBody);
+      return _WeatherTip(emoji: '✨', title: tTonight(), body: l10n.weatherMoodyTipSunnyHighUvNightBody);
     }
     if (sunny) {
-      if (isMorning) return const _WeatherTip(emoji: '🌤️', title: 'Good morning', body: 'Mild and dry — a great morning for a walk or breakfast outside.');
-      if (isAfternoon) return const _WeatherTip(emoji: '🌤️', title: 'This afternoon', body: 'Dry and comfortable out there. Terraces and parks are calling.');
-      if (isEvening) return const _WeatherTip(emoji: '🌇', title: 'This evening', body: 'A lovely evening for a walk, a bite outside, or just some fresh air.');
-      return const _WeatherTip(emoji: '🌙', title: 'Tonight', body: 'Nice and calm out there. A quiet evening walk might be just what you need.');
+      if (isMorning) return _WeatherTip(emoji: '🌤️', title: tMorning(), body: l10n.weatherMoodyTipSunnyMildMorningBody);
+      if (isAfternoon) return _WeatherTip(emoji: '🌤️', title: tAfternoon(), body: l10n.weatherMoodyTipSunnyMildAfternoonBody);
+      if (isEvening) return _WeatherTip(emoji: '🌇', title: tEvening(), body: l10n.weatherMoodyTipSunnyMildEveningBody);
+      return _WeatherTip(emoji: '🌙', title: tTonight(), body: l10n.weatherMoodyTipSunnyMildNightBody);
     }
     if (cloudy) {
-      if (isMorning) return const _WeatherTip(emoji: '☁️', title: 'Good morning', body: 'Grey skies this morning — bring an extra layer and maybe a warm coffee.');
-      if (isAfternoon) return const _WeatherTip(emoji: '☁️', title: 'This afternoon', body: 'Cloudy and a bit cool. Good day for indoor spots or a museum.');
-      if (isEvening) return const _WeatherTip(emoji: '☁️', title: 'This evening', body: 'The clouds are in for the evening. A cosy dinner inside sounds perfect.');
-      return const _WeatherTip(emoji: '☁️', title: 'Tonight', body: 'Overcast and still. Wrap up if you\'re heading out — it feels cooler than it looks.');
+      if (isMorning) return _WeatherTip(emoji: '☁️', title: tMorning(), body: l10n.weatherMoodyTipCloudyMorningBody);
+      if (isAfternoon) return _WeatherTip(emoji: '☁️', title: tAfternoon(), body: l10n.weatherMoodyTipCloudyAfternoonBody);
+      if (isEvening) return _WeatherTip(emoji: '☁️', title: tEvening(), body: l10n.weatherMoodyTipCloudyEveningBody);
+      return _WeatherTip(emoji: '☁️', title: tTonight(), body: l10n.weatherMoodyTipCloudyNightBody);
     }
-    // default
-    if (isMorning) return const _WeatherTip(emoji: '🌅', title: 'Good morning', body: 'Mixed conditions today — layer up so you\'re ready for anything.');
-    if (isAfternoon) return const _WeatherTip(emoji: '✨', title: 'This afternoon', body: 'Conditions may shift this afternoon. Keep an eye on the forecast.');
-    if (isEvening) return const _WeatherTip(emoji: '🌆', title: 'This evening', body: 'The evening is here — check the latest forecast before heading out.');
-    return const _WeatherTip(emoji: '🌙', title: 'Tonight', body: "Quiet outside for now. Check tomorrow's forecast in the morning.");
+    if (isMorning) return _WeatherTip(emoji: '🌅', title: tMorning(), body: l10n.weatherMoodyTipDefaultMorningBody);
+    if (isAfternoon) return _WeatherTip(emoji: '✨', title: tAfternoon(), body: l10n.weatherMoodyTipDefaultAfternoonBody);
+    if (isEvening) return _WeatherTip(emoji: '🌆', title: tEvening(), body: l10n.weatherMoodyTipDefaultEveningBody);
+    return _WeatherTip(emoji: '🌙', title: tTonight(), body: l10n.weatherMoodyTipDefaultNightBody);
   }
 
   String _moodyMoodForWeather(WeatherData weather) {

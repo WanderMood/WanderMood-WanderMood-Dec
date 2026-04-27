@@ -461,10 +461,15 @@ class _UpcomingExecutionHero extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final title = _heroActivityTitle(context, activity.rawData);
     final slotEmoji = _slotEmoji(activity.startTime.hour);
+    final now = MoodyClock.now();
     final slotName = myDayActivitySlotPeriodLabel(
       AppLocalizations.of(context)!,
       activity.startTime,
-      MoodyClock.now(),
+      now,
+    );
+    final slotPeriodElapsed = myDayActivityStartSlotPeriodHasElapsedForToday(
+      activityStart: activity.startTime,
+      now: now,
     );
 
     return Container(
@@ -528,7 +533,9 @@ class _UpcomingExecutionHero extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    l10n.myDayExecutionHeroUpNextBadge,
+                    slotPeriodElapsed
+                        ? l10n.myDayExecutionHeroUpNextAfterSlotBadge
+                        : l10n.myDayExecutionHeroUpNextBadge,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,

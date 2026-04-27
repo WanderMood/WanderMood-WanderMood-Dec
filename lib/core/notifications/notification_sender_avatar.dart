@@ -1,5 +1,23 @@
 import 'package:wandermood/features/realtime/domain/models/realtime_event.dart';
 
+/// Use WanderMood app icon in the notification centre (not a user photo).
+bool notificationCentreUseMoodyAppIcon(RealtimeEvent e) {
+  switch (e.type) {
+    case RealtimeEventType.moodySuggestion:
+    case RealtimeEventType.milestone:
+    case RealtimeEventType.systemUpdate:
+    case RealtimeEventType.activityReminder:
+    case RealtimeEventType.activityReview:
+    case RealtimeEventType.placeRecommendation:
+    case RealtimeEventType.weatherAlert:
+    case RealtimeEventType.welcomeMessage:
+    case RealtimeEventType.achievementUnlocked:
+      return true;
+    default:
+      return false;
+  }
+}
+
 /// Prefer `data['sender_id']` (FCM / plan pings), else DB `sender_id` mapped to [RealtimeEvent.relatedUserId].
 String? notificationSenderUserId(RealtimeEvent e) {
   final fromData = e.data['sender_id']?.toString().trim();

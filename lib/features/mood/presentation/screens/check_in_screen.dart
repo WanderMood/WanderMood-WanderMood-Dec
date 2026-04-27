@@ -19,6 +19,9 @@ import '../../services/moody_ai_service.dart';
 import '../../services/activity_rating_service.dart';
 import '../widgets/activity_rating_sheet.dart';
 import 'dart:math' as math;
+import 'package:wandermood/l10n/app_localizations.dart';
+
+enum _CheckInMorningLine { none, afterTired, fresh }
 
 class CheckInScreen extends ConsumerStatefulWidget {
   const CheckInScreen({super.key});
@@ -34,80 +37,88 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   String? _selectedMood;
   String? _selectedActivity;
   bool _isSending = false;
-  String _greeting = "Hey! How's your day going?";
+  _CheckInMorningLine _morningGreetingLine = _CheckInMorningLine.none;
   int _streak = 0;
 
   late AnimationController _moodyAnimationController;
   late Animation<double> _moodyScaleAnimation;
   late AnimationController _floatController;
 
-  // Quick mood options with more personality
-  final List<Map<String, dynamic>> _quickMoods = [
-    {
-      'emoji': '😊',
-      'label': 'Great',
-      'value': 'great',
-      'subtitle': 'Living my best life!',
-      'gradient': [const Color(0xFFFFD166), const Color(0xFFFF9A00)],
-    },
-    {
-      'emoji': '😴',
-      'label': 'Tired',
-      'value': 'tired',
-      'subtitle': 'Need some rest',
-      'gradient': [const Color(0xFF7B68EE), const Color(0xFF9F7AEA)],
-    },
-    {
-      'emoji': '🎉',
-      'label': 'Amazing',
-      'value': 'amazing',
-      'subtitle': 'Best day ever!',
-      'gradient': [const Color(0xFFFF6B9D), const Color(0xFFFFA06B)],
-    },
-    {
-      'emoji': '😐',
-      'label': 'Okay',
-      'value': 'okay',
-      'subtitle': 'Just coasting',
-      'gradient': [const Color(0xFF94A3B8), const Color(0xFFCBD5E0)],
-    },
-    {
-      'emoji': '🤔',
-      'label': 'Thoughtful',
-      'value': 'thoughtful',
-      'subtitle': 'In my feels',
-      'gradient': [const Color(0xFF6366F1), const Color(0xFF818CF8)],
-    },
-    {
-      'emoji': '😌',
-      'label': 'Chill',
-      'value': 'chill',
-      'subtitle': 'Taking it easy',
-      'gradient': [const Color(0xFF2A6049), const Color(0xFF6DE89A)],
-    },
-  ];
+  List<Map<String, dynamic>> _quickMoods(AppLocalizations l10n) => [
+        {
+          'emoji': '😊',
+          'label': l10n.checkInMoodGreatLabel,
+          'value': 'great',
+          'subtitle': l10n.checkInMoodGreatSubtitle,
+          'gradient': [const Color(0xFFFFD166), const Color(0xFFFF9A00)],
+        },
+        {
+          'emoji': '😴',
+          'label': l10n.checkInMoodTiredLabel,
+          'value': 'tired',
+          'subtitle': l10n.checkInMoodTiredSubtitle,
+          'gradient': [const Color(0xFF7B68EE), const Color(0xFF9F7AEA)],
+        },
+        {
+          'emoji': '🎉',
+          'label': l10n.checkInMoodAmazingLabel,
+          'value': 'amazing',
+          'subtitle': l10n.checkInMoodAmazingSubtitle,
+          'gradient': [const Color(0xFFFF6B9D), const Color(0xFFFFA06B)],
+        },
+        {
+          'emoji': '😐',
+          'label': l10n.checkInMoodOkayLabel,
+          'value': 'okay',
+          'subtitle': l10n.checkInMoodOkaySubtitle,
+          'gradient': [const Color(0xFF94A3B8), const Color(0xFFCBD5E0)],
+        },
+        {
+          'emoji': '🤔',
+          'label': l10n.checkInMoodThoughtfulLabel,
+          'value': 'thoughtful',
+          'subtitle': l10n.checkInMoodThoughtfulSubtitle,
+          'gradient': [const Color(0xFF6366F1), const Color(0xFF818CF8)],
+        },
+        {
+          'emoji': '😌',
+          'label': l10n.checkInMoodChillLabel,
+          'value': 'chill',
+          'subtitle': l10n.checkInMoodChillSubtitle,
+          'gradient': [const Color(0xFF2A6049), const Color(0xFF6DE89A)],
+        },
+      ];
 
-  // Quick activity tags
-  final List<String> _activityTags = [
-    'Explored places',
-    'Had great food',
-    'Met friends',
-    'Relaxed',
-    'Worked out',
-    'Creative time',
-    'Adventure',
-    'Self-care',
-  ];
+  List<Map<String, dynamic>> _activityRows(AppLocalizations l10n) => [
+        {'id': 'Explored places', 'label': l10n.checkInTagExploredPlaces},
+        {'id': 'Had great food', 'label': l10n.checkInTagGreatFood},
+        {'id': 'Met friends', 'label': l10n.checkInTagMetFriends},
+        {'id': 'Relaxed', 'label': l10n.checkInTagRelaxed},
+        {'id': 'Worked out', 'label': l10n.checkInTagWorkedOut},
+        {'id': 'Creative time', 'label': l10n.checkInTagCreativeTime},
+        {'id': 'Adventure', 'label': l10n.checkInTagAdventure},
+        {'id': 'Self-care', 'label': l10n.checkInTagSelfCare},
+      ];
 
-  // Quick reactions (like FaceTime reactions)
-  final List<Map<String, dynamic>> _quickReactions = [
-    {'emoji': '❤️', 'label': 'Loved it'},
-    {'emoji': '🔥', 'label': 'On fire'},
-    {'emoji': '✨', 'label': 'Magical'},
-    {'emoji': '😅', 'label': 'Exhausted'},
-    {'emoji': '🤩', 'label': 'Amazing'},
-    {'emoji': '😌', 'label': 'Peaceful'},
-  ];
+  List<Map<String, dynamic>> _quickReactions(AppLocalizations l10n) => [
+        {'emoji': '❤️', 'id': 'Loved it', 'label': l10n.checkInReactionLovedIt},
+        {'emoji': '🔥', 'id': 'On fire', 'label': l10n.checkInReactionOnFire},
+        {'emoji': '✨', 'id': 'Magical', 'label': l10n.checkInReactionMagical},
+        {'emoji': '😅', 'id': 'Exhausted', 'label': l10n.checkInReactionExhausted},
+        {'emoji': '🤩', 'id': 'Amazing', 'label': l10n.checkInReactionAmazing},
+        {'emoji': '😌', 'id': 'Peaceful', 'label': l10n.checkInReactionPeaceful},
+      ];
+
+  String _headerGreeting(AppLocalizations l10n) {
+    switch (_morningGreetingLine) {
+      case _CheckInMorningLine.afterTired:
+        return l10n.checkInGreetingMorningAfterTired;
+      case _CheckInMorningLine.fresh:
+        return l10n.checkInGreetingMorningFresh;
+      case _CheckInMorningLine.none:
+        return l10n.checkInGreetingDefault;
+    }
+  }
 
   @override
   void initState() {
@@ -335,8 +346,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final pendingActivities = await _getPendingActivities();
 
     // Generate AI response
+    final l10n = AppLocalizations.of(context)!;
     final response =
-        await _getMoodyResponse(pendingActivities: pendingActivities);
+        await _getMoodyResponse(l10n, pendingActivities: pendingActivities);
 
     if (!mounted) return;
 
@@ -443,7 +455,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     ),
                   ),
                   child: Text(
-                    'Thanks Moody! 💚',
+                    l10n.checkInThanksMoodyButton,
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -459,9 +471,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<String> _getMoodyResponse(
-      {List<ActivityRating>? pendingActivities}) async {
+    AppLocalizations l10n, {
+    List<ActivityRating>? pendingActivities,
+  }) async {
     try {
-      // Use AI service for intelligent, contextual responses
       final aiService = ref.read(moodyAIServiceProvider);
 
       return await aiService.generateCheckInResponse(
@@ -473,8 +486,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       );
     } catch (e) {
       print('⚠️ Failed to get AI response: $e');
-      // Fallback to simple response
-      return 'Thanks for checking in! I love hearing about your day 💛';
+      return l10n.checkInAiFallbackThankYou;
     }
   }
 
@@ -559,7 +571,6 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   Future<void> _loadPreviousCheckIn() async {
     // Load previous check-in to personalize greeting
     final checkInService = CheckInService(Supabase.instance.client);
-    final lastCheckIn = await checkInService.getLastCheckIn();
     final yesterdayCheckIn = await checkInService.getYesterdayCheckIn();
 
     final hour = MoodyClock.now().hour;
@@ -568,14 +579,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     if (mounted) {
       setState(() {
         if (isMorning && yesterdayCheckIn != null) {
-          // Morning greeting referencing yesterday
-          if (yesterdayCheckIn.mood == 'tired') {
-            _greeting = "Good morning! Did you sleep well? 🌅";
-          } else {
-            _greeting = "Good morning! How are you feeling today? ☀️";
-          }
-        } else if (lastCheckIn != null) {
-          _greeting = "Hey! How's your day going?";
+          _morningGreetingLine = yesterdayCheckIn.mood == 'tired'
+              ? _CheckInMorningLine.afterTired
+              : _CheckInMorningLine.fresh;
+        } else {
+          _morningGreetingLine = _CheckInMorningLine.none;
         }
       });
     }
@@ -583,9 +591,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dailyState = ref.watch(dailyMoodStateNotifierProvider);
     final currentMood = dailyState.currentMood ?? 'exploring';
     final gradientColors = _getTimeBasedGradient();
+    final quickMoods = _quickMoods(l10n);
 
     return Scaffold(
       body: Container(
@@ -634,7 +644,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     ),
                     Expanded(
                       child: Text(
-                        'Check in with Moody',
+                        l10n.checkInWithMoodyTitle,
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -744,7 +754,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         child: Column(
                           children: [
                             Text(
-                              _greeting,
+                              _headerGreeting(l10n),
                               style: GoogleFonts.poppins(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -761,7 +771,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              "Tell me everything! 💚",
+                              l10n.checkInTellMeEverything,
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 color: Colors.white.withOpacity(0.9),
@@ -788,7 +798,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "How are you feeling?",
+                              l10n.checkInHowAreYouFeeling,
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -809,7 +819,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
                               childAspectRatio: 0.85,
-                              children: _quickMoods.map((mood) {
+                              children: quickMoods.map((mood) {
                                 final isSelected =
                                     _selectedMood == mood['value'];
                                 return _buildMoodCard(mood, isSelected);
@@ -822,22 +832,22 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       const SizedBox(height: 28),
 
                       // Activity tags (continued on next part due to length...)
-                      _buildActivitiesSection(),
+                      _buildActivitiesSection(l10n),
 
                       const SizedBox(height: 28),
 
                       // Quick reactions
-                      _buildReactionsSection(),
+                      _buildReactionsSection(l10n),
 
                       const SizedBox(height: 28),
 
                       // Free text input
-                      _buildTextInputSection(),
+                      _buildTextInputSection(l10n),
 
                       const SizedBox(height: 28),
 
                       // Send button
-                      _buildSendButton(),
+                      _buildSendButton(l10n),
 
                       const SizedBox(height: 32),
                     ],
@@ -923,7 +933,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     );
   }
 
-  Widget _buildActivitiesSection() {
+  Widget _buildActivitiesSection(AppLocalizations l10n) {
+    final rows = _activityRows(l10n);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -943,7 +954,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "What did you do today?",
+              l10n.checkInWhatDidYouDoToday,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -954,7 +965,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: _activityTags.map((tag) {
+              children: rows.map((row) {
+                final tag = row['id'] as String;
+                final label = row['label'] as String;
                 final isSelected = _selectedActivity == tag;
                 return GestureDetector(
                   onTap: () {
@@ -990,7 +1003,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           : null,
                     ),
                     child: Text(
-                      tag,
+                      label,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight:
@@ -1010,7 +1023,17 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     );
   }
 
-  Widget _buildReactionsSection() {
+  Widget _buildReactionsSection(AppLocalizations l10n) {
+    final reactions = _quickReactions(l10n);
+    final colors = <List<Color>>[
+      [const Color(0xFFFF6B9D), const Color(0xFFFFA06B)],
+      [const Color(0xFFF59E0B), const Color(0xFFFBBF24)],
+      [const Color(0xFF6366F1), const Color(0xFF818CF8)],
+      [const Color(0xFFEC4899), const Color(0xFFF472B6)],
+      [const Color(0xFF2A6049), const Color(0xFF6DE89A)],
+      [const Color(0xFF7B68EE), const Color(0xFF9F7AEA)],
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -1030,7 +1053,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Quick reactions",
+              l10n.checkInQuickReactionsHeading,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -1041,27 +1064,19 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: _quickReactions.map((reaction) {
-                final isSelected =
-                    _selectedReactions.contains(reaction['label']);
-                final colors = [
-                  [const Color(0xFFFF6B9D), const Color(0xFFFFA06B)],
-                  [const Color(0xFFF59E0B), const Color(0xFFFBBF24)],
-                  [const Color(0xFF6366F1), const Color(0xFF818CF8)],
-                  [const Color(0xFFEC4899), const Color(0xFFF472B6)],
-                  [const Color(0xFF2A6049), const Color(0xFF6DE89A)],
-                  [const Color(0xFF7B68EE), const Color(0xFF9F7AEA)],
-                ];
-                final colorIndex = _quickReactions.indexOf(reaction);
-                final gradient = colors[colorIndex % colors.length];
+              children: List<Widget>.generate(reactions.length, (i) {
+                final reaction = reactions[i];
+                final rid = reaction['id'] as String;
+                final isSelected = _selectedReactions.contains(rid);
+                final gradient = colors[i % colors.length];
 
                 return GestureDetector(
                   onTap: () {
                     setState(() {
                       if (isSelected) {
-                        _selectedReactions.remove(reaction['label']);
+                        _selectedReactions.remove(rid);
                       } else {
-                        _selectedReactions.add(reaction['label'] as String);
+                        _selectedReactions.add(rid);
                       }
                     });
                   },
@@ -1102,8 +1117,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           reaction['label'] as String,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            fontWeight:
-                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                             color: isSelected
                                 ? Colors.white
                                 : const Color(0xFF4A5568),
@@ -1113,7 +1129,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ),
           ],
         ),
@@ -1121,7 +1137,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     );
   }
 
-  Widget _buildTextInputSection() {
+  Widget _buildTextInputSection(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -1141,7 +1157,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Tell me more... (optional)",
+              l10n.checkInTellMeMoreHeading,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -1162,7 +1178,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 controller: _textController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: "What's on your mind? Share anything! 💭",
+                  hintText: l10n.checkInTextFieldHint,
                   hintStyle: GoogleFonts.poppins(
                     fontSize: 15,
                     color: const Color(0xFF94A3B8),
@@ -1182,7 +1198,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     );
   }
 
-  Widget _buildSendButton() {
+  Widget _buildSendButton(AppLocalizations l10n) {
     final canSend = _selectedMood != null ||
         _textController.text.isNotEmpty ||
         _selectedReactions.isNotEmpty;
@@ -1232,7 +1248,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Send to Moody',
+                      l10n.checkInSendButton,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

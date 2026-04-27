@@ -17,6 +17,7 @@ import '../widgets/travel_mode_toggle.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import '../widgets/profile_stats_cards.dart';
+import '../widgets/profile_moments_section.dart';
 import '../utils/preference_chip_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:wandermood/core/cache/wandermood_image_cache_manager.dart';
@@ -281,6 +282,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ),
                   const SizedBox(height: 12),
                   const ProfileStatsCards(),
+                  const SizedBox(height: 12),
+                  const ProfileMomentsSection(),
                   const SizedBox(height: 12),
                   FavoriteVibesCard(
                     selectedVibes: profile.selectedMoods,

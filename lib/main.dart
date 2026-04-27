@@ -28,7 +28,6 @@ import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/features/group_planning/domain/group_planning_deep_link.dart';
 import 'package:wandermood/features/places/data/moody_place_blurb_cache.dart';
 import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
-
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
   // Do not [ref.watch] authStateChangesProvider here: that stream fires multiple

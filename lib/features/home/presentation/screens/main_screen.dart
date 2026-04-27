@@ -8,6 +8,7 @@ import 'package:wandermood/features/home/presentation/screens/explore_screen.dar
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/redesigned_moody_hub.dart';
 import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.dart';
+import 'package:wandermood/core/notifications/engagement_in_app_nudges.dart';
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/features/profile/presentation/screens/user_profile_screen.dart';
@@ -148,6 +149,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         await _showMoodyIdleGateIfNeeded();
         await _checkForWeekendSuggestion();
         if (!mounted) return;
+        final uid = Supabase.instance.client.auth.currentUser?.id;
+        if (uid != null) {
+          final prefsEng = ref.read(preferencesProvider);
+          await EngagementInAppNudges.runAfterMainVisible(
+            userId: uid,
+            locale: Localizations.localeOf(context),
+            homeBase: prefsEng.homeBase,
+          );
+        }
+        if (!mounted) return;
         await _maybeShowMainAppTourAuto();
       });
     });
@@ -176,7 +187,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
-  /// After 30+ min away, full-screen Moody idle; then timestamps next session baseline.
+  /// First open in morning (06–12) or evening (17–22) each day: full-screen idle gate;
+  /// then timestamps next session baseline.
   Future<void> _showMoodyIdleGateIfNeeded() async {
     if (!mounted || _idleGateCompleted) return;
 
@@ -194,13 +206,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       return;
     }
 
-    final showIdle = await MoodyIdleChecker.shouldShowIdleScreen();
+    final l10n = AppLocalizations.of(context)!;
+    final decision = await MoodyIdleChecker.evaluateIdleGate(l10n);
     if (!mounted) return;
 
-    if (showIdle) {
+    if (decision != null) {
       await MoodyIdleChecker.ensureFirstInstallLocalDayIfMissing();
-      final idleState = MoodyIdleChecker.getIdleState();
-      final l10n = AppLocalizations.of(context)!;
+      final idleState = decision.visualState;
       var hasPlan = false;
       try {
         final acts = await ref.read(scheduledActivitiesForTodayProvider.future);
@@ -247,14 +259,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               pageBuilder: (ctx, _, __) => MoodyIdleScreen(
                 idleState: idleState,
                 wakeMessage: wakeMessage,
+                idleOpeningLine: decision.openingLine,
                 userPreferences: prefsMap,
                 topInterest: topInterest,
                 onComplete: () {
-                  Navigator.of(ctx).pop();
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted) return;
-                    ref.read(mainTabProvider.notifier).state =
-                        hasPlan ? 0 : 2;
+                  MoodyIdleChecker.completeIdleGate(decision).then((_) {
+                    if (!ctx.mounted) return;
+                    Navigator.of(ctx).pop();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) return;
+                      ref.read(mainTabProvider.notifier).state =
+                          hasPlan ? 0 : 2;
+                    });
                   });
                 },
               ),

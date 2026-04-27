@@ -1,7 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../../plans/data/services/scheduled_activity_service.dart';
 import '../../../plans/domain/models/activity.dart';
@@ -11,6 +14,30 @@ final selectedMyDayDateProvider = StateProvider<DateTime>((ref) {
   final now = MoodyClock.now();
   return DateTime(now.year, now.month, now.day);
 });
+
+/// Calendar date only (for persisting check-in / done per day).
+DateTime myDayDateOnly(DateTime dt) =>
+    DateTime(dt.year, dt.month, dt.day);
+
+/// Stable prefs key: `yyyy-mm-dd|activityId` (matches scheduled activity local date).
+String myDayActivityStatusStorageKey(DateTime dateOnly, String activityId) {
+  final y = dateOnly.year;
+  final m = dateOnly.month.toString().padLeft(2, '0');
+  final d = dateOnly.day.toString().padLeft(2, '0');
+  return '$y-$m-$d|$activityId';
+}
+
+ActivityStatus? activityStatusForScheduledDay({
+  required ActivityManagerState manager,
+  required DateTime activityStartTime,
+  required String activityId,
+}) {
+  if (activityId.isEmpty) return null;
+  final composite =
+      myDayActivityStatusStorageKey(myDayDateOnly(activityStartTime), activityId);
+  return manager.statusUpdates[composite] ??
+      manager.statusUpdates[activityId];
+}
 
 // Enum for activity status
 enum ActivityStatus {
@@ -86,38 +113,92 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
             activities: [],
             statusUpdates: {},
           ),
+        ) {
+    unawaited(_hydrateFromPrefs());
+  }
+
+  static const _prefsStatusKey = 'wm_my_day_activity_status_v1';
+
+  Future<void> _hydrateFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefsStatusKey);
+      if (raw == null || raw.isEmpty) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return;
+      final out = <String, ActivityStatus>{};
+      for (final e in decoded.entries) {
+        final name = e.value?.toString();
+        if (name == null) continue;
+        ActivityStatus? st;
+        for (final v in ActivityStatus.values) {
+          if (v.name == name) {
+            st = v;
+            break;
+          }
+        }
+        if (st != null) out[e.key.toString()] = st;
+      }
+      state = state.copyWith(statusUpdates: out);
+    } catch (e) {
+      debugPrint('ActivityManagerNotifier._hydrateFromPrefs: $e');
+    }
+  }
+
+  void _persistStatuses() {
+    unawaited(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final encoded = jsonEncode(
+          state.statusUpdates.map((k, v) => MapEntry(k, v.name)),
         );
+        await prefs.setString(_prefsStatusKey, encoded);
+      } catch (e) {
+        debugPrint('ActivityManagerNotifier._persistStatuses: $e');
+      }
+    }());
+  }
 
   void updateActivities(List<Map<String, dynamic>> activities) {
     state = state.copyWith(activities: activities);
   }
 
-  void updateActivityStatus(String activityId, ActivityStatus status) {
+  /// Persists per [day] (scheduled calendar day of the activity).
+  void updateActivityStatusForDay(
+    String activityId,
+    ActivityStatus status,
+    DateTime day,
+  ) {
+    if (activityId.isEmpty) return;
+    final key =
+        myDayActivityStatusStorageKey(myDayDateOnly(day), activityId);
     final newStatusUpdates = Map<String, ActivityStatus>.from(state.statusUpdates);
-    newStatusUpdates[activityId] = status;
+    newStatusUpdates[key] = status;
     state = state.copyWith(statusUpdates: newStatusUpdates);
+    _persistStatuses();
   }
 
   /// User tapped "I'm Here" — marks the activity as actively in progress.
-  void checkInActivity(String activityId) {
-    updateActivityStatus(activityId, ActivityStatus.activeNow);
+  void checkInActivity(String activityId, DateTime day) {
+    updateActivityStatusForDay(activityId, ActivityStatus.activeNow, day);
   }
 
   /// User tapped "Done" — marks the activity as completed.
-  void markActivityDone(String activityId) {
-    updateActivityStatus(activityId, ActivityStatus.completed);
+  void markActivityDone(String activityId, DateTime day) {
+    updateActivityStatusForDay(activityId, ActivityStatus.completed, day);
   }
 
-  void cancelActivity(String activityId) {
-    updateActivityStatus(activityId, ActivityStatus.cancelled);
+  void cancelActivity(String activityId, DateTime day) {
+    updateActivityStatusForDay(activityId, ActivityStatus.cancelled, day);
   }
 
   /// After removing an activity from the backend, drop any local status for that id.
   void clearLocalStatusForActivity(String activityId) {
     if (activityId.isEmpty) return;
-    final newStatus =
-        Map<String, ActivityStatus>.from(state.statusUpdates)..remove(activityId);
+    final newStatus = Map<String, ActivityStatus>.from(state.statusUpdates)
+      ..removeWhere((k, _) => k == activityId || k.endsWith('|$activityId'));
     state = state.copyWith(statusUpdates: newStatus);
+    _persistStatuses();
   }
 
   void updateActivity(String activityId, Map<String, dynamic> updatedData) {
@@ -128,10 +209,6 @@ class ActivityManagerNotifier extends StateNotifier<ActivityManagerState> {
       return activity;
     }).toList();
     state = state.copyWith(activities: newActivities);
-  }
-
-  ActivityStatus getActivityStatus(String activityId) {
-    return state.statusUpdates[activityId] ?? ActivityStatus.upcoming;
   }
 }
 
@@ -264,7 +341,11 @@ final todayActivitiesProvider = FutureProvider<List<EnhancedActivityData>>((ref)
       }
 
       final activityId = activity['id'] as String? ?? activity['title'] as String? ?? '';
-      final managerStatus = activityManagerState.statusUpdates[activityId];
+      final managerStatus = activityStatusForScheduledDay(
+        manager: activityManagerState,
+        activityStartTime: startTime,
+        activityId: activityId,
+      );
 
       // Status is purely user-driven — default is always "upcoming".
       final status = managerStatus ?? ActivityStatus.upcoming;
@@ -310,10 +391,13 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
     };
   }
 
-  // Upcoming: first activity not yet checked in
-  final upcomingActivity = todayActivities
+  // Upcoming: prefer the next activity in the **current** day-part when earlier
+  // slots are still unchecked but their nominal window has ended (hero + status).
+  final upcomingSorted = todayActivities
       .where((a) => a.status == ActivityStatus.upcoming)
-      .firstOrNull;
+      .toList()
+    ..sort((a, b) => a.startTime.compareTo(b.startTime));
+  final upcomingActivity = _pickUpcomingForHero(upcomingSorted, now);
   if (upcomingActivity != null) {
     return {
       'type': 'upcoming',
@@ -346,6 +430,22 @@ final currentActivityStatusProvider = FutureProvider<Map<String, dynamic>>((ref)
     'action2': 'ask_moody',
   };
 });
+
+/// First upcoming by start time whose morning/afternoon window has not ended;
+/// if every remaining item is in an ended window, fall back to the earliest.
+EnhancedActivityData? _pickUpcomingForHero(
+  List<EnhancedActivityData> upcomingSorted,
+  DateTime now,
+) {
+  if (upcomingSorted.isEmpty) return null;
+  for (final a in upcomingSorted) {
+    if (!myDayActivityStartSlotPeriodHasElapsedForToday(
+        activityStart: a.startTime, now: now)) {
+      return a;
+    }
+  }
+  return upcomingSorted.first;
+}
 
 /// `morning` | `afternoon` | `evening` for localization lookup.
 String _timeSlotPeriod(int hour) {

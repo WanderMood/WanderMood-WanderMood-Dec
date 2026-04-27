@@ -44,6 +44,8 @@ import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
+import 'package:wandermood/core/notifications/engagement_in_app_nudges.dart';
+import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
@@ -1702,7 +1704,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           viewDay: viewDay,
           now: now,
         ),
-        l10n.myDayTimelineSectionMorningSubtitle,
+        myDayTimelineSectionSubtitle(
+          l10n,
+          period: 'morning',
+          viewDay: viewDay,
+          now: now,
+        ),
         activities['morning']!,
         isFirstSection: firstVisibleSection == 'morning',
       ));
@@ -1724,7 +1731,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           viewDay: viewDay,
           now: now,
         ),
-        l10n.myDayTimelineSectionAfternoonSubtitle,
+        myDayTimelineSectionSubtitle(
+          l10n,
+          period: 'afternoon',
+          viewDay: viewDay,
+          now: now,
+        ),
         activities['afternoon']!,
         isFirstSection: firstVisibleSection == 'afternoon',
       ));
@@ -1743,7 +1755,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           viewDay: viewDay,
           now: now,
         ),
-        l10n.myDayTimelineSectionEveningSubtitle,
+        myDayTimelineSectionSubtitle(
+          l10n,
+          period: 'evening',
+          viewDay: viewDay,
+          now: now,
+        ),
         activities['evening']!,
         isFirstSection: firstVisibleSection == 'evening',
       ));
@@ -2210,7 +2227,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (activityId.isEmpty) return;
 
     HapticFeedback.mediumImpact();
-    ref.read(activityManagerProvider.notifier).checkInActivity(activityId);
+    final day = ref.read(selectedMyDayDateProvider);
+    ref.read(activityManagerProvider.notifier).checkInActivity(activityId, day);
     ref.invalidate(currentActivityStatusProvider);
     ref.invalidate(todayActivitiesProvider);
 
@@ -2225,7 +2243,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (activityId.isEmpty) return;
 
     HapticFeedback.mediumImpact();
-    ref.read(activityManagerProvider.notifier).markActivityDone(activityId);
+    final day = ref.read(selectedMyDayDateProvider);
+    ref.read(activityManagerProvider.notifier).markActivityDone(activityId, day);
     TasteProfileService.recordFromActivityRaw(
       activity.rawData,
       interactionType: 'completed',
@@ -2251,6 +2270,40 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       context,
       message: AppLocalizations.of(context)!.myDayDonePrompt,
     );
+
+    unawaited(_maybeFirePostTripReflection());
+  }
+
+  /// When every activity on the selected My Day date is marked done: in-app bell + OS post-trip copy.
+  Future<void> _maybeFirePostTripReflection() async {
+    try {
+      ref.invalidate(todayActivitiesProvider);
+      final list = await ref.read(todayActivitiesProvider.future);
+      if (!mounted) return;
+      if (list.isEmpty) return;
+      if (!list.every((a) => a.status == ActivityStatus.completed)) return;
+
+      final day = ref.read(selectedMyDayDateProvider);
+      final dateStr =
+          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      final uid = Supabase.instance.client.auth.currentUser?.id;
+      if (uid == null) return;
+
+      final nl = Localizations.localeOf(context)
+          .languageCode
+          .toLowerCase()
+          .startsWith('nl');
+      await EngagementInAppNudges.sendPostTripReflectionIfNeeded(
+        userId: uid,
+        scheduledDateYyyyMmDd: dateStr,
+        nl: nl,
+      );
+      try {
+        await ref.read(notificationTriggersProvider).onTripCompleted();
+      } catch (_) {}
+    } catch (e, st) {
+      debugPrint('_maybeFirePostTripReflection: $e\n$st');
+    }
   }
 
   Future<void> _showRichGetReadySheet(EnhancedActivityData activity) async {

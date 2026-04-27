@@ -268,24 +268,6 @@ extension RealtimeEventExtension on RealtimeEvent {
     return type.shouldSendPush;
   }
 
-  /// Get formatted time for display
-  String get timeAgo {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return '${(difference.inDays / 7).floor()}w ago';
-    }
-  }
-
   /// Get the display message with user context
   String getDisplayMessage(String? currentUserName) {
     final userName = data['userName'] as String? ?? 'Someone';

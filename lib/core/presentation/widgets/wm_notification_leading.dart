@@ -10,11 +10,13 @@ class WmNotificationLeading extends StatelessWidget {
     required this.event,
     this.senderAvatarUrl,
     this.showSenderAvatar = false,
+    this.showMoodyAppIcon = false,
   });
 
   final RealtimeEvent event;
   final String? senderAvatarUrl;
   final bool showSenderAvatar;
+  final bool showMoodyAppIcon;
 
   static const TextStyle _emojiStyle = TextStyle(fontSize: 16);
 
@@ -22,6 +24,20 @@ class WmNotificationLeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (showMoodyAppIcon) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Image.asset(
+            'assets/icons/app_icon.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _typeEmoji(),
+          ),
+        ),
+      );
+    }
     final url = senderAvatarUrl?.trim();
     if (showSenderAvatar && url != null && url.isNotEmpty) {
       return ClipRRect(

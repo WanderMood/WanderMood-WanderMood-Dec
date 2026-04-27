@@ -58,6 +58,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moodHomeCtxFallback => 'Let\'s find the right vibe for today.';
 
   @override
+  String get moodHomeHeroGreetingEarlyMorningTitle => 'Rise and shine! ☀️';
+
+  @override
+  String get moodHomeHeroGreetingEarlyMorningSubWeekend =>
+      'Perfect weekend morning for adventures';
+
+  @override
+  String get moodHomeHeroGreetingEarlyMorningSubWeekday =>
+      'Ready to make today amazing?';
+
+  @override
+  String get moodHomeHeroGreetingLateMorningTitle => 'Hey there! 👋';
+
+  @override
+  String get moodHomeHeroGreetingLateMorningSub =>
+      'I\'ve been thinking about your perfect day';
+
+  @override
+  String get moodHomeHeroGreetingAfternoonTitle => 'Afternoon vibes! ✨';
+
+  @override
+  String get moodHomeHeroGreetingAfternoonSub =>
+      'What\'s on your mind for today?';
+
+  @override
+  String get moodHomeHeroGreetingEarlyEveningTitle => 'Evening explorer! 🌆';
+
+  @override
+  String get moodHomeHeroGreetingEarlyEveningSubWeekend =>
+      'Weekend nights are the best for discoveries';
+
+  @override
+  String get moodHomeHeroGreetingEarlyEveningSubWeekday =>
+      'How did your day treat you?';
+
+  @override
+  String get moodHomeHeroGreetingNightTitle => 'Night owl! 🌙';
+
+  @override
+  String get moodHomeHeroGreetingNightSub => 'Late night adventures calling?';
+
+  @override
+  String moodHomeEmptyChatPitch(String city) {
+    return 'I know $city like the back of my hand! Tell me your mood, and I\'ll craft the perfect day just for you. Whether you\'re feeling adventurous, romantic, or need some chill vibes — I\'ve got you covered! 🎯';
+  }
+
+  @override
   String get splashTagline => 'Your mood-based travel companion';
 
   @override
@@ -3717,6 +3764,43 @@ class AppLocalizationsEn extends AppLocalizations {
       'Quiet hours… Moody was almost asleep 😴';
 
   @override
+  String get moodyIdleGateMorning0 => 'Good morning. Ready to shape today?';
+
+  @override
+  String get moodyIdleGateMorning1 =>
+      'Morning — want to see what’s on your list?';
+
+  @override
+  String get moodyIdleGateMorning2 =>
+      'You’re up. Open your day whenever you’re ready.';
+
+  @override
+  String get moodyIdleGateMorning3 =>
+      'New day. Tap when you want to get started.';
+
+  @override
+  String get moodyIdleGateMorning4 =>
+      'Still easing in? No rush — tap Moody when you’re ready.';
+
+  @override
+  String get moodyIdleGateEvening0 =>
+      'Good evening. Want to pick up your plan?';
+
+  @override
+  String get moodyIdleGateEvening1 =>
+      'Evening — here when you want to close the loop.';
+
+  @override
+  String get moodyIdleGateEvening2 => 'Winding down? Your day is a tap away.';
+
+  @override
+  String get moodyIdleGateEvening3 => 'Back for a bit? Moody’s here to help.';
+
+  @override
+  String get moodyIdleGateEvening4 =>
+      'Take a breath — open your plan if it helps.';
+
+  @override
   String get moodyHubNewConversation => 'New conversation';
 
   @override
@@ -4500,6 +4584,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myDayTimelineStatusDone => 'DONE';
 
   @override
+  String get myDayTimelineStatusCancelled => 'CANCELLED';
+
+  @override
   String get myDayActivityFallbackLabel => 'Activity';
 
   @override
@@ -4534,11 +4621,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myDayExecutionHeroUpNextBadge => 'UP NEXT';
 
   @override
+  String get myDayExecutionHeroUpNextAfterSlotBadge => 'NEXT';
+
+  @override
   String get myDayExecutionHeroTapImHereWhenArrive =>
       'Tap \"I\'m Here\" when you arrive.';
 
   @override
   String get myDayTimelineSectionMorningTitle => '🌅 Morning';
+
+  @override
+  String get myDayTimelineSectionMorningFocusTitle => '🌅 This morning';
 
   @override
   String get myDayTimelineSectionMorningSubtitle => 'Start your day right';
@@ -4547,13 +4640,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myDayTimelineSectionAfternoonTitle => '🌞 Afternoon';
 
   @override
+  String get myDayTimelineSectionAfternoonFocusTitle => '🌞 This afternoon';
+
+  @override
   String get myDayTimelineSectionAfternoonSubtitle => 'Peak adventure time';
 
   @override
   String get myDayTimelineSectionEveningTitle => '🌆 Evening';
 
   @override
+  String get myDayTimelineSectionEveningFocusTitle => '🌆 This evening';
+
+  @override
   String get myDayTimelineSectionEveningSubtitle => 'Wind down and enjoy';
+
+  @override
+  String get myDayTimelineSectionEarlierTodaySubtitle => 'Earlier in your day';
 
   @override
   String get myDaySlotPlannedForMorning => 'This morning';
@@ -4562,10 +4664,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myDaySlotPlannedForAfternoon => 'This afternoon';
 
   @override
-  String get myDayTimelineSectionMorningPastTitle => '🌅 This morning';
+  String get myDaySlotThisEvening => 'This evening';
 
   @override
-  String get myDayTimelineSectionAfternoonPastTitle => '🌞 This afternoon';
+  String get myDayTimelineSectionMorningPastTitle => '🌅 Morning';
+
+  @override
+  String get myDayTimelineSectionAfternoonPastTitle => '🌞 Afternoon';
 
   @override
   String get myDayWeekendEmptyTitle => 'Your weekend is still empty!';
@@ -4890,6 +4995,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialSampleNotificationStory => '• New travel story from Luna';
+
+  @override
+  String get notificationCardDeleteTooltip => 'Remove';
+
+  @override
+  String get notificationCentreMoodMatchTimelineTitle => 'Planning together';
+
+  @override
+  String get notificationCentreMoodMatchTimelineSubtitle =>
+      'A calm timeline of your Mood Match.';
+
+  @override
+  String get notificationCentreTitle => 'Updates';
+
+  @override
+  String get notificationCentreEmptyState =>
+      'Nothing new — you\'re all caught up. I\'ll let you know when something happens.';
+
+  @override
+  String get notificationCentreMarkAllRead => 'Mark all read';
+
+  @override
+  String get notificationCentreSectionNew => 'New';
+
+  @override
+  String get notificationCentreSectionEarlier => 'Earlier';
+
+  @override
+  String get notificationCentreReadDividerLabel => 'Read';
+
+  @override
+  String get notificationCentreAllFilter => 'All';
+
+  @override
+  String get notificationCentreActivitiesLabel => 'Activities';
+
+  @override
+  String get notificationCentreSocialLabel => 'Social';
+
+  @override
+  String get notificationCentreMoodyLabel => 'Moody';
+
+  @override
+  String get notificationCentreCategoryMoodMatch => 'Mood Match';
+
+  @override
+  String notificationCentreRelativeMinutesAgo(int count) {
+    return '${count}m ago';
+  }
 
   @override
   String get socialOpeningAllTravelStories => 'Opening all travel stories...';
@@ -6554,6 +6708,126 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkInClose => 'Close';
 
   @override
+  String get checkInWithMoodyTitle => 'Check in with Moody';
+
+  @override
+  String get checkInGreetingDefault => 'Hey! How\'s your day going?';
+
+  @override
+  String get checkInGreetingMorningAfterTired =>
+      'Good morning! Did you sleep well? 🌅';
+
+  @override
+  String get checkInGreetingMorningFresh =>
+      'Good morning! How are you feeling today? ☀️';
+
+  @override
+  String get checkInTellMeEverything => 'Tell me everything! 💚';
+
+  @override
+  String get checkInHowAreYouFeeling => 'How are you feeling?';
+
+  @override
+  String get checkInWhatDidYouDoToday => 'What did you do today?';
+
+  @override
+  String get checkInQuickReactionsHeading => 'Quick reactions';
+
+  @override
+  String get checkInTellMeMoreHeading => 'Tell me more... (optional)';
+
+  @override
+  String get checkInTextFieldHint => 'What\'s on your mind? Share anything! 💭';
+
+  @override
+  String get checkInSendButton => 'Send to Moody';
+
+  @override
+  String get checkInThanksMoodyButton => 'Thanks Moody! 💚';
+
+  @override
+  String get checkInAiFallbackThankYou =>
+      'Thanks for checking in! I love hearing about your day 💛';
+
+  @override
+  String get checkInMoodGreatLabel => 'Great';
+
+  @override
+  String get checkInMoodGreatSubtitle => 'Living my best life!';
+
+  @override
+  String get checkInMoodTiredLabel => 'Tired';
+
+  @override
+  String get checkInMoodTiredSubtitle => 'Need some rest';
+
+  @override
+  String get checkInMoodAmazingLabel => 'Amazing';
+
+  @override
+  String get checkInMoodAmazingSubtitle => 'Best day ever!';
+
+  @override
+  String get checkInMoodOkayLabel => 'Okay';
+
+  @override
+  String get checkInMoodOkaySubtitle => 'Just coasting';
+
+  @override
+  String get checkInMoodThoughtfulLabel => 'Thoughtful';
+
+  @override
+  String get checkInMoodThoughtfulSubtitle => 'In my feels';
+
+  @override
+  String get checkInMoodChillLabel => 'Chill';
+
+  @override
+  String get checkInMoodChillSubtitle => 'Taking it easy';
+
+  @override
+  String get checkInTagExploredPlaces => 'Explored places';
+
+  @override
+  String get checkInTagGreatFood => 'Had great food';
+
+  @override
+  String get checkInTagMetFriends => 'Met friends';
+
+  @override
+  String get checkInTagRelaxed => 'Relaxed';
+
+  @override
+  String get checkInTagWorkedOut => 'Worked out';
+
+  @override
+  String get checkInTagCreativeTime => 'Creative time';
+
+  @override
+  String get checkInTagAdventure => 'Adventure';
+
+  @override
+  String get checkInTagSelfCare => 'Self-care';
+
+  @override
+  String get checkInReactionLovedIt => 'Loved it';
+
+  @override
+  String get checkInReactionOnFire => 'On fire';
+
+  @override
+  String get checkInReactionMagical => 'Magical';
+
+  @override
+  String get checkInReactionExhausted => 'Exhausted';
+
+  @override
+  String get checkInReactionAmazing => 'Amazing';
+
+  @override
+  String get checkInReactionPeaceful => 'Peaceful';
+
+  @override
   String get dagSheetOpener1 => 'You\'re home! How was your day?';
 
   @override
@@ -7997,6 +8271,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moodyReviewTitle => 'Quick Review';
 
   @override
+  String get moodyReviewHeroSubtitle => 'How did it land? I\'m listening.';
+
+  @override
   String get moodyReviewHowWasIt => 'How was it?';
 
   @override
@@ -8033,23 +8310,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moodyReviewOptionalNote => 'Any thoughts? (optional)';
 
   @override
-  String get moodyReviewNoteHint => 'What stood out? Any tips for others?';
+  String get moodyReviewNoteHint => 'What stood out while it’s fresh?';
 
   @override
   String get moodyReviewNoteHelper =>
-      '💡 This helps others discover great spots!';
+      '💡 I use this to tune your next days — private to you and WanderMood.';
 
   @override
-  String get moodyReviewSave => 'Save Review';
+  String get moodyReviewSave => 'Save';
 
   @override
-  String get moodyReviewNeedStars => 'Please add a star rating to continue';
+  String get moodyReviewNeedStars => 'Pick a star rating to continue';
 
   @override
-  String get moodyReviewHelpsMoody => 'Your feedback helps Moody learn!';
+  String get moodyReviewHelpsMoody =>
+      'This stays between us — and shapes better picks for you.';
 
   @override
-  String get moodyReviewThanksToast => 'Thanks for your review! 🚀';
+  String get moodyReviewThanksToast => 'Saved — thank you!';
+
+  @override
+  String get profileMomentsTitle => 'Your visits';
+
+  @override
+  String get profileMomentsSubtitle =>
+      'Places you rated after My Day — private, yours to change';
+
+  @override
+  String get profileMomentsSeeAll => 'See all';
+
+  @override
+  String get profileMomentsEmptyCta =>
+      'Rate a stop on My Day and it shows up here.';
+
+  @override
+  String get momentsListHeroLine =>
+      'How places felt for you — private unless you choose a partner perk.';
+
+  @override
+  String get momentsListEmptyTitle => 'No visits yet';
+
+  @override
+  String get momentsListEmptySubtitle =>
+      'When you finish a stop on My Day and tap Review, your note appears here. It stays private unless you opt into a partner perk later.';
+
+  @override
+  String get momentsListError => 'Could not load your visits';
+
+  @override
+  String get momentsDeleteConfirmTitle => 'Remove this visit?';
+
+  @override
+  String momentsDeleteConfirmBody(Object place) {
+    return 'This deletes your rating for $place. You can add a new one after your next visit.';
+  }
+
+  @override
+  String get momentsRemovedToast => 'Visit removed';
+
+  @override
+  String get momentsRemoveCta => 'Remove';
+
+  @override
+  String get momentsTapToEdit => 'Tap to update';
+
+  @override
+  String momentsStarsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stars',
+      one: '$count star',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get getReadyChecklistItemReady => 'Ready to go!';
@@ -10425,6 +10759,57 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get adventurePlanDemoTemperatureLabel => '32°';
+
+  @override
+  String get adventurePlanDemoCityLabel => 'Washington DC';
+
+  @override
+  String get trendingDetailNoRelatedPlaces => 'No related places found';
+
+  @override
+  String get trendingDetailRelatedPlacesError =>
+      'Couldn\'t load related places';
+
+  @override
+  String get trendingDetailSimilarPlacesSection => 'Similar places';
+
+  @override
+  String trendingDetailLongDining(String title) {
+    return 'Experience the culinary delights at $title! Join locals and visitors as they savor amazing flavors and create memorable dining moments. Perfect for food lovers exploring the area. 🍽️✨';
+  }
+
+  @override
+  String trendingDetailLongCulture(String title) {
+    return 'Immerse yourself in the rich cultural heritage at $title. Discover art, history, and creativity that defines the local landscape. A must-visit for anyone seeking inspiration and knowledge. 🎨🏛️';
+  }
+
+  @override
+  String trendingDetailLongOutdoor(String title) {
+    return 'Connect with nature and enjoy the fresh air at $title. Whether you\'re looking for a peaceful walk or an active adventure, this outdoor destination offers the perfect escape. 🌳🚶‍♀️';
+  }
+
+  @override
+  String trendingDetailLongSightseeing(String title) {
+    return 'Capture breathtaking views and iconic moments at $title. This scenic spot offers some of the best photography opportunities and unforgettable vistas nearby. Don\'t forget your camera! 📸🌅';
+  }
+
+  @override
+  String trendingDetailLongShopping(String title) {
+    return 'Discover unique finds and local treasures at $title. From boutique stores to local markets, this shopping destination offers something special for every taste and budget. 🛍️💎';
+  }
+
+  @override
+  String trendingDetailLongFitness(String title) {
+    return 'Stay active and energized at $title. Whether you\'re maintaining your fitness routine or trying something new, this location provides excellent facilities for health and wellness. 💪🏃‍♀️';
+  }
+
+  @override
+  String trendingDetailLongDefault(String title) {
+    return 'Join the trending excitement at $title! This popular destination is capturing the attention of locals and visitors alike. Discover what makes this place special and create your own memorable experience. ⭐🎉';
+  }
+
+  @override
   String get receiptDownloadPdf => 'Download PDF';
 
   @override
@@ -10477,6 +10862,89 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get weatherMoodyTipTimeTonight => 'Tonight';
+
+  @override
+  String get weatherMoodyTipRainMorningBody =>
+      'Rain this morning — grab your umbrella before heading out.';
+
+  @override
+  String get weatherMoodyTipRainAfternoonBody =>
+      'It\'s raining outside. A café or museum visit hits different on a day like this.';
+
+  @override
+  String get weatherMoodyTipRainEveningBody =>
+      'Rain tonight — the perfect excuse to find a cosy spot inside.';
+
+  @override
+  String get weatherMoodyTipRainNightBody =>
+      'It\'s raining and dark out. Stay cosy — outdoor plans can wait till tomorrow.';
+
+  @override
+  String get weatherMoodyTipSunnyHighUvMorningBody =>
+      'Great start! Apply sunscreen — UV builds fast once the sun is up.';
+
+  @override
+  String get weatherMoodyTipSunnyHighUvAfternoonBody =>
+      'UV is high right now. Find shade for a break and keep your water bottle close.';
+
+  @override
+  String get weatherMoodyTipSunnyHighUvEveningBody =>
+      'The sun is lower now — a perfect time for a walk or terrace visit.';
+
+  @override
+  String get weatherMoodyTipSunnyHighUvNightBody =>
+      'Clear skies tonight — a great evening for a stroll under the stars.';
+
+  @override
+  String get weatherMoodyTipSunnyMildMorningBody =>
+      'Mild and dry — a great morning for a walk or breakfast outside.';
+
+  @override
+  String get weatherMoodyTipSunnyMildAfternoonBody =>
+      'Dry and comfortable out there. Terraces and parks are calling.';
+
+  @override
+  String get weatherMoodyTipSunnyMildEveningBody =>
+      'A lovely evening for a walk, a bite outside, or just some fresh air.';
+
+  @override
+  String get weatherMoodyTipSunnyMildNightBody =>
+      'Nice and calm out there. A quiet evening walk might be just what you need.';
+
+  @override
+  String get weatherMoodyTipCloudyMorningBody =>
+      'Grey skies this morning — bring an extra layer and maybe a warm coffee.';
+
+  @override
+  String get weatherMoodyTipCloudyAfternoonBody =>
+      'Cloudy and a bit cool. Good day for indoor spots or a museum.';
+
+  @override
+  String get weatherMoodyTipCloudyEveningBody =>
+      'The clouds are in for the evening. A cosy dinner inside sounds perfect.';
+
+  @override
+  String get weatherMoodyTipCloudyNightBody =>
+      'Overcast and still. Wrap up if you\'re heading out — it feels cooler than it looks.';
+
+  @override
+  String get weatherMoodyTipDefaultMorningBody =>
+      'Mixed conditions today — layer up so you\'re ready for anything.';
+
+  @override
+  String get weatherMoodyTipDefaultAfternoonBody =>
+      'Conditions may shift this afternoon. Keep an eye on the forecast.';
+
+  @override
+  String get weatherMoodyTipDefaultEveningBody =>
+      'The evening is here — check the latest forecast before heading out.';
+
+  @override
+  String get weatherMoodyTipDefaultNightBody =>
+      'Quiet outside for now. Check tomorrow\'s forecast in the morning.';
+
+  @override
   String get weatherNoDataAvailable => 'No weather data available';
 
   @override
@@ -10487,6 +10955,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationPickerSelectTitle => 'Select Location';
+
+  @override
+  String get locationDropdownSearchResults => 'Search results';
+
+  @override
+  String get locationDropdownPopularCities => 'Popular cities';
+
+  @override
+  String get locationDropdownNoCitiesFound => 'No cities found';
+
+  @override
+  String get locationDropdownSearchCitiesTitle => 'Search cities';
+
+  @override
+  String get locationDropdownUseCurrentLocation => 'Use current location';
+
+  @override
+  String get locationDropdownDetectExactLocation =>
+      'Detect your exact location';
+
+  @override
+  String locationDropdownFindCitiesSubtitle(String country) {
+    return 'Find cities in $country';
+  }
+
+  @override
+  String get locationDropdownErrorLocationLabel => 'Your city';
 
   @override
   String weatherLoadError(String error) {

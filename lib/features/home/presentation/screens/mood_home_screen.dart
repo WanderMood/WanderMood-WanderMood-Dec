@@ -72,12 +72,12 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
   DateTime _selectedPlanningDate = DateTime.now();
   bool _forceShowMoodSelector = false;
   bool _hasResolvedRouteDate = false;
+  bool _personalizedHeroSynced = false;
 
   @override
   void initState() {
     super.initState();
     _updateGreeting();
-    // Removed _updatePersonalizedGreeting() - no auto API calls on init
   }
 
   @override
@@ -87,6 +87,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
       _hasResolvedRouteDate = true;
       _targetDateFromRoute = _resolveTargetDateFromRoute();
       _selectedPlanningDate = _targetDateFromRoute ?? DateTime.now();
+    }
+    if (!_personalizedHeroSynced) {
+      _personalizedHeroSynced = true;
+      _updatePersonalizedGreeting();
     }
   }
 
@@ -725,7 +729,10 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
                                             ),
                                           ),
                                           child: Text(
-                                            'I know Rotterdam like the back of my hand! Tell me your mood, and I\'ll craft the perfect day just for you. Whether you\'re feeling adventurous, romantic, or need some chill vibes - I\'ve got you covered! 🎯',
+                                            AppLocalizations.of(context)!
+                                                .moodHomeEmptyChatPitch(
+                                              _heroCityLabelForChatPitch(),
+                                            ),
                                             style: GoogleFonts.poppins(
                                               fontSize: 16,
                                               color: const Color(0xFF2D3748),
@@ -1350,57 +1357,39 @@ class _MoodHomeScreenState extends ConsumerState<MoodHomeScreen> {
 
   // Add personalized greeting method
   void _updatePersonalizedGreeting() {
+    final l10n = AppLocalizations.of(context)!;
     final hour = MoodyClock.now().hour;
     final isWeekend = MoodyClock.now().weekday >= 6;
-    final isDutch = Localizations.localeOf(context).languageCode == 'nl';
 
     setState(() {
-      // Contextual greetings based on time and day
       if (hour >= 5 && hour < 10) {
-        _personalizedGreeting = isDutch
-            ? "Goedemorgen! ☀️"
-            : "Rise and shine! ☀️";
+        _personalizedGreeting = l10n.moodHomeHeroGreetingEarlyMorningTitle;
         _contextualSubtext = isWeekend
-            ? (isDutch
-                ? "Perfecte weekendochtend voor avontuur"
-                : "Perfect weekend morning for adventures")
-            : (isDutch
-                ? "Klaar om er een mooie dag van te maken?"
-                : "Ready to make today amazing?");
+            ? l10n.moodHomeHeroGreetingEarlyMorningSubWeekend
+            : l10n.moodHomeHeroGreetingEarlyMorningSubWeekday;
       } else if (hour >= 10 && hour < 14) {
-        _personalizedGreeting = isDutch
-            ? "Hoi! 👋"
-            : "Hey there! 👋";
-        _contextualSubtext = isDutch
-            ? "Ik dacht al na over jouw perfecte dag"
-            : "I've been thinking about your perfect day";
+        _personalizedGreeting = l10n.moodHomeHeroGreetingLateMorningTitle;
+        _contextualSubtext = l10n.moodHomeHeroGreetingLateMorningSub;
       } else if (hour >= 14 && hour < 18) {
-        _personalizedGreeting = isDutch
-            ? "Middag vibes! ✨"
-            : "Afternoon vibes! ✨";
-        _contextualSubtext = isDutch
-            ? "Wat zit er vandaag in je hoofd?"
-            : "What's on your mind for today?";
+        _personalizedGreeting = l10n.moodHomeHeroGreetingAfternoonTitle;
+        _contextualSubtext = l10n.moodHomeHeroGreetingAfternoonSub;
       } else if (hour >= 18 && hour < 22) {
-        _personalizedGreeting = isDutch
-            ? "Avondontdekker! 🌆"
-            : "Evening explorer! 🌆";
+        _personalizedGreeting = l10n.moodHomeHeroGreetingEarlyEveningTitle;
         _contextualSubtext = isWeekend
-            ? (isDutch
-                ? "Weekendavonden zijn perfect om te ontdekken"
-                : "Weekend nights are the best for discoveries")
-            : (isDutch
-                ? "Hoe was je dag voor je?"
-                : "How did your day treat you?");
+            ? l10n.moodHomeHeroGreetingEarlyEveningSubWeekend
+            : l10n.moodHomeHeroGreetingEarlyEveningSubWeekday;
       } else {
-        _personalizedGreeting = isDutch
-            ? "Nachtuil! 🌙"
-            : "Night owl! 🌙";
-        _contextualSubtext = isDutch
-            ? "Nog zin in een laat avontuur?"
-            : "Late night adventures calling?";
+        _personalizedGreeting = l10n.moodHomeHeroGreetingNightTitle;
+        _contextualSubtext = l10n.moodHomeHeroGreetingNightSub;
       }
     });
+  }
+
+  String _heroCityLabelForChatPitch() {
+    final asyncCity = ref.read(locationNotifierProvider);
+    final raw = asyncCity.asData?.value;
+    if (raw != null && raw.trim().isNotEmpty) return raw.trim();
+    return 'Rotterdam';
   }
 
   @override

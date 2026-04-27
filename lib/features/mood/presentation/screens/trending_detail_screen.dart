@@ -6,6 +6,7 @@ import '../../models/trending_activity.dart';
 import '../../../places/models/place.dart';
 import '../../../places/providers/moody_explore_provider.dart';
 import '../../../places/presentation/widgets/place_card.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 class TrendingDetailScreen extends ConsumerStatefulWidget {
   final TrendingActivity trending;
@@ -312,7 +313,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
           ),
           const SizedBox(height: 16),
           Text(
-            _getDetailedDescription(),
+            _getDetailedDescription(AppLocalizations.of(context)!),
             style: GoogleFonts.poppins(
               fontSize: 16,
               color: const Color(0xFF4A5568),
@@ -333,7 +334,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
             Text("📍", style: const TextStyle(fontSize: 24)),
             const SizedBox(width: 12),
             Text(
-              "Similar Places",
+              AppLocalizations.of(context)!.trendingDetailSimilarPlacesSection,
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -407,6 +408,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
     }).take(5).toList();
 
     if (filteredPlaces.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return Container(
         padding: const EdgeInsets.all(40),
         child: Column(
@@ -414,7 +416,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
             Text("🔍", style: const TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(
-              "No related places found",
+              l10n.trendingDetailNoRelatedPlaces,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: const Color(0xFF4A5568),
@@ -453,6 +455,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
   }
 
   Widget _buildErrorState() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(40),
       child: Column(
@@ -460,7 +463,7 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
           Text("😅", style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 16),
           Text(
-            "Couldn't load related places",
+            l10n.trendingDetailRelatedPlacesError,
             style: GoogleFonts.poppins(
               fontSize: 16,
               color: const Color(0xFF4A5568),
@@ -484,31 +487,25 @@ class _TrendingDetailScreenState extends ConsumerState<TrendingDetailScreen>
     }
   }
 
-  String _getDetailedDescription() {
+  String _getDetailedDescription(AppLocalizations l10n) {
     final category = widget.trending.category;
     final title = widget.trending.title;
-    
+
     switch (category) {
       case 'dining':
-        return "Experience the culinary delights at $title! Join locals and visitors as they savor amazing flavors and create memorable dining moments. Perfect for food lovers looking to explore Rotterdam's vibrant food scene. 🍽️✨";
-      
+        return l10n.trendingDetailLongDining(title);
       case 'culture':
-        return "Immerse yourself in the rich cultural heritage at $title. Discover art, history, and creativity that defines Rotterdam's cultural landscape. A must-visit for anyone seeking inspiration and knowledge. 🎨🏛️";
-      
+        return l10n.trendingDetailLongCulture(title);
       case 'outdoor':
-        return "Connect with nature and enjoy the fresh air at $title. Whether you're looking for a peaceful walk or an active adventure, this outdoor destination offers the perfect escape from city life. 🌳🚶‍♀️";
-      
+        return l10n.trendingDetailLongOutdoor(title);
       case 'sightseeing':
-        return "Capture breathtaking views and iconic moments at $title. This scenic spot offers some of the best photography opportunities and unforgettable vistas in Rotterdam. Don't forget your camera! 📸🌅";
-      
+        return l10n.trendingDetailLongSightseeing(title);
       case 'shopping':
-        return "Discover unique finds and local treasures at $title. From boutique stores to local markets, this shopping destination offers something special for every taste and budget. 🛍️💎";
-      
+        return l10n.trendingDetailLongShopping(title);
       case 'fitness':
-        return "Stay active and energized at $title. Whether you're maintaining your fitness routine or trying something new, this location provides excellent facilities for health and wellness. 💪🏃‍♀️";
-      
+        return l10n.trendingDetailLongFitness(title);
       default:
-        return "Join the trending excitement at $title! This popular destination is capturing the attention of locals and visitors alike. Discover what makes this place so special and create your own memorable experience. ⭐🎉";
+        return l10n.trendingDetailLongDefault(title);
     }
   }
 } 

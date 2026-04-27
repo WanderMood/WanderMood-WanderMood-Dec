@@ -11,8 +11,11 @@ class ActivityRating {
   final DateTime completedAt;
   final String mood; // How they felt during/after
 
-  /// Google Place ID for taste profile (not persisted to `activity_ratings`).
+  /// Google Place ID (Explore / My Day); persisted when the column exists.
   final String? googlePlaceId;
+
+  /// Snapshot of the activity hero image at review time (Place or HTTPS URL).
+  final String? heroImageUrl;
 
   ActivityRating({
     required this.id,
@@ -27,6 +30,7 @@ class ActivityRating {
     required this.completedAt,
     required this.mood,
     this.googlePlaceId,
+    this.heroImageUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -42,6 +46,10 @@ class ActivityRating {
       'notes': notes,
       'completed_at': completedAt.toIso8601String(),
       'mood': mood,
+      if (googlePlaceId != null && googlePlaceId!.trim().isNotEmpty)
+        'google_place_id': googlePlaceId!.trim(),
+      if (heroImageUrl != null && heroImageUrl!.trim().isNotEmpty)
+        'hero_image_url': heroImageUrl!.trim(),
     };
   }
 
@@ -66,6 +74,7 @@ class ActivityRating {
           : DateTime.now(),
       mood: json['mood'] as String? ?? 'unknown',
       googlePlaceId: json['google_place_id'] as String?,
+      heroImageUrl: json['hero_image_url'] as String?,
     );
   }
 
