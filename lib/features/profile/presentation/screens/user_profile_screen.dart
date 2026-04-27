@@ -521,6 +521,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     label: localizedVibeLabelForStored(l10n, vibe),
                     fillColor: _wmCream,
                     textColor: _wmForest,
+                    compact: true,
                   ),
                 ),
               ],
@@ -582,9 +583,16 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String label,
     required Color fillColor,
     required Color textColor,
+    /// Vibe chips only — matches compact “Jouw voorkeuren” pill scale on profile.
+    bool compact = false,
   }) {
+    final hPad = compact ? 10.0 : 12.0;
+    final vPad = compact ? 6.0 : 9.0;
+    final iconSize = compact ? 12.0 : 15.0;
+    final gap = compact ? 4.0 : 6.0;
+    final fontSize = compact ? 12.0 : 13.0;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
         color: fillColor,
         borderRadius: BorderRadius.circular(999),
@@ -593,12 +601,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: textColor),
-          const SizedBox(width: 6),
+          Icon(icon, size: iconSize, color: textColor),
+          SizedBox(width: gap),
           Text(
             label,
             style: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: fontSize,
               fontWeight: FontWeight.w600,
               color: textColor,
             ),

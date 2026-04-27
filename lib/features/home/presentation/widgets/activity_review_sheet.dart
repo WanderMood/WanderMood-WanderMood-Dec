@@ -13,6 +13,8 @@ import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/home/presentation/utils/activity_image_fallback.dart';
+import 'package:wandermood/features/profile/presentation/providers/visit_rating_photo_provider.dart';
+import 'package:wandermood/features/profile/presentation/utils/visit_place_photo_policy.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 
 /// Dark sheet tokens — aligned with My Day / notification centre.
@@ -60,6 +62,7 @@ Future<void> showActivityReviewSheet(
   BuildContext context,
   EnhancedActivityData activity, {
   ActivityRating? existingRating,
+  bool readOnly = false,
 }) async {
   await showModalBottomSheet<void>(
     context: context,
@@ -74,6 +77,7 @@ Future<void> showActivityReviewSheet(
         child: _ActivityReviewSheet(
           activity: activity,
           existingRating: existingRating,
+          readOnly: readOnly,
         ),
       );
     },
@@ -81,6 +85,8 @@ Future<void> showActivityReviewSheet(
 }
 
 /// Opens the same sheet pre-filled from a saved [ActivityRating] (Profile → moments).
+///
+/// Read-only: ratings are fixed after My Day save (partner / B2B analytics).
 Future<void> showActivityReviewSheetForRating(
   BuildContext context,
   ActivityRating rating,
@@ -89,6 +95,7 @@ Future<void> showActivityReviewSheetForRating(
     context,
     enhancedActivityDataFromRating(rating),
     existingRating: rating,
+    readOnly: true,
   );
 }
 
@@ -96,10 +103,12 @@ class _ActivityReviewSheet extends ConsumerStatefulWidget {
   const _ActivityReviewSheet({
     required this.activity,
     this.existingRating,
+    this.readOnly = false,
   });
 
   final EnhancedActivityData activity;
   final ActivityRating? existingRating;
+  final bool readOnly;
 
   @override
   ConsumerState<_ActivityReviewSheet> createState() =>
@@ -209,11 +218,21 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
     String title,
     String timeStr,
   ) {
-    final url = activityHeroDirectUrlFromRaw(widget.activity.rawData);
+    String? url = activityHeroDirectUrlFromRaw(widget.activity.rawData);
+    if (url != null && isStockOrDecorativeImageUrl(url)) url = null;
+
+    if ((url == null || url.isEmpty) && widget.existingRating != null) {
+      final snap = ref.watch(
+        visitRatingPhotoUrlProvider(VisitRatingPhotoKey.from(widget.existingRating!)),
+      );
+      url = snap.maybeWhen(data: (u) => u, orElse: () => null);
+      if (url != null && isStockOrDecorativeImageUrl(url)) url = null;
+    }
+
     const heroH = 152.0;
 
-    Widget imageLayer;
-    if (url != null) {
+    final Widget imageLayer;
+    if (url != null && url.isNotEmpty) {
       if (_isGooglePlacePhotoUrl(url)) {
         imageLayer = WmPlacePhotoNetworkImage(
           url,
@@ -331,6 +350,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final ro = widget.readOnly;
     final title =
         widget.activity.rawData['title'] as String? ?? l10n.moodyHubActivitySingular;
     final timeStr = _formatTimeRange(context);
@@ -365,7 +385,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    l10n.moodyReviewTitle,
+                    ro ? l10n.moodyReviewReadOnlyTitle : l10n.moodyReviewTitle,
                     style: GoogleFonts.poppins(
                       fontSize: 19,
                       fontWeight: FontWeight.w700,
@@ -401,7 +421,9 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            l10n.moodyReviewHeroSubtitle,
+                            ro
+                                ? l10n.moodyReviewReadOnlyHeroSubtitle
+                                : l10n.moodyReviewHeroSubtitle,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               height: 1.45,
@@ -428,16 +450,24 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                     children: List.generate(5, (index) {
                       final star = index + 1;
                       final isActive = star <= _rating;
+                      final icon = Icon(
+                        Icons.star_rounded,
+                        size: 38,
+                        color: isActive
+                            ? const Color(0xFFFACC15)
+                            : _kCream.withValues(alpha: 0.14),
+                      );
+                      if (ro) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: icon,
+                        );
+                      }
                       return IconButton(
                         onPressed: () => setState(() => _rating = star),
                         iconSize: 38,
                         splashRadius: 26,
-                        icon: Icon(
-                          Icons.star_rounded,
-                          color: isActive
-                              ? const Color(0xFFFACC15)
-                              : _kCream.withValues(alpha: 0.14),
-                        ),
+                        icon: icon,
                       );
                     }),
                   ),
@@ -481,11 +511,13 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                       final label = _vibeLabel(l10n, emoji);
                       final bg = _vibeTileColor(emoji);
                       return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedEmoji = selected ? null : emoji;
-                          });
-                        },
+                        onTap: ro
+                            ? null
+                            : () {
+                                setState(() {
+                                  _selectedEmoji = selected ? null : emoji;
+                                });
+                              },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           padding: const EdgeInsets.symmetric(
@@ -553,6 +585,7 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _noteController,
+                    readOnly: ro,
                     maxLines: 4,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
@@ -600,51 +633,56 @@ class _ActivityReviewSheetState extends ConsumerState<_ActivityReviewSheet> {
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              4,
-              16,
-              16 + MediaQuery.of(context).padding.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _rating == 0 ? null : _saveReview,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22),
+          if (ro)
+            SizedBox(height: 12 + MediaQuery.of(context).padding.bottom)
+          else
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                4,
+                16,
+                16 + MediaQuery.of(context).padding.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _rating == 0 ? null : _saveReview,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        backgroundColor: _kForest,
+                        foregroundColor: _kCream,
+                        disabledBackgroundColor: _kSurface,
+                        disabledForegroundColor: _kStone,
                       ),
-                      backgroundColor: _kForest,
-                      foregroundColor: _kCream,
-                      disabledBackgroundColor: _kSurface,
-                      disabledForegroundColor: _kStone,
-                    ),
-                    child: Text(
-                      l10n.moodyReviewSave,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                      child: Text(
+                        l10n.moodyReviewSave,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _rating == 0 ? l10n.moodyReviewNeedStars : l10n.moodyReviewHelpsMoody,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: _kCream.withValues(alpha: 0.4),
+                  const SizedBox(height: 8),
+                  Text(
+                    _rating == 0
+                        ? l10n.moodyReviewNeedStars
+                        : l10n.moodyReviewHelpsMoody,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: _kCream.withValues(alpha: 0.4),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

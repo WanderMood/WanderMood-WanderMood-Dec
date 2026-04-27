@@ -360,16 +360,16 @@ class FavoriteVibesCard extends StatelessWidget {
             )
           else
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 ...resolvedVibes.map((vibeData) {
                   final accent = vibeData.gradient.first;
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(999),
                       border: Border.all(
                         color: accent.withValues(alpha: 0.28),
                         width: 1,
@@ -379,8 +379,8 @@ class FavoriteVibesCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          width: 28,
-                          height: 28,
+                          width: 22,
+                          height: 22,
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.82),
                             shape: BoxShape.circle,
@@ -388,15 +388,15 @@ class FavoriteVibesCard extends StatelessWidget {
                           child: Center(
                             child: Text(
                               vibeData.emoji,
-                              style: const TextStyle(fontSize: 14),
+                              style: const TextStyle(fontSize: 12),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Text(
                           localizedVibeName(l10n, vibeData.id),
                           style: GoogleFonts.poppins(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: wmCharcoal,
                           ),
@@ -407,18 +407,18 @@ class FavoriteVibesCard extends StatelessWidget {
                 }),
                 InkWell(
                   onTap: onEditTap,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(999),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: wmForestTint,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(999),
                       border: Border.all(color: wmParchment, width: 1),
                     ),
                     child: Text(
                       l10n.profileFavoriteVibesAdd,
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: wmForest,
                       ),
@@ -726,9 +726,9 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.05,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.22,
       ),
       itemCount: allVibes.length,
       itemBuilder: (context, index) {
@@ -743,12 +743,12 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
           onTap: isMaxed ? null : () => _toggleVibe(vibe.name),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
             decoration: BoxDecoration(
               color: isSelected
                   ? _fvWmForest
                   : (isMaxed ? _fvWmCream : _fvWmWhite),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected ? _fvWmForest : _fvWmParchment,
                 width: isSelected ? 2 : 1,
@@ -774,23 +774,23 @@ class _EditFavoriteVibesScreenState extends State<EditFavoriteVibesScreen> {
               children: [
                 Text(
                   vibe.emoji,
-                  style: const TextStyle(fontSize: 30),
+                  style: const TextStyle(fontSize: 22),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 Text(
                   localizedVibeName(l10nGrid, vibe.id),
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     color: isSelected ? Colors.white : _fvWmCharcoal,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Expanded(
                   child: Text(
                     localizedVibeDescription(l10nGrid, vibe.id),
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: isSelected
                           ? Colors.white.withValues(alpha: 0.88)
                           : _fvWmStone,

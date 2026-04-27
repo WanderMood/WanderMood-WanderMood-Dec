@@ -191,7 +191,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   Future<void> _loadStreak() async {
     final checkInService = CheckInService(Supabase.instance.client);
-    final streak = await checkInService.getCheckInStreak();
+    final streak = await checkInService.getUnifiedEngagementStreak();
     if (mounted) {
       setState(() {
         _streak = streak;

@@ -33,6 +33,8 @@ import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_pro
 import 'package:wandermood/core/services/notification_service.dart';
 import 'package:wandermood/core/notifications/moody_chat_reminder_in_app_mirror.dart';
 import 'package:wandermood/core/notifications/notification_copy.dart';
+import 'package:wandermood/core/providers/communication_style_provider.dart';
+import 'package:wandermood/features/home/presentation/utils/moody_place_thread_opener_l10n.dart';
 
 // WanderMood v2 — Moody chat (Screen 9)
 const Color _wmSkyTint = Color(0xFFF1F7FB);
@@ -461,125 +463,25 @@ void _seedDailyStarterIfNeeded({
   unawaited(_DailyMoodyChatCache.persistToPrefs(prefs, now));
 }
 
-/// Rotates opener copy + tone so place threads do not read like a generic assistant.
-String _moodyPlaceThreadOpenerLine({
-  required bool dutch,
-  required String source,
-  required String title,
-  required String placeKey,
-  required int hour,
-}) {
-  final t = title.trim();
-  final label = t.isEmpty ? (dutch ? 'deze plek' : 'this spot') : t;
-  final salt = '$placeKey|$source|$hour'.hashCode;
-  final v = salt.abs() % 6;
-
-  if (source == 'explore_place_card') {
-    if (dutch) {
-      switch (v) {
-        case 0:
-          return 'Oeh — $label. Ik zit erbij. Schiet: drukte, licht, beste moment… wat wil je weten?';
-        case 1:
-          return '$label… nice. Waar twijfel je — tijd, sfeer, of een plan B dichtbij?';
-        case 2:
-          return 'Oké, ik focus op $label. Geen folder-tekst — gewoon je vraag.';
-        case 3:
-          return 'Als je $label wilt uitspitten: wat heb je nú nodig — rust, energie, of iets anders in de buurt?';
-        case 4:
-          return '$label staat vast. Ik lees mee — wat wil je weten voordat je \'m in je dag smijt?';
-        default:
-          return 'Zeg het hardop over $label — kindproof? date? "ben ik hier dom aan begonnen?" Mag allemaal.';
-      }
-    }
-    switch (v) {
-      case 0:
-        return 'Ooh—$label. I\'m here with you. Crowd, light, best time… what do you want to know?';
-      case 1:
-        return '$label… nice. Where are you stuck—timing, vibe, or a backup nearby?';
-      case 2:
-        return 'Ok I\'m zoomed in on $label. No brochure voice—just ask.';
-      case 3:
-        return 'If you\'re stress-testing $label: what do you need right now—quiet, energy, plan B?';
-      case 4:
-        return '$label\'s pinned. What do you want to know before you drop it in your day?';
-      default:
-        return 'Say the awkward part about $label—kid chaos? date night? "is this dumb right now?" All fine.';
-    }
-  }
-
-  // my_day_free_time (and any future place-thread sources)
-  if (dutch) {
-    switch (v) {
-      case 0:
-        return t.isEmpty
-            ? 'Dit stukje vrije tijd — waar wil je scherp op: alternatief, timing, of gewoon "klopt dit"?'
-            : 'Je blok rond $label — zeg wat je wringt: alternatief, timing, sfeer…';
-      case 1:
-        return t.isEmpty
-            ? 'Ik kijk mee met je lege slot. Wat zou je vandaag wél willen voelen?'
-            : '$label in je schema — wil je het schaven of ruilen?';
-      case 2:
-        return t.isEmpty
-            ? 'Vrij moment. Geen stress-vraag is te klein.'
-            : 'Over $label: eerlijk — twijfel je of dit slim past vandaag?';
-      case 3:
-        return t.isEmpty
-            ? 'Laten we dit slot normaal houden: wat is je echte vraag?'
-            : '$label… vertel: backup, beter moment, of gewoon zekerheid?';
-      case 4:
-        return t.isEmpty
-            ? 'Ik ben er. Wat wil je weten over dit stuk van je dag?'
-            : 'Ik zit op $label. Waar krijg je hoofdpijn van in je planning?';
-      default:
-        return t.isEmpty
-            ? 'Schiet — ik fix context, jij fix je vibe.'
-            : '$label: zeg wat je nodig hebt. Ik werk mee.';
-    }
-  }
-  switch (v) {
-    case 0:
-      return t.isEmpty
-          ? 'This free slice—what do you want sharp on: swap, timing, or "does this even fit"?'
-          : 'That $label block—say what\'s bugging you: swap, timing, vibe…';
-    case 1:
-      return t.isEmpty
-          ? 'I\'m watching this empty slot with you. What would you *want* to feel today?'
-          : '$label on your day—tweak it or trade it?';
-    case 2:
-      return t.isEmpty
-          ? 'Free time. No question is too small.'
-          : 'About $label—real talk: are you unsure it fits today?';
-    case 3:
-      return t.isEmpty
-          ? 'Let\'s keep this slot human: what\'s the actual question?'
-          : '$label… backup, better timing, or just certainty?';
-    case 4:
-      return t.isEmpty
-          ? 'I\'m here. What do you want to know about this part of your day?'
-          : 'I\'m on $label. What part of the plan is giving you friction?';
-    default:
-      return t.isEmpty
-          ? "Go—I'll add context, you steer the vibe."
-          : '$label: say what you need. I\'ll match it.';
-  }
-}
-
 void _seedModalSharedPlaceStarterIfNeeded({
   required BuildContext context,
   required SharedPreferences prefs,
   required DateTime now,
   required List<_ChatMsg> chatMessages,
   required Map<String, dynamic> sharedPlace,
+  required CommunicationStyle communicationStyle,
 }) {
   if (chatMessages.isNotEmpty) return;
   if (!context.mounted) return;
-  final dutch = Localizations.localeOf(context).languageCode == 'nl';
+  final l10n = AppLocalizations.of(context);
+  if (l10n == null) return;
   final title = (sharedPlace['title'] as String?)?.trim() ?? '';
   final source = sharedPlace['source'] as String? ?? '';
   final pid = (sharedPlace['placeId'] as String?)?.trim() ?? '';
   final placeKey = pid.isNotEmpty ? pid : title;
-  final msg = _moodyPlaceThreadOpenerLine(
-    dutch: dutch,
+  final msg = moodyPlaceThreadOpenerL10n(
+    l10n: l10n,
+    communicationStyle: communicationStyle,
     source: source,
     title: title,
     placeKey: placeKey,
@@ -832,6 +734,7 @@ Future<void> showMoodyChatSheetWithSharedPlace(
     now: now,
     chatMessages: chatMessages,
     sharedPlace: sharedPlace,
+    communicationStyle: ref.read(communicationStyleProvider).style,
   );
   unawaited(
     _persistPlaceThreadToPrefs(
@@ -2410,6 +2313,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                       focusNode: _composerFocusNode,
                                       isLoading: _isAILoading,
                                       hasSelectedMood: widget.moods.isNotEmpty,
+                                      placeThreadContext:
+                                          widget.sharedPlaceContext != null,
                                       onSend: _sendMessage,
                                       onComposerTap: _collapseHubForChat,
                                       showMic: !kIsWeb,
@@ -2834,6 +2739,8 @@ class _MoodyChatInput extends StatelessWidget {
   final FocusNode focusNode;
   final bool isLoading;
   final bool hasSelectedMood;
+  /// Ask Moody from a place card / place thread — different hint + mic stays visible while typing.
+  final bool placeThreadContext;
   final ValueChanged<String> onSend;
   final VoidCallback onComposerTap;
   /// Voice input (native only; hidden on web where STT is unavailable).
@@ -2850,6 +2757,7 @@ class _MoodyChatInput extends StatelessWidget {
     required this.focusNode,
     required this.isLoading,
     required this.hasSelectedMood,
+    this.placeThreadContext = false,
     required this.onSend,
     required this.onComposerTap,
     required this.showMic,
@@ -2863,7 +2771,6 @@ class _MoodyChatInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDutch = Localizations.localeOf(context).languageCode == 'nl';
     final kb = MediaQuery.viewInsetsOf(context).bottom;
     final replySnippet = replyQuotedSnippet?.trim() ?? '';
     final showReply = replySnippet.isNotEmpty;
@@ -2956,9 +2863,18 @@ class _MoodyChatInput extends StatelessWidget {
             animation: controller,
             builder: (context, _) {
               final hasTyped = controller.text.trim().isNotEmpty;
-              final collapseMic = hasTyped && !isListening;
+              final collapseMic =
+                  hasTyped && !isListening && !placeThreadContext;
               final showMicSlot =
                   showMic && onMicTap != null && !collapseMic;
+              final hintText = placeThreadContext
+                  ? (l10n?.chatSheetInputHintAboutPlace ??
+                      'Ask about this place…')
+                  : hasSelectedMood
+                      ? (l10n?.chatSheetInputHintDayChat ??
+                          'Chat with Moody about your day…')
+                      : (l10n?.chatSheetInputHint ??
+                          "What's your mood today?");
 
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2973,12 +2889,7 @@ class _MoodyChatInput extends StatelessWidget {
                           const EdgeInsets.only(bottom: 80, top: 48),
                       onTap: onComposerTap,
                       decoration: InputDecoration(
-                        hintText: hasSelectedMood
-                            ? (isDutch
-                                ? 'Praat met Moody over je dag...'
-                                : 'Talk to Moody about your day...')
-                            : (l10n?.chatSheetInputHint ??
-                                "What's your mood today?"),
+                        hintText: hintText,
                         hintStyle: GoogleFonts.poppins(
                           color: Colors.grey[500],
                           fontSize: 15,
@@ -3034,6 +2945,7 @@ class _MoodyChatInput extends StatelessWidget {
                               const SizedBox(width: 6),
                               _MicButton(
                                 isListening: isListening,
+                                tooltip: l10n?.chatSheetMicTooltip,
                                 onTap: isLoading ? () {} : onMicTap!,
                               ),
                             ],
@@ -3061,15 +2973,23 @@ class _MoodyChatInput extends StatelessWidget {
 /// In-line microphone toggle rendered inside the composer's suffix. Shows a
 /// breathing red halo while Moody is actively listening.
 class _MicButton extends StatelessWidget {
-  const _MicButton({required this.isListening, required this.onTap});
+  const _MicButton({
+    required this.isListening,
+    required this.onTap,
+    this.tooltip,
+  });
 
   final bool isListening;
   final VoidCallback onTap;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final tint = isListening ? const Color(0xFFDC2626) : _wmForest;
-    return Padding(
+    final iconColor =
+        isListening ? tint : const Color(0xFF1E4D38);
+    final idleFill = _wmForest.withValues(alpha: 0.1);
+    Widget btn = Padding(
       padding: const EdgeInsets.only(right: 6),
       child: Material(
         color: Colors.transparent,
@@ -3080,27 +3000,31 @@ class _MicButton extends StatelessWidget {
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            width: 36,
-            height: 36,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isListening
                   ? tint.withValues(alpha: 0.12)
-                  : Colors.transparent,
+                  : idleFill,
               border: Border.all(
-                color: tint.withValues(alpha: isListening ? 0.55 : 0.25),
-                width: 1,
+                color: tint.withValues(alpha: isListening ? 0.55 : 0.42),
+                width: isListening ? 1 : 1.15,
               ),
             ),
             child: Icon(
               isListening ? Icons.stop_rounded : Icons.mic_rounded,
-              color: tint,
-              size: 18,
+              color: iconColor,
+              size: 20,
             ),
           ),
         ),
       ),
-    )
+    );
+    if (tooltip != null && tooltip!.trim().isNotEmpty) {
+      btn = Tooltip(message: tooltip!, child: btn);
+    }
+    return btn
         .animate(target: isListening ? 1 : 0)
         .scaleXY(end: 1.06, duration: 600.ms, curve: Curves.easeInOut)
         .then()

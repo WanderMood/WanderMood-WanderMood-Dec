@@ -1527,6 +1527,13 @@ class AppLocalizationsNl extends AppLocalizations {
       'Log een stemming via Moody of Mijn dag om je reeks op te bouwen.';
 
   @override
+  String get moodHistoryEmptyTimelineHint =>
+      'Elke stemming die je logt wordt een stap op dit pad — je tijdlijn groeit hier.';
+
+  @override
+  String get moodHistoryEmptyPrimaryCta => 'Stemming loggen in Moody';
+
+  @override
   String get moodHistoryLoginRequired => 'Log in om je mood journey te zien.';
 
   @override
@@ -6613,6 +6620,350 @@ class AppLocalizationsNl extends AppLocalizations {
   String get chatSheetInputHint => 'Wat is jouw stemming vandaag?';
 
   @override
+  String get chatSheetInputHintAboutPlace => 'Stel je vraag over deze plek…';
+
+  @override
+  String get chatSheetInputHintDayChat => 'Praat met Moody over je dag…';
+
+  @override
+  String get chatSheetMicTooltip => 'Stel je vraag in (spraak)';
+
+  @override
+  String get moodyPlaceThreadFallbackPlace => 'deze plek';
+
+  @override
+  String moodyPlaceThreadExploreV0Friendly(String place) {
+    return 'Oeh — $place. Ik zit erbij. Schiet: drukte, licht, beste moment… wat wil je weten?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Friendly(String place) {
+    return '$place… nice. Waar twijfel je — tijd, sfeer, of een plan B dichtbij?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Friendly(String place) {
+    return 'Oké, ik focus op $place. Geen folder-tekst — gewoon je vraag.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Friendly(String place) {
+    return 'Als je $place wilt uitspitten: wat heb je nú nodig — rust, energie, of iets anders in de buurt?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Friendly(String place) {
+    return '$place staat vast. Ik lees mee — wat wil je weten voordat je \'m in je dag smijt?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Friendly(String place) {
+    return 'Zeg het hardop over $place — kindproof? date? \"ben ik hier dom aan begonnen?\" Mag allemaal.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV0Professional(String place) {
+    return 'We bespreken $place. Wat wil je weten: drukte, licht of het beste moment?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Professional(String place) {
+    return '$place: waar zit je vast — planning, sfeer of een alternatief dichtbij?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Professional(String place) {
+    return 'Focus op $place. Stel je vraag; ik antwoord informatief, zonder marketingtaal.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Professional(String place) {
+    return 'Voor $place: heb je rust, energie of een plan B nodig?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Professional(String place) {
+    return '$place staat klaar. Welke informatie wil je vóór je het plant?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Professional(String place) {
+    return 'Stel je vraag over $place — geschiktheid, timing of praktische twijfels.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV0Direct(String place) {
+    return '$place — drukte, licht, beste moment. Wat?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Direct(String place) {
+    return '$place. Timing, sfeer, backup?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Direct(String place) {
+    return '$place. Wat is je vraag?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Direct(String place) {
+    return '$place. Rust, energie of plan B?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Direct(String place) {
+    return '$place. Wat moet je weten?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Direct(String place) {
+    return '$place — zeg wat je wilt checken.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV0Energetic(String place) {
+    return 'Oeh — $place! Schiet maar: drukte, licht, beste moment… wat wil je weten? ✨';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Energetic(String place) {
+    return '$place… nice! Waar twijfel je — tijd, vibe, plan B? 🔥';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Energetic(String place) {
+    return 'Locked op $place — geen folder-praat, vuur je vraag af 💬';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Energetic(String place) {
+    return 'Stress-test $place: rust, energie of plan B in de buurt? ⚡';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Energetic(String place) {
+    return '$place staat vast — wat wil je weten vóór je \'m in je dag smijt? 🙌';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Energetic(String place) {
+    return 'Spui je awkward truth over $place — alles mag 😅';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0FriendlyEmpty =>
+      'Dit stukje vrije tijd — waar wil je scherp op: alternatief, timing, of gewoon \"klopt dit\"?';
+
+  @override
+  String moodyPlaceThreadMyDayV0FriendlyPlace(String place) {
+    return 'Je blok rond $place — zeg wat je wringt: alternatief, timing, sfeer…';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1FriendlyEmpty =>
+      'Ik kijk mee met je lege slot. Wat zou je vandaag wél willen voelen?';
+
+  @override
+  String moodyPlaceThreadMyDayV1FriendlyPlace(String place) {
+    return '$place in je schema — wil je het schaven of ruilen?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2FriendlyEmpty =>
+      'Vrij moment. Geen stress-vraag is te klein.';
+
+  @override
+  String moodyPlaceThreadMyDayV2FriendlyPlace(String place) {
+    return 'Over $place: eerlijk — twijfel je of dit slim past vandaag?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3FriendlyEmpty =>
+      'Laten we dit slot normaal houden: wat is je echte vraag?';
+
+  @override
+  String moodyPlaceThreadMyDayV3FriendlyPlace(String place) {
+    return '$place… vertel: backup, beter moment, of gewoon zekerheid?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4FriendlyEmpty =>
+      'Ik ben er. Wat wil je weten over dit stuk van je dag?';
+
+  @override
+  String moodyPlaceThreadMyDayV4FriendlyPlace(String place) {
+    return 'Ik zit op $place. Waar krijg je hoofdpijn van in je planning?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5FriendlyEmpty =>
+      'Schiet — ik fix context, jij fix je vibe.';
+
+  @override
+  String moodyPlaceThreadMyDayV5FriendlyPlace(String place) {
+    return '$place: zeg wat je nodig hebt. Ik werk mee.';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0ProfessionalEmpty =>
+      'Dit vrije blok: alternatief, timing of past het in je planning?';
+
+  @override
+  String moodyPlaceThreadMyDayV0ProfessionalPlace(String place) {
+    return 'Je blok rond $place: wat wil je weten—alternatief, timing of sfeer?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1ProfessionalEmpty =>
+      'Leeg slot: wat wil je vandaag bereiken?';
+
+  @override
+  String moodyPlaceThreadMyDayV1ProfessionalPlace(String place) {
+    return '$place in je schema: bijwerken of ruilen?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2ProfessionalEmpty =>
+      'Vrije tijd. Welke vraag is het meest relevant?';
+
+  @override
+  String moodyPlaceThreadMyDayV2ProfessionalPlace(String place) {
+    return 'Over $place: past dit vandaag in je plan?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3ProfessionalEmpty =>
+      'Dit tijdslot: wat is je kernvraag?';
+
+  @override
+  String moodyPlaceThreadMyDayV3ProfessionalPlace(String place) {
+    return '$place: backup, beter moment of zekerheid?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4ProfessionalEmpty =>
+      'Waar kan ik je mee helpen bij dit deel van je dag?';
+
+  @override
+  String moodyPlaceThreadMyDayV4ProfessionalPlace(String place) {
+    return 'Over $place: waar wringt je planning?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5ProfessionalEmpty =>
+      'Stel je vraag; ik help met context.';
+
+  @override
+  String moodyPlaceThreadMyDayV5ProfessionalPlace(String place) {
+    return '$place: wat heb je nodig?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0DirectEmpty =>
+      'Vrij blok. Alternatief, timing, klopt het?';
+
+  @override
+  String moodyPlaceThreadMyDayV0DirectPlace(String place) {
+    return '$place-blok. Alternatief, timing, sfeer?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1DirectEmpty =>
+      'Leeg slot. Wat wil je voelen?';
+
+  @override
+  String moodyPlaceThreadMyDayV1DirectPlace(String place) {
+    return '$place. Schaven of ruilen?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2DirectEmpty => 'Vrij. Vraag?';
+
+  @override
+  String moodyPlaceThreadMyDayV2DirectPlace(String place) {
+    return '$place. Past vandaag?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3DirectEmpty => 'Slot. Echte vraag?';
+
+  @override
+  String moodyPlaceThreadMyDayV3DirectPlace(String place) {
+    return '$place. Backup, moment, zekerheid?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4DirectEmpty => 'Dit stuk. Wat?';
+
+  @override
+  String moodyPlaceThreadMyDayV4DirectPlace(String place) {
+    return '$place. Frictie?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5DirectEmpty => 'Schiet.';
+
+  @override
+  String moodyPlaceThreadMyDayV5DirectPlace(String place) {
+    return '$place. Wat?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0EnergeticEmpty =>
+      'Vrij stukje — scherp: alternatief, timing of \"klopt dit\"? ⚡';
+
+  @override
+  String moodyPlaceThreadMyDayV0EnergeticPlace(String place) {
+    return 'Blok rond $place — zeg wat wringt: alternatief, timing, vibe ✨';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1EnergeticEmpty =>
+      'Leeg slot — wat wil je vandaag wél voelen? 🔥';
+
+  @override
+  String moodyPlaceThreadMyDayV1EnergeticPlace(String place) {
+    return '$place in je schema — schaven of ruilen? 💬';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2EnergeticEmpty =>
+      'Vrij moment — geen vraag is te klein 🙌';
+
+  @override
+  String moodyPlaceThreadMyDayV2EnergeticPlace(String place) {
+    return 'Over $place — twijfel je of dit slim past vandaag? 😅';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3EnergeticEmpty =>
+      'Houd dit slot menselijk: wat is je echte vraag? ✨';
+
+  @override
+  String moodyPlaceThreadMyDayV3EnergeticPlace(String place) {
+    return '$place — backup, beter moment, zekerheid? ⚡';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4EnergeticEmpty =>
+      'Ik ben er — wat wil je weten over dit stuk van je dag? 💬';
+
+  @override
+  String moodyPlaceThreadMyDayV4EnergeticPlace(String place) {
+    return 'Ik zit op $place — waar knelt je planning? 🔥';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5EnergeticEmpty =>
+      'Schiet — ik fix context, jij je vibe 🙌';
+
+  @override
+  String moodyPlaceThreadMyDayV5EnergeticPlace(String place) {
+    return '$place — zeg wat je nodig hebt, ik werk mee ✨';
+  }
+
+  @override
   String get chatSheetMessageCopy => 'Kopiëren';
 
   @override
@@ -8359,11 +8710,18 @@ class AppLocalizationsNl extends AppLocalizations {
   String get moodyReviewThanksToast => 'Opgeslagen — dank je!';
 
   @override
+  String get moodyReviewReadOnlyTitle => 'Jouw review';
+
+  @override
+  String get moodyReviewReadOnlyHeroSubtitle =>
+      'Zo heb je het opgeslagen — alleen bekijken, zo blijven partnerinzichten eerlijk.';
+
+  @override
   String get profileMomentsTitle => 'Jouw bezoeken';
 
   @override
   String get profileMomentsSubtitle =>
-      'Plekken die je na Mijn Dag beoordeelde — privé, aan te passen';
+      'Plekken die je na Mijn Dag beoordeelde — privé voor jou';
 
   @override
   String get profileMomentsSeeAll => 'Alles bekijken';
@@ -8401,7 +8759,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get momentsRemoveCta => 'Verwijderen';
 
   @override
-  String get momentsTapToEdit => 'Tik om aan te passen';
+  String get momentsTapToEdit => 'Tik om te bekijken';
 
   @override
   String momentsStarsCount(int count) {

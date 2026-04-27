@@ -2792,6 +2792,18 @@ abstract class AppLocalizations {
   /// **'Log a mood from Moody or My Day to build your streak.'**
   String get moodHistoryEmptyBody;
 
+  /// No description provided for @moodHistoryEmptyTimelineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each mood you log becomes a step on this path — your timeline grows here.'**
+  String get moodHistoryEmptyTimelineHint;
+
+  /// No description provided for @moodHistoryEmptyPrimaryCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a mood in Moody'**
+  String get moodHistoryEmptyPrimaryCta;
+
   /// No description provided for @moodHistoryLoginRequired.
   ///
   /// In en, this message translates to:
@@ -11786,6 +11798,462 @@ abstract class AppLocalizations {
   /// **'What\'s your mood today?'**
   String get chatSheetInputHint;
 
+  /// No description provided for @chatSheetInputHintAboutPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about this place…'**
+  String get chatSheetInputHintAboutPlace;
+
+  /// No description provided for @chatSheetInputHintDayChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with Moody about your day…'**
+  String get chatSheetInputHintDayChat;
+
+  /// No description provided for @chatSheetMicTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak your question'**
+  String get chatSheetMicTooltip;
+
+  /// No description provided for @moodyPlaceThreadFallbackPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'this spot'**
+  String get moodyPlaceThreadFallbackPlace;
+
+  /// No description provided for @moodyPlaceThreadExploreV0Friendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Ooh—{place}. I\'m here with you. Crowd, light, best time… what do you want to know?'**
+  String moodyPlaceThreadExploreV0Friendly(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV1Friendly.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}… nice. Where are you stuck—timing, vibe, or a backup nearby?'**
+  String moodyPlaceThreadExploreV1Friendly(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV2Friendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Ok I\'m zoomed in on {place}. No brochure voice—just ask.'**
+  String moodyPlaceThreadExploreV2Friendly(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV3Friendly.
+  ///
+  /// In en, this message translates to:
+  /// **'If you\'re stress-testing {place}: what do you need right now—quiet, energy, plan B?'**
+  String moodyPlaceThreadExploreV3Friendly(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV4Friendly.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}\'s pinned. What do you want to know before you drop it in your day?'**
+  String moodyPlaceThreadExploreV4Friendly(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV5Friendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Say the awkward part about {place}—kid chaos? date night? \"is this dumb right now?\" All fine.'**
+  String moodyPlaceThreadExploreV5Friendly(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV0Professional.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s look at {place}. What do you need: crowds, lighting, or the best time to go?'**
+  String moodyPlaceThreadExploreV0Professional(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV1Professional.
+  ///
+  /// In en, this message translates to:
+  /// **'For {place}, what\'s unclear—schedule, atmosphere, or a nearby alternative?'**
+  String moodyPlaceThreadExploreV1Professional(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV2Professional.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus: {place}. Ask your question—I\'ll answer plainly, without brochure language.'**
+  String moodyPlaceThreadExploreV2Professional(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV3Professional.
+  ///
+  /// In en, this message translates to:
+  /// **'About {place}: do you need calm, energy, or a backup option?'**
+  String moodyPlaceThreadExploreV3Professional(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV4Professional.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} is set. What information do you need before you add it to your day?'**
+  String moodyPlaceThreadExploreV4Professional(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV5Professional.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about {place}—fit, timing, or practical concerns.'**
+  String moodyPlaceThreadExploreV5Professional(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV0Direct.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}—crowds, light, best time. What?'**
+  String moodyPlaceThreadExploreV0Direct(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV1Direct.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Timing, vibe, backup?'**
+  String moodyPlaceThreadExploreV1Direct(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV2Direct.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Your question?'**
+  String moodyPlaceThreadExploreV2Direct(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV3Direct.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Quiet, energy, or plan B?'**
+  String moodyPlaceThreadExploreV3Direct(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV4Direct.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. What do you need to know?'**
+  String moodyPlaceThreadExploreV4Direct(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV5Direct.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}—say what you\'re checking.'**
+  String moodyPlaceThreadExploreV5Direct(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV0Energetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Ooh—{place}! Hit me: crowds, light, best time… what do you want to know? ✨'**
+  String moodyPlaceThreadExploreV0Energetic(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV1Energetic.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}… love it. Where are you stuck—time, vibe, plan B? 🔥'**
+  String moodyPlaceThreadExploreV1Energetic(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV2Energetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked on {place}—no brochure voice, just ask 💬'**
+  String moodyPlaceThreadExploreV2Energetic(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV3Energetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Stress-testing {place}: quiet, energy, or backup nearby? ⚡'**
+  String moodyPlaceThreadExploreV3Energetic(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV4Energetic.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}\'s pinned—what do you want to know before you drop it in your day? 🙌'**
+  String moodyPlaceThreadExploreV4Energetic(String place);
+
+  /// No description provided for @moodyPlaceThreadExploreV5Energetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Say the awkward part about {place}—all good 😅'**
+  String moodyPlaceThreadExploreV5Energetic(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV0FriendlyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This free slice—what do you want sharp on: swap, timing, or \"does this even fit\"?'**
+  String get moodyPlaceThreadMyDayV0FriendlyEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV0FriendlyPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'That {place} block—say what\'s bugging you: swap, timing, vibe…'**
+  String moodyPlaceThreadMyDayV0FriendlyPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV1FriendlyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m watching this empty slot with you. What would you *want* to feel today?'**
+  String get moodyPlaceThreadMyDayV1FriendlyEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV1FriendlyPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} on your day—tweak it or trade it?'**
+  String moodyPlaceThreadMyDayV1FriendlyPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV2FriendlyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time. No question is too small.'**
+  String get moodyPlaceThreadMyDayV2FriendlyEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV2FriendlyPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'About {place}—real talk: are you unsure it fits today?'**
+  String moodyPlaceThreadMyDayV2FriendlyPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV3FriendlyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s keep this slot human: what\'s the actual question?'**
+  String get moodyPlaceThreadMyDayV3FriendlyEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV3FriendlyPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}… backup, better timing, or just certainty?'**
+  String moodyPlaceThreadMyDayV3FriendlyPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV4FriendlyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m here. What do you want to know about this part of your day?'**
+  String get moodyPlaceThreadMyDayV4FriendlyEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV4FriendlyPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m on {place}. What part of the plan is giving you friction?'**
+  String moodyPlaceThreadMyDayV4FriendlyPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV5FriendlyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Go—I\'ll add context, you steer the vibe.'**
+  String get moodyPlaceThreadMyDayV5FriendlyEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV5FriendlyPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: say what you need. I\'ll match it.'**
+  String moodyPlaceThreadMyDayV5FriendlyPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV0ProfessionalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This open block: swap, timing, or does it fit your plan?'**
+  String get moodyPlaceThreadMyDayV0ProfessionalEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV0ProfessionalPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {place} block: what do you need—swap, timing, or atmosphere?'**
+  String moodyPlaceThreadMyDayV0ProfessionalPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV1ProfessionalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty slot: what do you want to achieve today?'**
+  String get moodyPlaceThreadMyDayV1ProfessionalEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV1ProfessionalPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} on your schedule: adjust or replace?'**
+  String moodyPlaceThreadMyDayV1ProfessionalPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV2ProfessionalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time. What question matters most?'**
+  String get moodyPlaceThreadMyDayV2ProfessionalEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV2ProfessionalPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'About {place}: does it fit today\'s plan?'**
+  String moodyPlaceThreadMyDayV2ProfessionalPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV3ProfessionalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This time window: what\'s the core question?'**
+  String get moodyPlaceThreadMyDayV3ProfessionalEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV3ProfessionalPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: backup, better timing, or certainty?'**
+  String moodyPlaceThreadMyDayV3ProfessionalPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV4ProfessionalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I help with this part of your day?'**
+  String get moodyPlaceThreadMyDayV4ProfessionalEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV4ProfessionalPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'For {place}: where is your plan sticking?'**
+  String moodyPlaceThreadMyDayV4ProfessionalPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV5ProfessionalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your question; I\'ll help with context.'**
+  String get moodyPlaceThreadMyDayV5ProfessionalEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV5ProfessionalPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: what do you need?'**
+  String moodyPlaceThreadMyDayV5ProfessionalPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV0DirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Open block. Swap, timing, fit?'**
+  String get moodyPlaceThreadMyDayV0DirectEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV0DirectPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} block. Swap, timing, vibe?'**
+  String moodyPlaceThreadMyDayV0DirectPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV1DirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty slot. What feeling?'**
+  String get moodyPlaceThreadMyDayV1DirectEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV1DirectPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Tweak or trade?'**
+  String moodyPlaceThreadMyDayV1DirectPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV2DirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Free. Question?'**
+  String get moodyPlaceThreadMyDayV2DirectEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV2DirectPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Fits today?'**
+  String moodyPlaceThreadMyDayV2DirectPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV3DirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot. Real question?'**
+  String get moodyPlaceThreadMyDayV3DirectEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV3DirectPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Backup, timing, certainty?'**
+  String moodyPlaceThreadMyDayV3DirectPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV4DirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This slice. What?'**
+  String get moodyPlaceThreadMyDayV4DirectEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV4DirectPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. Friction?'**
+  String moodyPlaceThreadMyDayV4DirectPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV5DirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Go.'**
+  String get moodyPlaceThreadMyDayV5DirectEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV5DirectPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}. What?'**
+  String moodyPlaceThreadMyDayV5DirectPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV0EnergeticEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Free slice—sharp on: swap, timing, or \"does this even fit\"? ⚡'**
+  String get moodyPlaceThreadMyDayV0EnergeticEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV0EnergeticPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'That {place} block—say what\'s bugging you: swap, timing, vibe ✨'**
+  String moodyPlaceThreadMyDayV0EnergeticPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV1EnergeticEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty slot—what do you *want* to feel today? 🔥'**
+  String get moodyPlaceThreadMyDayV1EnergeticEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV1EnergeticPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} on your day—tweak it or trade it? 💬'**
+  String moodyPlaceThreadMyDayV1EnergeticPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV2EnergeticEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time. No question is too small 🙌'**
+  String get moodyPlaceThreadMyDayV2EnergeticEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV2EnergeticPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'About {place}—real talk: unsure it fits today? 😅'**
+  String moodyPlaceThreadMyDayV2EnergeticPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV3EnergeticEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this slot human: what\'s the actual question? ✨'**
+  String get moodyPlaceThreadMyDayV3EnergeticEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV3EnergeticPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}… backup, better timing, or certainty? ⚡'**
+  String moodyPlaceThreadMyDayV3EnergeticPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV4EnergeticEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m here—what do you want to know about this part of your day? 💬'**
+  String get moodyPlaceThreadMyDayV4EnergeticEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV4EnergeticPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m on {place}—where\'s the friction in your plan? 🔥'**
+  String moodyPlaceThreadMyDayV4EnergeticPlace(String place);
+
+  /// No description provided for @moodyPlaceThreadMyDayV5EnergeticEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Go—I\'ll add context, you steer the vibe 🙌'**
+  String get moodyPlaceThreadMyDayV5EnergeticEmpty;
+
+  /// No description provided for @moodyPlaceThreadMyDayV5EnergeticPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: say what you need. I\'ll match it ✨'**
+  String moodyPlaceThreadMyDayV5EnergeticPlace(String place);
+
   /// No description provided for @chatSheetMessageCopy.
   ///
   /// In en, this message translates to:
@@ -14960,6 +15428,18 @@ abstract class AppLocalizations {
   /// **'Saved — thank you!'**
   String get moodyReviewThanksToast;
 
+  /// No description provided for @moodyReviewReadOnlyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review'**
+  String get moodyReviewReadOnlyTitle;
+
+  /// No description provided for @moodyReviewReadOnlyHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s what you saved — view only, so partner insights stay fair.'**
+  String get moodyReviewReadOnlyHeroSubtitle;
+
   /// No description provided for @profileMomentsTitle.
   ///
   /// In en, this message translates to:
@@ -14969,7 +15449,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileMomentsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Places you rated after My Day — private, yours to change'**
+  /// **'Places you rated after My Day — private to you'**
   String get profileMomentsSubtitle;
 
   /// No description provided for @profileMomentsSeeAll.
@@ -15035,7 +15515,7 @@ abstract class AppLocalizations {
   /// No description provided for @momentsTapToEdit.
   ///
   /// In en, this message translates to:
-  /// **'Tap to update'**
+  /// **'Tap to view'**
   String get momentsTapToEdit;
 
   /// No description provided for @momentsStarsCount.

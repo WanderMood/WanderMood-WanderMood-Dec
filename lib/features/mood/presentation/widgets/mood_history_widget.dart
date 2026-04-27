@@ -253,6 +253,8 @@ class MoodHistoryWidget extends ConsumerWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              const SizedBox(height: 20),
+              _buildEmptyTimelinePreview(l10n),
               const SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
@@ -268,7 +270,7 @@ class MoodHistoryWidget extends ConsumerWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    l10n.myDayPlanWithMoodyButton,
+                    l10n.moodHistoryEmptyPrimaryCta,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -302,6 +304,67 @@ class MoodHistoryWidget extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Decorative preview of the vertical timeline users will see once they log moods.
+  Widget _buildEmptyTimelinePreview(AppLocalizations l10n) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: List.generate(4, (i) {
+            final isHead = i == 0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: isHead ? 16 : 10,
+                  height: isHead ? 16 : 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isHead ? _wmForestTint : _wmWhite,
+                    border: Border.all(
+                      color: _wmForest.withValues(alpha: isHead ? 1 : 0.4),
+                      width: isHead ? 2 : 1.25,
+                    ),
+                  ),
+                  child: isHead
+                      ? const Center(
+                          child: Text('✨', style: TextStyle(fontSize: 9, height: 1)),
+                        )
+                      : null,
+                ),
+                if (i < 3)
+                  Container(
+                    width: 2,
+                    height: 16,
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _wmParchment,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+              ],
+            );
+          }),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              l10n.moodHistoryEmptyTimelineHint,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                height: 1.45,
+                color: _wmStone,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

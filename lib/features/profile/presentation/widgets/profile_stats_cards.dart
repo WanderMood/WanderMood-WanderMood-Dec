@@ -23,8 +23,7 @@ List<BoxShadow> _profileStatsShadow() {
   ];
 }
 
-/// Uses [profiles.mood_streak] via [currentUserProfileProvider] so this matches
-/// My Day (activity-completion streak) and the drawer, not only check-in rows.
+/// Uses [effectiveMoodStreakProvider] (unified moods + check-ins + My Day vs profile).
 class ProfileStatsCards extends ConsumerWidget {
   const ProfileStatsCards({super.key});
 

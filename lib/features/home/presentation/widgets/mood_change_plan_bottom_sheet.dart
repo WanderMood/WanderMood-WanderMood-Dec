@@ -16,85 +16,147 @@ import 'package:wandermood/features/mood/services/mood_options_service.dart';
 import 'package:wandermood/features/plans/presentation/screens/plan_loading_screen.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
-/// Change mood from Moody Hub: modal mood grid → [PlanLoadingScreen].
+/// Premium floating shadow (Explore quick-peek style, stronger lift).
+List<BoxShadow> _moodChangeSheetShadows() => [
+      BoxShadow(
+        color: const Color(0xFF1E1C18).withValues(alpha: 0.14),
+        blurRadius: 36,
+        spreadRadius: -6,
+        offset: const Offset(0, -10),
+      ),
+      BoxShadow(
+        color: const Color(0xFF1E1C18).withValues(alpha: 0.07),
+        blurRadius: 14,
+        offset: const Offset(0, -3),
+      ),
+    ];
+
+/// Change mood from Moody Hub: bottom sheet mood grid → [PlanLoadingScreen].
+/// Opens from the bottom over the main shell (including nav), like Explore quick peek.
 Future<void> showMoodChangePlanBottomSheet(BuildContext navigatorContext) async {
-  await Future.delayed(const Duration(milliseconds: 280));
+  await Future<void>.delayed(const Duration(milliseconds: 280));
   if (!navigatorContext.mounted) return;
 
-  final l10n = AppLocalizations.of(navigatorContext)!;
-
-  await showDialog<void>(
+  await showModalBottomSheet<void>(
     context: navigatorContext,
-    barrierColor: Colors.black.withValues(alpha: 0.30),
+    isScrollControlled: true,
+    useRootNavigator: true,
+    useSafeArea: false,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.5),
+    barrierLabel:
+        MaterialLocalizations.of(navigatorContext).modalBarrierDismissLabel,
+    enableDrag: true,
+    showDragHandle: false,
+    sheetAnimationStyle: const AnimationStyle(
+      duration: Duration(milliseconds: 320),
+      reverseDuration: Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    ),
     builder: (sheetCtx) {
-      // Modal builders are not Riverpod build methods: [ref.watch] here never
-      // triggers a rebuild when [moodOptionsProvider] completes — wrap in
-      // [Consumer] so the sheet leaves the loading state.
-      return Consumer(
-        builder: (context, sheetRef, _) {
-          final moodsAsync = sheetRef.watch(moodOptionsProvider);
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: SizedBox(
-                height: MediaQuery.of(sheetCtx).size.height * 0.86,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F0E8),
+      return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.62,
+        minChildSize: 0.38,
+        maxChildSize: 0.94,
+        snap: true,
+        snapSizes: const [0.62, 0.94],
+        builder: (context, scrollController) {
+          // Modal builders are not Riverpod build methods: [ref.watch] here never
+          // triggers a rebuild when [moodOptionsProvider] completes — wrap in
+          // [Consumer] so the sheet leaves the loading state.
+          return Consumer(
+            builder: (_, sheetRef, __) {
+              final l10n = AppLocalizations.of(sheetCtx)!;
+              final moodsAsync = sheetRef.watch(moodOptionsProvider);
+              final bottomInset = MediaQuery.paddingOf(sheetCtx).bottom;
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F0E8),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(22)),
+                  boxShadow: _moodChangeSheetShadows(),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: moodsAsync.when(
+                  loading: () => SingleChildScrollView(
+                    controller: scrollController,
+                    physics: const ClampingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.sizeOf(sheetCtx).height * 0.32,
+                      ),
+                      child: Padding(
+                        padding:
+                            EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF2A6049),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  child: moodsAsync.when(
-                    loading: () => const Center(
+                  error: (_, __) => SingleChildScrollView(
+                    controller: scrollController,
+                    physics: const ClampingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.sizeOf(sheetCtx).height * 0.28,
+                      ),
                       child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(),
+                        padding:
+                            EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+                        child: Center(child: Text(l10n.homeChatErrorRetry)),
                       ),
                     ),
-                    error: (_, __) => Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(l10n.homeChatErrorRetry),
-                      ),
-                    ),
-                    data: (List<MoodOption> options) {
-                      final sorted = [...options]
-                        ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
-                      var active = sorted.where((o) => o.isActive).toList();
-                      if (active.isEmpty) {
-                        active = MoodOptionsService.fallbackMoodOptions()
-                            .where((o) => o.isActive)
-                            .toList();
-                      }
-                      return Column(
+                  ),
+                  data: (List<MoodOption> options) {
+                    final sorted = [...options]
+                      ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+                    var active = sorted.where((o) => o.isActive).toList();
+                    if (active.isEmpty) {
+                      active = MoodOptionsService.fallbackMoodOptions()
+                          .where((o) => o.isActive)
+                          .toList();
+                    }
+                    return SingleChildScrollView(
+                      controller: scrollController,
+                      padding: EdgeInsets.fromLTRB(0, 0, 0, 16 + bottomInset),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const SizedBox(height: 10),
-                          Container(
-                            width: 40,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade400,
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                l10n.moodyHubChangeMood,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1E1C18),
-                                ),
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE0DCD4),
+                                borderRadius: BorderRadius.circular(99),
                               ),
                             ),
                           ),
-                          Expanded(
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+                            child: Text(
+                              l10n.moodyHubChangeMood,
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1E1C18),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                             child: GridView.builder(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
@@ -126,12 +188,12 @@ Future<void> showMoodChangePlanBottomSheet(BuildContext navigatorContext) async 
                             ),
                           ),
                         ],
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       );
@@ -152,7 +214,7 @@ Future<void> _commitMoodAndOpenLoading({
   final planDate = ref.read(selectedMyDayDateProvider);
 
   Navigator.of(sheetContext).pop();
-  await Future.delayed(const Duration(milliseconds: 220));
+  await Future<void>.delayed(const Duration(milliseconds: 220));
 
   final online = await connectivity.isConnected;
   if (!navigatorContext.mounted) return;

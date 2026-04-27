@@ -9,6 +9,7 @@ import 'package:wandermood/features/plans/data/services/schema_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/features/mood/services/check_in_service.dart';
 import 'package:wandermood/features/mood/services/profile_mood_streak_from_schedule.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
@@ -269,6 +270,7 @@ class ScheduledActivityService {
       }
       try {
         await ProfileMoodStreakFromSchedule.syncAfterScheduleChange(_client);
+        await CheckInService(_client).persistUnifiedStreakForCurrentUser();
         streakRefreshRef?.invalidate(currentUserProfileProvider);
         streakRefreshRef?.invalidate(effectiveMoodStreakProvider);
       } catch (e) {

@@ -54,8 +54,8 @@ class CheckInService {
       }
 
       // Update streak locally and persist to Supabase so the profile screen
-      // always reflects the real consecutive-day count.
-      final streak = await getCheckInStreak();
+      // always reflects the real consecutive-day count (moods, check-ins, My Day).
+      final streak = await getUnifiedEngagementStreak();
       await _updateStreakInLocalStorage(streak);
       await _updateStreakInSupabase(streak, checkIn.userId);
 
@@ -162,7 +162,31 @@ class CheckInService {
     return checkIns.isNotEmpty ? checkIns.first : null;
   }
 
-  /// Calculate check-in streak (consecutive days)
+  static DateTime _dateOnlyLocal(DateTime d) =>
+      DateTime(d.year, d.month, d.day);
+
+  /// Consecutive calendar days ending today or yesterday, given a set of
+  /// local calendar dates that had any engagement.
+  static int streakFromCalendarDaySet(Set<DateTime> days, DateTime nowLocal) {
+    final today = _dateOnlyLocal(nowLocal);
+    final yesterday = today.subtract(const Duration(days: 1));
+    late DateTime cursor;
+    if (days.contains(today)) {
+      cursor = today;
+    } else if (days.contains(yesterday)) {
+      cursor = yesterday;
+    } else {
+      return 0;
+    }
+    var streak = 0;
+    while (days.contains(cursor)) {
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  /// Calculate check-in streak (consecutive days, check-ins only).
   Future<int> getCheckInStreak() async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -170,60 +194,97 @@ class CheckInService {
         return await _getStreakFromLocalStorage();
       }
 
-      // Need enough history for long consecutive-day streaks (was 30).
       final checkIns = await getRecentCheckIns(limit: 400);
       if (checkIns.isEmpty) return 0;
 
-      // Sort by date (most recent first)
-      checkIns.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
-      int streak = 0;
-      DateTime expectedDate = MoodyClock.now();
-
-      // Check if there's a check-in today
-      final today =
-          DateTime(expectedDate.year, expectedDate.month, expectedDate.day);
-      final firstCheckInDate = DateTime(
-        checkIns.first.timestamp.year,
-        checkIns.first.timestamp.month,
-        checkIns.first.timestamp.day,
-      );
-
-      // If first check-in is not today, start from yesterday
-      if (firstCheckInDate.year != today.year ||
-          firstCheckInDate.month != today.month ||
-          firstCheckInDate.day != today.day) {
-        expectedDate = today.subtract(const Duration(days: 1));
-      }
-
-      for (final checkIn in checkIns) {
-        final checkInDate = DateTime(
-          checkIn.timestamp.year,
-          checkIn.timestamp.month,
-          checkIn.timestamp.day,
-        );
-        final expectedDateOnly = DateTime(
-          expectedDate.year,
-          expectedDate.month,
-          expectedDate.day,
-        );
-
-        if (checkInDate.year == expectedDateOnly.year &&
-            checkInDate.month == expectedDateOnly.month &&
-            checkInDate.day == expectedDateOnly.day) {
-          streak++;
-          expectedDate = expectedDate.subtract(const Duration(days: 1));
-        } else if (checkInDate.isBefore(expectedDateOnly)) {
-          // Gap in streak
-          break;
-        }
-      }
-
-      return streak;
+      final daySet = checkIns
+          .map((c) => _dateOnlyLocal(c.timestamp.toLocal()))
+          .toSet();
+      return streakFromCalendarDaySet(daySet, MoodyClock.now());
     } catch (e) {
       print('⚠️ Error calculating streak: $e');
       return await _getStreakFromLocalStorage();
     }
+  }
+
+  /// Consecutive days with any of: Moody check-in, row in [moods], or
+  /// [scheduled_activities] on that calendar day (My Day).
+  Future<int> getUnifiedEngagementStreak() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      final now = MoodyClock.now();
+      if (userId == null) {
+        final local = await _loadFromLocalStorage();
+        final daySet = local
+            .map((c) => _dateOnlyLocal(c.timestamp.toLocal()))
+            .toSet();
+        return streakFromCalendarDaySet(daySet, now);
+      }
+
+      final daySet = <DateTime>{};
+
+      final checkIns = await getRecentCheckIns(limit: 400);
+      for (final c in checkIns) {
+        daySet.add(_dateOnlyLocal(c.timestamp.toLocal()));
+      }
+
+      try {
+        final moodRows = await _client
+            .from('moods')
+            .select('timestamp')
+            .eq('user_id', userId)
+            .order('timestamp', ascending: false)
+            .limit(500);
+        for (final row in moodRows as List<dynamic>) {
+          final map = row as Map<String, dynamic>;
+          final raw = map['timestamp'];
+          if (raw == null) continue;
+          final ts = DateTime.parse(raw as String).toLocal();
+          daySet.add(_dateOnlyLocal(ts));
+        }
+      } catch (e) {
+        debugPrint('⚠️ unified streak moods: $e');
+      }
+
+      try {
+        final from = now.subtract(const Duration(days: 120));
+        final fromIso =
+            '${from.year}-${from.month.toString().padLeft(2, '0')}-${from.day.toString().padLeft(2, '0')}';
+        final sch = await _client
+            .from('scheduled_activities')
+            .select('scheduled_date')
+            .eq('user_id', userId)
+            .gte('scheduled_date', fromIso);
+        for (final row in sch as List<dynamic>) {
+          final map = row as Map<String, dynamic>;
+          final s = map['scheduled_date'] as String?;
+          if (s == null) continue;
+          final parts = s.split('-');
+          if (parts.length != 3) continue;
+          daySet.add(DateTime(
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          ));
+        }
+      } catch (e) {
+        debugPrint('⚠️ unified streak schedule: $e');
+      }
+
+      return streakFromCalendarDaySet(daySet, now);
+    } catch (e) {
+      debugPrint('⚠️ Error unified streak: $e');
+      return await _getStreakFromLocalStorage();
+    }
+  }
+
+  /// Recompute unified streak and write [profiles.mood_streak] (+ local cache).
+  Future<void> persistUnifiedStreakForCurrentUser() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+    final streak = await getUnifiedEngagementStreak();
+    await _updateStreakInLocalStorage(streak);
+    await _updateStreakInSupabase(streak, userId);
   }
 
   Future<int> _getStreakFromLocalStorage() async {

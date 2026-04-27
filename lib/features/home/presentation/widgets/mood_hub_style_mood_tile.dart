@@ -20,6 +20,8 @@ class MoodHubStyleMoodTile extends StatefulWidget {
     this.subtitleSize = 8,
     this.tileRadius = 20,
     this.showCheckBadge = true,
+    this.premiumFloatingShadow = false,
+    this.denseLayout = false,
   });
 
   final String emoji;
@@ -34,6 +36,10 @@ class MoodHubStyleMoodTile extends StatefulWidget {
   final double subtitleSize;
   final double tileRadius;
   final bool showCheckBadge;
+  /// Stronger layered shadow (e.g. mood-change bottom sheet).
+  final bool premiumFloatingShadow;
+  /// Tighter padding / gaps for small multi-column grids.
+  final bool denseLayout;
 
   @override
   State<MoodHubStyleMoodTile> createState() => _MoodHubStyleMoodTileState();
@@ -93,6 +99,31 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
     final titleWeight =
         widget.isSelected ? FontWeight.w600 : FontWeight.w500;
 
+    final List<BoxShadow> tileShadows;
+    if (widget.premiumFloatingShadow) {
+      tileShadows = [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: widget.isSelected ? 0.14 : 0.11),
+          blurRadius: widget.isSelected ? 22 : 18,
+          offset: const Offset(0, 10),
+          spreadRadius: -4,
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ];
+    } else {
+      tileShadows = [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: widget.isSelected ? 0.08 : 0.04),
+          blurRadius: widget.isSelected ? 12 : 8,
+          offset: const Offset(0, 3),
+        ),
+      ];
+    }
+
     return AnimatedBuilder(
       animation: _tap,
       builder: (context, child) {
@@ -115,32 +146,30 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
             color: borderColor,
             width: borderWidth,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: widget.isSelected ? 0.08 : 0.04),
-              blurRadius: widget.isSelected ? 12 : 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          boxShadow: tileShadows,
         ),
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(widget.tileRadius),
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
+            child: InkWell(
             onTap: widget.onTap != null ? _handleTap : null,
             child: Stack(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  padding: widget.denseLayout
+                      ? const EdgeInsets.symmetric(horizontal: 3, vertical: 5)
+                      : const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          width: widget.emojiSize * 1.75,
-                          height: widget.emojiSize * 1.75,
+                          width: widget.emojiSize *
+                              (widget.denseLayout ? 1.55 : 1.75),
+                          height: widget.emojiSize *
+                              (widget.denseLayout ? 1.55 : 1.75),
                           decoration: BoxDecoration(
                             color: accent.withValues(alpha: widget.isSelected ? 0.2 : 0.12),
                             shape: BoxShape.circle,
@@ -148,12 +177,15 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
                           child: Center(
                             child: Text(
                               widget.emoji,
-                              style: TextStyle(fontSize: widget.emojiSize * 0.82),
+                              style: TextStyle(
+                                fontSize: widget.emojiSize *
+                                    (widget.denseLayout ? 0.76 : 0.82),
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: widget.denseLayout ? 4 : 8),
                         Text(
                           widget.title,
                           style: GoogleFonts.poppins(

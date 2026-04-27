@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1749,17 +1750,11 @@ class _MoodyConversationScreenState extends ConsumerState<MoodyConversationScree
               child: Center(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    "assets/images/moody_icon.png",
+                  child: SvgPicture.asset(
+                    'assets/images/moody_face.svg',
                     width: 32,
                     height: 32,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.face,
-                        color: _wmForest,
-                        size: 20,
-                      );
-                    },
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),

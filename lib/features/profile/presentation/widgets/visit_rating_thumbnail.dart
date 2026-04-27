@@ -3,9 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
-import 'package:wandermood/features/home/presentation/utils/activity_image_fallback.dart';
 import 'package:wandermood/features/mood/models/activity_rating.dart';
-import 'package:wandermood/features/plans/presentation/providers/place_photo_url_provider.dart';
+import 'package:wandermood/features/profile/presentation/providers/visit_rating_photo_provider.dart';
+import 'package:wandermood/features/profile/presentation/utils/visit_place_photo_policy.dart';
 
 String visitRatingVibeEmoji(ActivityRating rating) {
   if (rating.tags.isEmpty) return '✦';
@@ -23,7 +23,7 @@ String visitRatingVibeEmoji(ActivityRating rating) {
   }
 }
 
-/// Preview for a saved visit: hero URL, then `places_cache` by place id, then vibe emoji.
+/// Preview for a saved visit — **only** real venue/cached/Google photos; otherwise emoji (no stock photos).
 class VisitRatingThumbnail extends ConsumerWidget {
   const VisitRatingThumbnail({
     super.key,
@@ -50,12 +50,6 @@ class VisitRatingThumbnail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final direct = rating.heroImageUrl?.trim() ?? '';
-    final pid = rating.googlePlaceId?.trim();
-    final fallback = activityImageFallbackUrl(
-      title: rating.activityName,
-      mood: rating.mood,
-    );
     final emoji = visitRatingVibeEmoji(rating);
     final emojiSize = math.min(_w, _h) * 0.45;
 
@@ -68,47 +62,37 @@ class VisitRatingThumbnail extends ConsumerWidget {
       );
     }
 
-    late final Widget child;
-    if (direct.isNotEmpty) {
-      child = WmPlaceOrHttpsNetworkImage(
-        direct,
-        fit: BoxFit.cover,
-        width: _w,
-        height: _h,
-        errorBuilder: (_, __, ___) => emojiPlaceholder(),
-      );
-    } else if (pid != null && pid.isNotEmpty) {
-      final cached = ref.watch(placePhotoUrlProvider(pid));
-      child = cached.when(
-        data: (url) {
-          final u = url?.trim() ?? '';
-          if (u.isEmpty) return emojiPlaceholder();
-          return WmPlaceOrHttpsNetworkImage(
-            u,
-            fit: BoxFit.cover,
-            width: _w,
-            height: _h,
-            errorBuilder: (_, __, ___) => WmPlaceOrHttpsNetworkImage(
-              fallback,
-              fit: BoxFit.cover,
-              width: _w,
-              height: _h,
-              errorBuilder: (_, ___, ____) => emojiPlaceholder(),
-            ),
-          );
-        },
-        loading: () => WmPlaceOrHttpsNetworkImage(
-          fallback,
+    final async = ref.watch(visitRatingPhotoUrlProvider(VisitRatingPhotoKey.from(rating)));
+
+    final Widget child = async.when(
+      data: (url) {
+        final u = url?.trim() ?? '';
+        if (u.isEmpty || isStockOrDecorativeImageUrl(u)) {
+          return emojiPlaceholder();
+        }
+        return WmPlaceOrHttpsNetworkImage(
+          u,
           fit: BoxFit.cover,
           width: _w,
           height: _h,
           errorBuilder: (_, __, ___) => emojiPlaceholder(),
+        );
+      },
+      loading: () => ColoredBox(
+        color: forestTint.withValues(alpha: 0.08),
+        child: Center(
+          child: SizedBox(
+            width: math.min(28, _w * 0.45),
+            height: math.min(28, _h * 0.45),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: forestTint.withValues(alpha: 0.55),
+            ),
+          ),
         ),
-        error: (_, __) => emojiPlaceholder(),
-      );
-    } else {
-      child = emojiPlaceholder();
-    }
+      ),
+      error: (_, __) => emojiPlaceholder(),
+    );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),

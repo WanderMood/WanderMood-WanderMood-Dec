@@ -1514,6 +1514,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Log a mood from Moody or My Day to build your streak.';
 
   @override
+  String get moodHistoryEmptyTimelineHint =>
+      'Each mood you log becomes a step on this path — your timeline grows here.';
+
+  @override
+  String get moodHistoryEmptyPrimaryCta => 'Log a mood in Moody';
+
+  @override
   String get moodHistoryLoginRequired => 'Sign in to see your mood journey.';
 
   @override
@@ -6582,6 +6589,349 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatSheetInputHint => 'What\'s your mood today?';
 
   @override
+  String get chatSheetInputHintAboutPlace => 'Ask about this place…';
+
+  @override
+  String get chatSheetInputHintDayChat => 'Chat with Moody about your day…';
+
+  @override
+  String get chatSheetMicTooltip => 'Speak your question';
+
+  @override
+  String get moodyPlaceThreadFallbackPlace => 'this spot';
+
+  @override
+  String moodyPlaceThreadExploreV0Friendly(String place) {
+    return 'Ooh—$place. I\'m here with you. Crowd, light, best time… what do you want to know?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Friendly(String place) {
+    return '$place… nice. Where are you stuck—timing, vibe, or a backup nearby?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Friendly(String place) {
+    return 'Ok I\'m zoomed in on $place. No brochure voice—just ask.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Friendly(String place) {
+    return 'If you\'re stress-testing $place: what do you need right now—quiet, energy, plan B?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Friendly(String place) {
+    return '$place\'s pinned. What do you want to know before you drop it in your day?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Friendly(String place) {
+    return 'Say the awkward part about $place—kid chaos? date night? \"is this dumb right now?\" All fine.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV0Professional(String place) {
+    return 'Let\'s look at $place. What do you need: crowds, lighting, or the best time to go?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Professional(String place) {
+    return 'For $place, what\'s unclear—schedule, atmosphere, or a nearby alternative?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Professional(String place) {
+    return 'Focus: $place. Ask your question—I\'ll answer plainly, without brochure language.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Professional(String place) {
+    return 'About $place: do you need calm, energy, or a backup option?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Professional(String place) {
+    return '$place is set. What information do you need before you add it to your day?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Professional(String place) {
+    return 'Ask about $place—fit, timing, or practical concerns.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV0Direct(String place) {
+    return '$place—crowds, light, best time. What?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Direct(String place) {
+    return '$place. Timing, vibe, backup?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Direct(String place) {
+    return '$place. Your question?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Direct(String place) {
+    return '$place. Quiet, energy, or plan B?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Direct(String place) {
+    return '$place. What do you need to know?';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Direct(String place) {
+    return '$place—say what you\'re checking.';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV0Energetic(String place) {
+    return 'Ooh—$place! Hit me: crowds, light, best time… what do you want to know? ✨';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV1Energetic(String place) {
+    return '$place… love it. Where are you stuck—time, vibe, plan B? 🔥';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV2Energetic(String place) {
+    return 'Locked on $place—no brochure voice, just ask 💬';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV3Energetic(String place) {
+    return 'Stress-testing $place: quiet, energy, or backup nearby? ⚡';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV4Energetic(String place) {
+    return '$place\'s pinned—what do you want to know before you drop it in your day? 🙌';
+  }
+
+  @override
+  String moodyPlaceThreadExploreV5Energetic(String place) {
+    return 'Say the awkward part about $place—all good 😅';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0FriendlyEmpty =>
+      'This free slice—what do you want sharp on: swap, timing, or \"does this even fit\"?';
+
+  @override
+  String moodyPlaceThreadMyDayV0FriendlyPlace(String place) {
+    return 'That $place block—say what\'s bugging you: swap, timing, vibe…';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1FriendlyEmpty =>
+      'I\'m watching this empty slot with you. What would you *want* to feel today?';
+
+  @override
+  String moodyPlaceThreadMyDayV1FriendlyPlace(String place) {
+    return '$place on your day—tweak it or trade it?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2FriendlyEmpty =>
+      'Free time. No question is too small.';
+
+  @override
+  String moodyPlaceThreadMyDayV2FriendlyPlace(String place) {
+    return 'About $place—real talk: are you unsure it fits today?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3FriendlyEmpty =>
+      'Let\'s keep this slot human: what\'s the actual question?';
+
+  @override
+  String moodyPlaceThreadMyDayV3FriendlyPlace(String place) {
+    return '$place… backup, better timing, or just certainty?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4FriendlyEmpty =>
+      'I\'m here. What do you want to know about this part of your day?';
+
+  @override
+  String moodyPlaceThreadMyDayV4FriendlyPlace(String place) {
+    return 'I\'m on $place. What part of the plan is giving you friction?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5FriendlyEmpty =>
+      'Go—I\'ll add context, you steer the vibe.';
+
+  @override
+  String moodyPlaceThreadMyDayV5FriendlyPlace(String place) {
+    return '$place: say what you need. I\'ll match it.';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0ProfessionalEmpty =>
+      'This open block: swap, timing, or does it fit your plan?';
+
+  @override
+  String moodyPlaceThreadMyDayV0ProfessionalPlace(String place) {
+    return 'Your $place block: what do you need—swap, timing, or atmosphere?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1ProfessionalEmpty =>
+      'Empty slot: what do you want to achieve today?';
+
+  @override
+  String moodyPlaceThreadMyDayV1ProfessionalPlace(String place) {
+    return '$place on your schedule: adjust or replace?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2ProfessionalEmpty =>
+      'Free time. What question matters most?';
+
+  @override
+  String moodyPlaceThreadMyDayV2ProfessionalPlace(String place) {
+    return 'About $place: does it fit today\'s plan?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3ProfessionalEmpty =>
+      'This time window: what\'s the core question?';
+
+  @override
+  String moodyPlaceThreadMyDayV3ProfessionalPlace(String place) {
+    return '$place: backup, better timing, or certainty?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4ProfessionalEmpty =>
+      'How can I help with this part of your day?';
+
+  @override
+  String moodyPlaceThreadMyDayV4ProfessionalPlace(String place) {
+    return 'For $place: where is your plan sticking?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5ProfessionalEmpty =>
+      'Ask your question; I\'ll help with context.';
+
+  @override
+  String moodyPlaceThreadMyDayV5ProfessionalPlace(String place) {
+    return '$place: what do you need?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0DirectEmpty =>
+      'Open block. Swap, timing, fit?';
+
+  @override
+  String moodyPlaceThreadMyDayV0DirectPlace(String place) {
+    return '$place block. Swap, timing, vibe?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1DirectEmpty => 'Empty slot. What feeling?';
+
+  @override
+  String moodyPlaceThreadMyDayV1DirectPlace(String place) {
+    return '$place. Tweak or trade?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2DirectEmpty => 'Free. Question?';
+
+  @override
+  String moodyPlaceThreadMyDayV2DirectPlace(String place) {
+    return '$place. Fits today?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3DirectEmpty => 'Slot. Real question?';
+
+  @override
+  String moodyPlaceThreadMyDayV3DirectPlace(String place) {
+    return '$place. Backup, timing, certainty?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4DirectEmpty => 'This slice. What?';
+
+  @override
+  String moodyPlaceThreadMyDayV4DirectPlace(String place) {
+    return '$place. Friction?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5DirectEmpty => 'Go.';
+
+  @override
+  String moodyPlaceThreadMyDayV5DirectPlace(String place) {
+    return '$place. What?';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV0EnergeticEmpty =>
+      'Free slice—sharp on: swap, timing, or \"does this even fit\"? ⚡';
+
+  @override
+  String moodyPlaceThreadMyDayV0EnergeticPlace(String place) {
+    return 'That $place block—say what\'s bugging you: swap, timing, vibe ✨';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV1EnergeticEmpty =>
+      'Empty slot—what do you *want* to feel today? 🔥';
+
+  @override
+  String moodyPlaceThreadMyDayV1EnergeticPlace(String place) {
+    return '$place on your day—tweak it or trade it? 💬';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV2EnergeticEmpty =>
+      'Free time. No question is too small 🙌';
+
+  @override
+  String moodyPlaceThreadMyDayV2EnergeticPlace(String place) {
+    return 'About $place—real talk: unsure it fits today? 😅';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV3EnergeticEmpty =>
+      'Keep this slot human: what\'s the actual question? ✨';
+
+  @override
+  String moodyPlaceThreadMyDayV3EnergeticPlace(String place) {
+    return '$place… backup, better timing, or certainty? ⚡';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV4EnergeticEmpty =>
+      'I\'m here—what do you want to know about this part of your day? 💬';
+
+  @override
+  String moodyPlaceThreadMyDayV4EnergeticPlace(String place) {
+    return 'I\'m on $place—where\'s the friction in your plan? 🔥';
+  }
+
+  @override
+  String get moodyPlaceThreadMyDayV5EnergeticEmpty =>
+      'Go—I\'ll add context, you steer the vibe 🙌';
+
+  @override
+  String moodyPlaceThreadMyDayV5EnergeticPlace(String place) {
+    return '$place: say what you need. I\'ll match it ✨';
+  }
+
+  @override
   String get chatSheetMessageCopy => 'Copy';
 
   @override
@@ -8330,11 +8680,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moodyReviewThanksToast => 'Saved — thank you!';
 
   @override
+  String get moodyReviewReadOnlyTitle => 'Your review';
+
+  @override
+  String get moodyReviewReadOnlyHeroSubtitle =>
+      'Here\'s what you saved — view only, so partner insights stay fair.';
+
+  @override
   String get profileMomentsTitle => 'Your visits';
 
   @override
   String get profileMomentsSubtitle =>
-      'Places you rated after My Day — private, yours to change';
+      'Places you rated after My Day — private to you';
 
   @override
   String get profileMomentsSeeAll => 'See all';
@@ -8372,7 +8729,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get momentsRemoveCta => 'Remove';
 
   @override
-  String get momentsTapToEdit => 'Tap to update';
+  String get momentsTapToEdit => 'Tap to view';
 
   @override
   String momentsStarsCount(int count) {

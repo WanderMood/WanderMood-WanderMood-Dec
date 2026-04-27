@@ -8,9 +8,10 @@ import 'package:wandermood/features/home/presentation/widgets/activity_review_sh
 import 'package:wandermood/features/mood/models/activity_rating.dart';
 import 'package:wandermood/features/mood/services/activity_rating_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
+import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/profile/presentation/widgets/visit_rating_thumbnail.dart';
 
-/// Profile — list of saved visit ratings (`activity_ratings`); tap to edit, delete from menu.
+/// Profile — list of saved visit ratings (`activity_ratings`); tap to view, delete from menu.
 class MyMomentsScreen extends ConsumerWidget {
   const MyMomentsScreen({super.key});
 
@@ -111,12 +112,7 @@ class MyMomentsScreen extends ConsumerWidget {
                         sunset: _sunset,
                         parchment: _parchment,
                         starGold: _starGold,
-                        onTap: () async {
-                          await showActivityReviewSheetForRating(context, r);
-                          if (context.mounted) {
-                            ref.invalidate(userActivityMomentsProvider);
-                          }
-                        },
+                        onTap: () => showActivityReviewSheetForRating(context, r),
                         onDelete: () => _confirmDelete(context, ref, r),
                       );
                     },
@@ -234,7 +230,7 @@ class _VisitsHeroCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsetsDirectional.fromSTEB(18, 16, 14, 16),
+      padding: const EdgeInsetsDirectional.fromSTEB(18, 16, 18, 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -264,11 +260,10 @@ class _VisitsHeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Image.asset(
-            'assets/images/moody_icon.png',
-            width: 72,
-            height: 72,
-            fit: BoxFit.contain,
+          const MoodyCharacter(
+            size: 68,
+            mood: 'happy',
+            glowOpacityScale: 0.38,
           ),
         ],
       ),

@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wandermood/features/mood/data/repositories/supabase_mood_repository.dart';
 import 'package:wandermood/features/mood/domain/models/activity.dart';
+import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
+import 'package:wandermood/features/mood/services/check_in_service.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../domain/models/mood_data.dart';
@@ -120,6 +123,11 @@ class MoodService extends _$MoodService {
       final uid = _client.auth.currentUser?.id;
       if (uid != null) {
         ref.invalidate(userMoodsProvider(uid));
+        try {
+          await CheckInService(_client).persistUnifiedStreakForCurrentUser();
+          ref.invalidate(effectiveMoodStreakProvider);
+          ref.invalidate(currentUserProfileProvider);
+        } catch (_) {}
       }
     } catch (e) {
       print('Error updating mood: $e');
@@ -138,6 +146,11 @@ class MoodService extends _$MoodService {
       final uid = _client.auth.currentUser?.id;
       if (uid != null) {
         ref.invalidate(userMoodsProvider(uid));
+        try {
+          await CheckInService(_client).persistUnifiedStreakForCurrentUser();
+          ref.invalidate(effectiveMoodStreakProvider);
+          ref.invalidate(currentUserProfileProvider);
+        } catch (_) {}
       }
     } catch (e) {
       print('Error deleting mood: $e');
@@ -171,6 +184,11 @@ class MoodService extends _$MoodService {
     final uid = _client.auth.currentUser?.id;
     if (uid != null) {
       ref.invalidate(userMoodsProvider(uid));
+      try {
+        await CheckInService(_client).persistUnifiedStreakForCurrentUser();
+        ref.invalidate(effectiveMoodStreakProvider);
+        ref.invalidate(currentUserProfileProvider);
+      } catch (_) {}
     }
     // Schedule mood follow-up notification 4 h after mood is logged.
     try {
@@ -187,6 +205,11 @@ class MoodService extends _$MoodService {
     final uid = _client.auth.currentUser?.id;
     if (uid != null) {
       ref.invalidate(userMoodsProvider(uid));
+      try {
+        await CheckInService(_client).persistUnifiedStreakForCurrentUser();
+        ref.invalidate(effectiveMoodStreakProvider);
+        ref.invalidate(currentUserProfileProvider);
+      } catch (_) {}
     }
   }
 

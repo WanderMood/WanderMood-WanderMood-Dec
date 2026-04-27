@@ -49,6 +49,7 @@ import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
+import 'package:wandermood/features/mood/services/check_in_service.dart';
 import 'package:wandermood/features/mood/services/profile_mood_streak_from_schedule.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -201,6 +202,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     await ProfileMoodStreakFromSchedule.syncAfterScheduleChange(
       Supabase.instance.client,
     );
+    await CheckInService(Supabase.instance.client)
+        .persistUnifiedStreakForCurrentUser();
     await _refreshStreakProviders();
   }
 

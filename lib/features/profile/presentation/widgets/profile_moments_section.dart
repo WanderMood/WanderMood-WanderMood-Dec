@@ -203,10 +203,7 @@ class ProfileMomentsSection extends ConsumerWidget {
           final r = list[i];
           return _VisitPreviewCard(
             rating: r,
-            onTap: () async {
-              await showActivityReviewSheetForRating(context, r);
-              if (context.mounted) ref.invalidate(userActivityMomentsProvider);
-            },
+            onTap: () => showActivityReviewSheetForRating(context, r),
           );
         },
       ),
