@@ -57,8 +57,16 @@ serve(async (req) => {
     const userId = user.id
     console.log('🗑️ Delete user request for:', userId)
 
-    // Delete the auth user using service role (only way to remove from auth.users)
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
+
+    // Remove FCM rows server-side (client DELETE may fail under RLS). Do this before
+    // auth deletion so push-notify cannot target this user/device mapping.
+    const { error: pushTokErr } = await adminClient.from('push_tokens').delete().eq('user_id', userId)
+    if (pushTokErr) {
+      console.warn('push_tokens cleanup:', pushTokErr.message)
+    }
+
+    // Delete the auth user using service role (only way to remove from auth.users)
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId)
 
     if (deleteError) {

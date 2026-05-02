@@ -42,44 +42,54 @@ String _tabTitle(AppLocalizations l10n, int i) {
   }
 }
 
-String _tabBody(AppLocalizations l10n, int i) {
+String _tabContentBody(AppLocalizations l10n, int i) {
   switch (i) {
     case 0:
-      return l10n.appTourStepMyDayBody;
+      return l10n.appTourStepMyDayContentBody;
     case 1:
-      return l10n.appTourStepExploreBody;
+      return l10n.appTourStepExploreContentBody;
     case 2:
-      return l10n.appTourStepMoodyBody;
+      return l10n.appTourStepMoodyContentBody;
     case 3:
-      return l10n.appTourStepAgendaBody;
+      return l10n.appTourStepAgendaContentBody;
     case 4:
-      return l10n.appTourStepProfileBody;
+      return l10n.appTourStepProfileContentBody;
     default:
       return '';
   }
 }
 
+String _tooltipBodyForTab(AppLocalizations l10n, int tab) {
+  final base = _tabContentBody(l10n, tab);
+  if (tab == 4) {
+    return '$base\n\n${l10n.appTourBottomNavHint}';
+  }
+  return base;
+}
+
+/// One short step per tab — basics only so users know where to start.
+/// [identify] is the tab index `0..4`.
 List<TargetFocus> buildMainAppTourTargets({
   required AppLocalizations l10n,
-  required List<GlobalKey> navKeys,
+  required List<GlobalKey> contentKeys,
 }) {
-  assert(navKeys.length == 5);
-  return List<TargetFocus>.generate(5, (i) {
-    final isLast = i == 4;
+  assert(contentKeys.length == 5);
+  return List<TargetFocus>.generate(5, (tab) {
+    final isLast = tab == 4;
     return TargetFocus(
-      identify: i,
-      keyTarget: navKeys[i],
+      identify: tab,
+      keyTarget: contentKeys[tab],
       shape: ShapeLightFocus.RRect,
-      radius: 14,
-      paddingFocus: 4,
+      radius: 16,
+      paddingFocus: 6,
       enableOverlayTab: false,
       contents: [
         TargetContent(
-          align: ContentAlign.top,
+          align: ContentAlign.bottom,
           builder: (context, controller) {
             return _MainTourTooltip(
-              title: _tabTitle(l10n, i),
-              body: _tabBody(l10n, i),
+              title: _tabTitle(l10n, tab),
+              body: _tooltipBodyForTab(l10n, tab),
               primaryLabel: isLast ? l10n.myDayDone : l10n.continueButton,
               onPrimary: controller.next,
             );
@@ -90,19 +100,24 @@ List<TargetFocus> buildMainAppTourTargets({
   });
 }
 
-/// Interactive coach marks for the main bottom navigation.
+/// Quick walkthrough: each main tab once, plus bottom-bar hint on the last card.
 void showMainAppTour({
   required BuildContext context,
   required WidgetRef ref,
-  required List<GlobalKey> navKeys,
+  required List<GlobalKey> contentKeys,
   required VoidCallback onSessionEnd,
 }) {
   final l10n = AppLocalizations.of(context)!;
   TutorialCoachMark(
-    targets: buildMainAppTourTargets(l10n: l10n, navKeys: navKeys),
+    targets: buildMainAppTourTargets(
+      l10n: l10n,
+      contentKeys: contentKeys,
+    ),
     beforeFocus: (target) async {
-      final i = target.identify as int;
-      ref.read(mainTabProvider.notifier).state = i;
+      final tabIndex = target.identify as int;
+      ref.read(mainTabProvider.notifier).state = tabIndex;
+      // Let [Offstage] mount the tab so [contentKeys] attach to a laid-out subtree.
+      await Future<void>.delayed(const Duration(milliseconds: 120));
     },
     colorShadow: Colors.black,
     opacityShadow: 0.78,

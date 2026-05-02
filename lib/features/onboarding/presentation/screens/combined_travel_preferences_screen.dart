@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/providers/preferences_provider.dart';
-import 'package:wandermood/core/constants/inclusion_preference_options.dart';
-import 'package:wandermood/features/profile/presentation/widgets/inclusion_dietary_preference_field.dart';
 import '../../../home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
@@ -51,7 +49,6 @@ class _CombinedTravelPreferencesScreenState
   final Set<String> _selectedVibes = {};
   String? _selectedPace;
   final Set<String> _selectedStyles = {};
-  final Set<String> _dietaryInclusionKeys = {};
   static const int _maxStyleSelections = 3;
 
   late final AnimationController _breathController;
@@ -144,9 +141,6 @@ class _CombinedTravelPreferencesScreenState
         .where(_allowedTravelStyleKeys.contains)
         .toSet();
 
-    final dietary =
-        normalizeInclusionPreferenceKeys(prefs.dietaryRestrictions);
-
     setState(() {
       _selectedVibes
         ..clear()
@@ -155,9 +149,6 @@ class _CombinedTravelPreferencesScreenState
       _selectedStyles
         ..clear()
         ..addAll(styles);
-      _dietaryInclusionKeys
-        ..clear()
-        ..addAll(dietary);
     });
   }
 
@@ -193,26 +184,12 @@ class _CombinedTravelPreferencesScreenState
     });
   }
 
-  void _toggleDietaryInclusion(String key) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (_dietaryInclusionKeys.contains(key)) {
-        _dietaryInclusionKeys.remove(key);
-      } else {
-        _dietaryInclusionKeys.add(key);
-      }
-    });
-  }
-
   void _onContinue() {
     if (!_canContinue) return;
     final n = ref.read(preferencesProvider.notifier);
     n.updateSocialVibe(_selectedVibes.toList());
     n.updatePlanningPace(_selectedPace!);
     n.updateTravelStyles(_selectedStyles.toList());
-    n.updateDietaryRestrictions(
-      normalizeInclusionPreferenceKeys(_dietaryInclusionKeys),
-    );
     context.go('/preferences/loading');
   }
 
@@ -404,23 +381,6 @@ class _CombinedTravelPreferencesScreenState
                         ),
                       );
                     }),
-                    const SizedBox(height: 24),
-                    _sectionLabel(
-                        AppLocalizations.of(context)!.prefSectionDietaryInclusion),
-                    const SizedBox(height: 6),
-                    Text(
-                      AppLocalizations.of(context)!.prefDietaryInclusionSubtitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: _wmStone,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    InclusionDietaryPreferenceField(
-                      selected: _dietaryInclusionKeys,
-                      onToggleKey: _toggleDietaryInclusion,
-                    ),
                   ],
                 ),
               ),

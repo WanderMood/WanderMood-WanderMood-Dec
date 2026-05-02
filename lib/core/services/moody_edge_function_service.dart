@@ -153,6 +153,7 @@ class MoodyEdgeFunctionService {
       if (effectiveLang != null) {
         payload['language_code'] = effectiveLang;
       }
+      payload['client_hour'] = DateTime.now().hour;
 
       final response = await dio.post(
         functionUrl,

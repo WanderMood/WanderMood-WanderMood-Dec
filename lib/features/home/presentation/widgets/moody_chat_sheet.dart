@@ -1023,6 +1023,16 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
     });
   }
 
+  /// Embedded Moody tab should open modal chat (frosted overlay) on composer tap.
+  void _openModalChatFromEmbeddedComposer() {
+    if (!widget.embedded) {
+      _collapseHubForChat();
+      return;
+    }
+    _composerFocusNode.unfocus();
+    unawaited(showMoodyChatSheet(context, ref));
+  }
+
   /// Collapse when the composer gains focus (keyboard metrics safe path).
   void _onComposerFocusForHubCollapse() {
     if (!_composerFocusNode.hasFocus) return;
@@ -1592,17 +1602,16 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
         padding: const EdgeInsets.fromLTRB(4, 2, 4, 4),
         child: Row(
           children: [
-            IconButton(
+            _ChatChromeIconButton(
               onPressed: onBack,
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              color: _wmCharcoal,
+              icon: Icons.arrow_back_ios_new_rounded,
               tooltip: backTooltip,
             ),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const MoodyCharacter(size: 32),
+                  const MoodyCharacter(size: 40),
                   const SizedBox(width: 10),
                   Flexible(
                     child: Column(
@@ -1650,10 +1659,9 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                 ],
               ),
             ),
-            IconButton(
+            _ChatChromeIconButton(
               onPressed: _openEarlierChatsPicker,
-              icon: const Icon(Icons.menu_rounded),
-              color: _wmCharcoal,
+              icon: Icons.history_rounded,
               tooltip: nl ? 'Chats van eerdere dagen' : 'Chats from previous days',
             ),
           ],
@@ -2316,7 +2324,8 @@ class _MoodyChatSheetContentState extends ConsumerState<_MoodyChatSheetContent> 
                                       placeThreadContext:
                                           widget.sharedPlaceContext != null,
                                       onSend: _sendMessage,
-                                      onComposerTap: _collapseHubForChat,
+                                      onComposerTap:
+                                          _openModalChatFromEmbeddedComposer,
                                       showMic: !kIsWeb,
                                       isListening: _isListening,
                                       onMicTap:
@@ -2986,9 +2995,8 @@ class _MicButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = isListening ? const Color(0xFFDC2626) : _wmForest;
-    final iconColor =
-        isListening ? tint : const Color(0xFF1E4D38);
-    final idleFill = _wmForest.withValues(alpha: 0.1);
+    final iconColor = isListening ? tint : const Color(0xFF1E4D38);
+    final idleFill = Colors.white.withValues(alpha: 0.98);
     Widget btn = Padding(
       padding: const EdgeInsets.only(right: 6),
       child: Material(
@@ -3000,22 +3008,29 @@ class _MicButton extends StatelessWidget {
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            width: 38,
-            height: 38,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isListening
                   ? tint.withValues(alpha: 0.12)
                   : idleFill,
               border: Border.all(
-                color: tint.withValues(alpha: isListening ? 0.55 : 0.42),
-                width: isListening ? 1 : 1.15,
+                color: tint.withValues(alpha: isListening ? 0.7 : 0.5),
+                width: isListening ? 1.3 : 1.4,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1E1C18).withValues(alpha: 0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Icon(
               isListening ? Icons.stop_rounded : Icons.mic_rounded,
               color: iconColor,
-              size: 20,
+              size: 22,
             ),
           ),
         ),
@@ -3029,6 +3044,49 @@ class _MicButton extends StatelessWidget {
         .scaleXY(end: 1.06, duration: 600.ms, curve: Curves.easeInOut)
         .then()
         .scaleXY(end: 1 / 1.06, duration: 600.ms, curve: Curves.easeInOut);
+  }
+}
+
+class _ChatChromeIconButton extends StatelessWidget {
+  const _ChatChromeIconButton({
+    required this.onPressed,
+    required this.icon,
+    required this.tooltip,
+  });
+
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: _wmParchment.withValues(alpha: 0.95),
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E1C18).withValues(alpha: 0.14),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 20),
+        color: _wmCharcoal,
+        splashRadius: 20,
+        tooltip: tooltip,
+      ),
+    );
   }
 }
 

@@ -12,7 +12,6 @@ import 'package:wandermood/features/home/presentation/utils/moody_hub_hero_copy.
 import 'package:wandermood/features/home/presentation/widgets/moody_action.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_action_set_builder.dart'
     show buildMoodyActions, routeMoodMatch;
-import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 void _deferMoodyHubActionTap(VoidCallback onTap) {
@@ -488,17 +487,7 @@ class _MoodyHubExpandedBodyState extends ConsumerState<_MoodyHubExpandedBody> {
       padding: EdgeInsets.fromLTRB(16, 8, 16, bottomInset + 6),
       physics: const BouncingScrollPhysics(),
       children: [
-        Center(
-          child: const _MoodyHubHeroMascot(),
-        )
-            .animate()
-            .scale(
-              duration: 560.ms,
-              begin: const Offset(0.38, 0.38),
-              curve: Curves.easeOutBack,
-            )
-            .fadeIn(duration: 360.ms, curve: Curves.easeOutCubic),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         _hubStagger(
           staggerStep++,
           Align(
@@ -663,21 +652,6 @@ String? _firstNameFromDisplay(String? displayName) {
   if (t == 'User' || t == 'Loading...' || t == 'New User') return null;
   if (t.startsWith('@')) return t;
   return t.split(RegExp(r'\s+')).first;
-}
-
-/// Moody only — no extra blue disc behind the character (glow comes from the asset).
-class _MoodyHubHeroMascot extends StatelessWidget {
-  const _MoodyHubHeroMascot();
-
-  static const double _charSize = 68;
-
-  @override
-  Widget build(BuildContext context) {
-    return MoodyCharacter(
-      size: _charSize,
-      mood: 'happy',
-    );
-  }
 }
 
 /// Greeting + hero copy directly on the hub background (no card chrome).

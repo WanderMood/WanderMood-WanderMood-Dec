@@ -149,6 +149,30 @@ If request conflicts:
 "That combo doesn't really match 😅 want calm or energy?"
 
 ------------------------------------------------
+LOW ENERGY MODE
+------------------------------------------------
+
+Trigger when user says:
+- ik ben lui / I'm lazy
+- geen zin / don't feel like it
+- moe / tired
+- not too busy / nothing too much
+- low energy
+
+Rules:
+- Max 1 idea
+- No lists
+- No multiple options
+- No hype
+- Shorter than usual
+
+Tone: softer, calmer, no exclamation marks
+
+Example:
+EN: "Keep it small. Grab something, sit somewhere. That's enough for today."
+NL: "Dan houden we het klein. Iets halen, ergens zitten. Meer hoeft niet vandaag."
+
+------------------------------------------------
 WHEN YOU DON'T KNOW
 ------------------------------------------------
 
@@ -393,18 +417,144 @@ function getMoodQueries(rawMood: string): string[] {
   return map[m] || ['popular restaurant','local cafe','city park','attraction','art gallery']
 }
 
-function getTimeOfDayContext(): { timeSlot: 'morning' | 'afternoon' | 'evening'; queryBoost: string[] } {
-  const hour = new Date().getUTCHours() + 1
-  if (hour >= 6 && hour < 12) return { timeSlot: 'morning', queryBoost: ['brunch','breakfast cafe','morning coffee','bakery'] }
-  if (hour >= 12 && hour < 18) return { timeSlot: 'afternoon', queryBoost: ['lunch spot','afternoon activity','museum'] }
-  return { timeSlot: 'evening', queryBoost: ['dinner restaurant','bar evening','cocktail bar','wine bar'] }
+function getTimeOfDayContext(clientHour?: number): { timeSlot: 'morning' | 'afternoon' | 'evening'; queryBoost: string[] } {
+  // Prefer client-sent hour (device local time) over server UTC+1 estimate
+  const hour = clientHour ?? (new Date().getUTCHours() + 2) // UTC+2 (CEST, Rotterdam summer)
+  const now = new Date()
+  const isWeekend = now.getUTCDay() === 0 || now.getUTCDay() === 5 || now.getUTCDay() === 6
+
+  if (hour >= 5 && hour < 12) {
+    return { timeSlot: 'morning', queryBoost: ['brunch spot','breakfast cafe','morning coffee','bakery','specialty coffee','sourdough bakery'] }
+  }
+  if (hour >= 12 && hour < 17) {
+    return { timeSlot: 'afternoon', queryBoost: ['lunch restaurant','afternoon coffee','museum','pottery workshop','afternoon activity','concept store','art gallery'] }
+  }
+  // Evening (17–24 / 0–4)
+  const eveningBoost = isWeekend
+    ? ['dinner restaurant','cocktail bar','rooftop bar','nightlife','live music venue','wine bar','escape room','night out']
+    : ['dinner restaurant','cocktail bar','wine bar','cozy restaurant evening','bar evening','rooftop bar']
+  return { timeSlot: 'evening', queryBoost: eveningBoost }
 }
 
-function getBroadExploreQueries(isLocalMode: boolean, interests: string[]): string[] {
-  const base = isLocalMode ? ['neighbourhood restaurant hidden gem','local market','new opening neighbourhood','indie gallery opening','pottery workshop local','ceramic painting studio','urban farm visit','petting farm family','vintage boutique local','bookstore design concept','creative studio class local','architecture walk local','small theater performance local','cozy bookstore event','local craft market weekend','community workshop city'] : ['best restaurant city','scenic viewpoint','art museum','cultural attraction','local market','pottery workshop city','urban farm experience','creative workshop city','independent boutique district','design store concept','architecture landmark route','photo exhibition city','bookstore event city','craft market city center','boat tour city harbor','immersive experience city']
+function getBroadExploreQueries(
+  isLocalMode: boolean,
+  interests: string[],
+  travelStyles: string[] = [],
+  planningPace = 'Same Day Planner',
+  skippedPlaceTypes: Record<string, number> = {},
+): string[] {
+  const localBase = [
+    'neighbourhood restaurant hidden gem',
+    'local market fresh produce',
+    'new opening neighbourhood cafe',
+    'indie gallery local art',
+    'pottery workshop studio',
+    'ceramic painting class city',
+    'escape room city',
+    'vintage boutique local',
+    'specialty coffee roastery',
+    'bookstore design concept',
+    'creative studio class local',
+    'architecture walk neighbourhood',
+    'small theater performance local',
+    'cozy bookstore event',
+    'local craft market weekend',
+    'community workshop studio',
+    'sushi restaurant neighbourhood',
+    'wine bar hidden gem',
+    'brunch spot local',
+    'concept store design',
+    'food hall artisan',
+    'ramen restaurant local',
+    'bouldering climbing gym city',
+    'cocktail bar trendy',
+    'paint and sip studio',
+    'axe throwing city',
+    'arcade bar city',
+    'rooftop terrace bar',
+    'natural wine bar',
+    'live music cafe',
+    'unique dining experience',
+    'tasting menu restaurant',
+  ]
+  const travelBase = [
+    'best restaurant city',
+    'scenic viewpoint panorama',
+    'art museum contemporary',
+    'cultural attraction historic',
+    'local market authentic',
+    'pottery workshop city',
+    'urban farm experience',
+    'creative workshop city',
+    'independent boutique district',
+    'design store concept',
+    'architecture landmark route',
+    'photo exhibition city',
+    'bookstore event city',
+    'craft market city center',
+    'boat tour city harbor',
+    'immersive experience city',
+    'escape room popular',
+    'rooftop bar view',
+    'cocktail bar trending',
+    'food hall city',
+    'sushi restaurant popular',
+    'brunch spot city',
+  ]
+
+  // travelStyles boosts — layer on top of base
+  const styleBoost: string[] = []
+  for (const style of travelStyles) {
+    const s = style.toLowerCase()
+    if (s.includes('luxury') || s.includes('luxe')) {
+      styleBoost.push('fine dining restaurant', 'luxury hotel bar', 'high-end concept store', 'rooftop fine dining', 'tasting menu michelin')
+    } else if (s.includes('budget') || s.includes('conscious')) {
+      styleBoost.push('affordable restaurant local', 'budget friendly cafe', 'free museum', 'street food local', 'budget brunch')
+    } else if (s.includes('off') || s.includes('beaten') || s.includes('path')) {
+      styleBoost.push('hidden neighbourhood cafe', 'underground bar local', 'indie gallery local', 'off beaten path restaurant', 'secret spot city')
+    } else if (s.includes('local') || s.includes('experience')) {
+      styleBoost.push('neighbourhood local spot', 'locals only cafe', 'authentic local restaurant', 'community market local')
+    } else if (s.includes('tourist') || s.includes('highlight')) {
+      styleBoost.push('city landmark', 'top attraction', 'iconic viewpoint', 'famous restaurant city', 'must see city')
+    }
+  }
+
+  // planningPace adjustments
+  const paceBoost: string[] = []
+  if (planningPace === 'Right Now Vibes') {
+    paceBoost.push('open now restaurant', 'walk-in coffee bar', 'spontaneous activity city', 'no reservation needed restaurant')
+  } else if (planningPace === 'Master Planner') {
+    paceBoost.push('restaurant reservation required', 'ticketed experience city', 'booking required workshop', 'exclusive tasting menu')
+  }
+
+  const base = isLocalMode ? localBase : travelBase
+
+  // interest-driven queries
   const iq: string[] = []
-  for (const interest of interests.slice(0, 3)) { const i = interest.toLowerCase(); if (i.includes('food') || i.includes('eat')) iq.push('artisan food market','specialty restaurant'); else if (i.includes('culture') || i.includes('art')) iq.push('art gallery contemporary','cultural museum'); else if (i.includes('nightlife') || i.includes('bar')) iq.push('cocktail bar rooftop','live music bar'); else if (i.includes('outdoor') || i.includes('nature')) iq.push('park waterfront','outdoor terrace scenic'); else if (i.includes('coffee')) iq.push('specialty coffee roastery','concept cafe') }
-  return [...new Set([...iq, ...base])].slice(0, 16)
+  for (const interest of interests.slice(0, 5)) {
+    const i = interest.toLowerCase()
+    if (i.includes('food') || i.includes('eat') || i.includes('dining')) iq.push('artisan food market','specialty restaurant hidden gem','chef restaurant local')
+    else if (i.includes('culture') || i.includes('art')) iq.push('art gallery contemporary','cultural museum','street art neighbourhood')
+    else if (i.includes('nightlife') || i.includes('bar') || i.includes('drink')) iq.push('cocktail bar rooftop','live music bar','natural wine bar')
+    else if (i.includes('outdoor') || i.includes('nature') || i.includes('sport')) iq.push('park waterfront','outdoor terrace scenic','bouldering gym')
+    else if (i.includes('coffee') || i.includes('cafe')) iq.push('specialty coffee roastery','concept cafe aesthetic')
+    else if (i.includes('shopping') || i.includes('market')) iq.push('vintage market local','concept store boutique','artisan craft market')
+    else if (i.includes('wellness') || i.includes('spa') || i.includes('yoga')) iq.push('yoga studio local','wellness center city','spa day city')
+    else if (i.includes('music') || i.includes('concert')) iq.push('live music venue local','jazz bar city','concert hall')
+    else if (i.includes('creative') || i.includes('workshop') || i.includes('craft')) iq.push('pottery workshop studio','paint and sip class','creative workshop studio')
+  }
+
+  // Build merged list; remove queries that match heavily skipped types
+  const skippedKeys = Object.entries(skippedPlaceTypes)
+    .filter(([, count]) => count >= 2)
+    .map(([type]) => type.toLowerCase().replace(/_/g, ' '))
+  const merged = [...new Set([...paceBoost, ...styleBoost, ...iq, ...base])]
+  const filtered = skippedKeys.length === 0 ? merged : merged.filter(q => {
+    const ql = q.toLowerCase()
+    return !skippedKeys.some(sk => ql.includes(sk) || sk.split(' ').every(w => ql.includes(w)))
+  })
+
+  return filtered.slice(0, 20)
 }
 
 function getSeasonalTrendQueries(now: Date, isLocalMode: boolean): string[] {
@@ -657,7 +807,23 @@ function enforceExploreVariety(places: PlaceCard[]): PlaceCard[] {
   return out
 }
 
-function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minReviews: number }): boolean { const rawId = place.id?.replace('google_', '').trim(); return !!rawId && !!place.name?.trim() && !!(place.address?.trim() || place.vicinity?.trim()) && Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) && (place.location.lat !== 0 || place.location.lng !== 0) && !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews }
+const UTILITY_PLACE_TYPES = new Set([
+  'supermarket','grocery_or_supermarket','convenience_store','gas_station',
+  'pharmacy','drugstore','hardware_store','car_repair','car_wash','car_dealer',
+  'storage','laundry','moving_company','plumber','electrician','locksmith',
+  'insurance_agency','bank','atm','post_office','government_office',
+])
+
+function isUtilityPlace(place: PlaceCard): boolean {
+  const types = (place.types || []).map((t: string) => t.toLowerCase())
+  if (types.some((t: string) => UTILITY_PLACE_TYPES.has(t))) return true
+  const name = (place.name || '').toLowerCase()
+  // Catch supermarkets that lack type tags (Jumbo, Albert Heijn, Lidl, Aldi, etc.)
+  if (/\b(jumbo|albert heijn|lidl|aldi|plus supermarkt|spar supermarkt|dirk van den broek|dekamarkt)\b/i.test(name)) return true
+  return false
+}
+
+function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minReviews: number }): boolean { const rawId = place.id?.replace('google_', '').trim(); return !!rawId && !!place.name?.trim() && !!(place.address?.trim() || place.vicinity?.trim()) && Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) && (place.location.lat !== 0 || place.location.lng !== 0) && !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews && !isUtilityPlace(place) }
 function placeCardSearchText(p: PlaceCard): string { return ((p.name || '') + ' ' + (p.editorial_summary || '') + ' ' + (p.address || '') + ' ' + (p.vicinity || '') + ' ' + (p.types || []).join(' ')).toLowerCase() }
 function placeMatchesRequiredKeyword(text: string, rawKey: string): boolean { const k = rawKey.toLowerCase().trim(); if (!k) return true; if (k === 'halal' || k.includes('halal')) return /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(text); if (k === 'vegan' || k.includes('vegan')) return /vegan|plant[- ]?based|plantbased/.test(text); if (k === 'vegetarian' || k.includes('vegetarian')) return /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(text); if (k.includes('gluten')) return /gluten[- ]?free|celiac|gf\b/.test(text); return text.includes(k) }
 
@@ -1007,8 +1173,16 @@ async function fetchUserContext(supabase: any, userId: string): Promise<any> {
     const p = profileResult.data, q = prefsResult.data, t = tasteResult.data
     const allFavoriteMoods = [...new Set([...(Array.isArray(q?.selected_moods) ? q.selected_moods : []), ...(Array.isArray(q?.favorite_moods) ? q.favorite_moods : [])])]
     const allInterests = [...new Set([...(Array.isArray(p?.travel_vibes) ? p.travel_vibes : []), ...(Array.isArray(q?.travel_interests) ? q.travel_interests : [])])]
-    return { communicationStyle: q?.communication_style || 'friendly', isLocalMode: p?.currently_exploring === 'local', travelInterests: allInterests, allInterests, socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [], planningPace: q?.planning_pace || 'Same Day', favoriteMoods: allFavoriteMoods, allFavoriteMoods, travelStyle: p?.travel_style || 'adventurous', travelStyles: Array.isArray(q?.travel_styles) ? q.travel_styles : [], recentMoods: (checkInsResult.data || []).map((c: any) => c.mood), budgetLevel: q?.budget_level || 'Mid-Range', dietaryRestrictions: Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : [], languagePreference: q?.language_preference || p?.language_preference || 'en', ageGroup: null, profile: p, tasteProfile: t ? { savedPlaceTypes: t.saved_place_types || {}, skippedPlaceTypes: t.skipped_place_types || {}, moodFrequency: t.mood_frequency || {}, topRatedPlaces: t.top_rated_places || [], chatInterests: t.chat_interests || [], totalInteractions: t.total_interactions || 0 } : null }
-  } catch (e) { console.warn('⚠️ fetchUserContext failed:', e); return { communicationStyle: 'friendly', isLocalMode: false, travelInterests: [], allInterests: [], socialVibe: [], travelStyle: 'adventurous', travelStyles: [], recentMoods: [], favoriteMoods: [], allFavoriteMoods: [], budgetLevel: 'Mid-Range', dietaryRestrictions: [], languagePreference: 'en', ageGroup: null, profile: null, tasteProfile: null } }
+    const ageGroup = (() => {
+      if (!p?.date_of_birth) return null
+      const age = Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      if (age < 22) return 'gen_z'
+      if (age < 35) return 'young_adult'
+      if (age < 50) return 'adult'
+      return 'mature'
+    })()
+    return { communicationStyle: q?.communication_style || 'friendly', isLocalMode: p?.currently_exploring === 'local', travelInterests: allInterests, allInterests, socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [], planningPace: q?.planning_pace || 'Same Day Planner', favoriteMoods: allFavoriteMoods, allFavoriteMoods, travelStyle: p?.travel_style || 'adventurous', travelStyles: Array.isArray(q?.travel_styles) ? q.travel_styles : [], recentMoods: (checkInsResult.data || []).map((c: any) => c.mood), budgetLevel: q?.budget_level || 'Mid-Range', dietaryRestrictions: Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : [], languagePreference: q?.language_preference || p?.language_preference || 'en', ageGroup, profile: p, tasteProfile: t ? { savedPlaceTypes: t.saved_place_types || {}, skippedPlaceTypes: t.skipped_place_types || {}, moodFrequency: t.mood_frequency || {}, topRatedPlaces: t.top_rated_places || [], chatInterests: t.chat_interests || [], totalInteractions: t.total_interactions || 0 } : null }
+  } catch (e) { console.warn('⚠️ fetchUserContext failed:', e); return { communicationStyle: 'friendly', isLocalMode: false, travelInterests: [], allInterests: [], socialVibe: [], travelStyle: 'adventurous', travelStyles: [], recentMoods: [], favoriteMoods: [], allFavoriteMoods: [], budgetLevel: 'Mid-Range', dietaryRestrictions: [], languagePreference: 'en', ageGroup: null, planningPace: 'Same Day Planner', profile: null, tasteProfile: null } }
 }
 
 async function fetchChatHistory(supabase: any, userId: string, conversationId: string | undefined, limit = 20): Promise<Array<{ role: string; content: string }>> {
@@ -1038,7 +1212,8 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     const isBroadFeed = !params.mood || params.mood === 'all' || params.mood === 'discover'
     const userContext = await fetchUserContext(supabase, userId)
     const modeKey = userContext.isLocalMode ? 'local' : 'travel'
-    const timeCtx = getTimeOfDayContext()
+    const clientHour = typeof params.client_hour === 'number' ? params.client_hour : undefined
+    const timeCtx = getTimeOfDayContext(clientHour)
     const lang = googlePlacesLanguageFromRequest(params)
     const namedFiltersSuffix = hasNamedFilters ? `_nf_${namedFilters.slice().sort().join('_')}` : ''
     const baseCacheKey = lang === 'en' ? `explore_v9_${modeKey}_${section || mood}_${location.toLowerCase().trim()}` : `explore_v9_${modeKey}_${section || mood}_${location.toLowerCase().trim()}_${lang}`
@@ -1054,9 +1229,9 @@ async function handleGetExplore(supabase: any, userId: string, params: any): Pro
     else if (section === 'trending') exploreQueries = [...trendLayer, 'trending city workshop','popular rooftop bar','new opening gallery city','buzzing city event tonight','creative studio class city','pottery workshop trending','ceramic painting studio popular','urban farm visit trending','bookshop event trending','independent boutique opening city','immersive exhibition city popular','architecture route trending']
     else if (section === 'solo' || section === 'social') { const vibe = userContext.socialVibe?.[0]?.toLowerCase() || ''; exploreQueries = vibe.includes('solo') || vibe.includes('alone') ? ['quiet museum','solo cafe reading','bookstore cafe','gallery solo visit','peaceful park','cozy cafe solo','museum hidden gem'] : vibe.includes('group') || vibe.includes('friends') ? ['group restaurant lively','rooftop bar groups','food hall social','live music bar','cocktail bar','fun bar groups','lively terrace'] : ['cafe cozy','restaurant casual','bar relaxed','park','museum','gallery','terrace'] }
     else if (section === 'different') exploreQueries = ['unique experience city','street art neighbourhood','concept store design city','indie boutique hidden gem','experimental workshop city','gallery night opening','craft market hidden gem','bookstore event unusual','pottery workshop unusual','urban farm volunteer visit']
-    else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || []); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...trendLayer, ...base].slice(0, 16) }
+    else if (isBroadFeed) { const base = getBroadExploreQueries(userContext.isLocalMode, userContext.allInterests || [], userContext.travelStyles || [], userContext.planningPace || 'Same Day Planner', userContext.tasteProfile?.skippedPlaceTypes || {}); exploreQueries = [...timeCtx.queryBoost.map(q => `${q} in ${location}`), ...trendLayer, ...base].slice(0, 20) }
     else {
-      const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang, undefined, namedFilters, filters as Record<string, unknown>)
+      const aiQ = await getMoodySearchQueries([mood], location, userContext, clientLang, timeCtx.timeSlot, namedFilters, filters as Record<string, unknown>)
       exploreQueries = aiQ ?? getMoodQueries(mood)
     }
     let places = await fetchPlacesFromGoogle(location, coordinates, mood, filters, exploreQueries, hasNamedFilters, lang)
@@ -1622,8 +1797,17 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
     : `Time of day (server fallback — app did not send device clock): ${serverFallbackSlot}.`
   let tasteContext = ''
   if (userContext.tasteProfile && userContext.tasteProfile.totalInteractions >= 3) { const topTypes = Object.entries(userContext.tasteProfile.savedPlaceTypes as Record<string,number>).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([type]) => type); if (topTypes.length > 0) tasteContext = `\nThis user tends to save/like: ${topTypes.join(', ')}.`; if (userContext.tasteProfile.topRatedPlaces?.length > 0) tasteContext += ` They've completed activities and rated them positively.` }
+  const recentMoodsLine = userContext.recentMoods?.length > 0
+    ? `\nRecent check-in moods (newest first): ${userContext.recentMoods.slice(0, 5).join(', ')}. Use this to understand their current vibe — don't announce it, just let it colour your suggestions.`
+    : ''
+  const planningPaceLine = userContext.planningPace
+    ? `\nPlanning style: ${userContext.planningPace}.${userContext.planningPace === 'Right Now Vibes' ? ' Suggest places that are open now and require no booking.' : userContext.planningPace === 'Master Planner' ? ' Can suggest experiences that benefit from advance booking.' : ''}`
+    : ''
+  const ageGroupLine = userContext.ageGroup
+    ? `\nAge group: ${userContext.ageGroup}.`
+    : ''
   const sharedBlock = sharedPlaceGroundingBlock(params.shared_place)
-  const systemPromptBase = `${MOODY_CORE}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have strong options for that right now — check Explore"\nReply in the same language the user writes in.${sharedBlock}`
+  const systemPromptBase = `${MOODY_CORE}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}${recentMoodsLine}${planningPaceLine}${ageGroupLine}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have strong options for that right now — check Explore"\nReply in the same language the user writes in.${sharedBlock}`
   const systemPrompt = appendFullFilterIntelligence(systemPromptBase)
   const { hasIntent } = detectChatPlaceIntent(message)
   const shouldSuggestPlaces = hasIntent && !!userCity && !!coordinates
@@ -1998,26 +2182,43 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '', supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     if (!supabaseUrl || !supabaseAnonKey) return new Response(JSON.stringify({ success: false, error: 'Server configuration error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) return new Response(JSON.stringify({ success: false, error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const token = authHeader.substring(7)
-    const supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader, apikey: supabaseAnonKey } }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
-    const { data: { user: authUser }, error: authError } = await supabaseWithAuth.auth.getUser(token)
-    if (authError || !authUser) return new Response(JSON.stringify({ success: false, error: 'Authentication failed' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    if (!uuidRegex.test(authUser.id)) return new Response(JSON.stringify({ success: false, error: 'Invalid user ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    // Parse body first so we can detect prewarm requests via a shared secret
+    // (headers can be stripped by Supabase's internal router; body is always intact).
     let body: MoodyRequest
     try { body = await req.json() } catch { return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) }
+    const prewarmSecret = Deno.env.get('PREWARM_SECRET') ?? ''
+    const isPrewarm = !!(prewarmSecret && (body as any)._prewarm_secret === prewarmSecret)
+    let authUser: { id: string }
+    let supabaseWithAuth: ReturnType<typeof createClient>
+    if (isPrewarm) {
+      // Prewarm: no real user session — use nil UUID so user-context queries return empty safely.
+      authUser = { id: '00000000-0000-0000-0000-000000000000' }
+      supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
+    } else {
+      const authHeader = req.headers.get('Authorization')
+      if (!authHeader?.startsWith('Bearer ')) return new Response(JSON.stringify({ success: false, error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const token = authHeader.substring(7)
+      supabaseWithAuth = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader, apikey: supabaseAnonKey } }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
+      const { data: { user: jwtUser }, error: authError } = await supabaseWithAuth.auth.getUser(token)
+      if (authError || !jwtUser) return new Response(JSON.stringify({ success: false, error: 'Authentication failed' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (!uuidRegex.test(jwtUser.id)) return new Response(JSON.stringify({ success: false, error: 'Invalid user ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      authUser = jwtUser
+    }
     const { action, ...params } = body
     if (!action) return new Response(JSON.stringify({ error: 'Action is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    const admin = getServiceSupabase(), rateKey = userRateKey(authUser.id), rateStarted = performance.now(), maxPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
-    if (admin) { const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxPerMin); if (!allowed) { logApiInvocationFireAndForget(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action, http_status: 429, duration_ms: Math.round(performance.now() - rateStarted), error_snippet: `rate_limit count=${currentCount}` }); return new Response(JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }) } }
+    const admin = getServiceSupabase()
+    // For prewarm requests use the service-role client so DB reads bypass RLS.
+    const activeClient = isPrewarm ? (admin ?? supabaseWithAuth) : supabaseWithAuth
+    const rateKey = userRateKey(authUser.id), rateStarted = performance.now(), maxPerMin = Number(Deno.env.get('EDGE_RATE_MOODY_PER_MINUTE') ?? '60')
+    // Skip rate limiting for prewarm (it uses a nil UUID not a real user).
+    if (!isPrewarm && admin) { const { allowed, currentCount } = await edgeRateLimitConsume(admin, rateKey, 'moody', maxPerMin); if (!allowed) { logApiInvocationFireAndForget(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action, http_status: 429, duration_ms: Math.round(performance.now() - rateStarted), error_snippet: `rate_limit count=${currentCount}` }); return new Response(JSON.stringify({ success: false, error: 'rate_limit_exceeded', retry_after_seconds: 60 }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }) } }
     const traceStarted = performance.now()
-    console.log(`🎯 Moody v97: action=${action}, userId=${authUser.id}`)
+    console.log(`🎯 Moody v97: action=${action}, userId=${authUser.id}${isPrewarm ? ' [prewarm]' : ''}`)
     return traceEdgeResponse(admin, { user_id: authUser.id, user_key: rateKey, function_slug: 'moody', operation: action }, traceStarted,
       (async (): Promise<Response> => {
         switch (action) {
-          case 'get_explore': return await handleGetExplore(supabaseWithAuth, authUser.id, params)
+          case 'get_explore': return await handleGetExplore(activeClient, authUser.id, params)
           case 'create_day_plan': return await handleCreateDayPlan(supabaseWithAuth, authUser.id, params)
           case 'chat': return await handleChat(supabaseWithAuth, authUser.id, params)
           case 'generate_hub_message': return await handleGenerateHubMessage(supabaseWithAuth, authUser.id, params)

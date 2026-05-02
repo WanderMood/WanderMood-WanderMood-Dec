@@ -105,10 +105,14 @@ Future<void> _handleEmailVerification(Uri uri) async {
     
     // CRITICAL: With PKCE flow, Supabase Flutter automatically processes the deep link
     // Extract tokens/code from URL to manually process if auto-processing fails
-    final accessToken = uri.queryParameters['access_token'];
-    final refreshToken = uri.queryParameters['refresh_token'];
-    final code = uri.queryParameters['code']; // For PKCE flow
-    final type = uri.queryParameters['type'];
+    final fragParams =
+        uri.hasFragment ? Uri.splitQueryString(uri.fragment) : <String, String>{};
+    final qp = <String, String>{...fragParams, ...uri.queryParameters};
+
+    final accessToken = qp['access_token'];
+    final refreshToken = qp['refresh_token'];
+    final code = qp['code']; // For PKCE flow
+    final type = qp['type'];
     
     debugPrint('   URL parameters:');
     debugPrint('   access_token exists: ${accessToken != null}');
@@ -1056,7 +1060,8 @@ GoRouter router(RouterRef ref) {
       final isAuthPage = currentLocation == '/register' ||
                         currentLocation == '/auth/signup' ||
                         currentLocation == '/auth/verify-email' ||
-                        currentLocation == '/auth/magic-link';
+                        currentLocation == '/auth/magic-link' ||
+                        currentLocation == '/auth-callback';
       
       final useNewFlow = ref.read(useNewOnboardingFlowProvider);
       

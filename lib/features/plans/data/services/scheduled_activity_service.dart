@@ -38,32 +38,20 @@ class ScheduledActivityService {
     bool isConfirmed = false,
     WidgetRef? streakRefreshRef,
   }) async {
-    try {
-      debugPrint('ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
-      
-      // Require authentication
-      final userId = _client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('User must be authenticated to save scheduled activities');
-      }
-      
-      debugPrint('ScheduledActivityService: User ID: $userId');
-      final activityData = _prepareActivityData(activities, userId, isConfirmed);
-      return await _insertActivities(
-        activityData,
-        streakRefreshRef: streakRefreshRef,
-      );
-    } catch (e) {
-      debugPrint('ScheduledActivityService: Database save failed: $e');
-      debugPrint('ScheduledActivityService: Using in-memory fallback storage');
-      
-      // Fallback to in-memory storage
-      _inMemoryActivities.clear();
-      _inMemoryActivities.addAll(activities);
-      
-      debugPrint('ScheduledActivityService: Saved ${activities.length} activities to memory');
-      return activities.length;
+    debugPrint(
+        'ScheduledActivityService: saveScheduledActivities called with ${activities.length} activities');
+
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw Exception('User must be authenticated to save scheduled activities');
     }
+
+    debugPrint('ScheduledActivityService: User ID: $userId');
+    final activityData = _prepareActivityData(activities, userId, isConfirmed);
+    return _insertActivities(
+      activityData,
+      streakRefreshRef: streakRefreshRef,
+    );
   }
 
   /// Which time-of-day slots (`morning` / `afternoon` / `evening`) already have this [placeId] on [date].
@@ -159,8 +147,8 @@ class ScheduledActivityService {
         'rating': activity.rating,
         'scheduled_date': scheduledDate,
         'created_at': DateTime.now().toIso8601String(),
-        'visit_status': 'planned',
-        'verified_location': false,
+        // DB column is `status` (see migrations); `visit_status` is not in schema and breaks inserts.
+        'status': 'planned',
       };
     }).toList();
   }
@@ -184,15 +172,19 @@ class ScheduledActivityService {
       
       for (final activity in activityData) {
         // Check if an activity with the same name, start_time, and location already exists
-        final existingActivity = await _client
-            .from('scheduled_activities')
-            .select()
-            .eq('user_id', userId)
-            .eq('name', activity['name'] as String)
-            .eq('start_time', activity['start_time'] as String)
-            .eq('latitude', activity['latitude'] as double)
-            .eq('longitude', activity['longitude'] as double)
-            .maybeSingle();
+        final latVal = (activity['latitude'] as num?)?.toDouble();
+        final lngVal = (activity['longitude'] as num?)?.toDouble();
+        final existingActivity = latVal != null && lngVal != null
+            ? await _client
+                .from('scheduled_activities')
+                .select()
+                .eq('user_id', userId)
+                .eq('name', activity['name'] as String)
+                .eq('start_time', activity['start_time'] as String)
+                .eq('latitude', latVal)
+                .eq('longitude', lngVal)
+                .maybeSingle()
+            : null;
         
         if (existingActivity != null) {
           debugPrint('ScheduledActivityService: Duplicate activity "${activity['name']}" found, skipping insert');
@@ -351,7 +343,8 @@ class ScheduledActivityService {
       isPaid: paymentType != PaymentType.free,
       placeId: json['place_id'] as String?,
       groupSessionId: json['group_session_id'] as String?,
-      visitStatus: json['visit_status'] as String?,
+      visitStatus:
+          json['visit_status'] as String? ?? json['status'] as String?,
       checkInTime: json['check_in_time'] != null
           ? DateTime.tryParse(json['check_in_time'] as String)
           : null,
@@ -481,12 +474,9 @@ class ScheduledActivityService {
       }
 
       final patch = <String, dynamic>{
-        'visit_status': visitStatus,
-        if (checkInTime != null) 'check_in_time': checkInTime.toIso8601String(),
-        if (checkOutTime != null) 'check_out_time': checkOutTime.toIso8601String(),
-        if (checkInMethod != null) 'check_in_method': checkInMethod,
-        if (visitDurationMinutes != null) 'visit_duration_minutes': visitDurationMinutes,
-        if (verifiedLocation != null) 'verified_location': verifiedLocation,
+        'status': visitStatus,
+        if (checkInTime != null) 'arrived_at': checkInTime.toIso8601String(),
+        if (checkOutTime != null) 'completed_at': checkOutTime.toIso8601String(),
       };
 
       await _client

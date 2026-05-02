@@ -96,6 +96,17 @@ class PushNotificationService {
     if (uid != null) await deleteTokensForUser(uid);
   }
 
+  /// Invalidates the device FCM token so the token cannot receive remote pushes
+  /// after account deletion. Safe if Firebase was never initialized.
+  Future<void> revokeDevicePushRegistration() async {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (e) {
+      if (kDebugMode) debugPrint('FCM deleteToken: $e');
+    }
+  }
+
   Future<void> _upsertTokenForUser(String userId) async {
     final token = await FirebaseMessaging.instance.getToken();
     if (token == null || token.isEmpty) return;

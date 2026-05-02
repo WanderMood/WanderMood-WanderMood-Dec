@@ -4383,6 +4383,20 @@
   "appTourStepMoodyBody": "Moody lernt deine Vibes, deine Energie und deinen Tag kennen. Daraus entstehen persönliche Pläne – nur für dich. Stell dir mich als neugierigen Kumpel vor, der immer Lust auf Entdecken hat 🌆🎈",
   "appTourStepAgendaBody": "Sieh in Meine Pläne, was ansteht — heute, morgen oder ein beliebiger Tag — und spring zurück zu Moody, wenn der Tag noch frei ist.",
   "appTourStepProfileBody": "Gespeicherte Orte, Reisemodus, Statistiken und Lieblings-Vibes findest du hier. Tippe auf App-Einstellungen für Benachrichtigungen, Sprache, Datenschutz und Hilfe.",
+  "appTourStepMyDayContentBody": "Start hier: dein Tag entsteht hier. Mit Plänen? Tippen für Details oder Route.",
+  "appTourStepExploreContentBody": "Orte passend zu deiner Stimmung. Karte antippen, mehr sehen, zu Meinem Tag hinzufügen.",
+  "appTourStepMoodyContentBody": "Ideen gefällig? Schreib mit Moody—tippen oder Vorschlag nutzen.",
+  "appTourStepAgendaContentBody": "Alles Geplante nach Tag. Datum öffnen, bei Bedarf in Mein Tag anpassen.",
+  "appTourStepProfileContentBody": "Gespeicherte Orte, Reisemodus und App-Einstellungen.",
+  "appTourBottomNavHint": "Nutze die Leiste unten, um jederzeit zwischen diesen Bereichen zu wechseln.",
+  "appTourNavStepTitle": "Zu {tabName}",
+  "@appTourNavStepTitle": {
+    "placeholders": {
+      "tabName": {
+        "type": "String"
+      }
+    }
+  },
   "settingsAppTourLabel": "App-Rundgang",
   "settingsAppTourSubtitle": "Die unteren Tabs jederzeit erneut ansehen",
   "helpSupportAppTourTitle": "App-Rundgang",

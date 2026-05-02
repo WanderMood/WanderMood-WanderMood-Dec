@@ -11177,6 +11177,35 @@ class AppLocalizationsFr extends AppLocalizations {
       'Lieux enregistrés, mode voyage, stats et vibes favorites sont ici. Touche Paramètres de l\'app pour notifications, langue, confidentialité et aide.';
 
   @override
+  String get appTourStepMyDayContentBody =>
+      'Commence ici : ta journée se construit ici. Avec des plans ? Touche pour détails ou itinéraire.';
+
+  @override
+  String get appTourStepExploreContentBody =>
+      'Des lieux selon ton mood. Touche une fiche pour en voir plus et l’ajouter à Ma journée.';
+
+  @override
+  String get appTourStepMoodyContentBody =>
+      'Besoin d’idées ? Parle à Moody—écris ou touche une suggestion.';
+
+  @override
+  String get appTourStepAgendaContentBody =>
+      'Tout ce qui est planifié, jour par jour. Ouvre une date et ajuste dans Ma journée si tu veux.';
+
+  @override
+  String get appTourStepProfileContentBody =>
+      'Lieux enregistrés, mode voyage et réglages de l’app.';
+
+  @override
+  String get appTourBottomNavHint =>
+      'Utilise la barre en bas pour passer d’une section à l’autre à tout moment.';
+
+  @override
+  String appTourNavStepTitle(String tabName) {
+    return 'Aller à $tabName';
+  }
+
+  @override
   String get settingsAppTourLabel => 'Visite de l\'app';
 
   @override

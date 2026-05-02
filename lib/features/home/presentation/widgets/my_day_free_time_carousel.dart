@@ -550,7 +550,8 @@ class _FreeTimeCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
+                    Flexible(
+                      fit: FlexFit.loose,
                       child: SingleChildScrollView(
                         physics: const ClampingScrollPhysics(),
                         child: Column(
@@ -627,7 +628,7 @@ class _FreeTimeCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Expanded(
@@ -649,7 +650,7 @@ class _FreeTimeCard extends ConsumerWidget {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                l10n.prefSave,
+                                l10n.dayPlanAddToMyDay,
                                 maxLines: 1,
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,

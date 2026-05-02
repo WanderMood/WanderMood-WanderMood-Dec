@@ -167,12 +167,19 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     
     try {
       final email = _emailController.text.trim();
-      
+      // Same language as the app UI (`flutter gen-l10n` / ARB). Supabase Magic Link
+      // templates read this as `{{ .Data.language }}` / `{{ .Data.locale }}` (user_metadata).
+      final uiLocale = Localizations.localeOf(context);
+
       // `emailRedirectTo` must appear under Supabase Dashboard → Authentication →
       // URL Configuration (Redirect URLs) together with the app Site URL.
       await Supabase.instance.client.auth.signInWithOtp(
         email: email,
         emailRedirectTo: 'io.supabase.wandermood://auth-callback',
+        data: {
+          'language': uiLocale.languageCode,
+          'locale': uiLocale.toLanguageTag(),
+        },
       );
 
       await CachedMagicLinkEmailService(ref.read(sharedPreferencesProvider))

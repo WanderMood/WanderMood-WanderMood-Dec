@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WanderMood</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style type="text/css">
+    body { margin:0; padding:0; background-color:#E0D9CE; font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+    @media screen and (max-width: 600px) {
+      .wrap { width:100% !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#E0D9CE; font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  {{/* Safe metadata: see Supabase troubleshooting “email template not updating”. */}}
+  {{ with .Data }}
+  {{ if eq (index . "language") "nl" }}
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#E0D9CE; opacity:0;">
+    Je magic link voor WanderMood — één tik en je bent er weer.
+  </div>
+  {{ else }}
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#E0D9CE; opacity:0;">
+    Your WanderMood magic link — one tap and you are back in.
+  </div>
+  {{ end }}
+  {{ else }}
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#E0D9CE; opacity:0;">
+    Your WanderMood magic link — one tap and you are back in.
+  </div>
+  {{ end }}
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#E0D9CE;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table class="wrap" width="520" cellspacing="0" cellpadding="0" border="0" style="max-width:520px; width:100%; background:#FFFFFF; border-radius:24px;">
+
+          <tr>
+            <td style="padding:32px 32px 0; text-align:center;">
+              <div style="background:#F0F4F1; border-radius:20px; padding:28px 24px 24px; text-align:center;">
+                <p style="margin:0 0 8px; font-size:12px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#2A6049;">WanderMood</p>
+                {{ with .Data }}
+                {{ if eq (index . "language") "nl" }}
+                <p style="margin:0; font-size:24px; font-weight:700; line-height:1.25; color:#1E1C18;">Hoi — hier is Moody. Je magic link staat klaar.</p>
+                {{ else }}
+                <p style="margin:0; font-size:24px; font-weight:700; line-height:1.25; color:#1E1C18;">Hi — Moody here. Your magic link is ready.</p>
+                {{ end }}
+                {{ else }}
+                <p style="margin:0; font-size:24px; font-weight:700; line-height:1.25; color:#1E1C18;">Hi — Moody here. Your magic link is ready.</p>
+                {{ end }}
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 32px;">
+              {{ with .Data }}
+              {{ if eq (index . "language") "nl" }}
+              <p style="margin:0 0 12px; font-size:16px; line-height:1.6; color:#1E1C18;">Je vroeg om een magic link — die staat voor je klaar. Eén tik en je bent weer in WanderMood.</p>
+              <div style="background:#F8F5F0; border-radius:12px; padding:20px 24px; margin:16px 0;">
+                <p style="margin:0; font-size:14px; line-height:1.5; color:#5C5852;">🔐 <strong>Even veilig:</strong> deze link is alleen voor jou. Heb je dit niet aangevraagd? Negeer deze mail gewoon.</p>
+              </div>
+              {{ else }}
+              <p style="margin:0 0 12px; font-size:16px; line-height:1.6; color:#1E1C18;">You asked for a magic link — here it is. One tap and you’re back in WanderMood.</p>
+              <div style="background:#F8F5F0; border-radius:12px; padding:20px 24px; margin:16px 0;">
+                <p style="margin:0; font-size:14px; line-height:1.5; color:#5C5852;">🔐 <strong>Security note:</strong> This link is only for you. If you didn’t request it, just ignore this email.</p>
+              </div>
+              {{ end }}
+              {{ else }}
+              <p style="margin:0 0 12px; font-size:16px; line-height:1.6; color:#1E1C18;">You asked for a magic link — here it is. One tap and you’re back in WanderMood.</p>
+              <div style="background:#F8F5F0; border-radius:12px; padding:20px 24px; margin:16px 0;">
+                <p style="margin:0; font-size:14px; line-height:1.5; color:#5C5852;">🔐 <strong>Security note:</strong> This link is only for you. If you didn’t request it, just ignore this email.</p>
+              </div>
+              {{ end }}
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%; margin-top:20px;">
+                <tr>
+                  <td align="center" style="background:#2A6049; border-radius:100px;">
+                    {{ with .Data }}
+                    {{ if eq (index . "language") "nl" }}
+                    <a href="{{ $.ConfirmationURL }}" target="_blank" rel="noopener noreferrer" style="display:block; padding:16px; font-size:16px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:100px;">👉 Open WanderMood</a>
+                    {{ else }}
+                    <a href="{{ $.ConfirmationURL }}" target="_blank" rel="noopener noreferrer" style="display:block; padding:16px; font-size:16px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:100px;">👉 Open WanderMood</a>
+                    {{ end }}
+                    {{ else }}
+                    <a href="{{ .ConfirmationURL }}" target="_blank" rel="noopener noreferrer" style="display:block; padding:16px; font-size:16px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:100px;">👉 Open WanderMood</a>
+                    {{ end }}
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:16px 0 0; font-size:13px; text-align:center; line-height:1.5; color:#8C8780;">
+                {{ with .Data }}
+                {{ if eq (index . "language") "nl" }}
+                <a href="{{ $.ConfirmationURL }}" target="_blank" rel="noopener noreferrer" style="color:#2A6049; text-decoration:underline; font-weight:600;">Liever plakken in je browser? Tik hier.</a>
+                <span style="color:#A8A29E;"> · </span><span style="color:#A8A29E;">Verloopt automatisch (veiligheid)</span>
+                {{ else }}
+                <a href="{{ $.ConfirmationURL }}" target="_blank" rel="noopener noreferrer" style="color:#2A6049; text-decoration:underline; font-weight:600;">Having trouble? Open the magic link here.</a>
+                <span style="color:#A8A29E;"> · </span><span style="color:#A8A29E;">Expires automatically (security)</span>
+                {{ end }}
+                {{ else }}
+                <a href="{{ .ConfirmationURL }}" target="_blank" rel="noopener noreferrer" style="color:#2A6049; text-decoration:underline; font-weight:600;">Having trouble? Open the magic link here.</a>
+                <span style="color:#A8A29E;"> · </span><span style="color:#A8A29E;">Expires automatically (security)</span>
+                {{ end }}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

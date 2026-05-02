@@ -11063,6 +11063,35 @@ class AppLocalizationsNl extends AppLocalizations {
       'Opgeslagen plekken, reismodus, statistieken en favoriete vibes staan hier. Tik op App-instellingen voor meldingen, taal, privacy en hulp.';
 
   @override
+  String get appTourStepMyDayContentBody =>
+      'Begin hier: je dag groeit hier. Heb je plannen? Tik voor details of route.';
+
+  @override
+  String get appTourStepExploreContentBody =>
+      'Vind plekken bij je mood. Tik een kaart voor meer en voeg toe aan Mijn dag.';
+
+  @override
+  String get appTourStepMoodyContentBody =>
+      'Ideeën nodig? Praat met Moody—typ of tik een suggestie.';
+
+  @override
+  String get appTourStepAgendaContentBody =>
+      'Alles wat gepland is, per dag. Open een datum en pas zo nodig aan in Mijn dag.';
+
+  @override
+  String get appTourStepProfileContentBody =>
+      'Opgeslagen plekken, reismodus en app-instellingen.';
+
+  @override
+  String get appTourBottomNavHint =>
+      'Gebruik de balk hieronder om snel tussen deze onderdelen te wisselen.';
+
+  @override
+  String appTourNavStepTitle(String tabName) {
+    return 'Ga naar $tabName';
+  }
+
+  @override
   String get settingsAppTourLabel => 'App-rondleiding';
 
   @override

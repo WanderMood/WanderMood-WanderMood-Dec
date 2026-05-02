@@ -28,4 +28,5 @@ const int _kExploreSeedTargetMin = 180;
 const int _kExplorePrewarmBatchSize = 4;
 /// Extra [getExplore] discovery / named-filter rounds to grow the merged pool
 /// toward [_kExploreSeedTargetMin] on first load (writes through moody → DB).
-const int _kExploreBulkSeedMaxExtraCalls = 12;
+/// Kept at 4 to cap the first-user-per-city Google API spend.
+const int _kExploreBulkSeedMaxExtraCalls = 4;

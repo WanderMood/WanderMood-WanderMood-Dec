@@ -19239,6 +19239,48 @@ abstract class AppLocalizations {
   /// **'Saved places, travel mode, stats, and favorite vibes live here. Tap App settings for notifications, language, privacy, and help.'**
   String get appTourStepProfileBody;
 
+  /// No description provided for @appTourStepMyDayContentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start here: your day builds here. When you add plans, tap anything for details or directions.'**
+  String get appTourStepMyDayContentBody;
+
+  /// No description provided for @appTourStepExploreContentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find places matched to your mood. Tap a card to see more and add it to My Day.'**
+  String get appTourStepExploreContentBody;
+
+  /// No description provided for @appTourStepMoodyContentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Need ideas? Chat with Moody—type or tap what it suggests.'**
+  String get appTourStepMoodyContentBody;
+
+  /// No description provided for @appTourStepAgendaContentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See everything you’ve scheduled by day. Open a date, then tweak details in My Day if you like.'**
+  String get appTourStepAgendaContentBody;
+
+  /// No description provided for @appTourStepProfileContentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved places, travel mode, and app settings live here.'**
+  String get appTourStepProfileContentBody;
+
+  /// No description provided for @appTourBottomNavHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the bar below to jump between these sections anytime.'**
+  String get appTourBottomNavHint;
+
+  /// No description provided for @appTourNavStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to {tabName}'**
+  String appTourNavStepTitle(String tabName);
+
   /// No description provided for @settingsAppTourLabel.
   ///
   /// In en, this message translates to:

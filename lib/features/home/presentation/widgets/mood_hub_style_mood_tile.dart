@@ -3,6 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Mood Match brown (GroupPlanningUi.moodMatchDeepMuted); blended into the
+/// legacy neutral stroke for a subtle warm edge when unselected.
+const Color _kMoodMatchTileBorder = Color(0xFF4A3F36);
+const Color _kTileBorderNeutral = Color(0xFFE7E6E3);
+/// How much brown is mixed in (0 = gray only, 1 = full brown).
+const double _kMoodMatchBorderBlend = 0.34;
+
 /// Glass-style mood tile — shared by [MoodHomeScreen] and Mood Match lobby.
 /// Includes a short tap scale bump (same interaction pattern as hub selection).
 class MoodHubStyleMoodTile extends StatefulWidget {
@@ -94,7 +101,11 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
         : const Color(0xFFFFFFFF);
     final borderColor = widget.isSelected
         ? const Color(0xFF2A6049)
-        : const Color(0xFFE7E6E3);
+        : Color.lerp(
+            _kTileBorderNeutral,
+            _kMoodMatchTileBorder,
+            _kMoodMatchBorderBlend,
+          )!;
     final borderWidth = widget.isSelected ? 1.8 : 1.0;
     final titleWeight =
         widget.isSelected ? FontWeight.w600 : FontWeight.w500;
@@ -171,7 +182,8 @@ class _MoodHubStyleMoodTileState extends State<MoodHubStyleMoodTile>
                           height: widget.emojiSize *
                               (widget.denseLayout ? 1.55 : 1.75),
                           decoration: BoxDecoration(
-                            color: accent.withValues(alpha: widget.isSelected ? 0.2 : 0.12),
+                            color: accent.withValues(
+                                alpha: widget.isSelected ? 0.2 : 0.12),
                             shape: BoxShape.circle,
                           ),
                           child: Center(

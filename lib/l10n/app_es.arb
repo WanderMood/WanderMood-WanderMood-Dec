@@ -4382,6 +4382,20 @@
   "appTourStepMoodyBody": "Moody aprende tu vibe, tu energía y cómo va tu día. Con eso creo planes personalizados solo para ti. Piensa en mí como tu colega curioso que siempre quiere explorar 🌆🎈",
   "appTourStepAgendaBody": "Mira lo programado en Mis planes — hoy, mañana o cualquier día — y vuelve a Moody si el día aún está libre.",
   "appTourStepProfileBody": "Aquí están lugares guardados, modo de viaje, estadísticas y vibes favoritos. Toca Ajustes de la app para notificaciones, idioma, privacidad y ayuda.",
+  "appTourStepMyDayContentBody": "Empieza aquí: tu día se arma aquí. ¿Planes? Toca para detalles o ruta.",
+  "appTourStepExploreContentBody": "Lugares según tu mood. Toca una tarjeta para ver más y añadir a Mi día.",
+  "appTourStepMoodyContentBody": "¿Ideas? Habla con Moody—escribe o toca una sugerencia.",
+  "appTourStepAgendaContentBody": "Todo lo programado, día a día. Abre una fecha y ajusta en Mi día si quieres.",
+  "appTourStepProfileContentBody": "Lugares guardados, modo viaje y ajustes de la app.",
+  "appTourBottomNavHint": "Usa la barra de abajo para cambiar de sección cuando quieras.",
+  "appTourNavStepTitle": "Ir a {tabName}",
+  "@appTourNavStepTitle": {
+    "placeholders": {
+      "tabName": {
+        "type": "String"
+      }
+    }
+  },
   "settingsAppTourLabel": "Recorrido de la app",
   "settingsAppTourSubtitle": "Vuelve a ver las pestañas inferiores cuando quieras",
   "helpSupportAppTourTitle": "Recorrido de la app",

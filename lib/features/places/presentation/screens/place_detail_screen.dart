@@ -45,6 +45,11 @@ const bool kWmPlaceDetailHeroPhotoDebug = bool.fromEnvironment(
   defaultValue: false,
 );
 
+/// Inset below the quick-view pill tab bar (Details / Foto's / Reviews) — shared
+/// so all tabs align and the grid isn’t flush against the tabs.
+const EdgeInsets _kPlaceDetailQuickViewTabBodyPadding =
+    EdgeInsets.fromLTRB(28, 16, 28, 24);
+
 void _agentLogPlaceDetail(
   String hypothesisId,
   String message, {
@@ -821,7 +826,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 child: ColoredBox(
                   color: const Color(0xFFF5F0E8),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+                    padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
                     child: _buildTabBar(),
                   ),
                 ),
@@ -844,7 +849,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         context),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+                    padding: _kPlaceDetailQuickViewTabBodyPadding,
                     sliver: SliverToBoxAdapter(
                       child: _buildDetailsTab(p,
                           wrapInSingleChildScrollView: false),
@@ -865,7 +870,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         context),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+                    padding: _kPlaceDetailQuickViewTabBodyPadding,
                     sliver: SliverToBoxAdapter(
                       child: _buildReviewsTab(p,
                           wrapInSingleChildScrollView: false),
@@ -3380,20 +3385,27 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       );
     }
 
+    // Use [SliverToBoxAdapter] + shrink-wrapped [GridView] (same pattern as Details /
+    // Reviews tabs) so [SliverOverlapInjector] layout matches — [SliverGrid] alone
+    // left a large empty band below the pill tab bar.
     return CustomScrollView(
       key: PageStorageKey<String>('pd_qv_photos_grid_${place.id}'),
       slivers: [
         SliverOverlapInjector(handle: handle),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
+          padding: _kPlaceDetailQuickViewTabBodyPadding,
+          sliver: SliverToBoxAdapter(
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1,
+              ),
+              itemCount: urls.length,
+              itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () =>
                       _showFullScreenPhoto(urls, index, place.isAsset),
@@ -3415,7 +3427,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   ),
                 );
               },
-              childCount: urls.length,
             ),
           ),
         ),
@@ -4202,7 +4213,7 @@ class _PlaceDetailQuickViewTabsHeaderDelegate
 
   final Widget child;
 
-  static const double _extent = 62;
+  static const double _extent = 70;
 
   @override
   double get minExtent => _extent;

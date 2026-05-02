@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:flutter/gestures.dart' show PointerScrollEvent;
+import 'package:flutter/gestures.dart'
+    show PointerScrollEvent, VelocityTracker;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,12 +56,17 @@ class _MoodySuggestedPlacesCarousel extends StatefulWidget {
       _MoodySuggestedPlacesCarouselState();
 }
 
-class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCarousel> {
+class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCarousel>
+    with SingleTickerProviderStateMixin {
   static const double _cardWidth = 160;
   static const double _separatorWidth = 8;
 
-  /// Horizontal translation (≤ 0). Clamped when viewport/content size changes.
-  double _dragOffset = 0;
+  /// Horizontal translation (<= 0). Use a notifier so drag updates repaint only
+  /// the translated strip instead of rebuilding every place card each pointer tick.
+  final ValueNotifier<double> _dragOffset = ValueNotifier<double>(0);
+  AnimationController? _flingController;
+  VelocityTracker? _velocityTracker;
+  int? _activePointer;
 
   double _contentWidth() {
     final n = widget.places.length;
@@ -81,7 +87,48 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
     }
   }
 
+  void _stopFling() {
+    _flingController?.stop();
+    _flingController?.dispose();
+    _flingController = null;
+  }
+
+  void _startFling({
+    required double velocityX,
+    required double minOffset,
+  }) {
+    // Tiny drags should not trigger momentum.
+    if (velocityX.abs() < 180) return;
+    final current = _dragOffset.value.clamp(minOffset, 0.0).toDouble();
+    // Convert px/s to travel distance with conservative damping.
+    final projected = current + (velocityX * 0.14);
+    final target = projected.clamp(minOffset, 0.0).toDouble();
+    if ((target - current).abs() < 2) return;
+
+    _stopFling();
+    final ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final anim = Tween<double>(begin: current, end: target).animate(
+      CurvedAnimation(parent: ctrl, curve: Curves.easeOutCubic),
+    );
+    _flingController = ctrl;
+    ctrl.addListener(() {
+      _dragOffset.value = anim.value;
+    });
+    ctrl.addStatusListener((status) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
+        _stopFling();
+      }
+    });
+    ctrl.forward();
+  }
+
   void _onPointerMove(PointerMoveEvent e) {
+    if (_activePointer != e.pointer) return;
+    _velocityTracker?.addPosition(e.timeStamp, e.position);
     final dx = e.delta.dx;
     final dy = e.delta.dy;
     if (dx.abs() <= dy.abs()) {
@@ -94,10 +141,11 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
     final contentW = _contentWidth();
     final minOffset = math.min(0.0, viewportW - contentW);
 
-    setState(() {
-      final synced = _dragOffset.clamp(minOffset, 0.0);
-      _dragOffset = (synced + dx).clamp(minOffset, 0.0);
-    });
+    final synced = _dragOffset.value.clamp(minOffset, 0.0);
+    final next = (synced + dx).clamp(minOffset, 0.0).toDouble();
+    if (_dragOffset.value != next) {
+      _dragOffset.value = next;
+    }
   }
 
   bool _samePlaceStrip(List<Place> a, List<Place> b) {
@@ -111,9 +159,17 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
   @override
   void didUpdateWidget(covariant _MoodySuggestedPlacesCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_samePlaceStrip(oldWidget.places, widget.places) && _dragOffset != 0) {
-      setState(() => _dragOffset = 0);
+    if (!_samePlaceStrip(oldWidget.places, widget.places) &&
+        _dragOffset.value != 0) {
+      _dragOffset.value = 0;
     }
+  }
+
+  @override
+  void dispose() {
+    _stopFling();
+    _dragOffset.dispose();
+    super.dispose();
   }
 
   @override
@@ -125,8 +181,6 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
             ? constraints.maxWidth
             : MediaQuery.sizeOf(context).width;
         final minOffset = math.min(0.0, viewportW - contentW);
-        final displayOffset = _dragOffset.clamp(minOffset, 0.0);
-
         final row = SizedBox(
           height: 180,
           width: contentW,
@@ -134,7 +188,9 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
             children: [
               for (var i = 0; i < widget.places.length; i++) ...[
                 if (i > 0) const SizedBox(width: _separatorWidth),
-                _MiniPlaceCard(place: widget.places[i]),
+                RepaintBoundary(
+                  child: _MiniPlaceCard(place: widget.places[i]),
+                ),
               ],
             ],
           ),
@@ -143,7 +199,28 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
         // Viewport-sized box: the [Row] is wider than the strip; without a bounded
         // width the layout overflows ("RIGHT OVERFLOWED BY … PIXELS").
         return Listener(
+          onPointerDown: (e) {
+            _activePointer = e.pointer;
+            _velocityTracker = VelocityTracker.withKind(e.kind);
+            _velocityTracker?.addPosition(e.timeStamp, e.position);
+            _stopFling();
+          },
           onPointerMove: _onPointerMove,
+          onPointerUp: (e) {
+            if (_activePointer != e.pointer) return;
+            _velocityTracker?.addPosition(e.timeStamp, e.position);
+            final velocityX =
+                _velocityTracker?.getVelocity().pixelsPerSecond.dx ?? 0;
+            _startFling(velocityX: velocityX, minOffset: minOffset);
+            _activePointer = null;
+            _velocityTracker = null;
+          },
+          onPointerCancel: (e) {
+            if (_activePointer == e.pointer) {
+              _activePointer = null;
+              _velocityTracker = null;
+            }
+          },
           onPointerSignal: (signal) {
             if (signal is! PointerScrollEvent) return;
             final d = signal.scrollDelta;
@@ -152,10 +229,11 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
               return;
             }
             if (d.dx != 0) {
-              setState(() {
-                final s = _dragOffset.clamp(minOffset, 0.0);
-                _dragOffset = (s + d.dx).clamp(minOffset, 0.0);
-              });
+              final s = _dragOffset.value.clamp(minOffset, 0.0);
+              final next = (s + d.dx).clamp(minOffset, 0.0).toDouble();
+              if (_dragOffset.value != next) {
+                _dragOffset.value = next;
+              }
             }
           },
           child: SizedBox(
@@ -166,16 +244,23 @@ class _MoodySuggestedPlacesCarouselState extends State<_MoodySuggestedPlacesCaro
               // Let the card row lay out at [contentW] while this strip stays
               // [viewportW] wide — otherwise the [Row] is given maxWidth ==
               // viewport and overflows by (contentW - viewportW) (~174px).
-              child: OverflowBox(
-                alignment: Alignment.topLeft,
-                minWidth: contentW,
-                maxWidth: contentW,
-                minHeight: 180,
-                maxHeight: 180,
-                child: Transform.translate(
-                  offset: Offset(displayOffset, 0),
-                  child: row,
-                ),
+              child: ValueListenableBuilder<double>(
+                valueListenable: _dragOffset,
+                child: row,
+                builder: (context, liveOffset, child) {
+                  final clamped = liveOffset.clamp(minOffset, 0.0).toDouble();
+                  return OverflowBox(
+                    alignment: Alignment.topLeft,
+                    minWidth: contentW,
+                    maxWidth: contentW,
+                    minHeight: 180,
+                    maxHeight: 180,
+                    child: Transform.translate(
+                      offset: Offset(clamped, 0),
+                      child: child,
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -383,28 +468,32 @@ class _MiniPlaceCard extends ConsumerWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisSize: MainAxisSize.max,
                           children: [
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                minimumSize: const Size(0, 0),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: const Color(0xFFEBF3EE),
-                                foregroundColor: const Color(0xFF2A6049),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                            Expanded(
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  minimumSize: const Size(0, 0),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  backgroundColor: const Color(0xFFEBF3EE),
+                                  foregroundColor: const Color(0xFF2A6049),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  textStyle: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                                textStyle: GoogleFonts.poppins(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
+                                onPressed: () => _addToMyDay(context, ref),
+                                child: Text(
+                                  '+ ${l10n.carouselAddToDay}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: false,
                                 ),
-                              ),
-                              onPressed: () => _addToMyDay(context, ref),
-                              child: Text(
-                                '+ ${l10n.carouselAddToDay}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 6),

@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/settings_screen_template.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
+import 'package:wandermood/core/services/notification_service.dart';
+import 'package:wandermood/core/services/push_notification_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 class DeleteAccountScreen extends ConsumerStatefulWidget {
@@ -73,18 +75,24 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
       final userId = user.id;
 
-      // Delete all user data
+      // Delete all user data (best effort; some tables may not exist in every env).
       try { await supabase.from('post_likes').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('post_comments').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('diary_entries').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('friendships').delete().eq('requester_id', userId); } catch (_) {}
       try { await supabase.from('friendships').delete().eq('addressee_id', userId); } catch (_) {}
+      try { await supabase.from('social_posts').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('travel_plans').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('saved_places').delete().eq('user_id', userId); } catch (_) {}
+      try { await supabase.from('visited_places').delete().eq('user_id', userId); } catch (_) {}
+      try { await supabase.from('scheduled_activities').delete().eq('user_id', userId); } catch (_) {}
+      try { await supabase.from('user_check_ins').delete().eq('user_id', userId); } catch (_) {}
+      try { await supabase.from('moods').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('mood_entries').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('notification_settings').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('account_security').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('active_sessions').delete().eq('user_id', userId); } catch (_) {}
+      try { await supabase.from('push_tokens').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('data_exports').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('subscriptions').delete().eq('user_id', userId); } catch (_) {}
       try { await supabase.from('user_preferences').delete().eq('user_id', userId); } catch (_) {}
@@ -105,6 +113,15 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             : 'Failed to delete account';
         throw Exception(errMsg ?? 'Failed to delete account');
       }
+
+      // OS-scheduled local reminders (Moody check-ins, re-engagement, etc.) survive
+      // prefs/auth deletion unless we cancel them. Remote FCM also needs token revoke.
+      try {
+        await NotificationService.instance.cancelAll();
+      } catch (_) {}
+      try {
+        await PushNotificationService.instance.revokeDevicePushRegistration();
+      } catch (_) {}
 
       try {
         final prefs = await SharedPreferences.getInstance();

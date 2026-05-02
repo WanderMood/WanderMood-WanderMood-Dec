@@ -64,7 +64,9 @@ part 'explore_screen_af_shell_chrome.part.dart';
 part 'explore_screen_af_shell.part.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
-  const ExploreScreen({Key? key}) : super(key: key);
+  const ExploreScreen({Key? key, this.mainAppTourContentKey}) : super(key: key);
+
+  final GlobalKey? mainAppTourContentKey;
 
   @override
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
@@ -74,6 +76,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+
+  Widget _wrapMainAppTour(Widget child) {
+    final k = widget.mainAppTourContentKey;
+    if (k == null) return child;
+    return KeyedSubtree(key: k, child: child);
+  }
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   ProviderSubscription<int>? _manualCityPickSubscription;
@@ -114,6 +122,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   bool _exploreBulkSeedInFlight = false;
   String? _exploreBulkSeedGateCity;
   bool _exploreBulkSeedRanForGateCity = false;
+
+  /// Incremented on pull-to-refresh so the feed re-shuffles within open/closed tiers
+  /// (opening-only sort alone kept the same place on top every time).
+  ///
+  /// Shuffle uses this as a **seed** on every [_filterPlaces] call (deterministic per
+  /// generation). Do not "consume" shuffle only once per refresh: [build] calls
+  /// [_filterPlaces] more than once (e.g. activitiesCount then list body); the first
+  /// call used to steal the shuffle and the visible list stayed sorted-only.
+  int _explorePullRefreshGeneration = 0;
 
   late final List<_ExploreSectionData> _sections = [
     _ExploreSectionData(id: 'food'),
@@ -438,19 +455,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       );
     }
     ref.invalidate(moodyExploreAutoProvider);
+    _explorePullRefreshGeneration++;
     await _loadAllSections(resetBulkSeed: true);
     if (!mounted) return;
     _rotateExploreCachedPresentation();
-    unawaited(
-      Future<void>.delayed(const Duration(seconds: 2), () async {
-        if (!mounted) return;
-        await _refreshExploreStaleInBackground();
-      }),
-    );
+    unawaited(_refreshExploreStaleInBackground());
   }
 
-  /// Pull-to-refresh: after cache-first reload, vary presentation without a
-  /// synchronous moody Edge call (stale refresh is deferred separately).
+  /// Pull-to-refresh: after cache-first reload, vary section order + photo seed;
+  /// list order also updates via [_explorePullRefreshGeneration] in [_filterPlaces].
   void _rotateExploreCachedPresentation() {
     if (!mounted) return;
     final rng = math.Random();
@@ -1686,6 +1699,46 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return oh.isOpen ? 0 : 2;
   }
 
+  /// Shuffle within opening-hours tiers, then rotate the "open now" tier by
+  /// [generation] so pull-to-refresh reliably changes the first card when
+  /// several places share the same hours tier.
+  void _tieredShuffleExploreByOpening(
+    List<Place> list,
+    int salt,
+    int generation,
+  ) {
+    if (list.length <= 1) return;
+    final rng = math.Random(salt);
+    final byTier = <int, List<Place>>{};
+    for (final p in list) {
+      final t = _exploreOpeningDisplayPriority(p);
+      byTier.putIfAbsent(t, () => []).add(p);
+    }
+    for (final t in [0, 1, 2]) {
+      final bucket = byTier[t];
+      if (bucket == null || bucket.length <= 1) continue;
+      bucket.shuffle(rng);
+      if (t == 0 && bucket.length > 1) {
+        final rot = generation % bucket.length;
+        if (rot > 0) {
+          final head = bucket.sublist(0, rot);
+          final tail = bucket.sublist(rot);
+          bucket
+            ..clear()
+            ..addAll(tail)
+            ..addAll(head);
+        }
+      }
+    }
+    list
+      ..clear();
+    for (final t in [0, 1, 2]) {
+      final bucket = byTier[t];
+      if (bucket == null) continue;
+      list.addAll(bucket);
+    }
+  }
+
   List<Place> _filterPlaces(
     List<Place> places, {
     bool ignoreCategory = false,
@@ -1693,7 +1746,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final initialCount = places.length;
     final preferencesService = ref.read(userPreferencesServiceProvider);
 
+    final hour = DateTime.now().hour;
+
     var filteredPlaces = places.where((place) {
+      // Always strip utility / errand places (supermarkets, pharmacies, gas stations, etc.)
+      if (_isUtilityPlace(place)) return false;
+
+      // Time-of-day soft filter when no explicit search/filter is active.
+      // Only exclude breakfast-only places in the afternoon/evening and
+      // late-night-only places in the morning — keeps the feed contextually relevant.
+      if (_searchQuery.isEmpty && _activeFiltersCount == 0) {
+        if (!_placeMatchesTimeOfDay(place, hour)) return false;
+      }
+
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
           place.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -1706,34 +1771,52 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       // Apply advanced filters (mood, dietary, accessibility, etc.)
       bool matchesAdvancedFilters = _checkAdvancedFilters(place);
 
-      // Apply user preferences from onboarding (soft filter - boost matching places)
-      // Only apply if no explicit filters are set (to avoid double-filtering)
-      bool matchesPreferences = true;
-      if (_activeFiltersCount == 0 && _searchQuery.isEmpty) {
-        // Soft preference matching: prefer places that match interests/styles
-        matchesPreferences = preferencesService.placeMatchesInterests(place) ||
-            preferencesService.placeMatchesTravelStyles(place);
-      }
-
       final matchesCategory = ignoreCategory ||
           _selectedCategory == 'all' ||
           _checkCategoryMatch(place, _selectedCategory);
 
-      return matchesSearch &&
-          matchesAdvancedFilters &&
-          matchesPreferences &&
-          matchesCategory;
+      return matchesSearch && matchesAdvancedFilters && matchesCategory;
     }).toList();
 
-    // Open first → unknown hours → closed (stable within ties: keeps Moody order).
-    filteredPlaces.sort((a, b) {
-      final c = _exploreOpeningDisplayPriority(a)
-          .compareTo(_exploreOpeningDisplayPriority(b));
-      if (c != 0) {
-        return c;
-      }
-      return 0;
-    });
+    // Open first → unknown hours → closed. When no heavy filters/search, boost
+    // onboarding matches **via sort only** — do not hide other places (hiding made
+    // "Nu open" + prefs often collapse to a single card that never shuffles away).
+    if (_activeFiltersCount == 0 && _searchQuery.isEmpty) {
+      filteredPlaces.sort((a, b) {
+        final oh = _exploreOpeningDisplayPriority(a)
+            .compareTo(_exploreOpeningDisplayPriority(b));
+        if (oh != 0) return oh;
+        final ap = preferencesService.placeMatchesInterests(a) ||
+                preferencesService.placeMatchesTravelStyles(a)
+            ? 0
+            : 1;
+        final bp = preferencesService.placeMatchesInterests(b) ||
+                preferencesService.placeMatchesTravelStyles(b)
+            ? 0
+            : 1;
+        return ap.compareTo(bp);
+      });
+    } else {
+      filteredPlaces.sort((a, b) {
+        final c = _exploreOpeningDisplayPriority(a)
+            .compareTo(_exploreOpeningDisplayPriority(b));
+        if (c != 0) return c;
+        return 0;
+      });
+    }
+
+    if (filteredPlaces.length > 1) {
+      _tieredShuffleExploreByOpening(
+        filteredPlaces,
+        _explorePullRefreshGeneration * 524287,
+        _explorePullRefreshGeneration,
+      );
+    } else if (kDebugMode) {
+      debugPrint(
+        '⚠️ Explore: only ${filteredPlaces.length} card(s) after filters '
+        '(pull gen $_explorePullRefreshGeneration)',
+      );
+    }
 
     // Debug logging
     if (_activeFiltersCount > 0 || _searchQuery.isNotEmpty) {
@@ -1819,6 +1902,48 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         !n.contains('soft drink')) {
       return false;
     }
+    return true;
+  }
+
+  static const _kUtilityTypes = {
+    'supermarket', 'grocery_or_supermarket', 'convenience_store', 'gas_station',
+    'pharmacy', 'drugstore', 'hardware_store', 'car_repair', 'car_wash',
+    'car_dealer', 'storage', 'laundry', 'moving_company', 'locksmith',
+    'insurance_agency', 'bank', 'atm', 'post_office', 'government_office',
+  };
+
+  static const _kUtilityNamePatterns = [
+    'jumbo', 'albert heijn', 'lidl', 'aldi', 'plus supermarkt',
+    'dirk van den broek', 'dekamarkt', 'spar supermarkt',
+  ];
+
+  bool _isUtilityPlace(Place place) {
+    final types = place.types.map((t) => t.toLowerCase()).toSet();
+    if (types.intersection(_kUtilityTypes).isNotEmpty) return true;
+    final nameLower = place.name.toLowerCase();
+    return _kUtilityNamePatterns.any((p) => nameLower.contains(p));
+  }
+
+  /// Returns false only for places that are clearly **wrong** for the current hour.
+  /// We err on the side of showing rather than hiding — only obvious mismatches get filtered.
+  bool _placeMatchesTimeOfDay(Place place, int hour) {
+    final types = place.types.map((t) => t.toLowerCase()).toSet();
+    final nameLower =
+        '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
+            .toLowerCase();
+
+    // Breakfast/brunch places (strongly breakfast-cued): hide after 14:00
+    final isBreakfastOnly = (types.contains('bakery') || types.contains('breakfast_restaurant')) &&
+        RegExp(r'\b(ontbijt|breakfast only|brunch only)\b').hasMatch(nameLower);
+    if (isBreakfastOnly && hour >= 14) return false;
+
+    // Night-club / late-night bars: hide before 17:00 on weekdays
+    final isNightOnly = types.contains('night_club') ||
+        RegExp(r'\b(nightclub|night club|late night)\b').hasMatch(nameLower);
+    final weekday = DateTime.now().weekday; // 1=Mon … 7=Sun
+    final isWeekend = weekday >= 5;
+    if (isNightOnly && hour < 17 && !isWeekend) return false;
+
     return true;
   }
 
@@ -2812,7 +2937,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 setState(() => _explorePlacePhotoRefreshSeed++);
               }
               ref.invalidate(moodyExploreAutoProvider);
+              _explorePullRefreshGeneration++;
               await _loadAllSections(resetBulkSeed: true);
+              if (!mounted) return;
+              _rotateExploreCachedPresentation();
+              unawaited(_refreshExploreStaleInBackground());
               if (isLocationError) {
                 ref
                     .read(locationNotifierProvider.notifier)
@@ -3234,7 +3363,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     if (city == null || city.isEmpty) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
-        body: _wrapExploreStack(
+        body: _wrapMainAppTour(_wrapExploreStack(
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -3245,13 +3374,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               null,
             ),
           ),
-        ),
+        )),
       );
     }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
-      body: userLocAsync.when(
+      body: _wrapMainAppTour(userLocAsync.when(
         loading: () {
           final hasCached = _sections.any((s) => s.cards.isNotEmpty);
           if (hasCached) {
@@ -3352,7 +3481,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
           );
         },
-      ),
+      )),
     );
   }
 

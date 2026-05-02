@@ -68,7 +68,9 @@ List<BoxShadow> _savedPlacesCarouselCardShadow() {
 }
 
 class UserProfileScreen extends ConsumerStatefulWidget {
-  const UserProfileScreen({Key? key}) : super(key: key);
+  const UserProfileScreen({Key? key, this.mainAppTourContentKey}) : super(key: key);
+
+  final GlobalKey? mainAppTourContentKey;
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -264,9 +266,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             ),
           );
         }
-        return Scaffold(
-          backgroundColor: _wmCream,
-          body: SafeArea(
+        final profileBody = SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
               child: Column(
@@ -297,7 +297,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 ],
               ),
             ),
-          ),
+          );
+        return Scaffold(
+          backgroundColor: _wmCream,
+          body: widget.mainAppTourContentKey != null
+              ? KeyedSubtree(
+                  key: widget.mainAppTourContentKey!,
+                  child: profileBody,
+                )
+              : profileBody,
         );
       },
     );

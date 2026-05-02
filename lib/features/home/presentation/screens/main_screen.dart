@@ -72,7 +72,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   bool _weekendBannerDismissed = false;
   final List<GlobalKey> _mainTourNavKeys =
       List<GlobalKey>.generate(5, (_) => GlobalKey());
+  final List<GlobalKey> _mainTourContentKeys =
+      List<GlobalKey>.generate(5, (_) => GlobalKey());
   bool _mainTourShowing = false;
+
+  /// Built once so tab state is preserved; keys wire the interactive main app tour.
+  late final List<Widget> _tabScreens = [
+    DynamicMyDayScreen(mainAppTourContentKey: _mainTourContentKeys[0]),
+    ExploreScreen(mainAppTourContentKey: _mainTourContentKeys[1]),
+    RedesignedMoodyHub(mainAppTourContentKey: _mainTourContentKeys[2]),
+    AgendaScreen(mainAppTourContentKey: _mainTourContentKeys[3]),
+    UserProfileScreen(mainAppTourContentKey: _mainTourContentKeys[4]),
+  ];
 
   /// Tabs the user has opened at least once — kept in the tree with [Offstage]
   /// so switching back (e.g. Moody) does not rebuild from scratch every tap.
@@ -179,7 +190,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     showMainAppTour(
       context: context,
       ref: ref,
-      navKeys: _mainTourNavKeys,
+      contentKeys: _mainTourContentKeys,
       onSessionEnd: () {
         _mainTourShowing = false;
         if (mounted) setState(() {});
@@ -373,15 +384,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
   }
   
-  // Bottom nav: My Day, Explore, Moody hub, Agenda, Profile
-  final List<Widget> screens = [
-    const DynamicMyDayScreen(),
-    const ExploreScreen(),
-    const RedesignedMoodyHub(),
-    const AgendaScreen(),
-    const UserProfileScreen(),
-  ];
-  
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -441,7 +443,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         offstage: selectedIndex != i,
                         child: TickerMode(
                           enabled: selectedIndex == i,
-                          child: screens[i],
+                          child: _tabScreens[i],
                         ),
                       ),
                   ],

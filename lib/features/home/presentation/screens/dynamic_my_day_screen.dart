@@ -42,8 +42,11 @@ import 'package:wandermood/features/home/presentation/utils/my_day_slot_period.d
 import 'package:wandermood/core/services/connectivity_service.dart';
 import 'package:wandermood/core/utils/offline_feedback.dart';
 import 'package:wandermood/features/places/models/place.dart';
+import 'package:wandermood/features/places/presentation/utils/save_explore_place_to_my_day.dart';
+import 'package:wandermood/features/places/presentation/widgets/add_place_to_my_day_sheet.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
+import 'package:wandermood/core/utils/moody_toast.dart';
 import 'package:wandermood/core/notifications/engagement_in_app_nudges.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
@@ -57,7 +60,10 @@ import 'package:share_plus/share_plus.dart';
 const Color _myDayMoodMatchOrange = Color(0xFFE8784A);
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
-  const DynamicMyDayScreen({super.key});
+  const DynamicMyDayScreen({super.key, this.mainAppTourContentKey});
+
+  /// Spotlight anchor for the main app tour ([MainScreen] only).
+  final GlobalKey? mainAppTourContentKey;
 
   @override
   ConsumerState<DynamicMyDayScreen> createState() => _DynamicMyDayScreenState();
@@ -235,13 +241,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       error: (_, __) => profileAsync.valueOrNull?.moodStreak ?? 0,
     );
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: const ProfileDrawer(),
-      backgroundColor: const Color(0xFFF5F0E8), // wmCream — match Explore / main shell
-      body: currentStatusValue?['type'] == 'no_plan'
-          ? _buildImmersiveNoPlanState(l10n)
-          : CustomScrollView(
+    final bodyContent = currentStatusValue?['type'] == 'no_plan'
+        ? _buildImmersiveNoPlanState(l10n)
+        : CustomScrollView(
           slivers: [
             // Header Section
             SliverToBoxAdapter(
@@ -330,7 +332,20 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
-        ),
+        );
+
+    final wrappedBody = widget.mainAppTourContentKey != null
+        ? KeyedSubtree(
+            key: widget.mainAppTourContentKey!,
+            child: bodyContent,
+          )
+        : bodyContent;
+
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: const ProfileDrawer(),
+      backgroundColor: const Color(0xFFF5F0E8), // wmCream — match Explore / main shell
+      body: wrappedBody,
     );
   }
 
@@ -431,90 +446,93 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               _buildHeaderRow(isImmersive: false),
               const SizedBox(height: 12),
               _buildDateNavigation(),
-              const Spacer(),
-              MoodyCharacter(
-                size: 80,
-                mood: 'happy',
-              ).animate().fadeIn(duration: 300.ms),
-              const SizedBox(height: 16),
-              Text(
-                l10n.myDayEmptyDayTitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1E1C18),
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.myDayEmptyDaySubtitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF4A4640),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                height: 54,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => unawaited(_openMoodSelectionForPlanning()),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2A6049),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    l10n.myDayPlanWithMoodyButton,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 54,
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => unawaited(_openMoodMatchHub()),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _myDayMoodMatchOrange,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    '${l10n.moodMatchTitle} 🫶',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () => context.push('/agenda'),
-                child: Text(
-                  l10n.drawerMyAgenda,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF2A6049),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      MoodyCharacter(
+                        size: 80,
+                        mood: 'happy',
+                      ).animate().fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.myDayEmptyDayTitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1E1C18),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n.myDayEmptyDaySubtitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF4A4640),
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        height: 54,
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => unawaited(_openMoodSelectionForPlanning()),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2A6049),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            l10n.myDayPlanWithMoodyButton,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 54,
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () => unawaited(_openMoodMatchHub()),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _myDayMoodMatchOrange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            '${l10n.moodMatchTitle} 🫶',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Transform.translate(
+                        offset: const Offset(-16, 0),
+                        child: _buildFreeTimeCarousel(),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
                 ),
               ),
@@ -1974,7 +1992,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ],
               ),
             ).animate().fadeIn(delay: 200.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
-            const SizedBox(height: 36),
+            const SizedBox(height: 22),
+            _buildFreeTimeCarousel()
+                .animate()
+                .fadeIn(delay: 360.ms, duration: 420.ms)
+                .slideY(begin: 0.06, end: 0, curve: Curves.easeOutCubic),
+            const SizedBox(height: 28),
             Row(
               children: [
                 const Icon(
@@ -2872,7 +2895,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       data: (activities) => MyDayFreeTimeCarousel(
         activities: activities,
         onActivityTap: _showActivityDetails,
-        onSaveTap: _saveActivity,
+        onSaveTap: _addFreeTimeCarouselToMyDay,
         onDirectionsTap: _openDirections,
         onAskMoodyTap: _onAskMoodyFromFreeTime,
       ),
@@ -2899,6 +2922,95 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       context,
       ref,
       sharedPlace: moodySharedPlacePayloadForFreeTimeActivity(activity),
+    );
+  }
+
+  /// Free-time carousel CTA: schedule on My Day (same sheet + persistence as Explore).
+  Future<void> _addFreeTimeCarouselToMyDay(Map<String, dynamic> activity) async {
+    final l10n = AppLocalizations.of(context)!;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      if (mounted) {
+        showMoodyToast(context, l10n.myDayAddSignInRequired);
+      }
+      return;
+    }
+
+    final fromCarousel = activity['place'] as Place?;
+    final Place placeToSchedule;
+    if (fromCarousel != null) {
+      placeToSchedule = fromCarousel;
+    } else {
+      final title =
+          activity['title']?.toString().trim().isNotEmpty == true
+              ? activity['title']!.toString().trim()
+              : l10n.dayPlanCardActivity;
+      final coords = _activityLatLng(activity);
+      final rawId = activity['id']?.toString() ?? '';
+      final placeIdField =
+          activity['placeId']?.toString() ?? activity['place_id']?.toString();
+      final id = (placeIdField != null && placeIdField.isNotEmpty)
+          ? (placeIdField.startsWith('google_')
+              ? placeIdField
+              : 'google_$placeIdField')
+          : 'myday_${rawId.isNotEmpty ? rawId : title.hashCode}';
+      final lat = coords.lat ?? 0.0;
+      final lng = coords.lng ?? 0.0;
+      final imageUrl = activity['imageUrl']?.toString() ?? '';
+      final address = activity['address']?.toString() ?? '';
+      placeToSchedule = Place(
+        id: id,
+        name: title,
+        address: address,
+        location: PlaceLocation(lat: lat, lng: lng),
+        photos: imageUrl.isNotEmpty ? [imageUrl] : [],
+        description: activity['description']?.toString(),
+        types: const ['point_of_interest'],
+        rating: (activity['rating'] as num?)?.toDouble() ?? 0,
+        priceLevel: (activity['priceLevel'] as num?)?.toInt(),
+      );
+    }
+
+    final selectedDate = ref.read(selectedMyDayDateProvider);
+    final planningDate = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+
+    final scheduledActivityService =
+        ref.read(scheduledActivityServiceProvider);
+    final occupied =
+        await scheduledActivityService.getOccupiedTimeSlotKeysForPlaceOnDate(
+      placeId: placeToSchedule.id,
+      date: planningDate,
+    );
+
+    if (!mounted) return;
+    if (occupied.length >= 3) {
+      showMoodyToast(context, l10n.exploreAlreadyInDayPlan);
+      return;
+    }
+
+    HapticFeedback.lightImpact();
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => AddPlaceToMyDaySheet(
+        place: placeToSchedule,
+        planningDate: planningDate,
+        onTimeSelected: (DateTime startTime) => saveExplorePlaceToMyDay(
+          context: context,
+          ref: ref,
+          place: placeToSchedule,
+          startTime: startTime,
+          photoSelectionSeed: 0,
+        ),
+      ),
     );
   }
 

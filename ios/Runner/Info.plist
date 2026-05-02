@@ -69,9 +69,13 @@
 		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>WanderMood needs access to location to find perfect spots near you and provide personalized recommendations.</string>
+	<string>WanderMood uses your location to suggest nearby places and accurate mood-based plans.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>WanderMood needs access to location to find perfect spots near you and provide personalized recommendations.</string>
+	<string>WanderMood needs background location to detect when you arrive at planned places, update check-ins, and keep your day plan context-aware.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>WanderMood uses your camera to scan a friend's QR code and join their day plan.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
