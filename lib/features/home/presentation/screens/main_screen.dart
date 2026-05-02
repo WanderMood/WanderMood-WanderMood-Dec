@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -521,6 +522,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     Widget weekendPlanButton(String label, DateTime date) {
       return GestureDetector(
         onTap: () {
+          HapticFeedback.lightImpact();
           context.push('/moody', extra: {
             'targetDate': DateTime(date.year, date.month, date.day).toIso8601String(),
           });
@@ -616,6 +618,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // The default logic `selectedIndex == index` handles this correctly, as selectedIndex will be 1.
     
     final onTap = () {
+      if (!isSelected) {
+        HapticFeedback.selectionClick();
+      }
       ref.read(mainTabProvider.notifier).state = index;
       // Refresh My Day data whenever the user navigates to it so newly added
       // activities (e.g. from Explore) always reflect the correct status.
@@ -692,6 +697,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // [Expanded]; icon slot ≥44×44 (iOS minimum touch target); character slightly
     // larger than Material icons so the center tab reads as the hero control.
     void openMoodyHub() {
+      if (!isSelected) {
+        HapticFeedback.selectionClick();
+      }
       ref.read(mainTabProvider.notifier).state = 2;
     }
 

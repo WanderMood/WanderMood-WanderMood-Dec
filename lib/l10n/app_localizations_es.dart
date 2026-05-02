@@ -11129,24 +11129,24 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aquí están lugares guardados, modo de viaje, estadísticas y vibes favoritos. Toca Ajustes de la app para notificaciones, idioma, privacidad y ayuda.';
 
   @override
-  String get appTourStepMyDayContentBody =>
-      'Empieza aquí: tu día se arma aquí. ¿Planes? Toca para detalles o ruta.';
+  String get appTourStepMyDayContentTips =>
+      'Tu línea de tiempo para hoy y días cercanos\nToca una actividad para detalles o ruta\nAñade sitios desde Explorar o hablando con Moody\nUsa la franja de fechas para cambiar de día\nDesliza hacia abajo para actualizar';
 
   @override
-  String get appTourStepExploreContentBody =>
-      'Lugares según tu mood. Toca una tarjeta para ver más y añadir a Mi día.';
+  String get appTourStepExploreContentTips =>
+      'Lugares según tu estado de ánimo y ubicación\nAbre una tarjeta para fotos y acciones\nAñade a Mi día con un toque\nFiltros, búsqueda y vista de mapa\nIdeal para comer, cultura y joyas ocultas';
 
   @override
-  String get appTourStepMoodyContentBody =>
-      '¿Ideas? Habla con Moody—escribe o toca una sugerencia.';
+  String get appTourStepMoodyContentTips =>
+      'Chatea con Moody para ideas y planes\nEscribe o toca sugerencias rápidas\nLo que planificas aparece en Mi día\nLos check-ins ayudan a Moody a entenderte\nTu estilo define cómo suena Moody';
 
   @override
-  String get appTourStepAgendaContentBody =>
-      'Todo lo programado, día a día. Abre una fecha y ajusta en Mi día si quieres.';
+  String get appTourStepAgendaContentTips =>
+      'Todo lo programado por fecha\nToca un día para esa línea de tiempo\nEdita de nuevo en Mi día si hace falta\nMira lo que viene esta semana\nSe mantiene al día con tus planes';
 
   @override
-  String get appTourStepProfileContentBody =>
-      'Lugares guardados, modo viaje y ajustes de la app.';
+  String get appTourStepProfileContentTips =>
+      'Lugares guardados, listas y favoritos\nModo viaje y preferencias personales\nNotificaciones, idioma y apariencia\nPrivacidad, datos y cuenta\nEl resto en Ajustes—usa la barra inferior para cambiar de sección';
 
   @override
   String get appTourBottomNavHint =>

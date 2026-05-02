@@ -11018,24 +11018,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Saved places, travel mode, stats, and favorite vibes live here. Tap App settings for notifications, language, privacy, and help.';
 
   @override
-  String get appTourStepMyDayContentBody =>
-      'Start here: your day builds here. When you add plans, tap anything for details or directions.';
+  String get appTourStepMyDayContentTips =>
+      'Your timeline for today and nearby days\nTap any activity for details or directions\nAdd spots from Explore or by chatting with Moody\nUse the date strip to jump between days\nPull down to refresh your plan';
 
   @override
-  String get appTourStepExploreContentBody =>
-      'Find places matched to your mood. Tap a card to see more and add it to My Day.';
+  String get appTourStepExploreContentTips =>
+      'Places tuned to your mood and where you are\nOpen a card for details, photos, and actions\nAdd somewhere to My Day in one tap\nFilter, search, and try map view when you want\nGreat for food, culture, and hidden gems';
 
   @override
-  String get appTourStepMoodyContentBody =>
-      'Need ideas? Chat with Moody—type or tap what it suggests.';
+  String get appTourStepMoodyContentTips =>
+      'Chat with Moody for ideas and day plans\nType freely or tap quick suggestions\nPlans you make show up on My Day\nCheck-ins help Moody match your vibe\nYour style setting shapes how Moody sounds';
 
   @override
-  String get appTourStepAgendaContentBody =>
-      'See everything you’ve scheduled by day. Open a date, then tweak details in My Day if you like.';
+  String get appTourStepAgendaContentTips =>
+      'Everything scheduled, organized by date\nTap a day to focus that timeline\nTweak items back on My Day when needed\nSee what is coming up this week\nKeeps in sync with plans you add elsewhere';
 
   @override
-  String get appTourStepProfileContentBody =>
-      'Saved places, travel mode, and app settings live here.';
+  String get appTourStepProfileContentTips =>
+      'Saved places, lists, and favorites\nTravel mode and personal preferences\nNotifications, language, and look & feel\nPrivacy, data, and account controls\nApp settings hold the rest—use the bottom tabs anytime to switch areas';
 
   @override
   String get appTourBottomNavHint =>

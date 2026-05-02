@@ -11123,24 +11123,24 @@ class AppLocalizationsDe extends AppLocalizations {
       'Gespeicherte Orte, Reisemodus, Statistiken und Lieblings-Vibes findest du hier. Tippe auf App-Einstellungen für Benachrichtigungen, Sprache, Datenschutz und Hilfe.';
 
   @override
-  String get appTourStepMyDayContentBody =>
-      'Start hier: dein Tag entsteht hier. Mit Plänen? Tippen für Details oder Route.';
+  String get appTourStepMyDayContentTips =>
+      'Deine Zeitleiste für heute und weitere Tage\nTippe auf Aktivitäten für Details oder Route\nFüge Orte über Entdecken oder Moody hinzu\nMit dem Datumsstreifen zwischen Tagen wechseln\nZum Aktualisieren nach unten ziehen';
 
   @override
-  String get appTourStepExploreContentBody =>
-      'Orte passend zu deiner Stimmung. Karte antippen, mehr sehen, zu Meinem Tag hinzufügen.';
+  String get appTourStepExploreContentTips =>
+      'Orte passend zu Stimmung und Standort\nKarte öffnen für Details, Fotos und Aktionen\nMit einem Tipp zu Mein Tag hinzufügen\nFilter, Suche und Kartenansicht nutzen\nIdeal für Essen, Kultur und Geheimtipps';
 
   @override
-  String get appTourStepMoodyContentBody =>
-      'Ideen gefällig? Schreib mit Moody—tippen oder Vorschlag nutzen.';
+  String get appTourStepMoodyContentTips =>
+      'Chatte mit Moody für Ideen und Tagespläne\nSchreib frei oder tippe auf Vorschläge\nGeplantes erscheint auf Mein Tag\nCheck-ins helfen Moody, dich zu verstehen\nDein Stil bestimmt die Tonalität von Moody';
 
   @override
-  String get appTourStepAgendaContentBody =>
-      'Alles Geplante nach Tag. Datum öffnen, bei Bedarf in Mein Tag anpassen.';
+  String get appTourStepAgendaContentTips =>
+      'Alles Geplante, sortiert nach Datum\nTag antippen für diese Zeitleiste\nAnpassungen wieder auf Mein Tag\nKommende Termine in der Woche sehen\nBleibt mit neuen Plänen synchron';
 
   @override
-  String get appTourStepProfileContentBody =>
-      'Gespeicherte Orte, Reisemodus und App-Einstellungen.';
+  String get appTourStepProfileContentTips =>
+      'Gespeicherte Orte, Listen und Favoriten\nReisemodus und persönliche Vorlieben\nBenachrichtigungen, Sprache und Erscheinungsbild\nDatenschutz, Daten und Account\nMehr in den App-Einstellungen—über die unteren Tabs jederzeit wechseln';
 
   @override
   String get appTourBottomNavHint =>

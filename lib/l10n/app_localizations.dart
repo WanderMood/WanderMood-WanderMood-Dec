@@ -19239,35 +19239,35 @@ abstract class AppLocalizations {
   /// **'Saved places, travel mode, stats, and favorite vibes live here. Tap App settings for notifications, language, privacy, and help.'**
   String get appTourStepProfileBody;
 
-  /// No description provided for @appTourStepMyDayContentBody.
+  /// No description provided for @appTourStepMyDayContentTips.
   ///
   /// In en, this message translates to:
-  /// **'Start here: your day builds here. When you add plans, tap anything for details or directions.'**
-  String get appTourStepMyDayContentBody;
+  /// **'Your timeline for today and nearby days\nTap any activity for details or directions\nAdd spots from Explore or by chatting with Moody\nUse the date strip to jump between days\nPull down to refresh your plan'**
+  String get appTourStepMyDayContentTips;
 
-  /// No description provided for @appTourStepExploreContentBody.
+  /// No description provided for @appTourStepExploreContentTips.
   ///
   /// In en, this message translates to:
-  /// **'Find places matched to your mood. Tap a card to see more and add it to My Day.'**
-  String get appTourStepExploreContentBody;
+  /// **'Places tuned to your mood and where you are\nOpen a card for details, photos, and actions\nAdd somewhere to My Day in one tap\nFilter, search, and try map view when you want\nGreat for food, culture, and hidden gems'**
+  String get appTourStepExploreContentTips;
 
-  /// No description provided for @appTourStepMoodyContentBody.
+  /// No description provided for @appTourStepMoodyContentTips.
   ///
   /// In en, this message translates to:
-  /// **'Need ideas? Chat with Moody—type or tap what it suggests.'**
-  String get appTourStepMoodyContentBody;
+  /// **'Chat with Moody for ideas and day plans\nType freely or tap quick suggestions\nPlans you make show up on My Day\nCheck-ins help Moody match your vibe\nYour style setting shapes how Moody sounds'**
+  String get appTourStepMoodyContentTips;
 
-  /// No description provided for @appTourStepAgendaContentBody.
+  /// No description provided for @appTourStepAgendaContentTips.
   ///
   /// In en, this message translates to:
-  /// **'See everything you’ve scheduled by day. Open a date, then tweak details in My Day if you like.'**
-  String get appTourStepAgendaContentBody;
+  /// **'Everything scheduled, organized by date\nTap a day to focus that timeline\nTweak items back on My Day when needed\nSee what is coming up this week\nKeeps in sync with plans you add elsewhere'**
+  String get appTourStepAgendaContentTips;
 
-  /// No description provided for @appTourStepProfileContentBody.
+  /// No description provided for @appTourStepProfileContentTips.
   ///
   /// In en, this message translates to:
-  /// **'Saved places, travel mode, and app settings live here.'**
-  String get appTourStepProfileContentBody;
+  /// **'Saved places, lists, and favorites\nTravel mode and personal preferences\nNotifications, language, and look & feel\nPrivacy, data, and account controls\nApp settings hold the rest—use the bottom tabs anytime to switch areas'**
+  String get appTourStepProfileContentTips;
 
   /// No description provided for @appTourBottomNavHint.
   ///

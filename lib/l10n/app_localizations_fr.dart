@@ -11177,24 +11177,24 @@ class AppLocalizationsFr extends AppLocalizations {
       'Lieux enregistrés, mode voyage, stats et vibes favorites sont ici. Touche Paramètres de l\'app pour notifications, langue, confidentialité et aide.';
 
   @override
-  String get appTourStepMyDayContentBody =>
-      'Commence ici : ta journée se construit ici. Avec des plans ? Touche pour détails ou itinéraire.';
+  String get appTourStepMyDayContentTips =>
+      'Ta frise du jour et des jours proches\nTouche une activité pour détails ou itinéraire\nAjoute des lieux via Explorer ou en parlant à Moody\nUtilise la bande de dates pour changer de jour\nTire vers le bas pour actualiser';
 
   @override
-  String get appTourStepExploreContentBody =>
-      'Des lieux selon ton mood. Touche une fiche pour en voir plus et l’ajouter à Ma journée.';
+  String get appTourStepExploreContentTips =>
+      'Lieux selon ton humeur et ta position\nOuvre une carte pour photos et actions\nAjoute à Ma journée en un geste\nFiltres, recherche et vue carte quand tu veux\nIdéal pour manger, culture et pépites';
 
   @override
-  String get appTourStepMoodyContentBody =>
-      'Besoin d’idées ? Parle à Moody—écris ou touche une suggestion.';
+  String get appTourStepMoodyContentTips =>
+      'Discute avec Moody pour des idées et des plans\nÉcris librement ou touche une suggestion\nCe que tu planifies apparaît sur Ma journée\nLes check-ins aident Moody à te comprendre\nTon style guide la voix de Moody';
 
   @override
-  String get appTourStepAgendaContentBody =>
-      'Tout ce qui est planifié, jour par jour. Ouvre une date et ajuste dans Ma journée si tu veux.';
+  String get appTourStepAgendaContentTips =>
+      'Tout ce qui est prévu, par date\nTouche un jour pour cette frise\nAjuste depuis Ma journée si besoin\nVoir la suite de la semaine\nReste aligné avec tes autres plans';
 
   @override
-  String get appTourStepProfileContentBody =>
-      'Lieux enregistrés, mode voyage et réglages de l’app.';
+  String get appTourStepProfileContentTips =>
+      'Lieux enregistrés, listes et favoris\nMode voyage et préférences perso\nNotifications, langue et apparence\nConfidentialité, données et compte\nLe reste dans Réglages—les onglets en bas pour naviguer';
 
   @override
   String get appTourBottomNavHint =>

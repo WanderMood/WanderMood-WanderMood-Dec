@@ -11063,24 +11063,24 @@ class AppLocalizationsNl extends AppLocalizations {
       'Opgeslagen plekken, reismodus, statistieken en favoriete vibes staan hier. Tik op App-instellingen voor meldingen, taal, privacy en hulp.';
 
   @override
-  String get appTourStepMyDayContentBody =>
-      'Begin hier: je dag groeit hier. Heb je plannen? Tik voor details of route.';
+  String get appTourStepMyDayContentTips =>
+      'Je tijdlijn voor vandaag en dagen erna\nTik op een activiteit voor details of route\nVoeg plekken toe via Ontdekken of Moody\nGebruik de datumbalk om van dag te wisselen\nTrek omlaag om te vernieuwen';
 
   @override
-  String get appTourStepExploreContentBody =>
-      'Vind plekken bij je mood. Tik een kaart voor meer en voeg toe aan Mijn dag.';
+  String get appTourStepExploreContentTips =>
+      'Plekken op basis van stemming en locatie\nOpen een kaart voor details, foto’s en acties\nToevoegen aan Mijn dag met één tik\nFilter, zoeken en kaartweergave\nLeuk voor eten, cultuur en parels';
 
   @override
-  String get appTourStepMoodyContentBody =>
-      'Ideeën nodig? Praat met Moody—typ of tik een suggestie.';
+  String get appTourStepMoodyContentTips =>
+      'Praat met Moody voor ideeën en plannen\nTyp vrij of tik op snelle suggesties\nWat je plant verschijnt op Mijn dag\nCheck-ins helpen Moody jou te begrijpen\nJe stijl bepaalt hoe Moody klinkt';
 
   @override
-  String get appTourStepAgendaContentBody =>
-      'Alles wat gepland is, per dag. Open een datum en pas zo nodig aan in Mijn dag.';
+  String get appTourStepAgendaContentTips =>
+      'Alles wat gepland is, per datum\nTik op een dag voor die tijdlijn\nPas aan op Mijn dag waar nodig\nZie wat er deze week aankomt\nBlijft synchroon met je plannen';
 
   @override
-  String get appTourStepProfileContentBody =>
-      'Opgeslagen plekken, reismodus en app-instellingen.';
+  String get appTourStepProfileContentTips =>
+      'Opgeslagen plekken, lijsten en favorieten\nReismodus en persoonlijke voorkeuren\nMeldingen, taal en uiterlijk\nPrivacy, gegevens en account\nMeer in App-instellingen—gebruik de onderste tabbladen om te wisselen';
 
   @override
   String get appTourBottomNavHint =>
