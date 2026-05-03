@@ -1784,6 +1784,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileEditBirthdayLabel => 'Geburtstag';
 
   @override
+  String get profileEditDietaryInPreferencesHint =>
+      'Ernährung & Inklusion findest du unter „Deine Einstellungen“ — zentral an einem Ort.';
+
+  @override
+  String get profileEditDietaryInPreferencesButton => 'Einstellungen öffnen';
+
+  @override
+  String get notifBirthdayCongratsTitle =>
+      'Herzlichen Glückwunsch von Moody 🎂';
+
+  @override
+  String get notifBirthdayCongratsBody =>
+      'Genieß deinen Tag — gönn dir etwas Schönes.';
+
+  @override
   String get profileEditSave => 'Speichern';
 
   @override
@@ -2719,6 +2734,48 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsThemeValueSystem => 'System';
+
+  @override
+  String get moodyMemoryTitle => 'Was Moody merkt';
+
+  @override
+  String get moodyMemorySubtitle =>
+      'Chat-Ton und Gewohnheiten, die Moody für dich speichert';
+
+  @override
+  String get moodyMemoryEmpty =>
+      'Noch nichts — schreib mit Moody, dann erscheinen kurze Notizen hier.';
+
+  @override
+  String get moodyMemorySectionNickname => 'Kosename / Wärme';
+
+  @override
+  String get moodyMemorySectionEmoji => 'Emoji-Stil';
+
+  @override
+  String get moodyMemorySectionTone => 'Ton-Hinweise';
+
+  @override
+  String get moodyMemorySectionFacts => 'Was du erzählt hast';
+
+  @override
+  String get moodyMemoryClear => 'Speicher leeren';
+
+  @override
+  String get moodyMemoryClearConfirmTitle => 'Chat-Speicher leeren?';
+
+  @override
+  String get moodyMemoryClearConfirmBody =>
+      'Moody wird diese Gewohnheiten vergessen, bis sich neue ergeben.';
+
+  @override
+  String get moodyMemoryClearConfirmAction => 'Leeren';
+
+  @override
+  String get moodyMemoryClearedToast => 'Moodys Chat-Speicher wurde geleert';
+
+  @override
+  String get moodyMemoryLoadError => 'Speicher konnte nicht geladen werden';
 
   @override
   String get settingsAchievementsLabel => 'Erfolge';
@@ -5483,6 +5540,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get signupInboxFooterChangeEmail => 'E-Mail ändern';
+
+  @override
+  String get signupResendLinkSent =>
+      'Wir haben einen weiteren Link gesendet. Schau in dein Postfach.';
 
   @override
   String get introHeadline1 => 'Deine Stimmung,';
@@ -8765,7 +8826,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileMomentsEmptyCta =>
-      'Bewerte einen Stopp in „Mein Tag“ — dann erscheint er hier.';
+      'Bewerte einen Ort in „Mein Tag“ — dann erscheint er hier.';
 
   @override
   String get momentsListHeroLine =>

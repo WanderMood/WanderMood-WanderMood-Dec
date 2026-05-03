@@ -38,7 +38,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
       return await supabase
           .from('profiles')
           .select(
-              'full_name, username, bio, image_url, mood_streak, currently_exploring')
+              'full_name, username, bio, image_url, mood_streak, currently_exploring, gender')
           .eq('id', userId)
           .maybeSingle();
     } on PostgrestException catch (e) {
@@ -46,7 +46,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
       if (msg.contains('column') && msg.contains('does not exist')) {
         return await supabase
             .from('profiles')
-            .select('full_name, username, bio, image_url, mood_streak')
+            .select('full_name, username, bio, image_url, mood_streak, gender')
             .eq('id', userId)
             .maybeSingle();
       }
@@ -106,6 +106,13 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
 
       final moodStreak = profileRes?['mood_streak'] as int? ?? 0;
 
+      final prefsGender = prefsRes?['gender'] as String?;
+      final profileGender = profileRes?['gender'] as String?;
+      final resolvedGender =
+          (prefsGender != null && prefsGender.isNotEmpty)
+              ? prefsGender
+              : profileGender;
+
       return CurrentUserProfile(
         userId: userId,
         fullName: profileRes?['full_name'] as String?,
@@ -113,7 +120,7 @@ class CurrentUserProfileNotifier extends AsyncNotifier<CurrentUserProfile?> {
         bio: profileRes?['bio'] as String?,
         avatarUrl: avatarUrl,
         ageGroup: prefsRes?['age_group'] as String?,
-        gender: prefsRes?['gender'] as String?,
+        gender: resolvedGender,
         moodStreak: moodStreak,
         homeBase: (profileRes?['currently_exploring'] as String?) ??
             (prefsRes?['home_base'] as String?),

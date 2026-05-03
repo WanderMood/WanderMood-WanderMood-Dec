@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wandermood/features/profile/domain/providers/profile_provider.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,7 +17,6 @@ import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/constants/inclusion_preference_options.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/utils/profile_username.dart';
-import '../widgets/inclusion_dietary_preference_field.dart';
 
 // WanderMood v2 — Edit Profile (Screen 12)
 const Color _wmCream = Color(0xFFF5F0E8);
@@ -51,7 +51,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   
   EditScreenMode _currentMode = EditScreenMode.edit;
   List<String> _favoriteVibes = [];
-  final Set<String> _dietaryInclusionKeys = <String>{};
   
   // Original data for comparison
   Map<String, dynamic> _originalData = {};
@@ -86,11 +85,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .maybeSingle();
 
       final travelVibesRaw = profileResponse?['travel_vibes'] as List<dynamic>?;
-      final vibes = _loadTravelVibes(travelVibesRaw);
-
-      final dietaryNormalized = normalizeInclusionPreferenceKeys(
-        currentProfile?.dietaryRestrictions ?? const [],
-      );
+      var vibes = _loadTravelVibes(travelVibesRaw);
+      if (vibes.isEmpty &&
+          currentProfile != null &&
+          currentProfile.selectedMoods.isNotEmpty) {
+        vibes = List<String>.from(currentProfile.selectedMoods);
+      }
       
       final dateOfBirthRaw = profileResponse?['date_of_birth'];
       final DateTime? dateOfBirth = dateOfBirthRaw != null
@@ -112,9 +112,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               currentProfile?.gender;
           _profileImageUrl = avatarUrl;
           _favoriteVibes = vibes;
-          _dietaryInclusionKeys
-            ..clear()
-            ..addAll(dietaryNormalized);
           
           _originalData = {
             'name': currentProfile?.fullName ?? '',
@@ -125,7 +122,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             'gender': _selectedGender,
             'imageUrl': avatarUrl,
             'vibes': List<String>.from(_favoriteVibes),
-            'dietaryInclusion': List<String>.from(dietaryNormalized),
           };
           
           _isLoading = false;
@@ -157,22 +153,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         _dateOfBirth != _originalData['dateOfBirth'] ||
         _selectedGender != _originalData['gender'] ||
         _selectedImagePath != null ||
-        !_listEquals(_favoriteVibes, _originalData['vibes'] ?? []) ||
-        !_setEquals(
-          _dietaryInclusionKeys,
-          Set<String>.from(
-            (_originalData['dietaryInclusion'] as List<dynamic>?)
-                    ?.map((e) => e.toString()) ??
-                const [],
-          ),
-        );
+        !_listEquals(_favoriteVibes, _originalData['vibes'] ?? []);
     
     setState(() => _hasChanges = hasChanges);
-  }
-
-  bool _setEquals(Set<String> a, Set<String> b) {
-    if (a.length != b.length) return false;
-    return a.containsAll(b);
   }
 
   bool _listEquals(List<String> a, List<String> b) {
@@ -450,14 +433,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // Keep user_preferences in sync so the main profile (CurrentUserProfile)
       // immediately reflects updated vibes.
+      Map<String, dynamic>? existingPrefsRow;
+      try {
+        existingPrefsRow = await supabase
+            .from('user_preferences')
+            .select('dietary_restrictions')
+            .eq('user_id', userId)
+            .maybeSingle();
+      } catch (_) {}
+
+      final rawDr = existingPrefsRow?['dietary_restrictions'];
+      final dietaryList = rawDr is List
+          ? normalizeInclusionPreferenceKeys(
+              rawDr.map((e) => e.toString()).toList(),
+            )
+          : <String>[];
+
       await supabase
           .from('user_preferences')
           .upsert({
             'user_id': userId,
             'selected_moods': _favoriteVibes,
+            'moods': _favoriteVibes,
             'age_group': _deriveAgeGroup(_dateOfBirth),
-            'dietary_restrictions':
-                normalizeInclusionPreferenceKeys(_dietaryInclusionKeys),
+            'dietary_restrictions': dietaryList,
             'updated_at': DateTime.now().toIso8601String(),
           }, onConflict: 'user_id');
 
@@ -499,17 +498,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         setState(() => _isSaving = false);
       }
     }
-  }
-
-  void _toggleDietaryInclusionKey(String key) {
-    setState(() {
-      if (_dietaryInclusionKeys.contains(key)) {
-        _dietaryInclusionKeys.remove(key);
-      } else {
-        _dietaryInclusionKeys.add(key);
-      }
-    });
-    _checkForChanges();
   }
 
   @override
@@ -876,7 +864,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              l10n.prefDietaryInclusionSubtitle,
+                              l10n.profileEditDietaryInPreferencesHint,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: _wmStone,
@@ -884,9 +872,32 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            InclusionDietaryPreferenceField(
-                              selected: _dietaryInclusionKeys,
-                              onToggleKey: _toggleDietaryInclusionKey,
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () =>
+                                    context.push('/settings/preferences'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: _wmForest,
+                                  side: const BorderSide(
+                                    color: _wmForest,
+                                    width: 1.5,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  l10n.profileEditDietaryInPreferencesButton,
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),

@@ -3254,6 +3254,30 @@ abstract class AppLocalizations {
   /// **'Birthday'**
   String get profileEditBirthdayLabel;
 
+  /// No description provided for @profileEditDietaryInPreferencesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Diet and inclusion settings live in Your preferences so you only edit them in one place.'**
+  String get profileEditDietaryInPreferencesHint;
+
+  /// No description provided for @profileEditDietaryInPreferencesButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open preferences'**
+  String get profileEditDietaryInPreferencesButton;
+
+  /// No description provided for @notifBirthdayCongratsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy birthday from Moody 🎂'**
+  String get notifBirthdayCongratsTitle;
+
+  /// No description provided for @notifBirthdayCongratsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hope you’re having a great day — do something that feels good.'**
+  String get notifBirthdayCongratsBody;
+
   /// No description provided for @profileEditSave.
   ///
   /// In en, this message translates to:
@@ -4933,6 +4957,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System'**
   String get settingsThemeValueSystem;
+
+  /// No description provided for @moodyMemoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What Moody remembers'**
+  String get moodyMemoryTitle;
+
+  /// No description provided for @moodyMemorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat tone and habits Moody saves for you'**
+  String get moodyMemorySubtitle;
+
+  /// No description provided for @moodyMemoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing stored yet — chat with Moody and short notes about how you talk will appear here.'**
+  String get moodyMemoryEmpty;
+
+  /// No description provided for @moodyMemorySectionNickname.
+  ///
+  /// In en, this message translates to:
+  /// **'Warmth / nicknames'**
+  String get moodyMemorySectionNickname;
+
+  /// No description provided for @moodyMemorySectionEmoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji vibe'**
+  String get moodyMemorySectionEmoji;
+
+  /// No description provided for @moodyMemorySectionTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Tone notes'**
+  String get moodyMemorySectionTone;
+
+  /// No description provided for @moodyMemorySectionFacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Things you’ve shared'**
+  String get moodyMemorySectionFacts;
+
+  /// No description provided for @moodyMemoryClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear memory'**
+  String get moodyMemoryClear;
+
+  /// No description provided for @moodyMemoryClearConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear chat memory?'**
+  String get moodyMemoryClearConfirmTitle;
+
+  /// No description provided for @moodyMemoryClearConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody will forget these chat habits until new ones build up again.'**
+  String get moodyMemoryClearConfirmBody;
+
+  /// No description provided for @moodyMemoryClearConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get moodyMemoryClearConfirmAction;
+
+  /// No description provided for @moodyMemoryClearedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody’s chat memory was cleared'**
+  String get moodyMemoryClearedToast;
+
+  /// No description provided for @moodyMemoryLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load memory'**
+  String get moodyMemoryLoadError;
 
   /// No description provided for @settingsAchievementsLabel.
   ///
@@ -9739,6 +9841,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'change email'**
   String get signupInboxFooterChangeEmail;
+
+  /// No description provided for @signupResendLinkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent another link. Check your inbox.'**
+  String get signupResendLinkSent;
 
   /// No description provided for @introHeadline1.
   ///
@@ -15461,7 +15569,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileMomentsEmptyCta.
   ///
   /// In en, this message translates to:
-  /// **'Rate a stop on My Day and it shows up here.'**
+  /// **'Rate a place from My Day and it shows up here.'**
   String get profileMomentsEmptyCta;
 
   /// No description provided for @momentsListHeroLine.
@@ -15479,7 +15587,7 @@ abstract class AppLocalizations {
   /// No description provided for @momentsListEmptySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'When you finish a stop on My Day and tap Review, your note appears here. It stays private unless you opt into a partner perk later.'**
+  /// **'When you finish a place on My Day and tap Review, your note appears here. It stays private unless you opt into a partner perk later.'**
   String get momentsListEmptySubtitle;
 
   /// No description provided for @momentsListError.

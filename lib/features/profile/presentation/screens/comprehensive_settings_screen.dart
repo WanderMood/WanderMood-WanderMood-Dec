@@ -164,6 +164,15 @@ class _ComprehensiveSettingsScreenState extends ConsumerState<ComprehensiveSetti
                 ),
                 const SizedBox(height: 10),
                 _buildSettingButton(
+                  icon: Icons.psychology_alt_outlined,
+                  label: l10n.moodyMemoryTitle,
+                  subtitle: l10n.moodyMemorySubtitle,
+                  iconBgColor: _wmForestTint,
+                  iconColor: _wmForest,
+                  onTap: () => context.push('/settings/moody-memory'),
+                ),
+                const SizedBox(height: 10),
+                _buildSettingButton(
                   icon: Icons.palette_outlined,
                   label: l10n.settingsThemeLabel,
                   subtitle: l10n.settingsThemeValueSystem,

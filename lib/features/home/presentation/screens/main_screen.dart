@@ -9,6 +9,7 @@ import 'package:wandermood/features/home/presentation/screens/explore_screen.dar
 import 'package:wandermood/features/home/presentation/screens/dynamic_my_day_screen.dart';
 import 'package:wandermood/features/home/presentation/screens/redesigned_moody_hub.dart';
 import 'package:wandermood/features/home/presentation/screens/moody_idle_screen.dart';
+import 'package:wandermood/core/notifications/birthday_congrats_trigger.dart';
 import 'package:wandermood/core/notifications/engagement_in_app_nudges.dart';
 import 'package:wandermood/core/utils/moody_idle_checker.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
@@ -169,6 +170,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             locale: Localizations.localeOf(context),
             homeBase: prefsEng.homeBase,
           );
+          if (mounted) {
+            await BirthdayCongratsTrigger.maybeShow(context, ref);
+          }
         }
         if (!mounted) return;
         await _maybeShowMainAppTourAuto();

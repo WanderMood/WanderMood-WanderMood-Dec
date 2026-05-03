@@ -26,6 +26,9 @@ abstract class NotificationIds {
   /// Host: friend joined the Mood Match session (one-shot per session).
   static const int moodMatchPartnerJoined = 507;
 
+  /// One-shot on the user's birthday (first app open that local day).
+  static const int birthdayCongrats = 508;
+
   /// Geofence-validated visit (celebratory; tiered prefs + caps).
   static const int visitGeofenceFirstCelebrate = 520;
   /// Optional end-of-day digest (planned; wired when scheduler calls it).

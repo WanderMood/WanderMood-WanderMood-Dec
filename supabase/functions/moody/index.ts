@@ -1165,10 +1165,10 @@ async function searchPlacesForChat(query: string, location: string, coordinates:
 async function fetchUserContext(supabase: any, userId: string): Promise<any> {
   try {
     const [profileResult, prefsResult, checkInsResult, tasteResult] = await Promise.all([
-      supabase.from('profiles').select('favorite_mood,travel_style,travel_vibes,currently_exploring,date_of_birth,language_preference').eq('id', userId).maybeSingle(),
+      supabase.from('profiles').select('favorite_mood,travel_style,travel_vibes,currently_exploring,date_of_birth,language_preference,gender').eq('id', userId).maybeSingle(),
       supabase.from('user_preferences').select('communication_style,travel_interests,selected_moods,social_vibe,planning_pace,favorite_moods,budget_level,dietary_restrictions,travel_styles,language_preference').eq('user_id', userId).maybeSingle(),
       supabase.from('user_check_ins').select('mood,created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
-      supabase.from('user_preference_patterns').select('saved_place_types,skipped_place_types,mood_frequency,top_rated_places,chat_interests,total_interactions').eq('user_id', userId).maybeSingle(),
+      supabase.from('user_preference_patterns').select('saved_place_types,skipped_place_types,mood_frequency,top_rated_places,chat_interests,total_interactions,moody_chat_memory').eq('user_id', userId).maybeSingle(),
     ])
     const p = profileResult.data, q = prefsResult.data, t = tasteResult.data
     const allFavoriteMoods = [...new Set([...(Array.isArray(q?.selected_moods) ? q.selected_moods : []), ...(Array.isArray(q?.favorite_moods) ? q.favorite_moods : [])])]
@@ -1181,8 +1181,11 @@ async function fetchUserContext(supabase: any, userId: string): Promise<any> {
       if (age < 50) return 'adult'
       return 'mature'
     })()
-    return { communicationStyle: q?.communication_style || 'friendly', isLocalMode: p?.currently_exploring === 'local', travelInterests: allInterests, allInterests, socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [], planningPace: q?.planning_pace || 'Same Day Planner', favoriteMoods: allFavoriteMoods, allFavoriteMoods, travelStyle: p?.travel_style || 'adventurous', travelStyles: Array.isArray(q?.travel_styles) ? q.travel_styles : [], recentMoods: (checkInsResult.data || []).map((c: any) => c.mood), budgetLevel: q?.budget_level || 'Mid-Range', dietaryRestrictions: Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : [], languagePreference: q?.language_preference || p?.language_preference || 'en', ageGroup, profile: p, tasteProfile: t ? { savedPlaceTypes: t.saved_place_types || {}, skippedPlaceTypes: t.skipped_place_types || {}, moodFrequency: t.mood_frequency || {}, topRatedPlaces: t.top_rated_places || [], chatInterests: t.chat_interests || [], totalInteractions: t.total_interactions || 0 } : null }
-  } catch (e) { console.warn('⚠️ fetchUserContext failed:', e); return { communicationStyle: 'friendly', isLocalMode: false, travelInterests: [], allInterests: [], socialVibe: [], travelStyle: 'adventurous', travelStyles: [], recentMoods: [], favoriteMoods: [], allFavoriteMoods: [], budgetLevel: 'Mid-Range', dietaryRestrictions: [], languagePreference: 'en', ageGroup: null, planningPace: 'Same Day Planner', profile: null, tasteProfile: null } }
+    const genderRaw = String(p?.gender || '').trim().toLowerCase()
+    const gender = ['man', 'woman', 'non_binary', 'prefer_not_to_say'].includes(genderRaw) ? genderRaw : null
+    const moodyChatMemory = (t && typeof t.moody_chat_memory === 'object' && t.moody_chat_memory !== null) ? t.moody_chat_memory : {}
+    return { communicationStyle: q?.communication_style || 'friendly', isLocalMode: p?.currently_exploring === 'local', travelInterests: allInterests, allInterests, socialVibe: Array.isArray(q?.social_vibe) ? q.social_vibe : [], planningPace: q?.planning_pace || 'Same Day Planner', favoriteMoods: allFavoriteMoods, allFavoriteMoods, travelStyle: p?.travel_style || 'adventurous', travelStyles: Array.isArray(q?.travel_styles) ? q.travel_styles : [], recentMoods: (checkInsResult.data || []).map((c: any) => c.mood), budgetLevel: q?.budget_level || 'Mid-Range', dietaryRestrictions: Array.isArray(q?.dietary_restrictions) ? q.dietary_restrictions : [], languagePreference: q?.language_preference || p?.language_preference || 'en', ageGroup, gender, moodyChatMemory, profile: p, tasteProfile: t ? { savedPlaceTypes: t.saved_place_types || {}, skippedPlaceTypes: t.skipped_place_types || {}, moodFrequency: t.mood_frequency || {}, topRatedPlaces: t.top_rated_places || [], chatInterests: t.chat_interests || [], totalInteractions: t.total_interactions || 0 } : null }
+  } catch (e) { console.warn('⚠️ fetchUserContext failed:', e); return { communicationStyle: 'friendly', isLocalMode: false, travelInterests: [], allInterests: [], socialVibe: [], travelStyle: 'adventurous', travelStyles: [], recentMoods: [], favoriteMoods: [], allFavoriteMoods: [], budgetLevel: 'Mid-Range', dietaryRestrictions: [], languagePreference: 'en', ageGroup: null, gender: null, moodyChatMemory: {}, planningPace: 'Same Day Planner', profile: null, tasteProfile: null } }
 }
 
 async function fetchChatHistory(supabase: any, userId: string, conversationId: string | undefined, limit = 20): Promise<Array<{ role: string; content: string }>> {
@@ -1781,6 +1784,74 @@ function sharedPlaceGroundingBlock(shared_place: unknown): string {
   return `\n\nPLACE IN FOCUS:\nThe user opened this chat with context about one place (JSON below). Treat short questions as about this place unless they clearly switch topic.\n${sharedJson}\n${tail}`
 }
 
+function formatMoodyChatMemoryForPrompt(mem: any): string {
+  if (!mem || typeof mem !== 'object') return ''
+  const nick = typeof mem.nickname_for_user === 'string' ? mem.nickname_for_user.trim() : ''
+  const em = Array.isArray(mem.emoji_hints) ? mem.emoji_hints.filter((e: any) => typeof e === 'string').map((e: string) => e.trim()).filter(Boolean).slice(0, 5) : []
+  const tone = Array.isArray(mem.tone_notes) ? mem.tone_notes.filter((e: any) => typeof e === 'string').map((e: string) => e.trim()).filter(Boolean).slice(0, 5) : []
+  const facts = Array.isArray(mem.sticky_facts) ? mem.sticky_facts.filter((e: any) => typeof e === 'string').map((e: string) => e.trim()).filter(Boolean).slice(0, 5) : []
+  if (!nick && em.length === 0 && tone.length === 0 && facts.length === 0) return ''
+  let s = '\nLearned chat memory (private — weave in naturally; never recite as a bullet list to the user):'
+  if (nick) s += `\n- They use warmth like: "${nick.slice(0, 40)}" — mirror rarely when it fits.`
+  if (em.length) s += `\n- Emoji energy they use: ${em.join(' ')}`
+  if (tone.length) s += `\n- Tone notes: ${tone.join(' · ')}`
+  if (facts.length) s += `\n- Things they've shared: ${facts.join(' · ')}`
+  return s
+}
+
+async function mergeMoodyChatMemory(supabase: any, userId: string, openaiKey: string, lang: 'nl' | 'en', existingRaw: any, transcript: Array<{ role: string; content: string }>): Promise<void> {
+  try {
+    const existingSafe: Record<string, unknown> = existingRaw && typeof existingRaw === 'object' ? { ...existingRaw } : {}
+    delete existingSafe.last_merged_at
+    const lastMerged = existingRaw?.last_merged_at
+    if (typeof lastMerged === 'string' && lastMerged.length > 0) {
+      const t0 = new Date(lastMerged).getTime()
+      if (!Number.isNaN(t0) && Date.now() - t0 < 120000) return
+    }
+    const lines = transcript.slice(-14).map(m => `${m.role}: ${String(m.content || '').slice(0, 480)}`).join('\n')
+    if (!lines.trim()) return
+    const sys = `You maintain a small JSON memory object for a friendly travel chatbot. Output ONLY JSON.
+
+Schema: {"version":1,"nickname_for_user":string|null,"emoji_hints":string[],"tone_notes":string[],"sticky_facts":string[]}
+
+Rules:
+- Merge with existing_json: keep useful prior entries; add only NEW relational habits (nicknames, warmth, slang, emoji style) and stable personal trivia they volunteered (e.g. training streak). Do NOT store place recommendations as facts.
+- Maximum 5 strings TOTAL combined across tone_notes + sticky_facts. Each string max 100 characters.
+- emoji_hints: at most 5 entries; short emoji or emoji clusters only.
+- nickname_for_user: affectionate style they use with you; max 30 chars; null if none.
+- Never store passwords, emails, phone numbers, postal addresses, or medical details.
+- Write strings in ${lang === 'nl' ? 'Dutch' : 'English'}.
+- If nothing new, keep prior tone_notes and sticky_facts where still accurate; remove clear duplicates.`
+
+    const userP = `existing_json: ${JSON.stringify(existingSafe)}\n\nrecent_messages:\n${lines}`
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: sys }, { role: 'user', content: userP }], max_tokens: 400, temperature: 0.25, response_format: { type: 'json_object' } }) })
+    if (!resp.ok) return
+    const data = await resp.json()
+    const raw = data.choices?.[0]?.message?.content
+    if (!raw || typeof raw !== 'string') return
+    let parsed: any
+    try { parsed = JSON.parse(raw) } catch { return }
+    const toneIn = Array.isArray(parsed.tone_notes) ? parsed.tone_notes.filter((x: any) => typeof x === 'string').map((x: string) => x.trim().slice(0, 100)).filter(Boolean) : []
+    const factsIn = Array.isArray(parsed.sticky_facts) ? parsed.sticky_facts.filter((x: any) => typeof x === 'string').map((x: string) => x.trim().slice(0, 100)).filter(Boolean) : []
+    const mergedBullets = [...toneIn, ...factsIn].slice(0, 5)
+    const cleaned: Record<string, unknown> = {
+      version: 1,
+      nickname_for_user: typeof parsed.nickname_for_user === 'string' ? parsed.nickname_for_user.trim().slice(0, 30) || null : null,
+      emoji_hints: Array.isArray(parsed.emoji_hints) ? parsed.emoji_hints.filter((x: any) => typeof x === 'string').map((x: string) => x.trim()).filter(Boolean).slice(0, 5) : [],
+      tone_notes: mergedBullets.slice(0, 3),
+      sticky_facts: mergedBullets.slice(3, 5),
+      last_merged_at: new Date().toISOString(),
+    }
+    const { data: row } = await supabase.from('user_preference_patterns').select('user_id').eq('user_id', userId).maybeSingle()
+    const nowIso = new Date().toISOString()
+    if (row) {
+      await supabase.from('user_preference_patterns').update({ moody_chat_memory: cleaned, last_updated: nowIso }).eq('user_id', userId)
+    } else {
+      await supabase.from('user_preference_patterns').insert({ user_id: userId, last_updated: nowIso, mood_activity_scores: {}, tag_counts: {}, time_preferences: {}, top_rated_places: [], top_rated_activities: [], moody_chat_memory: cleaned })
+    }
+  } catch (_) {}
+}
+
 async function handleChat(supabase: any, userId: string, params: any): Promise<Response> {
   const message = (params.message || '').trim()
   if (!message) return new Response(JSON.stringify({ error: 'Message required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -1806,8 +1877,18 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
   const ageGroupLine = userContext.ageGroup
     ? `\nAge group: ${userContext.ageGroup}.`
     : ''
+  const genderLine = (() => {
+    const g = userContext.gender
+    if (!g) return ''
+    if (g === 'prefer_not_to_say') return '\nUser gender identity: prefers not to say — use inclusive, neutral language; no assumptions or stereotypes.'
+    if (g === 'non_binary') return '\nUser gender identity: non-binary — playful inclusive gender-neutral tone; no assumptions.'
+    if (g === 'man') return '\nUser gender identity: man — warm tone; in grammatically gendered languages use natural masculine agreement only when grammatically required; avoid stereotypes about interests or behavior.'
+    if (g === 'woman') return '\nUser gender identity: woman — warm tone; in grammatically gendered languages use natural feminine agreement only when grammatically required; avoid stereotypes about interests or behavior.'
+    return ''
+  })()
   const sharedBlock = sharedPlaceGroundingBlock(params.shared_place)
-  const systemPromptBase = `${MOODY_CORE}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}${recentMoodsLine}${planningPaceLine}${ageGroupLine}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. Ask max 1 question. NEVER invent place names. If you don't know real places, say: "I don't have strong options for that right now — check Explore"\nReply in the same language the user writes in.${sharedBlock}`
+  const chatMemoryBlock = formatMoodyChatMemoryForPrompt(userContext.moodyChatMemory)
+  const systemPromptBase = `${MOODY_CORE}\n\nCommunication style: ${style}.\n${userCity ? `You are helping the user explore ${userCity} right now.` : 'You help users explore cities worldwide.'}\n${userContext.isLocalMode ? 'User is LOCAL — avoid tourist clichés, prefer hidden gems.' : `User is TRAVELING — best of ${userCity || 'the city'}, mix iconic with local secrets.`}\n${timeBlock}\n${moodTagsLine ? `${moodTagsLine}\n` : ''}User interests: ${JSON.stringify(userContext.allInterests)}\nDietary: ${userContext.dietaryRestrictions?.join(', ') || 'none'}\nBudget: ${userContext.budgetLevel}${tasteContext}${recentMoodsLine}${planningPaceLine}${ageGroupLine}${genderLine}${chatMemoryBlock}\n\nYou have this user's conversation history. Use it naturally — like a friend who actually remembers. If they mentioned being tired, don't suggest a 5km walk. If they mentioned coffee, reference it. Never make it feel like a database lookup.\n\nMax 4 sentences. If the user is only chatting (no clear request for places, plans, or concrete advice), you may end without a question — mirror their warmth and energy. If they clearly want suggestions or activities, at most one short clarifying question. When they use affectionate nicknames or lots of emoji, match that register sparingly across turns when it still fits (e.g. if they call you "bestie", occasional mirrored warmth is OK). NEVER invent place names. If you don't know real places, say: "I don't have strong options for that right now — check Explore"\nReply in the same language the user writes in.${sharedBlock}`
   const systemPrompt = appendFullFilterIntelligence(systemPromptBase)
   const { hasIntent } = detectChatPlaceIntent(message)
   const shouldSuggestPlaces = hasIntent && !!userCity && !!coordinates
@@ -1833,6 +1914,11 @@ async function handleChat(supabase: any, userId: string, params: any): Promise<R
     if (!chatResp.ok) throw new Error(`OpenAI ${chatResp.status}`)
     const data = await chatResp.json(), reply = data.choices?.[0]?.message?.content || getFallbackChat(style, lang, suggestedPlaces)
     supabase.from('ai_conversations').insert([{ user_id: userId, conversation_id: conversationId, role: 'user', content: message }, { user_id: userId, conversation_id: conversationId, role: 'assistant', content: reply }]).then(() => {}).catch(() => {})
+    const fullHistory = [...historyMessages.slice(-20), { role: 'user', content: message }, { role: 'assistant', content: reply }]
+    const userTurns = fullHistory.filter(m => m.role === 'user').length
+    if (userTurns > 0 && userTurns % 10 === 0) {
+      mergeMoodyChatMemory(supabase, userId, openaiKey, lang, userContext.moodyChatMemory, fullHistory).then(() => {}).catch(() => {})
+    }
     return new Response(JSON.stringify({ reply, conversationId, suggested_places: suggestedPlaces }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch {
     const suggestedPlaces = await placesPromise.catch(() => [])

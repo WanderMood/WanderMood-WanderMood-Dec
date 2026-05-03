@@ -1779,6 +1779,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get profileEditBirthdayLabel => 'Verjaardag';
 
   @override
+  String get profileEditDietaryInPreferencesHint =>
+      'Dieet en inclusie stel je in bij Jouw voorkeuren — één plek, geen dubbele schermen.';
+
+  @override
+  String get profileEditDietaryInPreferencesButton => 'Open voorkeuren';
+
+  @override
+  String get notifBirthdayCongratsTitle => 'Gefeliciteerd van Moody 🎂';
+
+  @override
+  String get notifBirthdayCongratsBody =>
+      'Hopelijk geniet je van je dag — trakteer jezelf op iets leuks.';
+
+  @override
   String get profileEditSave => 'Opslaan';
 
   @override
@@ -2705,6 +2719,48 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get settingsThemeValueSystem => 'Systeem';
+
+  @override
+  String get moodyMemoryTitle => 'Wat Moody onthoudt';
+
+  @override
+  String get moodyMemorySubtitle =>
+      'Chattoon en gewoontes die Moody voor je bewaart';
+
+  @override
+  String get moodyMemoryEmpty =>
+      'Nog niets opgeslagen — chat met Moody en korte notities verschijnen hier.';
+
+  @override
+  String get moodyMemorySectionNickname => 'Toon / koosnaampjes';
+
+  @override
+  String get moodyMemorySectionEmoji => 'Emoji-sfeer';
+
+  @override
+  String get moodyMemorySectionTone => 'Toonnotities';
+
+  @override
+  String get moodyMemorySectionFacts => 'Wat je gedeeld hebt';
+
+  @override
+  String get moodyMemoryClear => 'Geheugen wissen';
+
+  @override
+  String get moodyMemoryClearConfirmTitle => 'Chatgeheugen wissen?';
+
+  @override
+  String get moodyMemoryClearConfirmBody =>
+      'Moody vergeet deze gewoontes tot er nieuwe zijn opgebouwd.';
+
+  @override
+  String get moodyMemoryClearConfirmAction => 'Wissen';
+
+  @override
+  String get moodyMemoryClearedToast => 'Moody’s chatgeheugen is gewist';
+
+  @override
+  String get moodyMemoryLoadError => 'Kon geheugen niet laden';
 
   @override
   String get settingsAchievementsLabel => 'Prestaties';
@@ -5458,6 +5514,10 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get signupInboxFooterChangeEmail => 'e-mail wijzigen';
+
+  @override
+  String get signupResendLinkSent =>
+      'We hebben opnieuw een link gestuurd. Check je inbox.';
 
   @override
   String get introHeadline1 => 'Jouw mood,';
@@ -8728,7 +8788,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get profileMomentsEmptyCta =>
-      'Beoordeel een stop op Mijn Dag en hij verschijnt hier.';
+      'Geef een plek vanuit Mijn Dag een beoordeling — dan verschijnt die hier.';
 
   @override
   String get momentsListHeroLine =>
@@ -8739,7 +8799,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get momentsListEmptySubtitle =>
-      'Rond een stop op Mijn Dag af en tik op Beoordelen. Je notitie staat hier — privé, tenzij je later meedoet met een partneraanbieding.';
+      'Rond een plek op Mijn Dag af en tik op Beoordelen. Je notitie staat hier — privé, tenzij je later meedoet met een partneraanbieding.';
 
   @override
   String get momentsListError => 'Bezoeken laden lukt niet';

@@ -32,6 +32,7 @@ import '../../features/profile/presentation/screens/globe_screen.dart';
 import '../../features/profile/presentation/screens/notifications_screen.dart';
 import '../../features/notifications/presentation/notification_centre_screen.dart';
 import '../../features/profile/presentation/screens/comprehensive_settings_screen.dart';
+import '../../features/profile/presentation/screens/moody_chat_memory_screen.dart';
 import '../../features/profile/presentation/screens/preferences_screen.dart';
 import '../../features/profile/presentation/screens/account_security_screen.dart';
 import '../../features/profile/presentation/screens/privacy_settings_screen.dart';
@@ -965,6 +966,11 @@ GoRouter router(RouterRef ref) {
         path: '/settings/language',
         name: 'language-settings',
         builder: (context, state) => const LanguageSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/moody-memory',
+        name: 'moody-memory',
+        builder: (context, state) => const MoodyChatMemoryScreen(),
       ),
       GoRoute(
         path: '/settings/theme',

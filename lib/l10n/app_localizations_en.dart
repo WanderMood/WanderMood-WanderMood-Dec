@@ -1766,6 +1766,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileEditBirthdayLabel => 'Birthday';
 
   @override
+  String get profileEditDietaryInPreferencesHint =>
+      'Diet and inclusion settings live in Your preferences so you only edit them in one place.';
+
+  @override
+  String get profileEditDietaryInPreferencesButton => 'Open preferences';
+
+  @override
+  String get notifBirthdayCongratsTitle => 'Happy birthday from Moody 🎂';
+
+  @override
+  String get notifBirthdayCongratsBody =>
+      'Hope you’re having a great day — do something that feels good.';
+
+  @override
   String get profileEditSave => 'Save';
 
   @override
@@ -2694,6 +2708,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsThemeValueSystem => 'System';
+
+  @override
+  String get moodyMemoryTitle => 'What Moody remembers';
+
+  @override
+  String get moodyMemorySubtitle => 'Chat tone and habits Moody saves for you';
+
+  @override
+  String get moodyMemoryEmpty =>
+      'Nothing stored yet — chat with Moody and short notes about how you talk will appear here.';
+
+  @override
+  String get moodyMemorySectionNickname => 'Warmth / nicknames';
+
+  @override
+  String get moodyMemorySectionEmoji => 'Emoji vibe';
+
+  @override
+  String get moodyMemorySectionTone => 'Tone notes';
+
+  @override
+  String get moodyMemorySectionFacts => 'Things you’ve shared';
+
+  @override
+  String get moodyMemoryClear => 'Clear memory';
+
+  @override
+  String get moodyMemoryClearConfirmTitle => 'Clear chat memory?';
+
+  @override
+  String get moodyMemoryClearConfirmBody =>
+      'Moody will forget these chat habits until new ones build up again.';
+
+  @override
+  String get moodyMemoryClearConfirmAction => 'Clear';
+
+  @override
+  String get moodyMemoryClearedToast => 'Moody’s chat memory was cleared';
+
+  @override
+  String get moodyMemoryLoadError => 'Could not load memory';
 
   @override
   String get settingsAchievementsLabel => 'Achievements';
@@ -5439,6 +5494,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signupInboxFooterChangeEmail => 'change email';
+
+  @override
+  String get signupResendLinkSent => 'We sent another link. Check your inbox.';
 
   @override
   String get introHeadline1 => 'Your mood,';
@@ -8698,7 +8756,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileMomentsEmptyCta =>
-      'Rate a stop on My Day and it shows up here.';
+      'Rate a place from My Day and it shows up here.';
 
   @override
   String get momentsListHeroLine =>
@@ -8709,7 +8767,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get momentsListEmptySubtitle =>
-      'When you finish a stop on My Day and tap Review, your note appears here. It stays private unless you opt into a partner perk later.';
+      'When you finish a place on My Day and tap Review, your note appears here. It stays private unless you opt into a partner perk later.';
 
   @override
   String get momentsListError => 'Could not load your visits';

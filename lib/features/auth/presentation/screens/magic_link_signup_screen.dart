@@ -156,9 +156,17 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     } else {
       final email = _emailController.text.trim();
       if (!_looksLikeValidEmail(email)) {
+        if (mounted && _emailSent) {
+          setState(() {
+            _emailSent = false;
+            _errorMessage = AppLocalizations.of(context)!.signupEmailInvalid;
+          });
+        }
         return;
       }
     }
+
+    final isResendFromSuccessUi = _emailSent;
 
     setState(() {
       _isLoading = true;
@@ -186,13 +194,23 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
           .remember(email);
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
           _isLoading = false;
-          _emailSent = true;
+          if (!isResendFromSuccessUi) {
+            _emailSent = true;
+          }
         });
-        
-        // Mark signup started
-        ref.read(onboardingProgressProvider.notifier).markSignedUp();
+        if (!isResendFromSuccessUi) {
+          ref.read(onboardingProgressProvider.notifier).markSignedUp();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.signupResendLinkSent),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -307,6 +325,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   }
 
   Future<void> _resendMagicLink() async {
+    if (_isLoading) return;
     await _sendMagicLink();
   }
 
@@ -533,35 +552,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             if (_errorMessage != null) ...[
                               const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: _wmError.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _wmError.withValues(alpha: 0.25),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.error_outline,
-                                      color: _wmError,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        _errorMessage!,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: _wmError,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              _magicLinkErrorCard(_errorMessage!),
                             ],
                             const SizedBox(height: 18),
                             ScaleTransition(
@@ -668,6 +659,38 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     );
   }
 
+  Widget _magicLinkErrorCard(String message) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _wmError.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _wmError.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: _wmError,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: _wmError,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNlPrivacyFooter() {
     final l10n = AppLocalizations.of(context)!;
     final base = GoogleFonts.poppins(
@@ -697,6 +720,31 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     );
   }
 
+  Widget _inboxFooterActionLink({
+    required String label,
+    required VoidCallback? onPressed,
+  }) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: _wmForest,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        minimumSize: const Size(48, 48),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: _wmForest,
+          decoration: TextDecoration.underline,
+          decorationColor: _wmForest,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSuccessState() {
     final l10n = AppLocalizations.of(context)!;
     final email = _emailController.text.trim();
@@ -705,22 +753,6 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       height: 1.4,
       color: _wmStone,
     );
-    final actionStyle = GoogleFonts.poppins(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: _wmForest,
-    );
-
-    Widget tappable(String label, VoidCallback onTap) {
-      return GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-          child: Text(label, style: actionStyle),
-        ),
-      );
-    }
 
     return SafeArea(
       child: LayoutBuilder(
@@ -855,6 +887,10 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                               ),
                             ),
                             const SizedBox(height: 18),
+                            if (_errorMessage != null) ...[
+                              _magicLinkErrorCard(_errorMessage!),
+                              const SizedBox(height: 12),
+                            ],
                             Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
                               alignment: WrapAlignment.center,
@@ -862,17 +898,43 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                               runSpacing: 4,
                               children: [
                                 Text(l10n.signupInboxFooterPrefix, style: muted),
-                                tappable(
-                                  l10n.signupInboxFooterResend,
-                                  _resendMagicLink,
+                                _inboxFooterActionLink(
+                                  label: l10n.signupInboxFooterResend,
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          _resendMagicLink();
+                                        },
                                 ),
                                 Text(l10n.signupInboxFooterOr, style: muted),
-                                tappable(
-                                  l10n.signupInboxFooterChangeEmail,
-                                  () => setState(() => _emailSent = false),
+                                _inboxFooterActionLink(
+                                  label: l10n.signupInboxFooterChangeEmail,
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() {
+                                            _emailSent = false;
+                                            _errorMessage = null;
+                                          });
+                                        },
                                 ),
                               ],
                             ),
+                            if (_isLoading) ...[
+                              const SizedBox(height: 10),
+                              const Center(
+                                child: SizedBox(
+                                  width: 26,
+                                  height: 26,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: _wmForest,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

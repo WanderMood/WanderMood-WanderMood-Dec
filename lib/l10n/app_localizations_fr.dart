@@ -1791,6 +1791,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileEditBirthdayLabel => 'Date de naissance';
 
   @override
+  String get profileEditDietaryInPreferencesHint =>
+      'Régime et inclusion se règlent dans Tes préférences — un seul endroit.';
+
+  @override
+  String get profileEditDietaryInPreferencesButton => 'Ouvrir les préférences';
+
+  @override
+  String get notifBirthdayCongratsTitle =>
+      'Joyeux anniversaire de la part de Moody 🎂';
+
+  @override
+  String get notifBirthdayCongratsBody =>
+      'Profite bien de ta journée — fais-toi plaisir.';
+
+  @override
   String get profileEditSave => 'Enregistrer';
 
   @override
@@ -2734,6 +2749,49 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsThemeValueSystem => 'Système';
+
+  @override
+  String get moodyMemoryTitle => 'Ce que Moody retient';
+
+  @override
+  String get moodyMemorySubtitle =>
+      'Ton et habitudes de chat que Moody garde pour toi';
+
+  @override
+  String get moodyMemoryEmpty =>
+      'Rien pour l’instant — discute avec Moody et des notes apparaîtront ici.';
+
+  @override
+  String get moodyMemorySectionNickname => 'Surnoms / chaleur';
+
+  @override
+  String get moodyMemorySectionEmoji => 'Ambiance emoji';
+
+  @override
+  String get moodyMemorySectionTone => 'Notes de ton';
+
+  @override
+  String get moodyMemorySectionFacts => 'Ce que tu as partagé';
+
+  @override
+  String get moodyMemoryClear => 'Effacer la mémoire';
+
+  @override
+  String get moodyMemoryClearConfirmTitle => 'Effacer la mémoire du chat ?';
+
+  @override
+  String get moodyMemoryClearConfirmBody =>
+      'Moody oubliera ces habitudes jusqu’à ce que de nouvelles se créent.';
+
+  @override
+  String get moodyMemoryClearConfirmAction => 'Effacer';
+
+  @override
+  String get moodyMemoryClearedToast =>
+      'La mémoire de chat de Moody a été effacée';
+
+  @override
+  String get moodyMemoryLoadError => 'Impossible de charger la mémoire';
 
   @override
   String get settingsAchievementsLabel => 'Succès';
@@ -5500,6 +5558,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get signupInboxFooterChangeEmail => 'changer d\'e-mail';
+
+  @override
+  String get signupResendLinkSent =>
+      'Nous avons renvoyé un lien. Vérifie ta boîte mail.';
 
   @override
   String get introHeadline1 => 'Ton mood,';
@@ -8803,7 +8865,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileMomentsEmptyCta =>
-      'Note une étape dans Ma journée et elle apparaît ici.';
+      'Note un lieu dans Ma journée et il apparaît ici.';
 
   @override
   String get momentsListHeroLine =>
