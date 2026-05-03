@@ -241,17 +241,26 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       error: (_, __) => profileAsync.valueOrNull?.moodStreak ?? 0,
     );
 
+    Widget tourAnchor(Widget child) {
+      if (widget.mainAppTourContentKey == null) return child;
+      return KeyedSubtree(
+        key: widget.mainAppTourContentKey!,
+        child: child,
+      );
+    }
+
     final bodyContent = currentStatusValue?['type'] == 'no_plan'
-        ? _buildImmersiveNoPlanState(l10n)
+        ? tourAnchor(_buildImmersiveNoPlanState(l10n))
         : CustomScrollView(
           slivers: [
             // Header Section
             SliverToBoxAdapter(
               // Match Explore: do not pad the header's bottom with the home-indicator
               // inset — that reads as a large empty band above the timeline slivers.
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
+              child: tourAnchor(
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,6 +324,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     ],
                   ),
                 ),
+                ),
               ),
             ),
 
@@ -334,18 +344,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ],
         );
 
-    final wrappedBody = widget.mainAppTourContentKey != null
-        ? KeyedSubtree(
-            key: widget.mainAppTourContentKey!,
-            child: bodyContent,
-          )
-        : bodyContent;
-
     return Scaffold(
       key: _scaffoldKey,
       drawer: const ProfileDrawer(),
       backgroundColor: const Color(0xFFF5F0E8), // wmCream — match Explore / main shell
-      body: wrappedBody,
+      body: bodyContent,
     );
   }
 

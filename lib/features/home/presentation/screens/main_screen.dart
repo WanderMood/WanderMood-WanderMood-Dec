@@ -160,6 +160,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       Future(() async {
         if (!mounted) return;
         await _showMoodyIdleGateIfNeeded();
+        if (!mounted) return;
+        await _maybeShowMainAppTourAuto();
+        if (!mounted) return;
         await _checkForWeekendSuggestion();
         if (!mounted) return;
         final uid = Supabase.instance.client.auth.currentUser?.id;
@@ -174,15 +177,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             await BirthdayCongratsTrigger.maybeShow(context, ref);
           }
         }
-        if (!mounted) return;
-        await _maybeShowMainAppTourAuto();
       });
     });
   }
 
   Future<void> _maybeShowMainAppTourAuto() async {
     if (!mounted || _mainTourShowing) return;
-    final done = await isMainAppTourCompleted();
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    if (uid == null) return;
+    await migrateLegacyMainAppTourIfNeeded(uid);
+    if (!mounted) return;
+    final done = await isMainAppTourCompletedForUser(uid);
     if (!mounted || done) return;
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted || _mainTourShowing) return;
@@ -191,11 +196,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   void _presentMainAppTour() {
     if (_mainTourShowing || !mounted) return;
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    if (uid == null) return;
     setState(() => _mainTourShowing = true);
     showMainAppTour(
       context: context,
       ref: ref,
       contentKeys: _mainTourContentKeys,
+      userId: uid,
       onSessionEnd: () {
         _mainTourShowing = false;
         if (mounted) setState(() {});

@@ -8,7 +8,11 @@ import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:wandermood/features/home/presentation/providers/main_navigation_provider.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
+/// Legacy global flag (pre–per-user). Migrated on first main open with a session.
 const String kMainAppTourCompletedPrefsKey = 'main_app_tour_completed';
+
+String mainAppTourCompletedKeyForUser(String userId) =>
+    'main_app_tour_completed_$userId';
 
 /// Max bullet lines per tour step (iOS-first product constraint).
 const int kMainAppTourMaxTipsPerStep = 5;
@@ -16,14 +20,23 @@ const int kMainAppTourMaxTipsPerStep = 5;
 /// Increment to request [MainScreen] to show the tab tour (e.g. from Settings).
 final mainAppTourRequestProvider = StateProvider<int>((ref) => 0);
 
-Future<bool> isMainAppTourCompleted() async {
+/// If [kMainAppTourCompletedPrefsKey] is still set, copies it to this [userId]
+/// and removes the legacy key (one-time per install).
+Future<void> migrateLegacyMainAppTourIfNeeded(String userId) async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(kMainAppTourCompletedPrefsKey) ?? false;
+  if (prefs.getBool(kMainAppTourCompletedPrefsKey) != true) return;
+  await prefs.setBool(mainAppTourCompletedKeyForUser(userId), true);
+  await prefs.remove(kMainAppTourCompletedPrefsKey);
 }
 
-Future<void> setMainAppTourCompleted(bool value) async {
+Future<bool> isMainAppTourCompletedForUser(String userId) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool(kMainAppTourCompletedPrefsKey, value);
+  return prefs.getBool(mainAppTourCompletedKeyForUser(userId)) ?? false;
+}
+
+Future<void> setMainAppTourCompletedForUser(bool value, String userId) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(mainAppTourCompletedKeyForUser(userId), value);
 }
 
 void requestMainAppTour(WidgetRef ref) {
@@ -120,6 +133,7 @@ void showMainAppTour({
   required BuildContext context,
   required WidgetRef ref,
   required List<GlobalKey> contentKeys,
+  required String userId,
   required VoidCallback onSessionEnd,
 }) {
   final l10n = AppLocalizations.of(context)!;
@@ -132,7 +146,8 @@ void showMainAppTour({
       final tabIndex = target.identify as int;
       ref.read(mainTabProvider.notifier).state = tabIndex;
       // Let [Offstage] mount the tab so [contentKeys] attach to a laid-out subtree.
-      await Future<void>.delayed(const Duration(milliseconds: 120));
+      await WidgetsBinding.instance.endOfFrame;
+      await Future<void>.delayed(const Duration(milliseconds: 220));
     },
     colorShadow: Colors.black,
     opacityShadow: 0.78,
@@ -145,16 +160,16 @@ void showMainAppTour({
       fontWeight: FontWeight.w600,
     ),
     useSafeArea: true,
-    pulseEnable: true,
+    pulseEnable: false,
     disableBackButton: true,
     showSkipInLastTarget: true,
     onFinish: () {
       onSessionEnd();
-      setMainAppTourCompleted(true);
+      setMainAppTourCompletedForUser(true, userId);
     },
     onSkip: () {
       onSessionEnd();
-      setMainAppTourCompleted(true);
+      setMainAppTourCompletedForUser(true, userId);
       return true;
     },
   ).show(context: context);
