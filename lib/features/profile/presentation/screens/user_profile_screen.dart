@@ -68,9 +68,7 @@ List<BoxShadow> _savedPlacesCarouselCardShadow() {
 }
 
 class UserProfileScreen extends ConsumerStatefulWidget {
-  const UserProfileScreen({Key? key, this.mainAppTourContentKey}) : super(key: key);
-
-  final GlobalKey? mainAppTourContentKey;
+  const UserProfileScreen({Key? key}) : super(key: key);
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -300,12 +298,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           );
         return Scaffold(
           backgroundColor: _wmCream,
-          body: widget.mainAppTourContentKey != null
-              ? KeyedSubtree(
-                  key: widget.mainAppTourContentKey!,
-                  child: profileBody,
-                )
-              : profileBody,
+          body: profileBody,
         );
       },
     );

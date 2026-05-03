@@ -60,10 +60,7 @@ import 'package:share_plus/share_plus.dart';
 const Color _myDayMoodMatchOrange = Color(0xFFE8784A);
 
 class DynamicMyDayScreen extends ConsumerStatefulWidget {
-  const DynamicMyDayScreen({super.key, this.mainAppTourContentKey});
-
-  /// Spotlight anchor for the main app tour ([MainScreen] only).
-  final GlobalKey? mainAppTourContentKey;
+  const DynamicMyDayScreen({super.key});
 
   @override
   ConsumerState<DynamicMyDayScreen> createState() => _DynamicMyDayScreenState();
@@ -241,24 +238,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       error: (_, __) => profileAsync.valueOrNull?.moodStreak ?? 0,
     );
 
-    Widget tourAnchor(Widget child) {
-      if (widget.mainAppTourContentKey == null) return child;
-      return KeyedSubtree(
-        key: widget.mainAppTourContentKey!,
-        child: child,
-      );
-    }
-
     final bodyContent = currentStatusValue?['type'] == 'no_plan'
-        ? tourAnchor(_buildImmersiveNoPlanState(l10n))
+        ? _buildImmersiveNoPlanState(l10n)
         : CustomScrollView(
           slivers: [
             // Header Section
             SliverToBoxAdapter(
               // Match Explore: do not pad the header's bottom with the home-indicator
               // inset — that reads as a large empty band above the timeline slivers.
-              child: tourAnchor(
-                SafeArea(
+              child: SafeArea(
                   bottom: false,
                   child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -323,7 +311,6 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       const SizedBox(height: 16),
                     ],
                   ),
-                ),
                 ),
               ),
             ),
@@ -592,39 +579,39 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     final profileBorder = isImmersive ? Border.all(color: Colors.white.withOpacity(0.5), width: 1) : null;
     final shadowColor = isImmersive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1);
 
+    Widget menuButton = GestureDetector(
+      onTap: () {
+        _scaffoldKey.currentState?.openDrawer();
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: profileBgColor,
+          shape: BoxShape.circle,
+          border: profileBorder,
+          boxShadow: [
+            if (!isImmersive)
+              BoxShadow(
+                color: shadowColor,
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: isImmersive
+            ? ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: _buildProfileAvatar(isImmersive: isImmersive),
+                ),
+              )
+            : _buildProfileAvatar(isImmersive: isImmersive),
+      ),
+    );
     return Row(
       children: [
-        // Profile button
-        GestureDetector(
-          onTap: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: profileBgColor,
-              shape: BoxShape.circle,
-              border: profileBorder,
-              boxShadow: [
-                if (!isImmersive)
-                  BoxShadow(
-                    color: shadowColor,
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-              ],
-            ),
-            child: isImmersive
-                ? ClipOval(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                      child: _buildProfileAvatar(isImmersive: isImmersive),
-                    ),
-                  )
-                : _buildProfileAvatar(isImmersive: isImmersive),
-          ),
-        ),
+        menuButton,
         const SizedBox(width: 16),
         
         // Title (wmTitle — design system)

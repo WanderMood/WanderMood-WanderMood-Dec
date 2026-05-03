@@ -87,6 +87,109 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
 
   Widget _buildSearchBar() {
     final l10n = AppLocalizations.of(context)!;
+    final textField = TextField(
+      controller: _searchController,
+      onChanged: widget.onSearchChanged,
+      style: GoogleFonts.poppins(
+        fontSize: 15,
+        color: Colors.black87,
+        fontWeight: FontWeight.w400,
+      ),
+      decoration: InputDecoration(
+        hintText: l10n.exploreSearchHint,
+        hintStyle: GoogleFonts.poppins(
+          fontSize: 15,
+          color: Colors.grey[500],
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: Container(
+          padding: const EdgeInsets.all(12),
+          child: Icon(
+            Icons.search,
+            color: Colors.grey[500],
+            size: 22,
+          ),
+        ),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: Icon(Icons.clear, color: Colors.grey[400], size: 20),
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _searchController.clear();
+                  widget.onSearchChanged('');
+                },
+              )
+            : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25),
+          borderSide: BorderSide(
+            color: _wmForest.withValues(alpha: 0.45),
+            width: 1,
+          ),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 15,
+        ),
+      ),
+    );
+    final searchExpanded = Expanded(child: textField);
+    Widget? filterWidget;
+    if (widget.onFilterTap != null) {
+      filterWidget = Container(
+        margin: const EdgeInsets.only(right: 8),
+        child: Stack(
+          children: [
+            Container(
+              height: 38,
+              width: 38,
+              decoration: BoxDecoration(
+                color: _wmForestTint,
+                borderRadius: BorderRadius.circular(19),
+                border: Border.all(color: _wmParchment, width: 0.5),
+              ),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: widget.onFilterTap,
+                icon: const Icon(
+                  Icons.tune,
+                  color: _wmForest,
+                  size: 20,
+                ),
+              ),
+            ),
+            if (widget.activeFiltersCount > 0)
+              Positioned(
+                right: 5,
+                top: 5,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: _wmForest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    widget.activeFiltersCount.toString(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -103,107 +206,8 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
       ),
       child: Row(
         children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: widget.onSearchChanged,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                color: Colors.black87,
-                fontWeight: FontWeight.w400,
-              ),
-              decoration: InputDecoration(
-                hintText: l10n.exploreSearchHint,
-                hintStyle: GoogleFonts.poppins(
-                  fontSize: 15,
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.w400,
-                ),
-                prefixIcon: Container(
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    Icons.search,
-                    color: Colors.grey[500],
-                    size: 22,
-                  ),
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear, color: Colors.grey[400], size: 20),
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          _searchController.clear();
-                          widget.onSearchChanged('');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(
-                    color: _wmForest.withValues(alpha: 0.45),
-                    width: 1,
-                  ),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 15,
-                ),
-              ),
-            ),
-          ),
-          if (widget.onFilterTap != null)
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              child: Stack(
-                children: [
-                  Container(
-                    height: 38,
-                    width: 38,
-                    decoration: BoxDecoration(
-                      color: _wmForestTint,
-                      borderRadius: BorderRadius.circular(19),
-                      border: Border.all(color: _wmParchment, width: 0.5),
-                    ),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: widget.onFilterTap,
-                      icon: const Icon(
-                        Icons.tune,
-                        color: _wmForest,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  if (widget.activeFiltersCount > 0)
-                    Positioned(
-                      right: 5,
-                      top: 5,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: _wmForest,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          widget.activeFiltersCount.toString(),
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+          searchExpanded,
+          if (filterWidget != null) filterWidget,
         ],
       ),
     ).animate().fadeIn(duration: 600.ms).scale(
@@ -218,7 +222,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
     final labelFn = widget.categoryLabel!;
     final emojiFn = widget.categoryEmoji ?? (_) => '📍';
 
-    return SizedBox(
+    Widget row = SizedBox(
       height: 36,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -263,8 +267,11 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
                       labelFn(key),
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? Colors.white : const Color(0xFF4A4640),
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF4A4640),
                       ),
                     ),
                   ],
@@ -275,6 +282,7 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
         },
       ),
     );
+    return row;
   }
 
   Widget _buildActivitiesHeader() {

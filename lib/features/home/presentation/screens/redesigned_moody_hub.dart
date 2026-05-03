@@ -45,9 +45,7 @@ const Color _wmSunsetTint = Color(0xFFFCEEE4);
 const double _moodyHubComposerBottomGap = 12;
 
 class RedesignedMoodyHub extends ConsumerStatefulWidget {
-  const RedesignedMoodyHub({super.key, this.mainAppTourContentKey});
-
-  final GlobalKey? mainAppTourContentKey;
+  const RedesignedMoodyHub({super.key});
 
   @override
   ConsumerState<RedesignedMoodyHub> createState() => _RedesignedMoodyHubState();
@@ -56,13 +54,7 @@ class RedesignedMoodyHub extends ConsumerStatefulWidget {
 class _RedesignedMoodyHubState extends ConsumerState<RedesignedMoodyHub> {
   @override
   Widget build(BuildContext context) {
-    Widget body = const MoodyChatTabView();
-    if (widget.mainAppTourContentKey != null) {
-      body = KeyedSubtree(
-        key: widget.mainAppTourContentKey!,
-        child: body,
-      );
-    }
+    const body = MoodyChatTabView();
     return Scaffold(
       backgroundColor: const Color(0xFFF1E9DD), // aligned with Moody chat sheet cream
       body: body,

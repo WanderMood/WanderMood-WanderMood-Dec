@@ -64,9 +64,7 @@ part 'explore_screen_af_shell_chrome.part.dart';
 part 'explore_screen_af_shell.part.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
-  const ExploreScreen({Key? key, this.mainAppTourContentKey}) : super(key: key);
-
-  final GlobalKey? mainAppTourContentKey;
+  const ExploreScreen({Key? key}) : super(key: key);
 
   @override
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
@@ -77,11 +75,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   @override
   bool get wantKeepAlive => true;
 
-  Widget _wrapMainAppTour(Widget child) {
-    final k = widget.mainAppTourContentKey;
-    if (k == null) return child;
-    return KeyedSubtree(key: k, child: child);
-  }
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   ProviderSubscription<int>? _manualCityPickSubscription;
@@ -1739,6 +1732,28 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
   }
 
+  /// Substring match across fields we keep on [Place] (not menus/reviews — those are not stored here).
+  static bool _placeTextContainsQuery(Place place, String queryLower) {
+    if (queryLower.isEmpty) return true;
+    bool hay(String? s) =>
+        s != null && s.toLowerCase().contains(queryLower);
+    if (hay(place.name)) return true;
+    if (hay(place.description)) return true;
+    if (hay(place.address)) return true;
+    if (hay(place.editorialSummary)) return true;
+    if (hay(place.primaryType)) return true;
+    if (hay(place.socialSignal)) return true;
+    if (hay(place.bestTime)) return true;
+    if (hay(place.tag)) return true;
+    for (final t in place.types) {
+      if (t.toLowerCase().contains(queryLower)) return true;
+    }
+    for (final a in place.activities) {
+      if (a.toLowerCase().contains(queryLower)) return true;
+    }
+    return false;
+  }
+
   List<Place> _filterPlaces(
     List<Place> places, {
     bool ignoreCategory = false,
@@ -1747,6 +1762,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final preferencesService = ref.read(userPreferencesServiceProvider);
 
     final hour = DateTime.now().hour;
+    final queryLower = _searchQuery.toLowerCase().trim();
+    final trustBackendSearch =
+        _searchResults != null && queryLower.isNotEmpty;
 
     var filteredPlaces = places.where((place) {
       // Always strip utility / errand places (supermarkets, pharmacies, gas stations, etc.)
@@ -1759,14 +1777,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         if (!_placeMatchesTimeOfDay(place, hour)) return false;
       }
 
-      // Filter by search query
-      bool matchesSearch = _searchQuery.isEmpty ||
-          place.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (place.description
-                  ?.toLowerCase()
-                  .contains(_searchQuery.toLowerCase()) ??
-              false) ||
-          place.address.toLowerCase().contains(_searchQuery.toLowerCase());
+      // Filter by search query: Moody `search` already used Google text search — do not
+      // re-filter to name/description/address only (drops relevant hits).
+      final bool matchesSearch = queryLower.isEmpty ||
+          trustBackendSearch ||
+          _placeTextContainsQuery(place, queryLower);
 
       // Apply advanced filters (mood, dietary, accessibility, etc.)
       bool matchesAdvancedFilters = _checkAdvancedFilters(place);
@@ -3363,7 +3378,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     if (city == null || city.isEmpty) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
-        body: _wrapMainAppTour(_wrapExploreStack(
+        body: _wrapExploreStack(
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -3374,13 +3389,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               null,
             ),
           ),
-        )),
+        ),
       );
     }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
-      body: _wrapMainAppTour(userLocAsync.when(
+        body: userLocAsync.when(
         loading: () {
           final hasCached = _sections.any((s) => s.cards.isNotEmpty);
           if (hasCached) {
@@ -3481,7 +3496,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
           );
         },
-      )),
+      ),
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/constants/app_store_demo_account.dart';
 import '../../../../core/constants/legal_urls.dart';
 import '../../../../core/services/cached_magic_link_email_service.dart';
 import '../../../../features/settings/presentation/providers/user_preferences_provider.dart';
@@ -82,7 +83,6 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
-  static const String _demoEmail = 'demo@wandermood.com';
   static const String _demoPassword = 'WanderMood2025!';
 
   bool _isLoading = false;
@@ -166,6 +166,12 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
       }
     }
 
+    final email = _emailController.text.trim();
+    if (email.toLowerCase() == kAppStoreDemoReviewEmail.toLowerCase()) {
+      await _handleDemoLogin();
+      return;
+    }
+
     final isResendFromSuccessUi = _emailSent;
 
     setState(() {
@@ -174,7 +180,6 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     });
     
     try {
-      final email = _emailController.text.trim();
       // Same language as the app UI (`flutter gen-l10n` / ARB). Supabase Magic Link
       // templates read this as `{{ .Data.language }}` / `{{ .Data.locale }}` (user_metadata).
       final uiLocale = Localizations.localeOf(context);
@@ -337,7 +342,7 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     });
     try {
       await Supabase.instance.client.auth.signInWithPassword(
-        email: _demoEmail,
+        email: kAppStoreDemoReviewEmail,
         password: _demoPassword,
       );
       final prefs = ref.read(sharedPreferencesProvider);
@@ -623,29 +628,6 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                   ),
                 );
                   },
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: Center(
-                child: TextButton(
-                  onPressed: _isLoading ? null : _handleDemoLogin,
-                  style: TextButton.styleFrom(
-                    foregroundColor: _wmStone,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text(
-                    'App Store reviewer? Tap here',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: _wmStone,
-                    ),
-                  ),
                 ),
               ),
             ),

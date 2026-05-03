@@ -65,9 +65,7 @@ TextStyle _wmBodyAgendaTextStyle() => GoogleFonts.poppins(
     );
 
 class AgendaScreen extends ConsumerStatefulWidget {
-  const AgendaScreen({super.key, this.mainAppTourContentKey});
-
-  final GlobalKey? mainAppTourContentKey;
+  const AgendaScreen({super.key});
 
   @override
   ConsumerState<AgendaScreen> createState() => _AgendaScreenState();
@@ -180,16 +178,9 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           ],
         );
 
-    final wrappedBody = widget.mainAppTourContentKey != null
-        ? KeyedSubtree(
-            key: widget.mainAppTourContentKey!,
-            child: scrollBody,
-          )
-        : scrollBody;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8), // wmCream — no gradient (redesign QA)
-      body: wrappedBody,
+      body: scrollBody,
     );
   }
   
@@ -308,8 +299,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               ),
             ),
           ),
-        ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.3),
-      ),
+        ),
+      )
+          .animate()
+          .fadeIn(duration: 600.ms)
+          .slideY(begin: 0.3),
     );
   }
   

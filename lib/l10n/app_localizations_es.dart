@@ -992,7 +992,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get guestExplorePlaces => 'Explorar lugares';
 
   @override
-  String get guestPreviewMode => 'Vista previa • Funciones limitadas';
+  String get guestPreviewMode =>
+      'Día de ejemplo en los Países Bajos • Funciones limitadas';
 
   @override
   String get guestGuest => 'Invitado';
@@ -6719,6 +6720,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chatSheetInputHintDayChat => 'Habla con Moody sobre tu día…';
 
   @override
+  String get moodyChatDailyStarterMorningFirst =>
+      '¡Buenos días! ¿Cómo te sientes hoy?';
+
+  @override
+  String get moodyChatDailyStarterMorningTune =>
+      '¡Buenos días! ¿Quieres afinar un poco más tu día?';
+
+  @override
+  String get moodyChatDailyStarterAfternoonFirst =>
+      '¡Hola! ¿Cómo te sientes ahora?';
+
+  @override
+  String get moodyChatDailyStarterAfternoonTune =>
+      '¡Hola! ¿Cómo va tu día? ¿Quieres cambiar algo?';
+
+  @override
+  String get moodyChatDailyStarterEveningFirst =>
+      '¡Buenas tardes! ¿Cómo te sientes esta noche?';
+
+  @override
+  String get moodyChatDailyStarterEveningTune =>
+      '¡Buenas tardes! ¿Cómo fue tu día?';
+
+  @override
   String get chatSheetMicTooltip => 'Dictar tu pregunta';
 
   @override
@@ -10963,9 +10988,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authRegisterCta => 'Registrarse';
 
   @override
-  String get authReviewerHint => '¿Revisor de la App Store? Toca aquí';
-
-  @override
   String get authEmailRequired => 'Introduce tu correo';
 
   @override
@@ -11219,6 +11241,41 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get appTourSimpleMyDayTitle => 'Mi día — tu base de hoy ✨';
+
+  @override
+  String get appTourSimpleMyDayBody =>
+      '¡Hola, soy yo! 📍 Esta pestaña es tu casa. Arriba cambias de día, toca actividades para detalles y ruta, desliza abajo para actualizar. Mete sitios desde Explorar o vente a charlar conmigo. Toca tu foto arriba a la izquierda para el menú.';
+
+  @override
+  String get appTourSimpleExploreTitle => 'A explorar 🔎';
+
+  @override
+  String get appTourSimpleExploreBody =>
+      'Te preparo sitios que encajan con tu mood y filtros—busca, categorías, ajusta hasta que te encaje. Aquí estoy contigo.';
+
+  @override
+  String get appTourSimpleMoodyTitle => 'Mi rinconcito 🌿';
+
+  @override
+  String get appTourSimpleMoodyBody =>
+      '¡Me encontraste! Planifica el día, prueba Mood Match con un amigo o suelta lo que piensas. Acciones rápidas aquí—escribe o el micrófono para profundizar.';
+
+  @override
+  String get appTourSimpleAgendaTitle => 'Mis planes — visión general 📆';
+
+  @override
+  String get appTourSimpleAgendaBody =>
+      'Todo lo programado, ordenado en un sitio. Mes o lista, toca un día para enfocarte—sigue en sintonía con Mi día.';
+
+  @override
+  String get appTourSimpleProfileTitle => '¡Eres tú! 🙌';
+
+  @override
+  String get appTourSimpleProfileBody =>
+      'Tu historia de viaje—avatar, bio, vibras, momentos. ¿Idioma, avisos, privacidad o ayuda? El enlace de abajo te respalda.';
+
+  @override
   String get settingsAppTourLabel => 'Recorrido de la app';
 
   @override
@@ -11230,7 +11287,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpSupportAppTourSubtitle =>
-      'Repite el tutorial interactivo de las pestañas principales';
+      'Vuelve a ver una breve intro de cada pestaña principal';
 
   @override
   String get recListTitle => 'Recomendaciones de viaje';

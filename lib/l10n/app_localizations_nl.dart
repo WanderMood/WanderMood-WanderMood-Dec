@@ -990,7 +990,8 @@ class AppLocalizationsNl extends AppLocalizations {
   String get guestExplorePlaces => 'Plaatsen ontdekken';
 
   @override
-  String get guestPreviewMode => 'Voorvertoning • Beperkte functies';
+  String get guestPreviewMode =>
+      'Voorbeelddag door heel Nederland • Beperkte functies';
 
   @override
   String get guestGuest => 'Gast';
@@ -6686,6 +6687,28 @@ class AppLocalizationsNl extends AppLocalizations {
   String get chatSheetInputHintDayChat => 'Praat met Moody over je dag…';
 
   @override
+  String get moodyChatDailyStarterMorningFirst =>
+      'Goedemorgen! Hoe voel je je vandaag?';
+
+  @override
+  String get moodyChatDailyStarterMorningTune =>
+      'Goedemorgen! Zin om je dag nog verder af te stemmen?';
+
+  @override
+  String get moodyChatDailyStarterAfternoonFirst => 'Hoi! Hoe voel je je nu?';
+
+  @override
+  String get moodyChatDailyStarterAfternoonTune =>
+      'Hoi! Hoe gaat je dag tot nu toe? Wil je iets aanpassen?';
+
+  @override
+  String get moodyChatDailyStarterEveningFirst =>
+      'Goedenavond! Hoe voel je je vanavond?';
+
+  @override
+  String get moodyChatDailyStarterEveningTune => 'Goedenavond! Hoe was je dag?';
+
+  @override
   String get chatSheetMicTooltip => 'Stel je vraag in (spraak)';
 
   @override
@@ -10897,9 +10920,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get authRegisterCta => 'Registreren';
 
   @override
-  String get authReviewerHint => 'App Store-recensent? Tik hier';
-
-  @override
   String get authEmailRequired => 'Vul je e-mailadres in';
 
   @override
@@ -11152,6 +11172,41 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get appTourSimpleMyDayTitle => 'Mijn Dag — jouw hub voor vandaag ✨';
+
+  @override
+  String get appTourSimpleMyDayBody =>
+      'Hoi, ik ben het! 📍 Dit is je thuisbasis. Wissel boven van dag, tik een activiteit voor details en route, trek omlaag om te verversen. Pak plekken via Ontdekken of kom zeuren bij mij. Tik op je foto linksboven voor het menu.';
+
+  @override
+  String get appTourSimpleExploreTitle => 'Op ontdekkingstocht 🔎';
+
+  @override
+  String get appTourSimpleExploreBody =>
+      'Ik zet plekken voor je klaar die bij je stemming en filters passen—zoek, categorieën, stel bij tot het klopt. Ik loop met je mee.';
+
+  @override
+  String get appTourSimpleMoodyTitle => 'Mijn hoekje 🌿';
+
+  @override
+  String get appTourSimpleMoodyBody =>
+      'Je hebt me gevonden! Plan je dag, probeer Mood Match met een vriend of vertel wat er speelt. Snelle acties staan hier—typ of tik de microfoon als je verder wilt.';
+
+  @override
+  String get appTourSimpleAgendaTitle => 'Mijn plannen — het grote plaatje 📆';
+
+  @override
+  String get appTourSimpleAgendaBody =>
+      'Alles wat je gepland hebt, netjes op één plek. Wissel tussen maand en lijst, tik een dag om in te zoomen—het blijft synchroon met Mijn Dag.';
+
+  @override
+  String get appTourSimpleProfileTitle => 'Dat ben jij! 🙌';
+
+  @override
+  String get appTourSimpleProfileBody =>
+      'Hier woont je reisverhaal—avatar, bio, vibes, opgeslagen momenten. Taal, meldingen, privacy of hulp nodig? De link onderaan helpt je verder.';
+
+  @override
   String get settingsAppTourLabel => 'App-rondleiding';
 
   @override
@@ -11163,7 +11218,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get helpSupportAppTourSubtitle =>
-      'Speel de interactieve rondleiding van de hoofdtabbladen opnieuw af';
+      'Bekijk opnieuw een korte intro per hoofdtab';
 
   @override
   String get recListTitle => 'Reisaanbevelingen';

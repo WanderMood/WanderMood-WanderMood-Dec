@@ -1811,7 +1811,7 @@ abstract class AppLocalizations {
   /// No description provided for @guestPreviewMode.
   ///
   /// In en, this message translates to:
-  /// **'Preview mode • Limited features'**
+  /// **'Sample day across the Netherlands • Limited features'**
   String get guestPreviewMode;
 
   /// No description provided for @guestGuest.
@@ -11918,6 +11918,42 @@ abstract class AppLocalizations {
   /// **'Chat with Moody about your day…'**
   String get chatSheetInputHintDayChat;
 
+  /// No description provided for @moodyChatDailyStarterMorningFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! How are you feeling today?'**
+  String get moodyChatDailyStarterMorningFirst;
+
+  /// No description provided for @moodyChatDailyStarterMorningTune.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! Want to fine-tune your day?'**
+  String get moodyChatDailyStarterMorningTune;
+
+  /// No description provided for @moodyChatDailyStarterAfternoonFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey! How are you feeling right now?'**
+  String get moodyChatDailyStarterAfternoonFirst;
+
+  /// No description provided for @moodyChatDailyStarterAfternoonTune.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey! How is your day going so far? Want to tweak anything?'**
+  String get moodyChatDailyStarterAfternoonTune;
+
+  /// No description provided for @moodyChatDailyStarterEveningFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening! How are you feeling tonight?'**
+  String get moodyChatDailyStarterEveningFirst;
+
+  /// No description provided for @moodyChatDailyStarterEveningTune.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening! How was your day?'**
+  String get moodyChatDailyStarterEveningTune;
+
   /// No description provided for @chatSheetMicTooltip.
   ///
   /// In en, this message translates to:
@@ -18951,12 +18987,6 @@ abstract class AppLocalizations {
   /// **'Register'**
   String get authRegisterCta;
 
-  /// No description provided for @authReviewerHint.
-  ///
-  /// In en, this message translates to:
-  /// **'App Store reviewer? Tap here'**
-  String get authReviewerHint;
-
   /// No description provided for @authEmailRequired.
   ///
   /// In en, this message translates to:
@@ -19389,6 +19419,66 @@ abstract class AppLocalizations {
   /// **'Jump to {tabName}'**
   String appTourNavStepTitle(String tabName);
 
+  /// No description provided for @appTourSimpleMyDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Day — your today HQ ✨'**
+  String get appTourSimpleMyDayTitle;
+
+  /// No description provided for @appTourSimpleMyDayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hey, it’s me! 📍 This tab is your home base. Flip between days up top, tap any activity for the good stuff (details + directions), pull down to refresh. Grab spots from Explore or come nag me in chat. Tap your photo up left anytime for the side menu.'**
+  String get appTourSimpleMyDayBody;
+
+  /// No description provided for @appTourSimpleExploreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s go exploring 🔎'**
+  String get appTourSimpleExploreTitle;
+
+  /// No description provided for @appTourSimpleExploreBody.
+  ///
+  /// In en, this message translates to:
+  /// **'I’ll line up places that actually fit your mood and filters—search, categories, all the knobs. Tweak until it feels right; I’m right here with you.'**
+  String get appTourSimpleExploreBody;
+
+  /// No description provided for @appTourSimpleMoodyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My little HQ 🌿'**
+  String get appTourSimpleMoodyTitle;
+
+  /// No description provided for @appTourSimpleMoodyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You found me! Plan your day, try Mood Match with a friend, or just spill what’s on your mind. Quick actions live here—type or tap the mic when you want to go deeper.'**
+  String get appTourSimpleMoodyBody;
+
+  /// No description provided for @appTourSimpleAgendaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Plans — big picture 📆'**
+  String get appTourSimpleAgendaTitle;
+
+  /// No description provided for @appTourSimpleAgendaBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you’ve scheduled, tidy in one place. Bounce between month and list, tap a day to zoom in—it stays best friends with My Day.'**
+  String get appTourSimpleAgendaBody;
+
+  /// No description provided for @appTourSimpleProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That’s you! 🙌'**
+  String get appTourSimpleProfileTitle;
+
+  /// No description provided for @appTourSimpleProfileBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your travel story lives here—avatar, bio, vibes, saved moments. Need language, notifications, privacy, or help? That link at the bottom’s got your back.'**
+  String get appTourSimpleProfileBody;
+
   /// No description provided for @settingsAppTourLabel.
   ///
   /// In en, this message translates to:
@@ -19410,7 +19500,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpSupportAppTourSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Replay the interactive walkthrough of the main tabs'**
+  /// **'Replay a short intro for each main tab'**
   String get helpSupportAppTourSubtitle;
 
   /// No description provided for @recListTitle.

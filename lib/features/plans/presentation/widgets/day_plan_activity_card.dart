@@ -161,6 +161,24 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
     return l10n.placeCategorySpot;
   }
 
+  /// Guest demo tags are already localized; production tags use [_localizedTagLabel].
+  /// Dedupe by case-insensitive display label so chips stay distinct.
+  List<String> _displayTagLabels(BuildContext context) {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final tag in widget.activity.tags) {
+      final raw = tag.trim();
+      if (raw.isEmpty) continue;
+      final label = widget.guestPreviewMode ? raw : _localizedTagLabel(context, tag);
+      final key = label.toLowerCase();
+      if (seen.contains(key)) continue;
+      seen.add(key);
+      out.add(label);
+      if (out.length >= 5) break;
+    }
+    return out;
+  }
+
   /// Google place photo URLs need [WmPlacePhotoNetworkImage]; Unsplash and other HTTPS use [WmNetworkImage].
   Widget _planCardPhoto(
     String url, {
@@ -576,8 +594,7 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
-                      children: widget.activity.tags.take(5).map((tag) {
-                        final label = _localizedTagLabel(context, tag);
+                      children: _displayTagLabels(context).map((label) {
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
@@ -670,82 +687,114 @@ class _DayPlanActivityCardState extends ConsumerState<DayPlanActivityCard> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Action buttons: Not feeling this? | See activity (Directions stays in image overlay)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: widget.onNotFeelingThis != null
-                              ? OutlinedButton.icon(
-                                  onPressed: widget.onNotFeelingThis,
-                                  icon: const Icon(Icons.refresh_rounded, size: 18, color: _wmForest),
-                                  label: Text(
-                                    AppLocalizations.of(context)!.dayPlanCardNotFeelingThis,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: _wmForest,
-                                    ),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    side: const BorderSide(color: _wmForest, width: 1.5),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                                    backgroundColor: _wmWhite,
-                                  ),
-                                )
-                              : OutlinedButton.icon(
-                                  onPressed: () => _openDirections(context),
-                                  icon: const Icon(Icons.directions, size: 18, color: _wmForest),
-                                  label: Text(
-                                    AppLocalizations.of(context)!.dayPlanCardDirections,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: _wmDusk,
-                                    ),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    side: const BorderSide(color: _wmParchment, width: 1.5),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                                    backgroundColor: _wmWhite,
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
+                    // Action buttons: guest preview = full-width See activity only (Directions on image).
+                    if (widget.guestPreviewMode)
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
+                          borderRadius: BorderRadius.circular(999),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              color: _wmSky,
                               borderRadius: BorderRadius.circular(999),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: _wmSky,
-                                  borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)!.dayPlanCardSeeActivity,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: _wmSeeActivityText,
+                                  ),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.dayPlanCardSeeActivity,
+                                const SizedBox(width: 6),
+                                const Text('🎫', style: TextStyle(fontSize: 16)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: widget.onNotFeelingThis != null
+                                ? OutlinedButton.icon(
+                                    onPressed: widget.onNotFeelingThis,
+                                    icon: const Icon(Icons.refresh_rounded, size: 18, color: _wmForest),
+                                    label: Text(
+                                      AppLocalizations.of(context)!.dayPlanCardNotFeelingThis,
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: _wmSeeActivityText,
+                                        color: _wmForest,
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                    const Text('🎫', style: TextStyle(fontSize: 16)),
-                                  ],
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      side: const BorderSide(color: _wmForest, width: 1.5),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                      backgroundColor: _wmWhite,
+                                    ),
+                                  )
+                                : OutlinedButton.icon(
+                                    onPressed: () => _openDirections(context),
+                                    icon: const Icon(Icons.directions, size: 18, color: _wmForest),
+                                    label: Text(
+                                      AppLocalizations.of(context)!.dayPlanCardDirections,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: _wmDusk,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      side: const BorderSide(color: _wmParchment, width: 1.5),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                      backgroundColor: _wmWhite,
+                                    ),
+                                  ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => widget.onTap(widget.activity, distanceKm: widget.distanceKm),
+                                borderRadius: BorderRadius.circular(999),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: _wmSky,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        AppLocalizations.of(context)!.dayPlanCardSeeActivity,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: _wmSeeActivityText,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Text('🎫', style: TextStyle(fontSize: 16)),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     if (!widget.guestPreviewMode) ...[
                       const SizedBox(height: 10),
                       SizedBox(

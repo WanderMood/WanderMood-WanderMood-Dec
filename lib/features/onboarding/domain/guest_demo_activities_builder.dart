@@ -1,4 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/features/onboarding/domain/guest_demo_l10n_helpers.dart';
 import 'package:wandermood/features/plans/domain/enums/payment_type.dart';
 import 'package:wandermood/features/plans/domain/enums/time_slot.dart';
@@ -17,6 +18,7 @@ class _GuestDemoSlotDef {
     required this.isFree,
     required this.priceLevel,
     required this.tags,
+    required this.guestWalkDistanceMeters,
   });
 
   final double rating;
@@ -30,6 +32,8 @@ class _GuestDemoSlotDef {
   /// Numeric level as in planner: '0' free, '1'–'3' paid tiers.
   final String priceLevel;
   final List<String> tags;
+  /// Shown on guest day-plan only — plausible walking / city-hop distances (NL-wide demo).
+  final int guestWalkDistanceMeters;
 }
 
 String _timeSlotKey(TimeSlot s) {
@@ -77,6 +81,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: true,
       priceLevel: '0',
       tags: ['relaxed', 'walk', 'nature'],
+      guestWalkDistanceMeters: 620,
     ),
     _GuestDemoSlotDef(
       rating: 4.8,
@@ -90,6 +95,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['relaxed', 'cafe', 'calm'],
+      guestWalkDistanceMeters: 1350,
     ),
     _GuestDemoSlotDef(
       rating: 4.7,
@@ -102,6 +108,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '3',
       tags: ['relaxed', 'restaurant', 'sunset'],
+      guestWalkDistanceMeters: 2180,
     ),
   ],
   'foodie': [
@@ -116,6 +123,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '1',
       tags: ['foody', 'breakfast', 'cafe'],
+      guestWalkDistanceMeters: 480,
     ),
     _GuestDemoSlotDef(
       rating: 4.7,
@@ -129,6 +137,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['foody', 'market', 'lunch'],
+      guestWalkDistanceMeters: 1640,
     ),
     _GuestDemoSlotDef(
       rating: 4.9,
@@ -141,6 +150,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '3',
       tags: ['foody', 'restaurant', 'dinner'],
+      guestWalkDistanceMeters: 2390,
     ),
   ],
   'social': [
@@ -155,6 +165,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: true,
       priceLevel: '0',
       tags: ['social', 'active', 'outdoor'],
+      guestWalkDistanceMeters: 890,
     ),
     _GuestDemoSlotDef(
       rating: 4.7,
@@ -167,6 +178,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['social', 'lunch', 'market'],
+      guestWalkDistanceMeters: 1520,
     ),
     _GuestDemoSlotDef(
       rating: 4.5,
@@ -179,6 +191,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['social', 'nightlife', 'music'],
+      guestWalkDistanceMeters: 2750,
     ),
   ],
   'adventurous': [
@@ -193,6 +206,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: true,
       priceLevel: '0',
       tags: ['adventurous', 'outdoor', 'hiking'],
+      guestWalkDistanceMeters: 1240,
     ),
     _GuestDemoSlotDef(
       rating: 4.8,
@@ -205,6 +219,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['adventurous', 'lunch', 'view'],
+      guestWalkDistanceMeters: 780,
     ),
     _GuestDemoSlotDef(
       rating: 4.8,
@@ -217,6 +232,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['adventurous', 'sunset', 'bar'],
+      guestWalkDistanceMeters: 2050,
     ),
   ],
   'cultural': [
@@ -231,6 +247,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '1',
       tags: ['cultural', 'museum', 'art'],
+      guestWalkDistanceMeters: 710,
     ),
     _GuestDemoSlotDef(
       rating: 4.9,
@@ -243,6 +260,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '1',
       tags: ['cultural', 'cafe', 'garden'],
+      guestWalkDistanceMeters: 980,
     ),
     _GuestDemoSlotDef(
       rating: 4.8,
@@ -255,6 +273,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['cultural', 'jazz', 'wine'],
+      guestWalkDistanceMeters: 2280,
     ),
   ],
   'romantic': [
@@ -269,6 +288,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '2',
       tags: ['romantic', 'cafe', 'cozy'],
+      guestWalkDistanceMeters: 550,
     ),
     _GuestDemoSlotDef(
       rating: 4.6,
@@ -281,6 +301,7 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '1',
       tags: ['romantic', 'cultural', 'quiet'],
+      guestWalkDistanceMeters: 1420,
     ),
     _GuestDemoSlotDef(
       rating: 4.8,
@@ -293,9 +314,27 @@ const Map<String, List<_GuestDemoSlotDef>> _guestDemoSlotDefs = {
       isFree: false,
       priceLevel: '3',
       tags: ['romantic', 'drinks', 'evening'],
+      guestWalkDistanceMeters: 1960,
     ),
   ],
 };
+
+/// Formatted distance line for guest preview cards (matches [DistanceService] style).
+String guestDemoFormatWalkMeters(int meters) {
+  final km = meters / 1000.0;
+  return DistanceService.formatDistance(km);
+}
+
+/// Same slot order as [buildGuestDemoActivities] — use for distance pills on guest day plan.
+List<String> buildGuestDemoDistanceLabels(String mood) {
+  final moodKey = mood.toLowerCase();
+  final slotKey = moodKey == 'surprise_me' ? 'romantic' : moodKey;
+  final defs = _guestDemoSlotDefs[slotKey];
+  if (defs == null) return [];
+  return defs
+      .map((d) => guestDemoFormatWalkMeters(d.guestWalkDistanceMeters))
+      .toList();
+}
 
 /// Builds three [Activity] rows for the guest day-plan preview.
 List<Activity> buildGuestDemoActivities(String mood, AppLocalizations l10n) {

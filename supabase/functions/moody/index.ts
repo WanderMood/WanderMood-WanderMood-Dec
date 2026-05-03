@@ -823,7 +823,23 @@ function isUtilityPlace(place: PlaceCard): boolean {
   return false
 }
 
-function isPlaceValid(place: PlaceCard, thresholds: { minRating: number; minReviews: number }): boolean { const rawId = place.id?.replace('google_', '').trim(); return !!rawId && !!place.name?.trim() && !!(place.address?.trim() || place.vicinity?.trim()) && Number.isFinite(place.location?.lat) && Number.isFinite(place.location?.lng) && (place.location.lat !== 0 || place.location.lng !== 0) && !!place.photo_url?.trim() && (place.rating || 0) >= thresholds.minRating && (place.user_ratings_total || 0) >= thresholds.minReviews && !isUtilityPlace(place) }
+function isPlaceValid(
+  place: PlaceCard,
+  thresholds: { minRating: number; minReviews: number },
+  opts?: { requirePhoto?: boolean },
+): boolean {
+  const requirePhoto = opts?.requirePhoto !== false
+  const rawId = place.id?.replace('google_', '').trim()
+  if (!rawId || !place.name?.trim()) return false
+  if (!(place.address?.trim() || place.vicinity?.trim())) return false
+  if (!Number.isFinite(place.location?.lat) || !Number.isFinite(place.location?.lng)) return false
+  if (place.location.lat === 0 && place.location.lng === 0) return false
+  if (requirePhoto && !place.photo_url?.trim()) return false
+  if ((place.rating || 0) < thresholds.minRating) return false
+  if ((place.user_ratings_total || 0) < thresholds.minReviews) return false
+  if (isUtilityPlace(place)) return false
+  return true
+}
 function placeCardSearchText(p: PlaceCard): string { return ((p.name || '') + ' ' + (p.editorial_summary || '') + ' ' + (p.address || '') + ' ' + (p.vicinity || '') + ' ' + (p.types || []).join(' ')).toLowerCase() }
 function placeMatchesRequiredKeyword(text: string, rawKey: string): boolean { const k = rawKey.toLowerCase().trim(); if (!k) return true; if (k === 'halal' || k.includes('halal')) return /halal|muslim|islamic|turkish|kebab|kabab|döner|doner|shawarma|middle eastern|persian|arab|moroccan|lebanese|pakistani/.test(text); if (k === 'vegan' || k.includes('vegan')) return /vegan|plant[- ]?based|plantbased/.test(text); if (k === 'vegetarian' || k.includes('vegetarian')) return /vegetarian|veggie|plant[- ]?based|vegan|meat[- ]?free/.test(text); if (k.includes('gluten')) return /gluten[- ]?free|celiac|gf\b/.test(text); return text.includes(k) }
 
@@ -1007,7 +1023,15 @@ function filterByNamedFilter(places: PlaceCard[], filterName: string): PlaceCard
   return places
 }
 
-async function enrichAndFilter(input: PlaceCard[], thresholds: { minRating?: number; minReviews?: number } = {}): Promise<PlaceCard[]> { return input.filter(p => isPlaceValid(p, { minRating: thresholds.minRating ?? 4.0, minReviews: thresholds.minReviews ?? 8 })) }
+async function enrichAndFilter(
+  input: PlaceCard[],
+  thresholds: { minRating?: number; minReviews?: number } = {},
+  opts?: { requirePhoto?: boolean },
+): Promise<PlaceCard[]> {
+  return input.filter((p) =>
+    isPlaceValid(p, { minRating: thresholds.minRating ?? 4.0, minReviews: thresholds.minReviews ?? 8 }, opts),
+  )
+}
 
 async function checkCache(supabase: any, cacheKey: string): Promise<ExploreResponse | null> {
   try {
@@ -1990,6 +2014,29 @@ function relatedSearchOptions(query: string): string[] {
     surinaams: 'surinamese',
     halalfood: 'halal',
     vega: 'vegetarian',
+    truk: 'truck',
+  }
+  /** Multi-word dishes / cultural foods → broader Google Text Search phrases (NL/EN). */
+  const phraseExpansions: Array<{ re: RegExp; related: string[] }> = [
+    {
+      re: /(truk|truck)\s+di\s+pan|pan\s+di\s+(truk|truck)|\btruk\s+di\s+pan\b/i,
+      related: [
+        'caribbean restaurant',
+        'roti restaurant',
+        'antillean restaurant',
+        'surinamese restaurant',
+        'curaçao food',
+        'jamaican restaurant',
+      ],
+    },
+    { re: /\broti\b/i, related: ['roti restaurant', 'surinamese restaurant', 'caribbean restaurant'] },
+    { re: /(curacao|curaçao|antillen|antillean|bonaire)/i, related: ['caribbean restaurant', 'antillean restaurant', 'roti restaurant'] },
+  ]
+  const out = new Set<string>()
+  for (const { re, related } of phraseExpansions) {
+    if (re.test(q)) {
+      for (const r of related) out.add(r)
+    }
   }
   const cuisineMap: Record<string, string[]> = {
     jamaican: ['caribbean restaurant', 'jerk chicken restaurant', 'island food'],
@@ -2013,7 +2060,6 @@ function relatedSearchOptions(query: string): string[] {
     .map((t) => t.trim())
     .filter(Boolean)
     .map((t) => tokenAlias[t] || t)
-  const out = new Set<string>()
   for (const t of tokens) {
     const matches = cuisineMap[t]
     if (matches) {
@@ -2059,6 +2105,7 @@ function normalizeSearchQuery(query: string): string {
     surinaams: 'surinamese',
     halalfood: 'halal',
     vega: 'vegetarian',
+    truk: 'truck',
   }
   return query
     .toLowerCase()
@@ -2067,6 +2114,124 @@ function normalizeSearchQuery(query: string): string {
     .split(' ')
     .map((t) => tokenAlias[t] || t)
     .join(' ')
+}
+
+/** Raw query + token-normalized spelling (italan→italian, truk→truck, …) for Text Search. */
+function gatherLiteralSearchVariants(rawQuery: string): string[] {
+  const q = rawQuery.trim()
+  if (!q) return []
+  const normalized = normalizeSearchQuery(q)
+  const flat = q.toLowerCase().trim().replace(/\s+/g, ' ')
+  const out = [q]
+  if (normalized && normalized !== flat) out.push(normalized)
+  return [...new Set(out)]
+}
+
+/**
+ * Generic follow-up Text Search phrases when the first pass returns few rows.
+ * Used only for server-side merging — not necessarily shown as Explore “related” chips.
+ */
+function universalBroadeningQueries(rawQuery: string): string[] {
+  const q = rawQuery.trim().replace(/\s+/g, ' ').trim()
+  if (q.length < 2) return []
+  const ql = q.toLowerCase()
+  const out: string[] = []
+  if (!ql.includes('restaurant')) out.push(`${q} restaurant`)
+  if (!/\bfood\b/.test(ql)) out.push(`${q} food`)
+  if (!ql.includes('cafe') && !ql.includes('café')) out.push(`${q} cafe`)
+  if (!/\bbar\b/.test(ql)) out.push(`${q} bar`)
+  if (!ql.startsWith('best ') && !ql.startsWith('top ')) out.push(`best ${q}`)
+  if (!/takeaway|take out|to go/i.test(ql)) out.push(`${q} takeaway`)
+  return [...new Set(out.map((s) => s.trim()).filter(Boolean))].slice(0, 6)
+}
+
+/** Merge pool: API `related_searches` chips + generic broadeners (deduped). */
+function exploreSearchMergeQueryPool(related: string[], query: string): string[] {
+  const broad = universalBroadeningQueries(query)
+  return [...new Set([...related, ...broad].map((s) => s.trim()).filter(Boolean))]
+}
+
+/** Merge several Places Text Search queries — a single `"term in city"` call often returns very few rows. */
+async function gatherTextSearchPlacesForExplore(
+  query: string,
+  location: string,
+  coordinates: { lat: number; lng: number },
+  lang: string,
+  maxPlaces: number,
+): Promise<PlaceCard[]> {
+  const q = query.trim()
+  if (!q) return []
+  const literals = gatherLiteralSearchVariants(q)
+  const variants: string[] = []
+  for (const lit of literals) {
+    variants.push(
+      `${lit} in ${location}`,
+      `${lit} near ${location}`,
+      `${lit} cafe in ${location}`,
+      `${lit} restaurant in ${location}`,
+      `${lit} tea in ${location}`,
+      `${lit} shop in ${location}`,
+    )
+  }
+  const byId = new Map<string, PlaceCard>()
+  for (const textQuery of variants) {
+    if (byId.size >= maxPlaces) break
+    try {
+      const batch = await searchPlacesV1(textQuery, coordinates, 28000, false, 20, lang)
+      for (const p of batch) {
+        if (!byId.has(p.id)) byId.set(p.id, p)
+      }
+    } catch (e) {
+      console.error(`❌ gatherTextSearchPlacesForExplore "${textQuery}":`, e)
+    }
+    await new Promise((r) => setTimeout(r, 55))
+  }
+  return [...byId.values()]
+}
+
+const _MIN_EXPLORE_SEARCH_RESULTS = 6
+
+async function mergeRelatedSearchPlaces(
+  existing: PlaceCard[],
+  related: string[],
+  location: string,
+  coordinates: { lat: number; lng: number },
+  lang: string,
+  maxExtraQueries: number,
+): Promise<PlaceCard[]> {
+  const byId = new Map<string, PlaceCard>(existing.map((p) => [p.id, p]))
+  let n = 0
+  for (const rq of related) {
+    if (!rq?.trim() || n >= maxExtraQueries) break
+    try {
+      const res = await searchPlacesV1(`${rq.trim()} in ${location}`, coordinates, 28000, false, 16, lang)
+      for (const p of res) {
+        if (!byId.has(p.id)) byId.set(p.id, p)
+      }
+    } catch (e) {
+      console.error(`❌ mergeRelatedSearchPlaces "${rq}":`, e)
+    }
+    n++
+    await new Promise((r) => setTimeout(r, 60))
+  }
+  return [...byId.values()]
+}
+
+function rankExploreSearchResults(places: PlaceCard[], query: string): PlaceCard[] {
+  const qlow = query.toLowerCase().trim()
+  if (!qlow) return places
+  const scored = places.map((p) => {
+    const n = (p.name || '').toLowerCase()
+    const blob = placeCardSearchText(p)
+    let score = 0
+    if (n.includes(qlow)) score += 100
+    if (blob.includes(qlow)) score += 40
+    score += Math.min(30, (p.rating || 0) * 6)
+    score += Math.min(15, Math.log10((p.user_ratings_total || 0) + 1) * 5)
+    return { p, score }
+  })
+  scored.sort((a, b) => b.score - a.score)
+  return scored.map((x) => x.p)
 }
 
 async function handleSearch(supabase: any, userId: string, params: any): Promise<Response> {
@@ -2078,31 +2243,43 @@ async function handleSearch(supabase: any, userId: string, params: any): Promise
     const lang = googlePlacesLanguageFromRequest(params)
     const normalizedQuery = normalizeSearchQuery(query)
     const related = relatedSearchOptions(query)
-    const primary = await searchPlacesV1(`${query} in ${location}`, coordinates, 20000, false, 20, lang)
-    let qualified = await enrichAndFilter(primary, { minRating: 3.5, minReviews: 5 })
+    const searchOpts = { requirePhoto: false } as const
+    let merged = await gatherTextSearchPlacesForExplore(query, location, coordinates, lang, 40)
+    let qualified = await enrichAndFilter(merged, { minRating: 3.5, minReviews: 5 }, searchOpts)
 
     // Fallback 1: loosen quality threshold while keeping basic place validity.
     if (qualified.length === 0) {
-      qualified = await enrichAndFilter(primary, { minRating: 3.0, minReviews: 0 })
+      qualified = await enrichAndFilter(merged, { minRating: 3.0, minReviews: 0 }, searchOpts)
     }
 
     // Fallback 1.5: retry with typo/alias-normalized query (e.g. italan -> italian).
     if (qualified.length === 0 && normalizedQuery && normalizedQuery !== query.toLowerCase().trim().replace(/\s+/g, ' ')) {
-      const normalizedPrimary = await searchPlacesV1(`${normalizedQuery} in ${location}`, coordinates, 22000, false, 20, lang)
-      qualified = await enrichAndFilter(normalizedPrimary, { minRating: 3.0, minReviews: 0 })
+      const more = await gatherTextSearchPlacesForExplore(normalizedQuery, location, coordinates, lang, 24)
+      const dedup = Array.from(new Map([...merged, ...more].map((p) => [p.id, p])).values())
+      merged = dedup
+      qualified = await enrichAndFilter(merged, { minRating: 3.0, minReviews: 0 }, searchOpts)
     }
 
-    // Fallback 2: try related intent queries (e.g. jamaican -> caribbean).
-    if (qualified.length === 0 && related.length > 0) {
-      const expanded: PlaceCard[] = []
-      for (const rq of related.slice(0, 4)) {
-        const res = await searchPlacesV1(`${rq} in ${location}`, coordinates, 26000, false, 12, lang)
-        expanded.push(...res)
+    // Fallback 2: no qualified rows — merge cuisine/related hints + universal broadeners (any query).
+    if (qualified.length === 0) {
+      const pool = exploreSearchMergeQueryPool(related, query)
+      if (pool.length > 0) {
+        merged = await mergeRelatedSearchPlaces(merged, pool, location, coordinates, lang, 10)
+        qualified = await enrichAndFilter(merged, { minRating: 3.0, minReviews: 0 }, searchOpts)
       }
-      const deduped = Array.from(new Map(expanded.map((p) => [p.id, p])).values())
-      qualified = await enrichAndFilter(deduped, { minRating: 3.0, minReviews: 0 })
     }
 
+    // Sparse results: e.g. one strong name match — broaden for every query type, not only niche dishes.
+    if (qualified.length > 0 && qualified.length < _MIN_EXPLORE_SEARCH_RESULTS) {
+      const pool = exploreSearchMergeQueryPool(related, query)
+      merged = await mergeRelatedSearchPlaces(merged, pool, location, coordinates, lang, 10)
+      qualified = await enrichAndFilter(merged, { minRating: 3.4, minReviews: 4 }, searchOpts)
+      if (qualified.length < _MIN_EXPLORE_SEARCH_RESULTS) {
+        qualified = await enrichAndFilter(merged, { minRating: 3.0, minReviews: 0 }, searchOpts)
+      }
+    }
+
+    qualified = rankExploreSearchResults(qualified, query).slice(0, 24)
     const enriched = enrichWithSignals(qualified, !!userContext.isLocalMode)
     return new Response(
       JSON.stringify({

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wandermood/core/constants/app_store_demo_account.dart';
 import 'package:wandermood/core/presentation/widgets/swirl_background.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/auth/application/social_auth_service.dart';
@@ -32,7 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _passwordError;
   bool _isLoading = false;
 
-  static const String _demoEmail = 'demo@wandermood.com';
   static const String _demoPassword = 'WanderMood2025!';
 
   @override
@@ -132,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       await Supabase.instance.client.auth.signInWithPassword(
-        email: _demoEmail,
+        email: kAppStoreDemoReviewEmail,
         password: _demoPassword,
       );
       await _postLoginSuccess();
@@ -152,6 +152,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleLogin() async {
     if (_isLoading) return;
     final l10n = AppLocalizations.of(context)!;
+    final emailTrim = _emailController.text.trim();
+    if (emailTrim.toLowerCase() == kAppStoreDemoReviewEmail.toLowerCase()) {
+      if (emailTrim.isEmpty || !_isValidEmail(emailTrim)) {
+        setState(() {
+          _emailError = emailTrim.isEmpty
+              ? l10n.authEmailRequired
+              : l10n.authEmailInvalid;
+          _passwordError = null;
+        });
+        return;
+      }
+      setState(() {
+        _emailError = null;
+        _passwordError = null;
+      });
+      await _handleDemoLogin();
+      return;
+    }
     _validateInputs(l10n);
     if (_emailError != null || _passwordError != null) {
       return;
@@ -506,29 +524,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 6),
-
-                  // App Store review helper (subtle)
-                  Center(
-                    child: TextButton(
-                      onPressed: _isLoading ? null : _handleDemoLogin,
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.black54,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        l10n.authReviewerHint,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                  ),
-                  
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
                 ],
               ),

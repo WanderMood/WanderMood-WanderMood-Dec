@@ -158,6 +158,8 @@ class _ChatMsg {
   final bool moodyThreadOpener;
   /// Visit celebration line from `MoodyCelebrationService` (persists in daily prefs JSON).
   final bool visitCelebration;
+  /// First line of the day from [_seedDailyStarterIfNeeded]; text follows app locale on refresh.
+  final bool dailyStarterSeed;
 
   _ChatMsg({
     required this.message,
@@ -168,6 +170,7 @@ class _ChatMsg {
     this.replyToIsUser,
     this.moodyThreadOpener = false,
     this.visitCelebration = false,
+    this.dailyStarterSeed = false,
   });
 
   /// Text used when the user chooses Copy (includes quote block if present).
@@ -364,6 +367,7 @@ Map<String, dynamic> _chatMsgToJson(_ChatMsg m) {
   };
   if (m.moodyThreadOpener) o['threadOpener'] = true;
   if (m.visitCelebration) o['visitCelebration'] = true;
+  if (m.dailyStarterSeed) o['dailyStarterSeed'] = true;
   final rt = m.replyToText?.trim();
   if (rt != null && rt.isNotEmpty) {
     o['replyToText'] = rt;
@@ -399,44 +403,86 @@ _ChatMsg _chatMsgFromJson(Map<String, dynamic> j) {
     replyToIsUser: (rt != null && rt.isNotEmpty) ? (ri ?? false) : null,
     moodyThreadOpener: j['threadOpener'] == true,
     visitCelebration: j['visitCelebration'] == true,
+    dailyStarterSeed: j['dailyStarterSeed'] == true,
   );
 }
 
-String _dailyStarterMessage({
-  required String languageCode,
-  required DateTime now,
-  required bool hasSelectedMood,
-}) {
-  final isDutch = languageCode == 'nl';
+/// Older prefs had no [_ChatMsg.dailyStarterSeed]; still detect these strings.
+const _legacyDailyStarterMessages = <String>{
+  'Goedemorgen! Zin om je dag nog verder af te stemmen?',
+  'Goedemorgen! Hoe voel je je vandaag?',
+  'Hoi! Hoe gaat je dag tot nu toe? Wil je iets aanpassen?',
+  'Hoi! Hoe voel je je nu?',
+  'Goedenavond! Hoe was je dag?',
+  'Goedenavond! Hoe voel je je vanavond?',
+  'Good morning! Want to fine-tune your day?',
+  'Good morning! How are you feeling today?',
+  'Hey! How is your day going so far? Want to tweak anything?',
+  'Hey! How are you feeling right now?',
+  'Good evening! How was your day?',
+  'Good evening! How are you feeling tonight?',
+};
+
+String _dailyStarterFromL10n(
+  AppLocalizations l10n,
+  DateTime now,
+  bool hasSelectedMood,
+) {
   final hour = now.hour;
-  if (isDutch) {
-    if (hour < 12) {
-      return hasSelectedMood
-          ? 'Goedemorgen! Zin om je dag nog verder af te stemmen?'
-          : 'Goedemorgen! Hoe voel je je vandaag?';
-    }
-    if (hour < 18) {
-      return hasSelectedMood
-          ? 'Hoi! Hoe gaat je dag tot nu toe? Wil je iets aanpassen?'
-          : 'Hoi! Hoe voel je je nu?';
-    }
-    return hasSelectedMood
-        ? 'Goedenavond! Hoe was je dag?'
-        : 'Goedenavond! Hoe voel je je vanavond?';
-  }
   if (hour < 12) {
     return hasSelectedMood
-        ? 'Good morning! Want to fine-tune your day?'
-        : 'Good morning! How are you feeling today?';
+        ? l10n.moodyChatDailyStarterMorningTune
+        : l10n.moodyChatDailyStarterMorningFirst;
   }
   if (hour < 18) {
     return hasSelectedMood
-        ? 'Hey! How is your day going so far? Want to tweak anything?'
-        : 'Hey! How are you feeling right now?';
+        ? l10n.moodyChatDailyStarterAfternoonTune
+        : l10n.moodyChatDailyStarterAfternoonFirst;
   }
   return hasSelectedMood
-      ? 'Good evening! How was your day?'
-      : 'Good evening! How are you feeling tonight?';
+      ? l10n.moodyChatDailyStarterEveningTune
+      : l10n.moodyChatDailyStarterEveningFirst;
+}
+
+/// Rewrites a persisted Dutch (or other) opener when the user changes app language.
+void _refreshDailyStarterForLocaleIfNeeded({
+  required BuildContext context,
+  required SharedPreferences prefs,
+  required DateTime now,
+  required List<_ChatMsg> chatMessages,
+  required List<String> moods,
+}) {
+  if (chatMessages.isEmpty) return;
+  final first = chatMessages.first;
+  if (first.isUser || first.moodyThreadOpener || first.visitCelebration) {
+    return;
+  }
+  if (!first.dailyStarterSeed &&
+      (first.suggestedPlaces != null && first.suggestedPlaces!.isNotEmpty)) {
+    return;
+  }
+  final trimmed = first.message.trim();
+  final isStarter = first.dailyStarterSeed ||
+      _legacyDailyStarterMessages.contains(trimmed);
+  if (!isStarter) return;
+
+  final l10n = AppLocalizations.of(context);
+  if (l10n == null) return;
+  final fresh = _dailyStarterFromL10n(l10n, now, moods.isNotEmpty);
+  if (first.message == fresh && first.dailyStarterSeed) return;
+
+  chatMessages[0] = _ChatMsg(
+    message: fresh,
+    isUser: first.isUser,
+    timestamp: first.timestamp,
+    suggestedPlaces: first.suggestedPlaces,
+    replyToText: first.replyToText,
+    replyToIsUser: first.replyToIsUser,
+    moodyThreadOpener: first.moodyThreadOpener,
+    visitCelebration: first.visitCelebration,
+    dailyStarterSeed: true,
+  );
+  unawaited(_DailyMoodyChatCache.persistToPrefs(prefs, now));
 }
 
 void _seedDailyStarterIfNeeded({
@@ -451,13 +497,10 @@ void _seedDailyStarterIfNeeded({
   if (l10n == null) return;
   chatMessages.add(
     _ChatMsg(
-      message: _dailyStarterMessage(
-        languageCode: Localizations.localeOf(context).languageCode,
-        now: now,
-        hasSelectedMood: moods.isNotEmpty,
-      ),
+      message: _dailyStarterFromL10n(l10n, now, moods.isNotEmpty),
       isUser: false,
       timestamp: now,
+      dailyStarterSeed: true,
     ),
   );
   unawaited(_DailyMoodyChatCache.persistToPrefs(prefs, now));
@@ -663,6 +706,13 @@ Future<void> showMoodyChatSheet(BuildContext context, WidgetRef ref) {
 
   final conversationId = _DailyMoodyChatCache.getConversationId(now);
   final chatMessages = _DailyMoodyChatCache.getMessages(now);
+  _refreshDailyStarterForLocaleIfNeeded(
+    context: context,
+    prefs: prefs,
+    now: now,
+    chatMessages: chatMessages,
+    moods: moods,
+  );
   _seedDailyStarterIfNeeded(
     context: context,
     prefs: prefs,
@@ -824,6 +874,13 @@ class _MoodyChatTabViewState extends ConsumerState<MoodyChatTabView>
     _DailyMoodyChatCache.hydrateFromPrefsSync(prefs, now);
     final conversationId = _DailyMoodyChatCache.getConversationId(now);
     final chatMessages = _DailyMoodyChatCache.getMessages(now);
+    _refreshDailyStarterForLocaleIfNeeded(
+      context: context,
+      prefs: prefs,
+      now: now,
+      chatMessages: chatMessages,
+      moods: moods,
+    );
     _seedDailyStarterIfNeeded(
       context: context,
       prefs: prefs,

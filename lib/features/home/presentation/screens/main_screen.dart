@@ -74,17 +74,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   bool _weekendBannerDismissed = false;
   final List<GlobalKey> _mainTourNavKeys =
       List<GlobalKey>.generate(5, (_) => GlobalKey());
-  final List<GlobalKey> _mainTourContentKeys =
-      List<GlobalKey>.generate(5, (_) => GlobalKey());
   bool _mainTourShowing = false;
 
-  /// Built once so tab state is preserved; keys wire the interactive main app tour.
-  late final List<Widget> _tabScreens = [
-    DynamicMyDayScreen(mainAppTourContentKey: _mainTourContentKeys[0]),
-    ExploreScreen(mainAppTourContentKey: _mainTourContentKeys[1]),
-    RedesignedMoodyHub(mainAppTourContentKey: _mainTourContentKeys[2]),
-    AgendaScreen(mainAppTourContentKey: _mainTourContentKeys[3]),
-    UserProfileScreen(mainAppTourContentKey: _mainTourContentKeys[4]),
+  /// Built once so tab state is preserved.
+  late final List<Widget> _tabScreens = const [
+    DynamicMyDayScreen(),
+    ExploreScreen(),
+    RedesignedMoodyHub(),
+    AgendaScreen(),
+    UserProfileScreen(),
   ];
 
   /// Tabs the user has opened at least once — kept in the tree with [Offstage]
@@ -183,26 +181,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   Future<void> _maybeShowMainAppTourAuto() async {
     if (!mounted || _mainTourShowing) return;
-    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final user = Supabase.instance.client.auth.currentUser;
+    final uid = user?.id;
     if (uid == null) return;
     await migrateLegacyMainAppTourIfNeeded(uid);
     if (!mounted) return;
-    final done = await isMainAppTourCompletedForUser(uid);
+    final done = await isMainAppTourCompletedForUser(uid, user?.email);
     if (!mounted || done) return;
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted || _mainTourShowing) return;
     _presentMainAppTour();
   }
 
-  void _presentMainAppTour() {
+  Future<void> _presentMainAppTour() async {
     if (_mainTourShowing || !mounted) return;
     final uid = Supabase.instance.client.auth.currentUser?.id;
     if (uid == null) return;
     setState(() => _mainTourShowing = true);
-    showMainAppTour(
+    await showMainAppTour(
       context: context,
       ref: ref,
-      contentKeys: _mainTourContentKeys,
       userId: uid,
       onSessionEnd: () {
         _mainTourShowing = false;
@@ -409,9 +407,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     ref.listen<int>(mainAppTourRequestProvider, (previous, next) {
       if (next == 0) return;
       if (previous == next) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || _mainTourShowing) return;
-        _presentMainAppTour();
+        await _presentMainAppTour();
       });
     });
 

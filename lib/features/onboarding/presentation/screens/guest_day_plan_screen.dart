@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wandermood/core/providers/feature_flags_provider.dart';
-import 'package:wandermood/core/providers/user_location_provider.dart';
-import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/features/home/domain/enums/moody_feature.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/features/onboarding/domain/guest_demo_activities_builder.dart';
@@ -34,23 +32,6 @@ class GuestDayPlanScreen extends ConsumerStatefulWidget {
 
 class _GuestDayPlanScreenState extends ConsumerState<GuestDayPlanScreen> {
   bool _redirectScheduled = false;
-
-  String _moodDisplayName(BuildContext context, String mood) {
-    final l10n = AppLocalizations.of(context)!;
-    final lower = mood.toLowerCase();
-    if (lower == 'surprise_me') return l10n.demoMoodSurpriseMe;
-    if (lower.contains('cultural') || lower.contains('culture')) return l10n.moodCultural;
-    if (lower.contains('cozy') || lower.contains('cosy')) return l10n.moodCozy;
-    if (lower.contains('food') || lower.contains('foody')) return l10n.moodFoody;
-    if (lower.contains('relax')) return l10n.moodRelaxed;
-    if (lower.contains('adventure') || lower.contains('adventurous')) return l10n.moodAdventurous;
-    if (lower.contains('social')) return l10n.moodSocial;
-    if (lower.contains('creative')) return l10n.moodCreative;
-    if (lower.contains('romantic')) return l10n.moodRomantic;
-    if (lower.contains('energetic')) return l10n.moodEnergetic;
-    if (lower.contains('curious')) return l10n.moodCurious;
-    return mood;
-  }
 
   String _moodEmoji(String mood) {
     final m = mood.toLowerCase();
@@ -269,8 +250,7 @@ class _GuestDayPlanScreenState extends ConsumerState<GuestDayPlanScreen> {
     }
 
     final moodTag = guestDemoMoodKeyForDayPlan(mood);
-
-    final userPos = ref.watch(userLocationProvider).valueOrNull;
+    final distanceLabels = buildGuestDemoDistanceLabels(mood);
 
     return Scaffold(
       backgroundColor: _wmCream,
@@ -419,10 +399,10 @@ class _GuestDayPlanScreenState extends ConsumerState<GuestDayPlanScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(_moodEmoji(moodTag), style: const TextStyle(fontSize: 18)),
+                                          Text(_moodEmoji(mood), style: const TextStyle(fontSize: 18)),
                                           const SizedBox(width: 6),
                                           Text(
-                                            _moodDisplayName(context, moodTag),
+                                            guestDemoMoodDisplayLabel(context, mood),
                                             style: GoogleFonts.poppins(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w600,
@@ -445,16 +425,9 @@ class _GuestDayPlanScreenState extends ConsumerState<GuestDayPlanScreen> {
                             delegate: SliverChildBuilderDelegate(
                               (context, i) {
                                 final activity = activities[i];
-                                String? distanceLine;
-                                if (userPos != null) {
-                                  final km = DistanceService.calculateDistance(
-                                    userPos.latitude,
-                                    userPos.longitude,
-                                    activity.location.latitude,
-                                    activity.location.longitude,
-                                  );
-                                  distanceLine = DistanceService.formatDistance(km);
-                                }
+                                final distanceLine = i < distanceLabels.length
+                                    ? distanceLabels[i]
+                                    : null;
                                 final moodyLine = guestDemoMoodyPersonalityLine(l10n, mood, i);
 
                                 return Column(

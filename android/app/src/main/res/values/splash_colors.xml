@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches Flutter splash / iOS LaunchScreen (wmForest) -->
+    <color name="wm_splash_forest">#FF2A6049</color>
+</resources>
