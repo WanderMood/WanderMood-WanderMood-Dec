@@ -164,4 +164,4 @@ DROP TRIGGER IF EXISTS business_checkins_bump_total_checkins ON public.business_
 CREATE TRIGGER business_checkins_bump_total_checkins
   AFTER INSERT ON public.business_checkins
   FOR EACH ROW
-  EXECUTE PROCEDURE public.increment_business_listing_checkins ();
+  EXECUTE FUNCTION public.increment_business_listing_checkins ();
