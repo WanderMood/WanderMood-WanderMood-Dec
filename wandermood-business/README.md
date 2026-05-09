@@ -6,7 +6,7 @@ Next.js dashboard for **business.wandermood.com**: partners manage their listing
 
 ```bash
 cd wandermood-business
-cp .env.example .env.local
+cp env.example .env.local
 # Fill in Supabase anon + service role keys, Stripe keys, STRIPE_PRICE_ID
 npm install
 npm run dev
@@ -27,4 +27,4 @@ Apply the repo migration that adds `business_users`, `business_analytics_daily`,
 
 ## Deploy (Vercel)
 
-Root directory: `wandermood-business`. Set env vars from `.env.example`. Custom domain: `business.wandermood.com`.
+Root directory: `wandermood-business`. Set env vars from `env.example`. Custom domain: `business.wandermood.com`.
