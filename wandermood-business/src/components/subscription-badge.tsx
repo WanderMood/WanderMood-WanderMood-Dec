@@ -47,6 +47,13 @@ export function SubscriptionBadge({
       </Badge>
     );
   }
+  if (status === "onboarding") {
+    return (
+      <Badge className="border-0 bg-amber-500/20 text-amber-200 hover:bg-amber-500/25">
+        Account nieuw · abonnement nodig
+      </Badge>
+    );
+  }
   return (
     <Badge className="border-0 bg-muted text-muted-foreground">{status}</Badge>
   );

@@ -12,6 +12,12 @@ npm install
 npm run dev
 ```
 
+### Self-serve business signup
+
+- **`/register`** — business name, city, country, email, password. Creates a Supabase user, a `business_listings` row (`subscription_status: onboarding`, not visible in the consumer app until `active`/`trialing`), and a `business_users` link.
+- After registration, the user signs in at **`/login`**, then starts **Stripe Checkout** from **Abonnement** (€79/month). When the subscription is active, webhooks set the listing to **`active`** and it can appear in Explore (per your public RLS).
+- **`/login`** links to register; invited partners (manual onboarding) can keep using login only.
+
 ## Supabase Auth (Dashboard — required once)
 
 In [Supabase Dashboard](https://supabase.com/dashboard) → your project → **Authentication** → **URL configuration**:

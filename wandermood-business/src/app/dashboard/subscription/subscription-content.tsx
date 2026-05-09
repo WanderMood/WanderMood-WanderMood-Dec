@@ -76,6 +76,37 @@ export function SubscriptionContent() {
     "Maandelijks opzegbaar",
   ];
 
+  if (status === "onboarding" || status === "pending_approval") {
+    return (
+      <div className="mx-auto max-w-lg space-y-6">
+        <Card className="border-amber-500/30 bg-amber-500/10 shadow-none">
+          <CardHeader>
+            <CardTitle className="text-wm-cream">
+              {status === "onboarding"
+                ? "Welkom! Rond je abonnement af"
+                : "Account in behandeling"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-wm-cream">
+              {status === "onboarding"
+                ? "Je bent nog niet zichtbaar in de WanderMood-app tot je abonnement actief is. Start hier voor €79/maand (geen lang contract)."
+                : "Zodra je goedgekeurd bent, kun je hier betalen. Je bent zichtbaar in de app wanneer je abonnement actief is. Vragen? Mail info@wandermood.com."}
+            </p>
+            <Button
+              onClick={() => void openCheckout()}
+              disabled={loading !== null}
+              className="w-full bg-wm-forest text-wm-cream hover:bg-wm-forest/90"
+            >
+              {loading === "checkout" ? "Bezig…" : "Abonnement starten — €79/maand"}
+            </Button>
+            {status === "onboarding" ? <BenefitsList items={benefits} /> : null}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (status === "trialing") {
     return (
       <div className="mx-auto max-w-lg space-y-6">

@@ -22,6 +22,19 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (
+    listing.subscription_status === "active" &&
+    listing.stripe_subscription_id
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Je hebt al een actief abonnement. Gebruik ‘Betaalmethode beheren’ in het portaal.",
+      },
+      { status: 400 },
+    );
+  }
+
   const stripe = new Stripe(secret);
   const admin = createAdminClient();
 

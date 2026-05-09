@@ -35,9 +35,27 @@ export default async function DashboardOverviewPage() {
 
   const showTrialBanner = listing.subscription_status === "trialing";
   const showPastDueBanner = listing.subscription_status === "past_due";
+  const showOnboardingBanner = listing.subscription_status === "onboarding";
 
   return (
     <div className="space-y-8">
+      {showOnboardingBanner ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-wm-cream">
+            Start je abonnement om zichtbaar te worden in Explore en Moody&apos;s
+            dagplannen.
+          </p>
+          <Link
+            href="/dashboard/subscription"
+            className={cn(
+              buttonVariants({ size: "default" }),
+              "bg-wm-forest text-wm-cream hover:bg-wm-forest/90",
+            )}
+          >
+            Abonnement €79/maand →
+          </Link>
+        </div>
+      ) : null}
       {showTrialBanner ? (
         <div className="flex flex-col gap-3 rounded-xl border border-wm-sunset/40 bg-wm-sunset/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-wm-cream">

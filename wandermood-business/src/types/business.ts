@@ -1,4 +1,5 @@
 export type SubscriptionStatus =
+  | "onboarding"
   | "trialing"
   | "active"
   | "past_due"

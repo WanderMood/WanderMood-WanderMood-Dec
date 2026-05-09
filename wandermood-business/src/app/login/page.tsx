@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { next?: string; error?: string };
+  searchParams: { next?: string; error?: string; registered?: string };
 }) {
   const sp = searchParams;
   const supabase = await createClient();
@@ -32,7 +32,17 @@ export default async function LoginPage({
             Inloggen mislukt. Probeer opnieuw of vraag een nieuwe uitnodiging aan.
           </p>
         ) : null}
+        {sp.registered === "1" ? (
+          <p className="rounded-lg bg-wm-forest/20 px-3 py-2 text-center text-sm text-wm-cream">
+            Account aangemaakt. Log nu in om je abonnement te starten.
+          </p>
+        ) : null}
         <LoginForm nextPath={sp.next} />
+        <p className="text-center text-sm text-muted-foreground">
+          <Link href="/register" className="text-[var(--wm-green)] hover:underline">
+            Nog geen account? Registreer je zaak
+          </Link>
+        </p>
         <p className="text-center text-sm text-muted-foreground">
           <Link href="/reset-password" className="text-[var(--wm-green)] hover:underline">
             Wachtwoord vergeten?
