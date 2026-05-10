@@ -1077,6 +1077,222 @@
   line-height: 1.65;
 }
 
+/* —— Interactive “Why WanderMood” showcase —— */
+.landing-root .landing-why-desktop {
+  display: none;
+  grid-template-columns: minmax(280px, 1fr) minmax(252px, 318px);
+  gap: 36px 44px;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.landing-root .landing-why-desktop-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.landing-root .landing-why-pick {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  padding: 18px 18px 18px 16px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  background: white;
+  border: 1px solid rgba(30, 28, 24, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(30, 28, 24, 0.04);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.landing-root .landing-why-pick:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(30, 28, 24, 0.09);
+}
+
+.landing-root .landing-why-pick:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+
+.landing-root .landing-why-pick.is-active {
+  border-color: rgba(42, 96, 73, 0.55);
+  background: linear-gradient(135deg, rgba(235, 243, 238, 0.85) 0%, white 48%, white 100%);
+  box-shadow:
+    0 0 0 1px rgba(42, 96, 73, 0.2),
+    0 12px 36px rgba(42, 96, 73, 0.12);
+}
+
+.landing-root .landing-why-pick-index {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--forest);
+  opacity: 0.55;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.landing-root .landing-why-pick.is-active .landing-why-pick-index {
+  opacity: 1;
+}
+
+.landing-root .landing-why-pick-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.landing-root .landing-why-pick-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+  font-family: var(--font-dm-sans), sans-serif;
+  line-height: 1.3;
+}
+
+.landing-root .landing-why-pick-body {
+  display: block;
+  font-size: 13px;
+  color: var(--dusk);
+  line-height: 1.6;
+}
+
+.landing-root .landing-why-preview-wrap {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  justify-content: center;
+}
+
+.landing-root .landing-why-preview-panel {
+  width: 100%;
+  max-width: 320px;
+}
+
+.landing-root .landing-why-preview-stage {
+  animation: landing-why-preview-in 0.42s ease;
+}
+
+@keyframes landing-why-preview-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-root .landing-why-preview-stage {
+    animation: none;
+  }
+
+  .landing-root .landing-why-pick:hover {
+    transform: none;
+  }
+}
+
+.landing-root .landing-why-iphone.landing-iphone16 {
+  margin-top: 0;
+  padding: 0 12px;
+}
+
+.landing-root .landing-why-iphone .landing-iphone16-rail {
+  max-width: 260px;
+}
+
+.landing-root .landing-why-mobile {
+  margin-top: 24px;
+}
+
+.landing-root .landing-why-mobile-hint {
+  font-size: 12px;
+  color: var(--stone);
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.landing-root .landing-why-mobile-track {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 6px 8px 20px;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.landing-root .landing-why-mobile-card {
+  flex: 0 0 min(86vw, 300px);
+  scroll-snap-align: center;
+  background: white;
+  border-radius: 18px;
+  border: 1px solid rgba(30, 28, 24, 0.07);
+  box-shadow: 0 8px 24px rgba(30, 28, 24, 0.06);
+  padding: 12px 12px 16px;
+}
+
+.landing-root .landing-why-mobile-thumb {
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--charcoal);
+  line-height: 0;
+  margin-bottom: 12px;
+  aspect-ratio: 9 / 14;
+  max-height: 200px;
+}
+
+.landing-root .landing-why-mobile-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.landing-root .landing-why-mobile-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+  font-family: var(--font-dm-sans), sans-serif;
+  line-height: 1.35;
+}
+
+.landing-root .landing-why-mobile-body {
+  font-size: 13px;
+  color: var(--dusk);
+  line-height: 1.55;
+}
+
+@media (min-width: 901px) {
+  .landing-root .landing-why-desktop {
+    display: grid;
+  }
+
+  .landing-root .landing-why-mobile {
+    display: none;
+  }
+}
+
 .landing-root .landing-demo {
   background: var(--cream);
 }

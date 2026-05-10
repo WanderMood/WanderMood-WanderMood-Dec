@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { LandingWhyShowcase } from "@/components/LandingWhyShowcase";
+import { IPhone16ProMaxShot, PhoneShot } from "@/components/landing-device-shots";
 import { getLandingImages } from "@/lib/landing-images";
 
 const APP_STORE_URL =
@@ -68,66 +70,6 @@ function CheckIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  );
-}
-
-function PhoneShot({
-  src,
-  alt,
-  priority,
-  className,
-}: {
-  src: string;
-  alt: string;
-  priority?: boolean;
-  className?: string;
-}) {
-  return (
-    <div className={`landing-device-shell ${className ?? ""}`}>
-      <div className="landing-device-screen">
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="landing-device-img"
-          sizes="(max-width: 900px) 78vw, 240px"
-          priority={priority}
-        />
-      </div>
-    </div>
-  );
-}
-
-/** iPhone 16 Pro Max–style frame: titanium rail + side controls (CSS). */
-function IPhone16ProMaxShot({
-  src,
-  alt,
-  className,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-}) {
-  return (
-    <div className={`landing-iphone16 ${className ?? ""}`}>
-      <span className="landing-iphone16-btn landing-iphone16-btn--vol-up" aria-hidden />
-      <span className="landing-iphone16-btn landing-iphone16-btn--vol-down" aria-hidden />
-      <span className="landing-iphone16-btn landing-iphone16-btn--power" aria-hidden />
-      <span className="landing-iphone16-btn landing-iphone16-btn--camera-ctl" aria-hidden />
-      <div className="landing-iphone16-rail">
-        <div className="landing-iphone16-inner">
-          <div className="landing-iphone16-screen">
-            <Image
-              src={src}
-              alt={alt}
-              fill
-              className="landing-iphone16-img"
-              sizes="(max-width: 900px) 90vw, 300px"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -284,32 +226,7 @@ export default function LandingHome() {
 
       <div className="divider" aria-hidden />
 
-      <section id="features" className="landing-why">
-        <div className="landing-section-inner">
-          <p className="section-eyebrow reveal">{t("why.eyebrow")}</p>
-          <h2 className="reveal landing-section-title">
-            {t("why.title")} <em>{t("why.titleEm")}</em>
-          </h2>
-          <p className="section-sub reveal landing-why-sub">{t("why.sub")}</p>
-          <div className="landing-why-grid">
-            {(
-              [
-                ["u1t", "u1b"],
-                ["u2t", "u2b"],
-                ["u3t", "u3b"],
-                ["u4t", "u4b"],
-                ["u5t", "u5b"],
-                ["u6t", "u6b"],
-              ] as const
-            ).map(([tk, bk]) => (
-              <div key={tk} className="landing-why-card reveal">
-                <h3>{t(`why.${tk}`)}</h3>
-                <p>{t(`why.${bk}`)}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LandingWhyShowcase />
 
       <section id="how" className="landing-demo">
         <div className="landing-section-inner">

@@ -45,7 +45,16 @@
       "u5t": "Mood Match",
       "u5b": "Planning with someone else? Lock in both moods and let Moody find the overlap.",
       "u6t": "Save & build",
-      "u6b": "Keep places you love, schedule them in My Plans, and navigate when you're ready to go."
+      "u6b": "Keep places you love, schedule them in My Plans, and navigate when you're ready to go.",
+      "swipeHint": "Swipe sideways to browse each feature",
+      "previewAlt": {
+        "u1": "Mood selection — choose how you feel in WanderMood",
+        "u2": "Chat with Moody in WanderMood",
+        "u3": "My Day timeline with planned activities",
+        "u4": "Explore feed with places and filters",
+        "u5": "Mood Match — two moods, one shared plan",
+        "u6": "Place detail — save, plan, and navigate"
+      }
     },
     "demo": {
       "eyebrow": "How it works",

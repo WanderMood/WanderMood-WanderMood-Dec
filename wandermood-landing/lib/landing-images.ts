@@ -18,6 +18,19 @@ export type LandingImageSet = {
   b2bExplore: string;
 };
 
+/** Screens for the interactive “Why WanderMood” showcase (order matches u1…u6 cards). */
+export function getWhyShowcaseScreens(locale: string): readonly string[] {
+  const i = getLandingImages(locale);
+  return [
+    i.stepMood,
+    i.stepMoody,
+    i.stepPlan,
+    i.explore,
+    i.moodMatchWait,
+    i.placeDetail,
+  ];
+}
+
 export function getLandingImages(locale: string): LandingImageSet {
   const isNl = locale === "nl";
   return {

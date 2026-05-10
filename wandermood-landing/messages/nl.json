@@ -45,7 +45,16 @@
       "u5t": "Mood Match",
       "u5b": "Samen plannen? Zet jullie stemmingen vast en laat Moody de overlap zoeken.",
       "u6t": "Bewaren & bouwen",
-      "u6b": "Bewaar favorieten, plan ze in Mijn plannen en navigeer wanneer je vertrekt."
+      "u6b": "Bewaar favorieten, plan ze in Mijn plannen en navigeer wanneer je vertrekt.",
+      "swipeHint": "Swipe horizontaal om alle features te zien",
+      "previewAlt": {
+        "u1": "Stemming kiezen in WanderMood",
+        "u2": "Chat met Moody in WanderMood",
+        "u3": "Mijn dag met geplande activiteiten",
+        "u4": "Ontdek-feed met plekken en filters",
+        "u5": "Mood Match — twee stemmingen, één plan",
+        "u6": "Plekdetail — bewaren, plannen en navigeren"
+      }
     },
     "demo": {
       "eyebrow": "Zo werkt het",
