@@ -8,7 +8,8 @@
       "how": "How it works",
       "moods": "Moods",
       "business": "For businesses",
-      "download": "Download the app"
+      "download": "Download the app",
+      "partners": "For partners"
     },
     "hero": {
       "badge": "Powered by Moody",
@@ -119,7 +120,8 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "contact": "Contact",
-    "forBusiness": "For businesses"
+    "forBusiness": "For businesses",
+    "partners": "Partners"
   },
   "legal": {
     "common": {
@@ -200,5 +202,119 @@
     "storeIos": "iPhone — App Store search",
     "backHome": "Back to WanderMood",
     "loading": "Loading…"
+  },
+  "partners": {
+    "meta": {
+      "title": "WanderMood for partners — grow with mood-based discovery",
+      "description": "Apply to list your venue on WanderMood. Reach guests when their mood matches your experience."
+    },
+    "hero": {
+      "eyebrow": "WANDERMOOD FOR PARTNERS",
+      "title": "Get discovered at the moment that matters.",
+      "sub": "Users opening WanderMood already know how they feel. They're looking for the perfect place. You can be that place.",
+      "ctaPrimary": "Submit application →",
+      "ctaSecondary": "How does it work?"
+    },
+    "who": {
+      "title": "Who is WanderMood Business for?",
+      "card1Title": "Restaurants & cafés",
+      "card1Body": "Reach guests looking for exactly your vibe and cuisine.",
+      "card2Title": "Museums & experiences",
+      "card2Body": "Appear in day plans of culture lovers in your city.",
+      "card3Title": "Boutique hotels & stays",
+      "card3Body": "Get recommended to travelers looking for a unique stay.",
+      "card4Title": "Tours, workshops & events",
+      "card4Body": "Let people discover your experience when they're ready to do something."
+    },
+    "how": {
+      "title": "How does it work?",
+      "step1Title": "Apply",
+      "step1Body": "Fill in the application form. We review your venue manually — quality over quantity.",
+      "step2Title": "We handle setup",
+      "step2Body": "We connect your venue to the app, set up your profile and start your 30-day free trial.",
+      "step3Title": "You get discovered",
+      "step3Body": "Users with the right mood see your venue in Explore and Moody's day plans. You don't have to do anything."
+    },
+    "what": {
+      "title": "What do you get?",
+      "f1": "Visible in Explore for matching moods",
+      "f2": "Featured in Moody's personalized day plans",
+      "f3": "Mood targeting — choose which vibes match your venue",
+      "f4": "Active offer visible to users",
+      "f5": "Monthly analytics report by email",
+      "f6": "Inclusion tags (halal, vegan, LGBTQ+, etc.)",
+      "price": "€79",
+      "perMonth": "per month",
+      "trialNote": "After 30-day free trial",
+      "cancelNote": "No contract. Cancel anytime.",
+      "pricingCta": "Start free trial →"
+    },
+    "honest": "WanderMood is active in Rotterdam and growing to other Dutch cities. Apply even if your city isn't listed yet.",
+    "form": {
+      "title": "Apply as a partner",
+      "sub": "We'll be in touch within 3 business days.",
+      "businessName": "Business name",
+      "businessNamePh": "Hopper Espresso Bar",
+      "businessType": "Type of business",
+      "city": "City",
+      "cityPh": "Rotterdam",
+      "googleMaps": "Google Maps link of your venue (optional)",
+      "googleMapsPh": "https://maps.google.com/...",
+      "googleMapsHelp": "Helps us find your venue faster.",
+      "website": "Website (optional)",
+      "websitePh": "https://yoursite.com",
+      "contactName": "Your name",
+      "contactNamePh": "Jane Doe",
+      "email": "Email address",
+      "emailPh": "jane@yourvenue.com",
+      "offer": "What do you offer?",
+      "offerPh": "Briefly describe what makes your venue unique…",
+      "moodsLabel": "Which moods match your venue?",
+      "moodsHelp": "Users with these moods will see you first.",
+      "gdprBefore": "I agree to the processing of my data by WanderMood. Read our ",
+      "gdprLink": "privacy policy",
+      "submit": "Submit application →",
+      "submitting": "Sending…",
+      "successTitle": "✓ Application received!",
+      "successBody": "We'll be in touch within 3 business days at {email}.",
+      "errorGeneric": "Something went wrong. Try again or email info@wandermood.com",
+      "errorRequired": "This field is required.",
+      "errorEmail": "Enter a valid email address.",
+      "errorGdpr": "Please accept the privacy terms.",
+      "chars": "{count} / 300",
+      "businessTypes": {
+        "restaurant": "Restaurant / Café",
+        "museum": "Museum / Experience",
+        "hotel": "Boutique hotel",
+        "tour": "Tour / Workshop / Event",
+        "bar": "Bar / Nightlife",
+        "park": "Park / Outdoor",
+        "dmo": "Destination / DMO",
+        "other": "Other"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "Which cities is WanderMood active in?",
+      "a1": "Rotterdam is our home base. We're actively growing to other Dutch cities. Apply even if your city isn't listed yet.",
+      "q2": "How does the 30-day free trial work?",
+      "a2": "After your application is approved, your venue is connected to the app. The first 30 days are free. Then you decide whether to continue for €79 per month.",
+      "q3": "What happens after my application?",
+      "a3": "We manually review your application and get back to you within 3 business days. You'll receive an email with next steps.",
+      "q4": "Can I cancel at any time?",
+      "a4": "Yes. No contract, no notice period. You just stop.",
+      "q5": "How am I shown to users?",
+      "a5": "Users choose how they feel in the app. When their mood matches your settings, you appear in their Explore feed and Moody's day plans.",
+      "q6": "Do I get analytics about my listing?",
+      "a6": "Yes. On the 1st of every month you automatically receive an email with your numbers: views, taps, offer redemptions and check-ins."
+    },
+    "final": {
+      "title": "Ready to join?",
+      "cta": "Start free trial →"
+    },
+    "nav": {
+      "home": "Home",
+      "apply": "Apply"
+    }
   }
 }

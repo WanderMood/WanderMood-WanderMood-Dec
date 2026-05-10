@@ -3,6 +3,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { loadMergedMessages } from "@/lib/merge-messages";
 import SetLang from "./SetLang";
 import PrivacyConsentStrip from "@/components/PrivacyConsentStrip";
 
@@ -24,9 +25,9 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   let messages;
   try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
+    messages = await loadMergedMessages(locale);
   } catch {
-    messages = (await import("../../messages/en.json")).default;
+    messages = await loadMergedMessages("en");
   }
 
   return (

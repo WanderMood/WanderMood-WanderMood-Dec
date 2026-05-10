@@ -45,9 +45,11 @@ The Next.js app lives in a subfolder, so Vercel must build from that folder:
   - `WANDERMOOD_ADMIN_SECRET` — long random string; you enter it on `https://wandermood.com/admin` to load stats.
   - `ADMIN_SECRET` — **must equal** the `ADMIN_SECRET` secret in **Supabase → Edge Functions → Secrets** (the `partner-onboard` function reads this via `x-admin-secret`). **Required** for **Goedkeuren** unless you instead set only `WANDERMOOD_ADMIN_SECRET` to that **same** Supabase value (the approve route falls back to it).
   - `SUPABASE_URL` — same project URL as the Flutter app.
-  - `SUPABASE_SERVICE_ROLE_KEY` — **server only**; never put in the Flutter app or client code. Only Vercel serverless reads this.
+  - `SUPABASE_SERVICE_ROLE_KEY` — **server only**; never put in the Flutter app or client code. Vercel serverless reads this for `/admin` stats, `/api/admin/approve-partner`, and **`/api/partners/apply`** (inserts into `partner_leads`). Value: Supabase → **Project Settings → API** → **service_role** secret key.
+  - `NEXT_PUBLIC_SUPABASE_URL` — optional fallback where code reads the public URL; may match `SUPABASE_URL`.
 - **Stripe** (Checkout + webhook + admin revenue): see [Stripe on Vercel](#stripe-on-vercel-subscriptions) below.
 - **Checkout API** (`/api/stripe/create-checkout-session`): also needs `SUPABASE_ANON_KEY` (same as Flutter “anon” key), `STRIPE_SECRET_KEY`, `STRIPE_PREMIUM_PRICE_ID`.
+- **Partner application form** (`POST /api/partners/apply`): requires `SUPABASE_SERVICE_ROLE_KEY` (and `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL` so the server can reach Supabase). Optional: **`RESEND_API_KEY`** — if set, sends a notification email to `info@wandermood.com` on each application. Configure a verified sender/domain in [Resend](https://resend.com) so `from: partners@wandermood.com` (or change the `from` address in `app/api/partners/apply/route.ts` to match your verified domain).
 
 After saving env vars, **redeploy** the project (Deployments → … → Redeploy, or push a new commit).
 

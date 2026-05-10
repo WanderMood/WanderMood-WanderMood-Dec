@@ -8,7 +8,8 @@
       "how": "Hoe het werkt",
       "moods": "Stemmingen",
       "business": "Voor bedrijven",
-      "download": "Download de app"
+      "download": "Download de app",
+      "partners": "Voor partners"
     },
     "hero": {
       "badge": "Aangedreven door Moody",
@@ -119,7 +120,8 @@
     "privacy": "Privacy",
     "terms": "Voorwaarden",
     "contact": "Contact",
-    "forBusiness": "Voor bedrijven"
+    "forBusiness": "Voor bedrijven",
+    "partners": "Partners"
   },
   "legal": {
     "common": {
@@ -200,5 +202,119 @@
     "storeIos": "iPhone — zoeken in App Store",
     "backHome": "Terug naar WanderMood",
     "loading": "Laden…"
+  },
+  "partners": {
+    "meta": {
+      "title": "WanderMood voor partners — groei met stemming",
+      "description": "Meld je aan om je zaak op WanderMood te tonen. Bereik gasten als hun stemming bij jouw ervaring past."
+    },
+    "hero": {
+      "eyebrow": "WANDERMOOD VOOR PARTNERS",
+      "title": "Word ontdekt op het moment dat het telt.",
+      "sub": "Gebruikers die WanderMood openen weten al hoe ze zich voelen. Ze zoeken de perfecte plek. Jij kan die plek zijn.",
+      "ctaPrimary": "Aanvraag indienen →",
+      "ctaSecondary": "Hoe werkt het?"
+    },
+    "who": {
+      "title": "Voor wie is WanderMood Business?",
+      "card1Title": "Restaurants & cafés",
+      "card1Body": "Bereik gasten die op zoek zijn naar exact jouw sfeer en keuken.",
+      "card2Title": "Musea & ervaringen",
+      "card2Body": "Verschijn in dagplannen van cultuurliefhebbers in jouw stad.",
+      "card3Title": "Boutique hotels & verblijven",
+      "card3Body": "Word aanbevolen aan reizigers die op zoek zijn naar een bijzonder verblijf.",
+      "card4Title": "Tours, workshops & events",
+      "card4Body": "Laat mensen jouw ervaring ontdekken op het moment dat ze iets willen beleven."
+    },
+    "how": {
+      "title": "Hoe werkt het?",
+      "step1Title": "Meld je aan",
+      "step1Body": "Vul het aanvraagformulier in. We reviewen je zaak handmatig — kwaliteit gaat voor kwantiteit.",
+      "step2Title": "Wij regelen alles",
+      "step2Body": "We koppelen jouw plek aan de app, stellen je profiel in en starten je gratis proefperiode van 30 dagen.",
+      "step3Title": "Jij wordt ontdekt",
+      "step3Body": "Gebruikers met de juiste stemming zien jouw plek in Explore en Moody's dagplannen. Jij hoeft niks te doen."
+    },
+    "what": {
+      "title": "Wat krijg je?",
+      "f1": "Zichtbaar in Explore bij passende stemmingen",
+      "f2": "Opgenomen in Moody's gepersonaliseerde dagplannen",
+      "f3": "Stemming-targeting — kies welke vibes bij jou passen",
+      "f4": "Actieve aanbieding zichtbaar voor gebruikers",
+      "f5": "Maandelijks analytics rapport per e-mail",
+      "f6": "Inclusiviteitstags (halal, veganistisch, LHBTQ+, etc.)",
+      "price": "€79",
+      "perMonth": "per maand",
+      "trialNote": "Na 30 dagen gratis proefperiode",
+      "cancelNote": "Geen contract. Maandelijks opzegbaar.",
+      "pricingCta": "Start gratis proefperiode →"
+    },
+    "honest": "WanderMood is actief in Rotterdam en groeit naar andere Nederlandse steden. Meld je aan — ook als jouw stad er nog niet bij staat.",
+    "form": {
+      "title": "Aanvraag indienen",
+      "sub": "We nemen binnen 3 werkdagen contact op.",
+      "businessName": "Naam van je zaak",
+      "businessNamePh": "Hopper Espresso Bar",
+      "businessType": "Type zaak",
+      "city": "Stad",
+      "cityPh": "Rotterdam",
+      "googleMaps": "Google Maps link van je zaak (optioneel)",
+      "googleMapsPh": "https://maps.google.com/...",
+      "googleMapsHelp": "Helpt ons je plek sneller te vinden.",
+      "website": "Website (optioneel)",
+      "websitePh": "https://jouwzaak.nl",
+      "contactName": "Jouw naam",
+      "contactNamePh": "Sarah de Vries",
+      "email": "E-mailadres",
+      "emailPh": "sarah@jouwzaak.nl",
+      "offer": "Wat bied je aan?",
+      "offerPh": "Beschrijf kort wat jouw zaak uniek maakt. Bijvoorbeeld: specialty coffee, lokale kunstenaars, weekendbrunch…",
+      "moodsLabel": "Welke stemmingen passen bij jouw plek?",
+      "moodsHelp": "Gebruikers met deze stemming zien jou als eerste.",
+      "gdprBefore": "Ik ga akkoord met de verwerking van mijn gegevens door WanderMood. Lees ons ",
+      "gdprLink": "privacybeleid",
+      "submit": "Aanvraag versturen →",
+      "submitting": "Verzenden…",
+      "successTitle": "✓ Aanvraag ontvangen!",
+      "successBody": "We nemen binnen 3 werkdagen contact op via {email}.",
+      "errorGeneric": "Er is iets misgegaan. Probeer het opnieuw of mail naar info@wandermood.com",
+      "errorRequired": "Dit veld is verplicht.",
+      "errorEmail": "Vul een geldig e-mailadres in.",
+      "errorGdpr": "Accepteer de privacyvoorwaarden.",
+      "chars": "{count} / 300",
+      "businessTypes": {
+        "restaurant": "Restaurant / Café",
+        "museum": "Museum / Ervaring",
+        "hotel": "Boutique hotel",
+        "tour": "Tour / Workshop / Event",
+        "bar": "Bar / Nachtleven",
+        "park": "Park / Outdoor",
+        "dmo": "Destinatie / DMO",
+        "other": "Anders"
+      }
+    },
+    "faq": {
+      "title": "Veelgestelde vragen",
+      "q1": "In welke steden is WanderMood actief?",
+      "a1": "Rotterdam is onze thuisbasis. We groeien actief naar andere Nederlandse steden. Meld je aan — ook als jouw stad er nog niet bij staat.",
+      "q2": "Hoe werkt de 30 dagen gratis proefperiode?",
+      "a2": "Na goedkeuring van je aanvraag wordt je plek gekoppeld aan de app. De eerste 30 dagen zijn gratis. Daarna kies je zelf of je doorgaat voor €79 per maand.",
+      "q3": "Wat gebeurt er na mijn aanvraag?",
+      "a3": "We reviewen je aanvraag handmatig en nemen binnen 3 werkdagen contact op. Je ontvangt een e-mail met de volgende stappen.",
+      "q4": "Kan ik op elk moment opzeggen?",
+      "a4": "Ja. Geen contract, geen opzegtermijn. Je stopt gewoon.",
+      "q5": "Hoe word ik getoond aan gebruikers?",
+      "a5": "Gebruikers kiezen in de app hoe ze zich voelen. Als hun stemming overeenkomt met jouw instellingen, verschijn jij in hun Explore-feed en dagplannen van Moody.",
+      "q6": "Krijg ik analytics over mijn vermelding?",
+      "a6": "Ja. Op de 1e van elke maand ontvang je automatisch een e-mail met jouw cijfers: weergaven, tikken, aanbiedingsinwisselingen en check-ins."
+    },
+    "final": {
+      "title": "Klaar om mee te doen?",
+      "cta": "Start gratis proefperiode →"
+    },
+    "nav": {
+      "home": "Home",
+      "apply": "Aanvragen"
+    }
   }
 }

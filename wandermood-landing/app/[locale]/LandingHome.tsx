@@ -137,6 +137,9 @@ export default function LandingHome() {
             <a href="#how">{t("nav.how")}</a>
           </li>
           <li>
+            <Link href="/partners">{t("nav.partners")}</Link>
+          </li>
+          <li>
             <a href="#moods">{t("nav.moods")}</a>
           </li>
           <li>
@@ -403,6 +406,9 @@ export default function LandingHome() {
           </li>
           <li>
             <a href={`mailto:${tLegal("contactEmail")}`}>{tFooter("contact")}</a>
+          </li>
+          <li>
+            <Link href="/partners">{tFooter("partners")}</Link>
           </li>
           <li>
             <a href="#business">{tFooter("forBusiness")}</a>
