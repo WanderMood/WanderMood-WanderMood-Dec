@@ -96,9 +96,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
+    const businessNameRaw = String(body.business_name).trim();
+    const bnEscaped = escapeHtml(businessNameRaw);
+    const greetName = escapeHtml(contactName || businessNameRaw);
+
     if (process.env.RESEND_API_KEY) {
       try {
-        const bn = escapeHtml(String(body.business_name));
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -108,13 +111,13 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             from: "WanderMood Partners <partners@wandermood.com>",
             to: ["info@wandermood.com"],
-            subject: `Nieuwe partneraanvraag: ${String(body.business_name)}`,
+            subject: `Nieuwe partneraanvraag: ${businessNameRaw}`,
             html: `
               <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;">
                 <div style="background:#2A6049;border-radius:12px;padding:24px;margin-bottom:24px;">
                   <h2 style="color:#F5F0E8;margin:0;">Nieuwe partneraanvraag 🎉</h2>
                 </div>
-                <p><strong>Zaak:</strong> ${bn}</p>
+                <p><strong>Zaak:</strong> ${bnEscaped}</p>
                 <p><strong>Type:</strong> ${escapeHtml(String(body.business_type))}</p>
                 <p><strong>Stad:</strong> ${escapeHtml(String(body.city))}</p>
                 <p><strong>Contact:</strong> ${escapeHtml(contactName)} — ${escapeHtml(contactEmail)}</p>
@@ -135,6 +138,66 @@ export async function POST(req: NextRequest) {
         }
       } catch (emailErr) {
         console.warn("Email notification failed:", emailErr);
+      }
+
+      try {
+        const confirmRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "WanderMood Partners <partners@wandermood.com>",
+            to: [contactEmail],
+            subject: `Aanvraag ontvangen — ${businessNameRaw}`,
+            html: `
+          <div style="font-family:sans-serif;max-width:560px;
+            margin:0 auto;padding:32px 24px;">
+            <div style="background:#2A6049;border-radius:12px;
+              padding:24px;margin-bottom:24px;">
+              <h2 style="color:#F5F0E8;margin:0;">
+                Aanvraag ontvangen! 🎉
+              </h2>
+            </div>
+            <p>Hoi ${greetName},</p>
+            <p>We hebben je aanvraag voor
+              <strong>${bnEscaped}</strong>
+              ontvangen. Bedankt!</p>
+            <div style="background:#F5F0E8;border-radius:8px;
+              padding:20px;margin:24px 0;">
+              <h3 style="color:#2A6049;margin:0 0 12px;">
+                Wat gebeurt er nu?
+              </h3>
+              <ul style="color:#2C2A26;margin:0;
+                padding-left:20px;line-height:1.8;">
+                <li>We reviewen je aanvraag handmatig</li>
+                <li>Je hoort binnen 3 werkdagen van ons</li>
+                <li>Bij goedkeuring starten we direct
+                  je gratis proefperiode van 30 dagen</li>
+              </ul>
+            </div>
+            <p>Vragen? Mail naar
+              <a href="mailto:info@wandermood.com"
+                style="color:#2A6049;">
+                info@wandermood.com
+              </a>
+            </p>
+            <p style="color:#6B6560;font-size:14px;
+              margin-top:32px;">
+              Met groet,<br>
+              <strong>Edvienne van WanderMood</strong><br>
+              Rotterdam
+            </p>
+          </div>
+        `,
+          }),
+        });
+        if (!confirmRes.ok) {
+          console.warn("Resend applicant confirmation:", await confirmRes.text());
+        }
+      } catch (e) {
+        console.warn("Confirmation email failed (non-fatal):", e);
       }
     }
 
