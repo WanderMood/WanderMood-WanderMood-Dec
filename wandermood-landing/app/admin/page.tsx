@@ -4,6 +4,38 @@ import { useCallback, useEffect, useState } from "react";
 
 const SESSION_KEY = "wm_admin_secret_v1";
 
+type PartnerLeadRow = {
+  id: string;
+  business_name: string | null;
+  business_type: string | null;
+  city: string | null;
+  contact_email: string | null;
+  contact_name: string | null;
+  what_they_offer: string | null;
+  target_moods: string[] | null;
+  status: string | null;
+  created_at: string | null;
+  google_place_url: string | null;
+  business_listing_id: string | null;
+};
+
+type BusinessListingRow = {
+  id: string;
+  business_name: string | null;
+  contact_email: string | null;
+  city: string | null;
+  subscription_status: string | null;
+  trial_ends_at: string | null;
+  total_views: number | null;
+  total_taps: number | null;
+  total_offer_redemptions: number | null;
+  total_checkins: number | null;
+  active_offer: string | null;
+  target_moods: string[] | null;
+  created_at: string | null;
+  stripe_customer_id: string | null;
+};
+
 type StatsResponse = {
   generatedAt: string;
   users: {
@@ -37,7 +69,104 @@ type StatsResponse = {
     medianDurationMsByFunction: Record<string, number> | null;
   };
   note: string;
+  partnerPipeline?: {
+    newLeads: number;
+    approvedLeads: number;
+    total: number;
+    leads: PartnerLeadRow[];
+  };
+  businessListings?: {
+    total: number;
+    trialing: number;
+    active: number;
+    inactive: number;
+    pastDue: number;
+    monthlyRevenue: number;
+    listings: BusinessListingRow[];
+  };
 };
+
+function formatNlDate(iso: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString("nl-NL", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "—";
+  }
+}
+
+function leadStatusBadge(status: string | null) {
+  const s = status ?? "";
+  const base = "inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold";
+  if (s === "new")
+    return (
+      <span className={`${base} bg-amber-500/20 text-amber-300`}>Nieuw</span>
+    );
+  if (s === "approved")
+    return (
+      <span className={`${base} bg-emerald-500/20 text-emerald-300`}>Goedgekeurd</span>
+    );
+  if (s === "rejected")
+    return <span className={`${base} bg-zinc-500/20 text-zinc-400`}>Afgewezen</span>;
+  if (s === "in_review")
+    return (
+      <span className={`${base} bg-sky-500/20 text-sky-300`}>In behandeling</span>
+    );
+  return (
+    <span className={`${base} bg-zinc-500/20 text-zinc-400`}>{s || "—"}</span>
+  );
+}
+
+function listingStatusBadge(status: string | null) {
+  const s = status ?? "";
+  const base = "inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold";
+  if (s === "trialing")
+    return (
+      <span className={`${base} bg-sky-500/20 text-sky-300`}>Proefperiode</span>
+    );
+  if (s === "active")
+    return (
+      <span className={`${base} bg-emerald-500/20 text-emerald-300`}>Actief</span>
+    );
+  if (s === "past_due")
+    return (
+      <span className={`${base} bg-red-500/20 text-red-300`}>Achterstallig</span>
+    );
+  if (s === "inactive")
+    return <span className={`${base} bg-zinc-500/20 text-zinc-400`}>Inactief</span>;
+  if (s === "canceled" || s === "cancelled")
+    return <span className={`${base} bg-zinc-500/20 text-zinc-400`}>Geannuleerd</span>;
+  if (s === "pending_approval")
+    return (
+      <span className={`${base} bg-amber-500/20 text-amber-300`}>Wacht op goedkeuring</span>
+    );
+  if (s === "paused")
+    return <span className={`${base} bg-zinc-500/20 text-zinc-400`}>Gepauzeerd</span>;
+  return (
+    <span className={`${base} bg-zinc-500/20 text-zinc-400`}>{s || "—"}</span>
+  );
+}
+
+function listingTrialCell(listing: BusinessListingRow): { text: string; warn: boolean } {
+  if (listing.subscription_status !== "trialing") return { text: "—", warn: false };
+  const raw = listing.trial_ends_at;
+  if (!raw) return { text: "—", warn: false };
+  const end = new Date(raw).getTime();
+  if (Number.isNaN(end)) return { text: "—", warn: false };
+  const days = (end - Date.now()) / (24 * 60 * 60 * 1000);
+  const warn = days >= 0 && days < 5;
+  return { text: formatNlDate(raw), warn };
+}
+
+function truncateOffer(s: string | null, max = 40): string {
+  if (!s?.trim()) return "—";
+  const t = s.trim();
+  return t.length <= max ? t : `${t.slice(0, Math.max(0, max - 1))}…`;
+}
 
 function formatMoneyCents(cents: number | null, currency: string | null): string {
   if (cents === null) return "—";
@@ -56,10 +185,12 @@ function StatCard({
   label,
   value,
   accent = "green",
+  sub,
 }: {
   label: string;
   value: string | number | null;
-  accent?: "green" | "cream" | "sunset";
+  accent?: "green" | "cream" | "sunset" | "orange" | "red" | "grey";
+  sub?: string;
 }) {
   const display =
     value === null ? "—" : typeof value === "number" ? value.toLocaleString() : value;
@@ -68,13 +199,20 @@ function StatCard({
       ? "text-[var(--wm-cream)]"
       : accent === "sunset"
         ? "text-[var(--wm-sunset)]"
-        : "text-[var(--wm-green)]";
+        : accent === "orange"
+          ? "text-orange-400"
+          : accent === "red"
+            ? "text-red-400"
+            : accent === "grey"
+              ? "text-[var(--wm-muted)]"
+              : "text-[var(--wm-green)]";
   return (
     <div className="rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)] p-5 shadow-sm transition-colors hover:border-[var(--wm-green)]/25">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--wm-muted)]">
         {label}
       </p>
       <p className={`mt-2 text-2xl font-bold tabular-nums ${valueClass}`}>{display}</p>
+      {sub ? <p className="mt-1 text-xs text-[var(--wm-muted)]">{sub}</p> : null}
     </div>
   );
 }
@@ -86,6 +224,7 @@ const navSections = [
   { id: "edge-api", label: "Edge API" },
   { id: "billing", label: "Billing" },
   { id: "activity", label: "Product activity" },
+  { id: "partner-b2b", label: "Partner B2B" },
 ] as const;
 
 export default function AdminPage() {
@@ -93,6 +232,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -112,7 +252,7 @@ export default function AdminPage() {
     }
   }, [secret]);
 
-  const load = useCallback(async () => {
+  const loadStats = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -133,6 +273,47 @@ export default function AdminPage() {
       setLoading(false);
     }
   }, [secret]);
+
+  useEffect(() => {
+    if (!stats) return;
+    const interval = setInterval(() => void loadStats(), 60_000);
+    return () => clearInterval(interval);
+  }, [stats, loadStats]);
+
+  const handleApprove = async (lead: PartnerLeadRow) => {
+    const name = lead.business_name?.trim() || "deze partner";
+    if (
+      !window.confirm(
+        `Weet je zeker dat je ${name} wilt goedkeuren? Er wordt automatisch een account aangemaakt en welkomstmail verstuurd.`
+      )
+    ) {
+      return;
+    }
+    setApprovingId(lead.id);
+    try {
+      const res = await fetch("/api/admin/approve-partner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret,
+        },
+        body: JSON.stringify({ lead_id: lead.id }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg =
+          typeof body.error === "string" ? body.error : res.statusText || "Onbekende fout";
+        window.alert(`Fout: ${msg}`);
+        return;
+      }
+      window.alert(`✓ ${name} is goedgekeurd!`);
+      await loadStats();
+    } catch (e) {
+      window.alert(`Fout: ${e instanceof Error ? e.message : "Request failed"}`);
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   const scrollToId = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -182,11 +363,23 @@ export default function AdminPage() {
                 Supabase + Edge + Stripe — same visual language as the partner dashboard.
               </p>
             </div>
-            {stats ? (
-              <span className="rounded-full border border-[var(--wm-border)] bg-[var(--wm-card)] px-3 py-1 text-xs text-[var(--wm-muted)]">
-                Updated {new Date(stats.generatedAt).toLocaleString()}
-              </span>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              {stats ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void loadStats()}
+                    disabled={loading || !secret.trim()}
+                    className="rounded-full border border-[var(--wm-border)] bg-[var(--wm-card)] px-3 py-1 text-xs font-medium text-[var(--wm-cream)] transition-colors hover:border-[var(--wm-green)]/40 disabled:opacity-40"
+                  >
+                    ↻ Vernieuwen
+                  </button>
+                  <span className="rounded-full border border-[var(--wm-border)] bg-[var(--wm-card)] px-3 py-1 text-xs text-[var(--wm-muted)]">
+                    Updated {new Date(stats.generatedAt).toLocaleString()}
+                  </span>
+                </>
+              ) : null}
+            </div>
           </div>
         </header>
 
@@ -214,14 +407,14 @@ export default function AdminPage() {
                 value={secret}
                 onChange={(e) => setSecret(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && secret.trim() && !loading) void load();
+                  if (e.key === "Enter" && secret.trim() && !loading) void loadStats();
                 }}
                 className="flex-1 rounded-xl border border-[var(--wm-border)] bg-[var(--wm-bg)] px-4 py-3 text-sm text-[var(--wm-cream)] outline-none ring-[var(--wm-green)]/30 placeholder:text-[var(--wm-muted)] focus:border-[var(--wm-green)] focus:ring-2"
                 placeholder="Paste admin secret"
               />
               <button
                 type="button"
-                onClick={() => void load()}
+                onClick={() => void loadStats()}
                 disabled={loading || !secret.trim()}
                 className="rounded-xl bg-[var(--wm-forest)] px-6 py-3 text-sm font-semibold text-[var(--wm-cream)] transition-opacity hover:opacity-90 disabled:opacity-40"
               >
@@ -434,6 +627,199 @@ export default function AdminPage() {
                 </div>
               </section>
 
+              <div
+                id="partner-b2b"
+                className="scroll-mt-24 border-t-2 border-green-600 pt-8 mt-8"
+              >
+                <h2 className="text-xl font-bold text-green-600 mb-6">PARTNER B2B</h2>
+
+                {(() => {
+                  const pp = stats.partnerPipeline ?? {
+                    newLeads: 0,
+                    approvedLeads: 0,
+                    total: 0,
+                    leads: [] as PartnerLeadRow[],
+                  };
+                  const bl = stats.businessListings ?? {
+                    total: 0,
+                    trialing: 0,
+                    active: 0,
+                    inactive: 0,
+                    pastDue: 0,
+                    monthlyRevenue: 0,
+                    listings: [] as BusinessListingRow[],
+                  };
+                  const activePartners = bl.trialing + bl.active;
+                  const attention = bl.inactive + bl.pastDue;
+
+                  return (
+                    <>
+                      <div className="mb-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <StatCard
+                          label="Nieuwe aanvragen"
+                          value={pp.newLeads}
+                          accent={pp.newLeads > 0 ? "orange" : "grey"}
+                          sub="Wachten op goedkeuring"
+                        />
+                        <StatCard
+                          label="Actieve partners"
+                          value={activePartners}
+                          accent="green"
+                          sub={`${bl.trialing} in proefperiode`}
+                        />
+                        <StatCard
+                          label="Maandelijkse omzet"
+                          value={`€${bl.monthlyRevenue}`}
+                          accent="green"
+                          sub={`${bl.active} betalende partners`}
+                        />
+                        <StatCard
+                          label="Aandacht vereist"
+                          value={attention}
+                          accent={attention > 0 ? "red" : "grey"}
+                          sub="Inactief of betaling mislukt"
+                        />
+                      </div>
+
+                      <section className="mb-10">
+                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
+                          Partner aanvragen
+                        </h3>
+                        {pp.leads.length === 0 ? (
+                          <p className="text-sm text-[var(--wm-muted)]">Nog geen aanvragen.</p>
+                        ) : (
+                          <div className="overflow-x-auto rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)]">
+                            <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+                              <thead>
+                                <tr className="border-b border-[var(--wm-border)] text-[11px] uppercase tracking-wider text-[var(--wm-muted)]">
+                                  <th className="px-4 py-3 font-semibold">Bedrijf</th>
+                                  <th className="px-4 py-3 font-semibold">Type</th>
+                                  <th className="px-4 py-3 font-semibold">Stad</th>
+                                  <th className="px-4 py-3 font-semibold">Contact</th>
+                                  <th className="px-4 py-3 font-semibold">Datum</th>
+                                  <th className="px-4 py-3 font-semibold">Status</th>
+                                  <th className="px-4 py-3 font-semibold">Actie</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {pp.leads.map((lead) => (
+                                  <tr
+                                    key={lead.id}
+                                    className="border-b border-[var(--wm-border)] border-opacity-50 last:border-0"
+                                  >
+                                    <td className="px-4 py-3 font-semibold text-[var(--wm-cream)]">
+                                      {lead.business_name ?? "—"}
+                                    </td>
+                                    <td className="px-4 py-3 text-[var(--wm-muted)]">
+                                      {lead.business_type ?? "—"}
+                                    </td>
+                                    <td className="px-4 py-3 text-[var(--wm-muted)]">
+                                      {lead.city ?? "—"}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      {lead.contact_email ? (
+                                        <a
+                                          href={`mailto:${lead.contact_email}`}
+                                          className="text-[var(--wm-green)] underline-offset-2 hover:underline"
+                                        >
+                                          {lead.contact_email}
+                                        </a>
+                                      ) : (
+                                        "—"
+                                      )}
+                                    </td>
+                                    <td className="px-4 py-3 tabular-nums text-[var(--wm-muted)]">
+                                      {formatNlDate(lead.created_at)}
+                                    </td>
+                                    <td className="px-4 py-3">{leadStatusBadge(lead.status)}</td>
+                                    <td className="px-4 py-3">
+                                      {lead.status === "new" ? (
+                                        <button
+                                          type="button"
+                                          disabled={approvingId !== null}
+                                          onClick={() => void handleApprove(lead)}
+                                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                                        >
+                                          {approvingId === lead.id
+                                            ? "Bezig…"
+                                            : "Goedkeuren →"}
+                                        </button>
+                                      ) : (
+                                        "—"
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </section>
+
+                      <section>
+                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
+                          Actieve vermeldingen
+                        </h3>
+                        {bl.listings.length === 0 ? (
+                          <p className="text-sm text-[var(--wm-muted)]">Nog geen vermeldingen.</p>
+                        ) : (
+                          <div className="overflow-x-auto rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)]">
+                            <table className="w-full min-w-[880px] border-collapse text-left text-sm">
+                              <thead>
+                                <tr className="border-b border-[var(--wm-border)] text-[11px] uppercase tracking-wider text-[var(--wm-muted)]">
+                                  <th className="px-4 py-3 font-semibold">Bedrijf</th>
+                                  <th className="px-4 py-3 font-semibold">Stad</th>
+                                  <th className="px-4 py-3 font-semibold">Status</th>
+                                  <th className="px-4 py-3 font-semibold">Proef eindigt</th>
+                                  <th className="px-4 py-3 font-semibold">Views</th>
+                                  <th className="px-4 py-3 font-semibold">Tikken</th>
+                                  <th className="px-4 py-3 font-semibold">Aanbieding</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {bl.listings.map((listing) => {
+                                  const trial = listingTrialCell(listing);
+                                  return (
+                                    <tr
+                                      key={listing.id}
+                                      className="border-b border-[var(--wm-border)] border-opacity-50 last:border-0"
+                                    >
+                                      <td className="px-4 py-3 font-semibold text-[var(--wm-cream)]">
+                                        {listing.business_name ?? "—"}
+                                      </td>
+                                      <td className="px-4 py-3 text-[var(--wm-muted)]">
+                                        {listing.city ?? "—"}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        {listingStatusBadge(listing.subscription_status)}
+                                      </td>
+                                      <td
+                                        className={`px-4 py-3 tabular-nums ${trial.warn ? "font-medium text-red-400" : "text-[var(--wm-muted)]"}`}
+                                      >
+                                        {trial.text}
+                                      </td>
+                                      <td className="px-4 py-3 tabular-nums text-[var(--wm-muted)]">
+                                        {listing.total_views?.toLocaleString() ?? "0"}
+                                      </td>
+                                      <td className="px-4 py-3 tabular-nums text-[var(--wm-muted)]">
+                                        {listing.total_taps?.toLocaleString() ?? "0"}
+                                      </td>
+                                      <td className="max-w-[200px] truncate px-4 py-3 text-[var(--wm-muted)]" title={listing.active_offer ?? undefined}>
+                                        {truncateOffer(listing.active_offer)}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </section>
+                    </>
+                  );
+                })()}
+              </div>
+
               <p className="border-t border-[var(--wm-border)] pt-8 text-xs leading-relaxed text-[var(--wm-muted)]">
                 {stats.note}
               </p>
@@ -443,7 +829,7 @@ export default function AdminPage() {
       </div>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-[var(--wm-border)] bg-[var(--wm-card)] py-2 md:hidden">
-        {navSections.slice(0, 4).map(({ id, label }) => (
+        {navSections.slice(0, 5).map(({ id, label }) => (
           <button
             key={id}
             type="button"

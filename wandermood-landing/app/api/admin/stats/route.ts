@@ -222,6 +222,26 @@ export async function GET(request: Request) {
     edgeApiSnapshot(supabase),
   ]);
 
+  const [partnerLeads, listingsRaw] = await Promise.all([
+    supabase
+      .from("partner_leads")
+      .select(
+        "id, business_name, business_type, city, contact_email, contact_name, what_they_offer, target_moods, status, created_at, google_place_url, business_listing_id"
+      )
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("business_listings")
+      .select(
+        "id, business_name, contact_email, city, subscription_status, trial_ends_at, total_views, total_taps, total_offer_redemptions, total_checkins, active_offer, target_moods, created_at, stripe_customer_id"
+      )
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+
+  const leads = partnerLeads.data ?? [];
+  const listings = listingsRaw.data ?? [];
+
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
     users: {
@@ -255,6 +275,22 @@ export async function GET(request: Request) {
       byFunction: edgeApi.byFunction,
       moodyByAction: edgeApi.moodyByAction,
       medianDurationMsByFunction: edgeApi.medianDurationMsByFunction,
+    },
+    partnerPipeline: {
+      newLeads: leads.filter((l) => l.status === "new").length,
+      approvedLeads: leads.filter((l) => l.status === "approved").length,
+      total: leads.length,
+      leads,
+    },
+    businessListings: {
+      total: listings.length,
+      trialing: listings.filter((l) => l.subscription_status === "trialing").length,
+      active: listings.filter((l) => l.subscription_status === "active").length,
+      inactive: listings.filter((l) => l.subscription_status === "inactive").length,
+      pastDue: listings.filter((l) => l.subscription_status === "past_due").length,
+      monthlyRevenue:
+        listings.filter((l) => l.subscription_status === "active").length * 79,
+      listings,
     },
     note:
       "Counts reflect your Supabase project. Edge API analytics need migration 20260404200000_edge_api_rate_limit_and_logs.sql + SUPABASE_SERVICE_ROLE_KEY on functions moody, places, weather. Stripe billing: 20260404180000_stripe_billing_foundation.sql.",
