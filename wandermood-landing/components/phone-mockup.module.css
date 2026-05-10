@@ -3,20 +3,25 @@
  * Screen hosts arbitrary children (e.g. next/image with fill).
  */
 
+/**
+ * Avoid `fit-content` + child `width: 100%` (cyclic percentage) — it collapses
+ * the rail to 0 in some browsers, leaving only absolute side-button slivers.
+ */
 .root {
   position: relative;
-  width: fit-content;
+  width: min(calc(var(--phone-mockup-rail-max, 268px) + 26px), 100%);
   max-width: 100%;
   margin-inline: auto;
   padding: 0 13px;
+  box-sizing: border-box;
 }
 
 .body {
   position: relative;
   z-index: 1;
-  width: 100%;
-  max-width: var(--phone-mockup-rail-max, 268px);
+  width: min(var(--phone-mockup-rail-max, 268px), calc(100% - 26px));
   margin: 0 auto;
+  box-sizing: border-box;
   border-radius: 54px;
   padding: 3px;
   background: linear-gradient(
