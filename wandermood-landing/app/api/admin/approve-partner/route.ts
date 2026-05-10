@@ -1,23 +1,19 @@
+import {
+  adminOperatorSecrets,
+  isOperatorSecretValid,
+  parseClientAdminSecret,
+} from "@/lib/admin-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const wandermoodSecret = process.env.WANDERMOOD_ADMIN_SECRET;
-  const adminSecretEnv = process.env.ADMIN_SECRET;
-  /** Value sent to partner-onboard — same as Supabase Edge ADMIN_SECRET. */
-  const edgeSecret = adminSecretEnv ?? wandermoodSecret;
+  const { edgeForward } = adminOperatorSecrets();
 
-  const secret =
-    req.headers.get("x-admin-secret") ??
-    req.headers.get("authorization")?.replace("Bearer ", "");
-
-  const isValid =
-    secret === wandermoodSecret || secret === adminSecretEnv;
-
-  if (!isValid) {
+  const provided = parseClientAdminSecret(req.headers);
+  if (!isOperatorSecretValid(provided)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!edgeSecret) {
+  if (!edgeForward) {
     return NextResponse.json(
       {
         error:
@@ -46,7 +42,7 @@ export async function POST(req: NextRequest) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-admin-secret": edgeSecret,
+      "x-admin-secret": edgeForward,
     },
     body: JSON.stringify({ lead_id }),
   });

@@ -1,8 +1,11 @@
+import {
+  adminOperatorSecrets,
+  isOperatorSecretValid,
+  parseClientAdminSecret,
+} from "@/lib/admin-auth";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-
-const ADMIN_HEADER = "x-wandermood-admin";
 
 async function safeCount(
   supabase: SupabaseClient,
@@ -136,10 +139,19 @@ async function edgeApiSnapshot(supabase: SupabaseClient) {
 }
 
 export async function GET(request: Request) {
-  const secret = request.headers.get(ADMIN_HEADER);
-  const expected = process.env.WANDERMOOD_ADMIN_SECRET;
+  const { wandermood, admin } = adminOperatorSecrets();
+  if (!wandermood && !admin) {
+    return NextResponse.json(
+      {
+        error:
+          "Server misconfigured: set WANDERMOOD_ADMIN_SECRET or ADMIN_SECRET on Vercel, then redeploy.",
+      },
+      { status: 500 }
+    );
+  }
 
-  if (!expected || secret !== expected) {
+  const provided = parseClientAdminSecret(request.headers);
+  if (!isOperatorSecretValid(provided)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
