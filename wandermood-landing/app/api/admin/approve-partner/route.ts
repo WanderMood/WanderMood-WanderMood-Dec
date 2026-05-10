@@ -2,6 +2,7 @@ import {
   adminOperatorSecrets,
   isOperatorSecretValid,
   parseClientAdminSecret,
+  readTrimmedEnv,
 } from "@/lib/admin-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -38,10 +39,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Edge Functions verify JWT at the gateway; anon or service_role is required to invoke.
+  const supabaseJwt =
+    readTrimmedEnv("SUPABASE_SERVICE_ROLE_KEY") ??
+    readTrimmedEnv("SUPABASE_ANON_KEY") ??
+    readTrimmedEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  if (!supabaseJwt) {
+    return NextResponse.json(
+      {
+        error:
+          "Server misconfigured: set SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) on Vercel to call partner-onboard.",
+      },
+      { status: 500 }
+    );
+  }
+
   const res = await fetch(`${supabaseUrl}/functions/v1/partner-onboard`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseJwt}`,
       "x-admin-secret": edgeForward,
     },
     body: JSON.stringify({ lead_id }),
