@@ -12,10 +12,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "lead_id required" }, { status: 400 });
   }
 
-  const adminSecret2 = process.env.ADMIN_SECRET;
+  // Same value as Supabase Edge secret ADMIN_SECRET (partner-onboard). Optional
+  // fallback: if you use one shared operator secret everywhere, set only
+  // WANDERMOOD_ADMIN_SECRET on Vercel to match Supabase ADMIN_SECRET.
+  const adminSecret2 =
+    process.env.ADMIN_SECRET ?? process.env.WANDERMOOD_ADMIN_SECRET;
   if (!adminSecret2) {
     return NextResponse.json(
-      { error: "ADMIN_SECRET not configured" },
+      {
+        error:
+          "ADMIN_SECRET not configured (set to match Supabase Edge Functions ADMIN_SECRET, or set WANDERMOOD_ADMIN_SECRET to that same value)",
+      },
       { status: 500 }
     );
   }
