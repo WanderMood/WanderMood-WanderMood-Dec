@@ -43,7 +43,7 @@ The Next.js app lives in a subfolder, so Vercel must build from that folder:
 - **Public site only:** none required.
 - **`/admin` dashboard** (user & usage stats from Supabase): add under **Settings → Environment Variables**:
   - `WANDERMOOD_ADMIN_SECRET` — long random string; you enter it on `https://wandermood.com/admin` to load stats.
-  - `ADMIN_SECRET` — **must equal** the `ADMIN_SECRET` secret in **Supabase → Edge Functions → Secrets** (the `partner-onboard` function reads this via `x-admin-secret`). **Required** for **Goedkeuren** unless you instead set only `WANDERMOOD_ADMIN_SECRET` to that **same** Supabase value (the approve route falls back to it).
+  - `ADMIN_SECRET` — optional on Vercel if you already set `WANDERMOOD_ADMIN_SECRET` to the **same** value as **Supabase → Edge Functions → Secrets** `ADMIN_SECRET` for `partner-onboard`. The approve route sends **`ADMIN_SECRET` ?? `WANDERMOOD_ADMIN_SECRET`** to Edge.
   - `SUPABASE_URL` — same project URL as the Flutter app.
   - `SUPABASE_SERVICE_ROLE_KEY` — **server only**; never put in the Flutter app or client code. Vercel serverless reads this for `/admin` stats, `/api/admin/approve-partner`, and **`/api/partners/apply`** (inserts into `partner_leads`). Value: Supabase → **Project Settings → API** → **service_role** secret key.
   - `NEXT_PUBLIC_SUPABASE_URL` — optional fallback where code reads the public URL; may match `SUPABASE_URL`.

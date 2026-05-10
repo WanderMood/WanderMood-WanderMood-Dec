@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
+  const wandermoodSecret = process.env.WANDERMOOD_ADMIN_SECRET;
+  const adminSecretEnv = process.env.ADMIN_SECRET;
+  /** Value sent to partner-onboard — same as Supabase Edge ADMIN_SECRET. */
+  const edgeSecret = adminSecretEnv ?? wandermoodSecret;
+
   const secret =
     req.headers.get("x-admin-secret") ??
     req.headers.get("authorization")?.replace("Bearer ", "");
 
   const isValid =
-    secret === process.env.WANDERMOOD_ADMIN_SECRET ||
-    secret === process.env.ADMIN_SECRET;
+    secret === wandermoodSecret || secret === adminSecretEnv;
 
   if (!isValid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!process.env.ADMIN_SECRET) {
+  if (!edgeSecret) {
     return NextResponse.json(
-      { error: "ADMIN_SECRET not configured on server" },
+      {
+        error:
+          "Server misconfigured: set ADMIN_SECRET or WANDERMOOD_ADMIN_SECRET on Vercel (must match Supabase partner-onboard secret), then redeploy.",
+      },
       { status: 500 }
     );
   }
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-admin-secret": process.env.ADMIN_SECRET,
+      "x-admin-secret": edgeSecret,
     },
     body: JSON.stringify({ lead_id }),
   });
