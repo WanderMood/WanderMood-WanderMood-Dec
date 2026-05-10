@@ -23,6 +23,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, unknown>;
 
+    console.log("Partner apply route called");
+    console.log("RESEND_API_KEY set:", !!process.env.RESEND_API_KEY);
+    console.log(
+      "SUPABASE_SERVICE_ROLE_KEY set:",
+      !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    );
+    console.log("Contact email:", body.contact_email);
+
     if (body.website_url) {
       return NextResponse.json({ success: true });
     }
@@ -101,7 +109,8 @@ export async function POST(req: NextRequest) {
 
     if (process.env.RESEND_API_KEY) {
       try {
-        const res = await fetch("https://api.resend.com/emails", {
+        console.log("Attempting to send email to:", body.contact_email);
+        const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
@@ -132,16 +141,13 @@ export async function POST(req: NextRequest) {
             `,
           }),
         });
-        if (!res.ok) {
-          console.warn("Resend API:", await res.text());
-        }
-      } catch (emailErr) {
-        console.warn("Email notification failed:", emailErr);
-      }
+        const emailResult = await emailRes.json();
+        console.log("Resend response status:", emailRes.status);
+        console.log("Resend response:", JSON.stringify(emailResult));
 
-      // Confirmation email to the applicant
-      try {
-        await fetch("https://api.resend.com/emails", {
+        // Confirmation email to the applicant
+        console.log("Attempting to send email to:", body.contact_email);
+        const emailResApplicant = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
@@ -198,9 +204,12 @@ export async function POST(req: NextRequest) {
       `,
           }),
         });
+        const emailResultApplicant = await emailResApplicant.json();
+        console.log("Resend response status:", emailResApplicant.status);
+        console.log("Resend response:", JSON.stringify(emailResultApplicant));
       } catch (e) {
-        // Non-fatal — form still succeeds if email fails
-        console.warn("Applicant confirmation email failed:", e);
+        console.error("Email send failed:", e);
+        console.error("Error details:", JSON.stringify(e));
       }
     }
 
