@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import LandingTour, { type LandingTourHandle } from "@/components/LandingTour";
 
 const APP_STORE_URL =
   "https://apps.apple.com/nl/app/wandermood/id6760943488";
@@ -79,9 +78,6 @@ export default function LandingHome() {
   const pathname = usePathname();
   const currentLocale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
-  const tourRef = useRef<LandingTourHandle>(null);
-
-  const trialMail = `mailto:${tLegal("contactEmail")}?subject=${encodeURIComponent(t("b2b.trialSubject"))}`;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -400,17 +396,11 @@ export default function LandingHome() {
           <li>
             <a href="#business">{tFooter("forBusiness")}</a>
           </li>
-          <li>
-            <button type="button" className="footer-tour-btn" onClick={() => tourRef.current?.start()}>
-              {t("tour.replay")}
-            </button>
-          </li>
         </ul>
         <div className="footer-copy">
           © {new Date().getFullYear()} {tFooter("brand")}
         </div>
       </footer>
-      <LandingTour ref={tourRef} />
     </div>
   );
 }

@@ -94,18 +94,6 @@
       "sub": "Deine Stadt wartet. Sag Moody deine Stimmung und überlass ihm den Rest.",
       "appStore": "App Store",
       "googlePlay": "Google Play"
-    },
-    "tour": {
-      "skip": "Überspringen",
-      "next": "Weiter",
-      "done": "Fertig",
-      "replay": "Website-Rundgang",
-      "stepOf": "Schritt {current} von {total}",
-      "navTitle": "Navigation",
-      "navBody": "Springe zu jedem Abschnitt — {how}, {moods}, {business} oder {download}.",
-      "navBodyCompact": "Logo, Sprache und App herunterladen siehst du hier immer. So funktioniert’s, Stimmungen und Für Unternehmen stehen in dieser Leiste auf größeren Bildschirmen — auf dem Handy scrollst du einfach nach unten oder nutzt die Links in der Fußzeile.",
-      "moodsBody": "Diese Chips nutzen dieselben Mood-Labels wie in der App — Entspannt, Foodie, Energiegeladen, Abenteuerlustig und mehr — damit du weißt, was dich bei Moody erwartet.",
-      "closeAria": "Website-Rundgang"
     }
   },
   "footer": {

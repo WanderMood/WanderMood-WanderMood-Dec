@@ -95,18 +95,6 @@
       "sub": "Je stad wacht. Vertel Moody je stemming en laat hem het overnemen.",
       "appStore": "App Store",
       "googlePlay": "Google Play"
-    },
-    "tour": {
-      "skip": "Overslaan",
-      "next": "Volgende",
-      "done": "Klaar",
-      "replay": "Rondleiding",
-      "stepOf": "Stap {current} van {total}",
-      "navTitle": "Navigatie",
-      "navBody": "Spring naar elke sectie — {how}, {moods}, {business} of {download}.",
-      "navBodyCompact": "Je ziet hier altijd het logo, de taalkeuze en Download de app. Hoe het werkt, Stemmingen en Voor bedrijven staan in deze balk op bredere schermen — op je telefoon scroll je door de pagina of gebruik je de links in de footer.",
-      "moodsBody": "Deze chips gebruiken dezelfde stemming-labels als in de app — Ontspannen, Foodie, Energiek, Avontuurlijk en meer — zodat je weet wat je van Moody kunt verwachten.",
-      "closeAria": "Rondleiding op de site"
     }
   },
   "footer": {

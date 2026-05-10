@@ -94,18 +94,6 @@
       "sub": "Tu ciudad te espera. Cuéntale tu estado de ánimo a Moody y que él continúe.",
       "appStore": "App Store",
       "googlePlay": "Google Play"
-    },
-    "tour": {
-      "skip": "Saltar",
-      "next": "Siguiente",
-      "done": "Listo",
-      "replay": "Tour del sitio",
-      "stepOf": "Paso {current} de {total}",
-      "navTitle": "Navegación",
-      "navBody": "Salta a cualquier sección — {how}, {moods}, {business} o {download}.",
-      "navBodyCompact": "Aquí siempre verás el logo, el idioma y Descargar la app. Cómo funciona, Estados de ánimo y Para negocios aparecen en esta barra en pantallas más grandes — en el móvil desplázate por la página o usa los enlaces del pie.",
-      "moodsBody": "Estas etiquetas usan los mismos estados de ánimo que en la app — Relajado, Foodie, Energético, Aventurero y más — para que sepas qué esperar de Moody.",
-      "closeAria": "Tour del sitio"
     }
   },
   "footer": {

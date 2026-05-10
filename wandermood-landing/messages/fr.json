@@ -94,18 +94,6 @@
       "sub": "Ta ville t’attend. Dis ton humeur à Moody et laisse-le faire.",
       "appStore": "App Store",
       "googlePlay": "Google Play"
-    },
-    "tour": {
-      "skip": "Passer",
-      "next": "Suivant",
-      "done": "OK",
-      "replay": "Visite du site",
-      "stepOf": "Étape {current} sur {total}",
-      "navTitle": "Navigation",
-      "navBody": "Va à n’importe quelle section — {how}, {moods}, {business} ou {download}.",
-      "navBodyCompact": "Tu vois toujours le logo, la langue et Télécharger l’app. Comment ça marche, Humeurs et Pour les pros sont dans cette barre sur grand écran — sur mobile, fais défiler la page ou utilise les liens du pied de page.",
-      "moodsBody": "Ces pastilles reprennent les mêmes humeurs que dans l’app — Relax, Foodie, Énergique, Aventureux et le reste — pour savoir à quoi t’attendre avec Moody.",
-      "closeAria": "Visite du site"
     }
   },
   "footer": {
