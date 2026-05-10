@@ -6,19 +6,104 @@
     },
     "nav": {
       "how": "Hoe het werkt",
+      "features": "Features",
+      "meetMoody": "Meet Moody",
+      "moodMatch": "Mood Match",
+      "exploreNav": "Ontdekken",
       "moods": "Stemmingen",
       "business": "Voor bedrijven",
       "download": "Download de app",
       "partners": "Voor partners"
     },
     "hero": {
-      "badge": "Aangedreven door Moody",
-      "title1": "Jouw stad.",
-      "titleEm": "Jouw stemming.",
-      "title2": "Jouw dag.",
-      "sub": "Vertel Moody hoe je je voelt — hij plant je perfecte dag. Geen scrollen, geen zoeken. Kies je vibe en ga.",
-      "appStore": "App Store",
-      "seeHow": "Zo werkt het"
+      "badge": "In de App Store",
+      "title1": "Vertel Moody je stemming.",
+      "titleEm": "Krijg een dag die echt past.",
+      "title2": "",
+      "sub": "Geen eindeloos scrollen. Geen willekeurige lijsten. WanderMood zet je vibe om in plekken, plannen en kleine stadmomenten waar je wél voor naar buiten gaat.",
+      "appStore": "Download in de App Store",
+      "seeHow": "Zo werkt het",
+      "watchHow": "Bekijk hoe het werkt"
+    },
+    "proof": {
+      "line": "Voor spontane stadsdagen — alleen, met vrienden of onderweg.",
+      "appStoreLine": "Beschikbaar in de App Store."
+    },
+    "why": {
+      "eyebrow": "Waarom WanderMood anders voelt",
+      "title": "Eerst je stemming.",
+      "titleEm": "Dan opent de stad.",
+      "sub": "Je begint niet met een categorie. Je begint met hoe je je voelt — en de app bouwt daarop voort.",
+      "u1t": "Plannen op basis van stemming",
+      "u1b": "Kies hoe je je voelt. Moody stelt voor op basis daarvan — niet op basis van wat toevallig trending is.",
+      "u2t": "Praat met Moody",
+      "u2b": "Vraag om een knusse koffiebar, een volledige dag of een andere optie als iets niet raakt. Alsof je een stadsmaatje appt.",
+      "u3t": "Plan mijn dag",
+      "u3b": "Ochtend, middag, avond — een echte tijdlijn die je kunt volgen, tweaken of in één tik opnieuw laten maken.",
+      "u4t": "Ontdekken",
+      "u4b": "Blader op stemming, afstand en sfeer. Bewaar plekken, zet ze in je dag, of vraag Moody om een betere match.",
+      "u5t": "Mood Match",
+      "u5b": "Samen plannen? Zet jullie stemmingen vast en laat Moody de overlap zoeken.",
+      "u6t": "Bewaren & bouwen",
+      "u6b": "Bewaar favorieten, plan ze in Mijn plannen en navigeer wanneer je vertrekt."
+    },
+    "demo": {
+      "eyebrow": "Zo werkt het",
+      "title": "Van vibe naar plan",
+      "titleEm": "in vier stappen.",
+      "sub": "Echte schermen uit de app — dezelfde flow als op je telefoon.",
+      "s1t": "1 · Kies je stemming",
+      "s1b": "Kies een vibe of vertel Moody hoe je je nu voelt.",
+      "s2t": "2 · Moody bouwt mee",
+      "s2b": "Chat, stuur bij en krijg plekken die bij je hoofd passen.",
+      "s3t": "3 · Jouw dag op een tijdlijn",
+      "s3b": "Zie ochtend, middag en avond vollopen — klaar om te volgen of aan te passen.",
+      "s4t": "4 · Ontdekken, bewaren, gaan",
+      "s4b": "Open plekdetails, bewaar favorieten, route, of vraag Moody om een andere stop."
+    },
+    "meetMoodySect": {
+      "eyebrow": "Meet Moody",
+      "title": "Je stadsmaatje.",
+      "sub": "Warm, direct, een beetje brutaal — de stem in de app als je niet weet wat je nu wilt.",
+      "q1": "Plan mijn hele dag",
+      "q2": "Zoek een knusse koffiebar",
+      "q3": "Ik verveel me, maar wil niet te veel pushen",
+      "q4": "Iets leuks voor mij en mijn vriend(in)",
+      "q5": "Vervang deze activiteit",
+      "q6": "Wat past bij mijn stemming nu?"
+    },
+    "moodMatchSect": {
+      "eyebrow": "Mood Match",
+      "title": "Je vriend wil knus. Jij wil eten.",
+      "titleEm": "Moody vindt het midden.",
+      "sub": "Twee stemmingen, één plan. Zet vast hoe jullie je voelen en krijg een gedeelde ochtend, middag en avond waar ihr het over eens kunnen zijn.",
+      "cta": "Probeer Mood Match in de app"
+    },
+    "exploreSect": {
+      "eyebrow": "Ontdek je stad",
+      "title": "Ontdekking die past",
+      "titleEm": "bij hoe je je voelt.",
+      "sub": "WanderMood is niet alleen een planner — het is een manier om je stad te zien door de bril van je stemming.",
+      "b1": "Blader op stemming, categorie en wat nu open is",
+      "b2": "Cafés, eten, cultuur, natuur, verborgen plekken en dingen om te doen",
+      "b3": "Bewaar plekken en zet ze in Mijn dag",
+      "b4": "Vraag Moody als niets op de lijst voelt",
+      "b5": "Zo tonen partnerplekken zich wanneer de vibe klopt — niet als willekeurige banners"
+    },
+    "b2bPreview": {
+      "caption": "Zo ziet een zaak eruit in de app — details, foto's en echte reviews."
+    },
+    "imgAlt": {
+      "hero": "WanderMood screenshot: Mijn plannen met geplande activiteiten",
+      "moodFloat": "Stemming kiezen in WanderMood",
+      "chatBubble": "Chatbericht in WanderMood",
+      "activityCard": "Geplande activiteit in WanderMood",
+      "demoStep": "Scherm in de WanderMood-app",
+      "meetMoody": "Moody-chat in WanderMood",
+      "moodMatchWait": "Mood Match wachtscherm met twee personen",
+      "moodMatch": "Gedeeld Mood Match-plan in WanderMood",
+      "explore": "Ontdek-feed in WanderMood",
+      "placeDetail": "Plekdetail in WanderMood"
     },
     "phone": {
       "greeting": "Goedemorgen",
@@ -75,10 +160,10 @@
     },
     "b2b": {
       "eyebrow": "Voor bedrijven",
-      "titleBefore": "Zorg dat jouw plek bij de ",
-      "titleEm": "juiste mensen landt.",
-      "desc1": "WanderMood-gebruikers plannen hun dag rond hun stemming. Ik zorg dat jouw plek in dat plan past — op het juiste moment, met de juiste vibe.",
-      "desc2": "Geen ads. Geen banners. Slimme plekken in Moody's dagplannen en Explore. Klanten vinden jou als ze er klaar voor zijn.",
+      "titleBefore": "Word aanbevolen als mensen ",
+      "titleEm": "echt klaar zijn om te gaan.",
+      "desc1": "WanderMood is geen banner-lawine. Mensen openen de app met intentie — ze willen een plan, een plek of een mood match. Jouw zaak kan in Explore verschijnen, in Moody's dagplannen en wanneer de vibe klopt.",
+      "desc2": "Stemming en timing wegen zwaarder dan impressies. Slimmere zichtbaarheid voor horeca, cultuur, experiences en stays — met maandelijkse inzichten, niet giswerk.",
       "price": "€79",
       "priceNote": "per maand · eerste 30 dagen gratis",
       "f1": "Uitgelicht in Moody's dagplannen in jouw stad",

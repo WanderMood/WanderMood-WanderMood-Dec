@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { getLandingImages } from "@/lib/landing-images";
 
 const APP_STORE_URL =
   "https://apps.apple.com/nl/app/wandermood/id6760943488";
@@ -21,7 +23,6 @@ const LOCALES = [
   { code: "fr", label: "FR" },
 ] as const;
 
-/** Old full-page deck used these hashes; map to new sections after deploy. */
 const LEGACY_HASH_TARGETS: Record<string, string> = {
   hero: "app-preview",
   experience: "how",
@@ -57,7 +58,7 @@ function AppStoreIcon() {
 
 function CheckIcon() {
   return (
-    <svg width="10" height="8" viewBox="0 0 10 8" aria-hidden>
+    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden>
       <polyline
         points="1,4 4,7 9,1"
         stroke="#2A6049"
@@ -70,6 +71,55 @@ function CheckIcon() {
   );
 }
 
+function PhoneShot({
+  src,
+  alt,
+  priority,
+  className,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`landing-device-shell ${className ?? ""}`}>
+      <Image
+        src={src}
+        alt={alt}
+        width={780}
+        height={1688}
+        className="landing-device-img"
+        sizes="(max-width: 900px) 86vw, 320px"
+        priority={priority}
+      />
+    </div>
+  );
+}
+
+function WideShot({
+  src,
+  alt,
+  className,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <div className={`landing-wide-shot-wrap ${className ?? ""}`}>
+      <Image
+        src={src}
+        alt={alt}
+        width={900}
+        height={1200}
+        className="landing-wide-shot-img"
+        sizes="(max-width: 900px) 100vw, 420px"
+      />
+    </div>
+  );
+}
+
 export default function LandingHome() {
   const t = useTranslations("landing");
   const tFooter = useTranslations("footer");
@@ -78,6 +128,8 @@ export default function LandingHome() {
   const pathname = usePathname();
   const currentLocale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const img = useMemo(() => getLandingImages(currentLocale), [currentLocale]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -90,12 +142,12 @@ export default function LandingHome() {
             const el = entry.target as HTMLElement;
             window.setTimeout(() => {
               el.classList.add("visible");
-            }, i * 80);
+            }, i * 60);
             observer.unobserve(el);
           }
         });
       },
-      { threshold: 0.12 },
+      { threshold: 0.1 },
     );
     nodes.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -111,6 +163,8 @@ export default function LandingHome() {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }, [pathname]);
+
+  const title2 = t("hero.title2");
 
   return (
     <div ref={rootRef} className="landing-root">
@@ -135,13 +189,19 @@ export default function LandingHome() {
             <a href="#how">{t("nav.how")}</a>
           </li>
           <li>
+            <a href="#features">{t("nav.features")}</a>
+          </li>
+          <li>
+            <a href="#meet-moody">{t("nav.meetMoody")}</a>
+          </li>
+          <li>
+            <a href="#mood-match">{t("nav.moodMatch")}</a>
+          </li>
+          <li>
+            <a href="#explore-city">{t("nav.exploreNav")}</a>
+          </li>
+          <li>
             <Link href="/partners">{t("nav.partners")}</Link>
-          </li>
-          <li>
-            <a href="#moods">{t("nav.moods")}</a>
-          </li>
-          <li>
-            <a href="#business">{t("nav.business")}</a>
           </li>
         </ul>
         <div className="nav-end">
@@ -165,9 +225,9 @@ export default function LandingHome() {
         </div>
       </nav>
 
-      <section id="app-preview">
-        <div className="hero">
-          <div>
+      <section id="app-preview" className="landing-hero-v2">
+        <div className="landing-hero-inner">
+          <div className="landing-hero-copy">
             <div className="hero-badge">
               <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden>
                 <circle cx="4" cy="4" r="4" fill="#2A6049" />
@@ -178,8 +238,12 @@ export default function LandingHome() {
               {t("hero.title1")}
               <br />
               <em>{t("hero.titleEm")}</em>
-              <br />
-              {t("hero.title2")}
+              {title2 ? (
+                <>
+                  <br />
+                  {title2}
+                </>
+              ) : null}
             </h1>
             <p className="hero-sub">{t("hero.sub")}</p>
             <div className="hero-actions">
@@ -191,114 +255,173 @@ export default function LandingHome() {
                 {t("hero.seeHow")}
               </a>
             </div>
+            <p className="landing-proof-line">
+              <span className="landing-proof-strong">{t("proof.appStoreLine")}</span>{" "}
+              {t("proof.line")}
+            </p>
           </div>
-          <div className="phone-wrap">
-            <div className="phone-outer">
-              <div className="phone-notch" aria-hidden />
-              <div className="phone-screen">
-                <div className="phone-status">
-                  <span>9:41</span>
-                  <span aria-hidden>●●●</span>
-                </div>
-                <div className="phone-header">
-                  <div className="phone-header-row">
-                    <div>
-                      <div className="phone-greeting">{t("phone.greeting")}</div>
-                      <div className="phone-title">{t("phone.myDay")}</div>
-                    </div>
-                    <div className="phone-avatar" aria-hidden />
-                  </div>
-                  <div className="phone-moody-bubble">{t("phone.bubble")}</div>
-                </div>
-                <div className="phone-body">
-                  <div className="phone-label">{t("phone.planLabel")}</div>
-                  <div className="phone-card">
-                    <div className="phone-dot" style={{ background: "#E8784A" }} aria-hidden />
-                    <div>
-                      <div className="phone-card-name">{t("phone.card1Name")}</div>
-                      <div className="phone-card-time">{t("phone.card1Time")}</div>
-                      <div className="phone-card-desc">{t("phone.card1Desc")}</div>
-                    </div>
-                  </div>
-                  <div className="phone-card">
-                    <div className="phone-dot" style={{ background: "#2A6049" }} aria-hidden />
-                    <div>
-                      <div className="phone-card-name">{t("phone.card2Name")}</div>
-                      <div className="phone-card-time">{t("phone.card2Time")}</div>
-                      <div className="phone-card-desc">{t("phone.card2Desc")}</div>
-                    </div>
-                  </div>
-                  <div className="phone-card">
-                    <div className="phone-dot" style={{ background: "#A8C8DC" }} aria-hidden />
-                    <div>
-                      <div className="phone-card-name">{t("phone.card3Name")}</div>
-                      <div className="phone-card-time">{t("phone.card3Time")}</div>
-                      <div className="phone-card-desc">{t("phone.card3Desc")}</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="phone-navbar">
-                  <div className="phone-nav-item active">
-                    <div className="phone-nav-dot" aria-hidden>
-                      🏠
-                    </div>
-                    <span>{t("phone.tabMyDay")}</span>
-                  </div>
-                  <div className="phone-nav-item">
-                    <div className="phone-nav-dot" aria-hidden>
-                      🔍
-                    </div>
-                    <span>{t("phone.tabExplore")}</span>
-                  </div>
-                  <div className="phone-nav-item">
-                    <div className="phone-nav-dot" aria-hidden>
-                      🌀
-                    </div>
-                    <span>{t("phone.tabMoody")}</span>
-                  </div>
-                  <div className="phone-nav-item">
-                    <div className="phone-nav-dot" aria-hidden>
-                      👤
-                    </div>
-                    <span>{t("phone.tabProfile")}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="landing-hero-visual">
+            <PhoneShot
+              src={img.heroPhone}
+              alt={t("imgAlt.hero")}
+              priority
+              className="landing-hero-phone"
+            />
+            <Image
+              src={img.heroMoodFloat}
+              alt={t("imgAlt.moodFloat")}
+              width={280}
+              height={560}
+              className="landing-float landing-float--mood"
+            />
+            <Image
+              src={img.floatChat}
+              alt={t("imgAlt.chatBubble")}
+              width={320}
+              height={200}
+              className="landing-float landing-float--chat"
+            />
+            <Image
+              src={img.floatCard}
+              alt={t("imgAlt.activityCard")}
+              width={340}
+              height={220}
+              className="landing-float landing-float--card"
+            />
           </div>
         </div>
       </section>
 
       <div className="divider" aria-hidden />
 
-      <section id="how">
-        <div className="section">
-          <p className="section-eyebrow reveal">{t("how.eyebrow")}</p>
-          <h2 className="reveal">
-            {t("how.title1")}
-            <br />
-            <em>{t("how.titleEm")}</em>
+      <section id="features" className="landing-why">
+        <div className="landing-section-inner">
+          <p className="section-eyebrow reveal">{t("why.eyebrow")}</p>
+          <h2 className="reveal landing-section-title">
+            {t("why.title")} <em>{t("why.titleEm")}</em>
           </h2>
-          <p className="section-sub reveal">{t("how.sub")}</p>
-          <div className="steps-grid">
-            <div className="step-card reveal">
-              <div className="step-number">01</div>
-              <h3>{t("how.step1Title")}</h3>
-              <p>{t("how.step1Body")}</p>
-              <div className="step-moody">{t("how.step1Moody")}</div>
-            </div>
-            <div className="step-card reveal">
-              <div className="step-number">02</div>
-              <h3>{t("how.step2Title")}</h3>
-              <p>{t("how.step2Body")}</p>
-              <div className="step-moody">{t("how.step2Moody")}</div>
-            </div>
-            <div className="step-card reveal">
-              <div className="step-number">03</div>
-              <h3>{t("how.step3Title")}</h3>
-              <p>{t("how.step3Body")}</p>
-              <div className="step-moody">{t("how.step3Moody")}</div>
-            </div>
+          <p className="section-sub reveal landing-why-sub">{t("why.sub")}</p>
+          <div className="landing-why-grid">
+            {(
+              [
+                ["u1t", "u1b"],
+                ["u2t", "u2b"],
+                ["u3t", "u3b"],
+                ["u4t", "u4b"],
+                ["u5t", "u5b"],
+                ["u6t", "u6b"],
+              ] as const
+            ).map(([tk, bk]) => (
+              <div key={tk} className="landing-why-card reveal">
+                <h3>{t(`why.${tk}`)}</h3>
+                <p>{t(`why.${bk}`)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="how" className="landing-demo">
+        <div className="landing-section-inner">
+          <p className="section-eyebrow reveal">{t("demo.eyebrow")}</p>
+          <h2 className="reveal landing-section-title">
+            {t("demo.title")} <em>{t("demo.titleEm")}</em>
+          </h2>
+          <p className="section-sub reveal">{t("demo.sub")}</p>
+          <div className="landing-demo-grid">
+            {(
+              [
+                ["s1t", "s1b", img.stepMood],
+                ["s2t", "s2b", img.stepMoody],
+                ["s3t", "s3b", img.stepPlan],
+                ["s4t", "s4b", img.stepDetail],
+              ] as const
+            ).map(([tk, bk, shot]) => (
+              <div key={tk} className="landing-demo-step reveal">
+                <WideShot src={shot} alt={t("imgAlt.demoStep")} />
+                <h3>{t(`demo.${tk}`)}</h3>
+                <p>{t(`demo.${bk}`)}</p>
+              </div>
+            ))}
+          </div>
+          <div className="landing-mid-cta reveal">
+            <a {...APP_STORE_LINK_PROPS} className="btn-primary">
+              <AppStoreIcon />
+              {t("hero.appStore")}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="meet-moody" className="landing-meet">
+        <div className="landing-section-inner landing-meet-grid">
+          <div>
+            <p className="section-eyebrow reveal">{t("meetMoodySect.eyebrow")}</p>
+            <h2 className="reveal landing-section-title">{t("meetMoodySect.title")}</h2>
+            <p className="section-sub reveal">{t("meetMoodySect.sub")}</p>
+            <ul className="landing-chat-prompts reveal">
+              {(["q1", "q2", "q3", "q4", "q5", "q6"] as const).map((k) => (
+                <li key={k}>{t(`meetMoodySect.${k}`)}</li>
+              ))}
+            </ul>
+            <a {...APP_STORE_LINK_PROPS} className="btn-primary landing-meet-cta">
+              <AppStoreIcon />
+              {t("hero.appStore")}
+            </a>
+          </div>
+          <div className="reveal">
+            <PhoneShot src={img.meetMoody} alt={t("imgAlt.meetMoody")} />
+          </div>
+        </div>
+      </section>
+
+      <section id="mood-match" className="landing-mood-match">
+        <div className="landing-section-inner landing-mood-match-grid">
+          <div className="reveal landing-mood-match-shots">
+            <PhoneShot
+              src={img.moodMatchWait}
+              alt={t("imgAlt.moodMatchWait")}
+              className="landing-mm-wait"
+            />
+            <PhoneShot
+              src={img.moodMatch}
+              alt={t("imgAlt.moodMatch")}
+              className="landing-mm-result"
+            />
+          </div>
+          <div>
+            <p className="section-eyebrow reveal">{t("moodMatchSect.eyebrow")}</p>
+            <h2 className="reveal landing-section-title">
+              {t("moodMatchSect.title")} <em>{t("moodMatchSect.titleEm")}</em>
+            </h2>
+            <p className="section-sub reveal">{t("moodMatchSect.sub")}</p>
+            <a {...APP_STORE_LINK_PROPS} className="btn-primary landing-mood-match-cta reveal">
+              <AppStoreIcon />
+              {t("moodMatchSect.cta")}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="explore-city" className="landing-explore">
+        <div className="landing-section-inner landing-explore-grid">
+          <div className="reveal">
+            <PhoneShot src={img.explore} alt={t("imgAlt.explore")} />
+          </div>
+          <div>
+            <p className="section-eyebrow reveal">{t("exploreSect.eyebrow")}</p>
+            <h2 className="reveal landing-section-title">
+              {t("exploreSect.title")} <em>{t("exploreSect.titleEm")}</em>
+            </h2>
+            <p className="section-sub reveal">{t("exploreSect.sub")}</p>
+            <ul className="landing-bullet-list reveal">
+              {(["b1", "b2", "b3", "b4", "b5"] as const).map((k) => (
+                <li key={k}>{t(`exploreSect.${k}`)}</li>
+              ))}
+            </ul>
+            <a {...APP_STORE_LINK_PROPS} className="btn-secondary">
+              {t("hero.appStore")}
+            </a>
           </div>
         </div>
       </section>
@@ -323,7 +446,7 @@ export default function LandingHome() {
       </section>
 
       <section id="business" className="b2b-section">
-        <div className="b2b-inner">
+        <div className="b2b-inner landing-b2b-grid">
           <div>
             <p className="section-eyebrow reveal">{t("b2b.eyebrow")}</p>
             <h2 className="reveal">
@@ -332,8 +455,15 @@ export default function LandingHome() {
             </h2>
             <p className="b2b-desc reveal">{t("b2b.desc1")}</p>
             <p className="b2b-small reveal">{t("b2b.desc2")}</p>
+            <Link href="/partners#aanvragen" className="btn-trial reveal">
+              {t("b2b.trialCta")}
+            </Link>
           </div>
-          <div className="pricing-card reveal">
+          <div className="reveal landing-b2b-visual">
+            <p className="landing-b2b-caption">{t("b2bPreview.caption")}</p>
+            <PhoneShot src={img.placeDetail} alt={t("imgAlt.placeDetail")} />
+          </div>
+          <div className="pricing-card reveal landing-b2b-pricing">
             <div className="pricing-price">{t("b2b.price")}</div>
             <div className="pricing-note">{t("b2b.priceNote")}</div>
             <ul className="pricing-features">

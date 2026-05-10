@@ -6,19 +6,104 @@
     },
     "nav": {
       "how": "How it works",
+      "features": "Features",
+      "meetMoody": "Meet Moody",
+      "moodMatch": "Mood Match",
+      "exploreNav": "Explore",
       "moods": "Moods",
       "business": "For businesses",
       "download": "Download the app",
       "partners": "For partners"
     },
     "hero": {
-      "badge": "Powered by Moody",
-      "title1": "Your city.",
-      "titleEm": "Your mood.",
-      "title2": "Your day.",
-      "sub": "Tell Moody how you're feeling — he'll plan your perfect day. No scrolling, no searching. Just pick your vibe and go.",
-      "appStore": "App Store",
-      "seeHow": "See how it works"
+      "badge": "On the App Store",
+      "title1": "Tell Moody your mood.",
+      "titleEm": "Get a day that actually fits.",
+      "title2": "",
+      "sub": "No endless scrolling. No random lists. WanderMood turns your vibe into places, plans, and little city moments worth leaving the house for.",
+      "appStore": "Download on the App Store",
+      "seeHow": "See how it works",
+      "watchHow": "Watch how it works"
+    },
+    "proof": {
+      "line": "Built for spontaneous city days — solo plans, friends, and travelers.",
+      "appStoreLine": "Available on the App Store."
+    },
+    "why": {
+      "eyebrow": "Why WanderMood feels different",
+      "title": "Mood first.",
+      "titleEm": "Then the city opens up.",
+      "sub": "You don't start with a category search. You start with how you feel — and the app builds from there.",
+      "u1t": "Mood-based planning",
+      "u1b": "Pick how you feel. Moody shapes suggestions around that — not around whatever's trending.",
+      "u2t": "Chat with Moody",
+      "u2b": "Ask for a cozy café, a full day plan, or a swap when something doesn't land. Like texting a friend who knows the city.",
+      "u3t": "Plan My Day",
+      "u3b": "Morning, afternoon, evening — a real timeline you can follow, tweak, or rebuild in a tap.",
+      "u4t": "Explore",
+      "u4b": "Browse places by mood, distance, and vibe. Save spots, add them to your day, or ask Moody for a better match.",
+      "u5t": "Mood Match",
+      "u5b": "Planning with someone else? Lock in both moods and let Moody find the overlap.",
+      "u6t": "Save & build",
+      "u6b": "Keep places you love, schedule them in My Plans, and navigate when you're ready to go."
+    },
+    "demo": {
+      "eyebrow": "How it works",
+      "title": "From vibe to plan",
+      "titleEm": "in four beats.",
+      "sub": "Real screens from the app — the same flow you'll use on your phone.",
+      "s1t": "1 · Pick your mood",
+      "s1b": "Choose a vibe or tell Moody how you feel tonight.",
+      "s2t": "2 · Moody builds with you",
+      "s2b": "Chat, nudge, and get picks that match your headspace.",
+      "s3t": "3 · Your day, on a timeline",
+      "s3b": "See morning, afternoon, and evening slots fill in — ready to follow or edit.",
+      "s4t": "4 · Explore, save, go",
+      "s4b": "Open place details, save favorites, get directions, or ask Moody to swap a stop."
+    },
+    "meetMoodySect": {
+      "eyebrow": "Meet Moody",
+      "title": "Your city-savvy companion.",
+      "sub": "Warm, direct, a little cheeky — the voice in the app when you don't know what to do next.",
+      "q1": "Plan my whole day",
+      "q2": "Find me a cozy café",
+      "q3": "I'm bored, but not trying to do too much",
+      "q4": "Something cute for me and my friend",
+      "q5": "Replace this activity",
+      "q6": "What fits my mood right now?"
+    },
+    "moodMatchSect": {
+      "eyebrow": "Mood Match",
+      "title": "Your friend wants cozy. You want food.",
+      "titleEm": "Moody finds the middle.",
+      "sub": "Two moods, one plan. Lock in how you both feel and get a shared morning, afternoon, and evening you can actually agree on.",
+      "cta": "Try Mood Match in the app"
+    },
+    "exploreSect": {
+      "eyebrow": "Explore your city",
+      "title": "Discovery that matches",
+      "titleEm": "your headspace.",
+      "sub": "WanderMood isn't only a planner — it's a way to see your city through the lens of how you feel.",
+      "b1": "Browse by mood, category, and what's open now",
+      "b2": "Cafés, food, culture, nature, hidden spots, and things to do",
+      "b3": "Save places and drop them into My Day",
+      "b4": "Ask Moody when nothing on the list feels right",
+      "b5": "Where partner venues show up when the vibe fits — not as random banners"
+    },
+    "b2bPreview": {
+      "caption": "How a venue looks inside the app — detail, photos, and real reviews."
+    },
+    "imgAlt": {
+      "hero": "WanderMood app screenshot showing My Day with planned activities",
+      "moodFloat": "Mood selection screen in WanderMood",
+      "chatBubble": "Chat message bubble in WanderMood",
+      "activityCard": "Planned activity card in WanderMood",
+      "demoStep": "WanderMood app screen",
+      "meetMoody": "Moody chat in WanderMood",
+      "moodMatchWait": "Mood Match waiting screen with two people",
+      "moodMatch": "Mood Match shared plan in WanderMood",
+      "explore": "Explore feed in WanderMood",
+      "placeDetail": "Place detail screen in WanderMood"
     },
     "phone": {
       "greeting": "Good morning",
@@ -75,10 +160,10 @@
     },
     "b2b": {
       "eyebrow": "For businesses",
-      "titleBefore": "Get your place in front of the ",
-      "titleEm": "right people.",
-      "desc1": "WanderMood users plan their day around their mood. I make sure your place is part of that plan — at exactly the right moment, for exactly the right vibe.",
-      "desc2": "No ads. No banners. Smart placement inside Moody's day plans and Explore feed. Your customers find you when they're ready to go.",
+      "titleBefore": "Be recommended when people are ",
+      "titleEm": "actually ready to go.",
+      "desc1": "WanderMood isn't banner noise. Users open the app with intent — they want a plan, a place, or a mood match. Your venue can show up in Explore, in Moody's day plans, and when the vibe lines up.",
+      "desc2": "Mood and timing matter more than impressions. That's smarter discovery for cafés, culture, experiences, and stays — with monthly insights, not guesswork.",
       "price": "€79",
       "priceNote": "per month · first 30 days free",
       "f1": "Featured in Moody's day plans for your city",
