@@ -7,6 +7,15 @@ import LandingTour, { type LandingTourHandle } from "@/components/LandingTour";
 import { LandingWalkthroughPlayer } from "@/components/LandingWalkthroughPlayer";
 import { buildWalkthroughCopyForVideo } from "@/lib/build-walkthrough-copy";
 
+const APP_STORE_URL =
+  "https://apps.apple.com/nl/app/wandermood/id6760943488";
+
+const APP_STORE_LINK_PROPS = {
+  href: APP_STORE_URL,
+  target: "_blank",
+  rel: "noopener noreferrer",
+} as const;
+
 const LOCALES = [
   { code: "en", label: "EN" },
   { code: "nl", label: "NL" },
@@ -161,7 +170,7 @@ export default function LandingHome() {
               </button>
             ))}
           </div>
-          <a href="#download" className="nav-cta">
+          <a {...APP_STORE_LINK_PROPS} className="nav-cta">
             {t("nav.download")}
           </a>
         </div>
@@ -185,7 +194,7 @@ export default function LandingHome() {
             </h1>
             <p className="hero-sub">{t("hero.sub")}</p>
             <div className="hero-actions">
-              <a href="#download" className="btn-primary">
+              <a {...APP_STORE_LINK_PROPS} className="btn-primary">
                 <AppStoreIcon />
                 {t("hero.appStore")}
               </a>
@@ -365,9 +374,9 @@ export default function LandingHome() {
                 </li>
               ))}
             </ul>
-            <a href={trialMail} className="btn-trial">
+            <Link href="/partners#aanvragen" className="btn-trial">
               {t("b2b.trialCta")}
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -384,13 +393,15 @@ export default function LandingHome() {
           </h2>
           <p className="reveal">{t("cta.sub")}</p>
           <div className="cta-buttons reveal">
-            <a href="#" className="btn-primary">
+            <a {...APP_STORE_LINK_PROPS} className="btn-primary">
               <AppStoreIcon />
               {t("cta.appStore")}
             </a>
-            <a href="#" className="btn-secondary">
-              {t("cta.googlePlay")}
-            </a>
+            {process.env.NEXT_PUBLIC_SHOW_GOOGLE_PLAY === "true" ? (
+              <a href="#" className="btn-secondary">
+                {t("cta.googlePlay")}
+              </a>
+            ) : null}
           </div>
         </div>
       </section>
