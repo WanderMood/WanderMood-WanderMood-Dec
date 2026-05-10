@@ -94,14 +94,14 @@
       "caption": "Zo ziet een zaak eruit in de app — details, foto's en echte reviews."
     },
     "imgAlt": {
-      "hero": "WanderMood screenshot: Mijn plannen met geplande activiteiten",
+      "hero": "WanderMood: chat met Moody",
       "moodFloat": "Stemming kiezen in WanderMood",
       "chatBubble": "Chatbericht in WanderMood",
       "activityCard": "Geplande activiteit in WanderMood",
       "demoStep": "Scherm in de WanderMood-app",
       "meetMoody": "Moody-chat in WanderMood",
       "moodMatchWait": "Mood Match wachtscherm met twee personen",
-      "moodMatch": "Gedeeld Mood Match-plan in WanderMood",
+      "moodMatch": "Mijn dag met je gezamenlijke plan in WanderMood",
       "explore": "Ontdek-feed in WanderMood",
       "placeDetail": "Plekdetail in WanderMood"
     },

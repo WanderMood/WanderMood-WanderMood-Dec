@@ -935,8 +935,8 @@
 
 .landing-root .landing-hero-inner {
   display: grid;
-  grid-template-columns: 1fr minmax(280px, 440px);
-  gap: 48px;
+  grid-template-columns: 1fr minmax(200px, 300px);
+  gap: 40px;
   align-items: center;
   width: 100%;
 }
@@ -962,62 +962,54 @@
 
 .landing-root .landing-hero-visual {
   position: relative;
-  min-height: 520px;
+  min-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* Phone frame: bezel + fixed aspect so screenshots never show empty “bars”. */
 .landing-root .landing-device-shell {
-  border-radius: 36px;
-  overflow: hidden;
+  width: 100%;
+  max-width: 248px;
+  margin-inline: auto;
+  border-radius: 42px;
+  padding: 11px;
+  background: linear-gradient(148deg, #4a4a4e 0%, #1c1c1f 42%, #353538 100%);
   box-shadow:
-    0 32px 64px rgba(30, 28, 24, 0.18),
-    0 0 0 1px rgba(30, 28, 24, 0.06);
-  background: var(--charcoal);
+    0 24px 56px rgba(30, 28, 24, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
   line-height: 0;
+}
+
+.landing-root .landing-device-screen {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  aspect-ratio: 9 / 19.5;
+  background: #0c0c0c;
 }
 
 .landing-root .landing-device-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  max-width: 320px;
+  object-fit: cover;
+  object-position: top center;
 }
 
 .landing-root .landing-hero-phone.landing-device-shell {
-  position: relative;
-  z-index: 2;
+  max-width: 268px;
 }
 
-.landing-root .landing-float {
-  position: absolute;
-  border-radius: 16px;
-  box-shadow: 0 16px 40px rgba(30, 28, 24, 0.15);
-  z-index: 3;
-  line-height: 0;
-  background: white;
+.landing-root .landing-demo-phone.landing-device-shell {
+  max-width: 204px;
 }
 
-.landing-root .landing-float--mood {
-  width: min(38%, 200px);
-  height: auto;
-  left: -4%;
-  top: 6%;
+.landing-root .landing-meet-grid .landing-device-shell {
+  max-width: 228px;
 }
 
-.landing-root .landing-float--chat {
-  width: min(48%, 240px);
-  height: auto;
-  right: -2%;
-  top: 18%;
-}
-
-.landing-root .landing-float--card {
-  width: min(52%, 260px);
-  height: auto;
-  left: 2%;
-  bottom: 4%;
+.landing-root .landing-explore-grid > .reveal .landing-device-shell {
+  max-width: 236px;
 }
 
 .landing-root .landing-section-inner {
@@ -1092,8 +1084,9 @@
 .landing-root .landing-demo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 32px 28px;
+  gap: 28px 24px;
   margin-top: 16px;
+  align-items: start;
 }
 
 .landing-root .landing-demo-step h3 {
@@ -1110,20 +1103,6 @@
   line-height: 1.65;
 }
 
-.landing-root .landing-wide-shot-wrap {
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 16px 48px rgba(30, 28, 24, 0.1);
-  background: var(--charcoal);
-  line-height: 0;
-}
-
-.landing-root .landing-wide-shot-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 .landing-root .landing-mid-cta {
   margin-top: 48px;
   display: flex;
@@ -1136,8 +1115,8 @@
 
 .landing-root .landing-meet-grid {
   display: grid;
-  grid-template-columns: 1fr minmax(260px, 360px);
-  gap: 48px;
+  grid-template-columns: 1fr minmax(200px, 280px);
+  gap: 40px;
   align-items: center;
 }
 
@@ -1194,24 +1173,21 @@
 
 .landing-root .landing-mood-match-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(280px, 420px);
-  gap: 40px;
+  grid-template-columns: minmax(220px, 1fr) minmax(260px, 400px);
+  gap: 36px;
   align-items: center;
 }
 
 .landing-root .landing-mood-match-shots {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.landing-root .landing-mm-wait .landing-device-img {
-  max-width: 260px;
-}
-
-.landing-root .landing-mm-result .landing-device-img {
-  max-width: 280px;
+.landing-root .landing-mm-wait.landing-device-shell,
+.landing-root .landing-mm-result.landing-device-shell {
+  max-width: 212px;
 }
 
 .landing-root .landing-mood-match-cta {
@@ -1224,8 +1200,8 @@
 
 .landing-root .landing-explore-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 380px) 1fr;
-  gap: 48px;
+  grid-template-columns: minmax(200px, 300px) 1fr;
+  gap: 40px;
   align-items: center;
 }
 
@@ -1263,6 +1239,7 @@
 
 .landing-root .landing-b2b-visual .landing-device-shell {
   margin-top: 8px;
+  max-width: 220px;
 }
 
 .landing-root .landing-b2b-caption {
@@ -1302,16 +1279,7 @@
   }
 
   .landing-root .landing-hero-visual {
-    min-height: 480px;
-    margin-top: 24px;
-  }
-
-  .landing-root .landing-float--mood {
-    left: 4%;
-  }
-
-  .landing-root .landing-float--chat {
-    right: 4%;
+    margin-top: 20px;
   }
 
   .landing-root .landing-why-grid {

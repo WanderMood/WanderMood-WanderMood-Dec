@@ -84,38 +84,16 @@ function PhoneShot({
 }) {
   return (
     <div className={`landing-device-shell ${className ?? ""}`}>
-      <Image
-        src={src}
-        alt={alt}
-        width={780}
-        height={1688}
-        className="landing-device-img"
-        sizes="(max-width: 900px) 86vw, 320px"
-        priority={priority}
-      />
-    </div>
-  );
-}
-
-function WideShot({
-  src,
-  alt,
-  className,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-}) {
-  return (
-    <div className={`landing-wide-shot-wrap ${className ?? ""}`}>
-      <Image
-        src={src}
-        alt={alt}
-        width={900}
-        height={1200}
-        className="landing-wide-shot-img"
-        sizes="(max-width: 900px) 100vw, 420px"
-      />
+      <div className="landing-device-screen">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className="landing-device-img"
+          sizes="(max-width: 900px) 78vw, 240px"
+          priority={priority}
+        />
+      </div>
     </div>
   );
 }
@@ -267,27 +245,6 @@ export default function LandingHome() {
               priority
               className="landing-hero-phone"
             />
-            <Image
-              src={img.heroMoodFloat}
-              alt={t("imgAlt.moodFloat")}
-              width={280}
-              height={560}
-              className="landing-float landing-float--mood"
-            />
-            <Image
-              src={img.floatChat}
-              alt={t("imgAlt.chatBubble")}
-              width={320}
-              height={200}
-              className="landing-float landing-float--chat"
-            />
-            <Image
-              src={img.floatCard}
-              alt={t("imgAlt.activityCard")}
-              width={340}
-              height={220}
-              className="landing-float landing-float--card"
-            />
           </div>
         </div>
       </section>
@@ -338,7 +295,7 @@ export default function LandingHome() {
               ] as const
             ).map(([tk, bk, shot]) => (
               <div key={tk} className="landing-demo-step reveal">
-                <WideShot src={shot} alt={t("imgAlt.demoStep")} />
+                <PhoneShot src={shot} alt={t("imgAlt.demoStep")} className="landing-demo-phone" />
                 <h3>{t(`demo.${tk}`)}</h3>
                 <p>{t(`demo.${bk}`)}</p>
               </div>
