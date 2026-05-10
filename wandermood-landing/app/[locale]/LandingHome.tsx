@@ -98,6 +98,39 @@ function PhoneShot({
   );
 }
 
+/** iPhone 16 Pro Max–style frame: titanium rail + side controls (CSS). */
+function IPhone16ProMaxShot({
+  src,
+  alt,
+  className,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <div className={`landing-iphone16 ${className ?? ""}`}>
+      <span className="landing-iphone16-btn landing-iphone16-btn--vol-up" aria-hidden />
+      <span className="landing-iphone16-btn landing-iphone16-btn--vol-down" aria-hidden />
+      <span className="landing-iphone16-btn landing-iphone16-btn--power" aria-hidden />
+      <span className="landing-iphone16-btn landing-iphone16-btn--camera-ctl" aria-hidden />
+      <div className="landing-iphone16-rail">
+        <div className="landing-iphone16-inner">
+          <div className="landing-iphone16-screen">
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              className="landing-iphone16-img"
+              sizes="(max-width: 900px) 90vw, 300px"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingHome() {
   const t = useTranslations("landing");
   const tFooter = useTranslations("footer");
@@ -418,7 +451,7 @@ export default function LandingHome() {
           </div>
           <div className="reveal landing-b2b-visual">
             <p className="landing-b2b-caption">{t("b2bPreview.caption")}</p>
-            <PhoneShot src={img.placeDetail} alt={t("imgAlt.placeDetail")} />
+            <IPhone16ProMaxShot src={img.b2bExplore} alt={t("imgAlt.b2bExplore")} />
           </div>
           <div className="pricing-card reveal landing-b2b-pricing">
             <div className="pricing-price">{t("b2b.price")}</div>

@@ -91,7 +91,7 @@
       "b5": "Where partner venues show up when the vibe fits — not as random banners"
     },
     "b2bPreview": {
-      "caption": "How a venue looks inside the app — detail, photos, and real reviews."
+      "caption": "How partner venues show up in Explore — rich cards, one tap to My Day."
     },
     "imgAlt": {
       "hero": "WanderMood mood hub: choose how you feel",
@@ -103,7 +103,8 @@
       "moodMatchWait": "Mood Match waiting screen with two people",
       "moodMatch": "Mood Match shared plan in WanderMood",
       "explore": "Explore feed in WanderMood",
-      "placeDetail": "Place detail screen in WanderMood"
+      "placeDetail": "Place detail screen in WanderMood",
+      "b2bExplore": "Explore in WanderMood with a featured venue card"
     },
     "phone": {
       "greeting": "Good morning",

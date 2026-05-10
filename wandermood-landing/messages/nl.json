@@ -91,7 +91,7 @@
       "b5": "Zo tonen partnerplekken zich wanneer de vibe klopt — niet als willekeurige banners"
     },
     "b2bPreview": {
-      "caption": "Zo ziet een zaak eruit in de app — details, foto's en echte reviews."
+      "caption": "Zo verschijnen partnerzaken in Ontdek — rijke kaarten, één tik naar Mijn dag."
     },
     "imgAlt": {
       "hero": "WanderMood: chat met Moody",
@@ -103,7 +103,8 @@
       "moodMatchWait": "Mood Match wachtscherm met twee personen",
       "moodMatch": "Mijn dag met je gezamenlijke plan in WanderMood",
       "explore": "Ontdek-feed in WanderMood",
-      "placeDetail": "Plekdetail in WanderMood"
+      "placeDetail": "Plekdetail in WanderMood",
+      "b2bExplore": "Ontdek in WanderMood met een uitgelichte zaak"
     },
     "phone": {
       "greeting": "Goedemorgen",

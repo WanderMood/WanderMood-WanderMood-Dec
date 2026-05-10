@@ -14,6 +14,8 @@ export type LandingImageSet = {
   moodMatchWait: string;
   explore: string;
   placeDetail: string;
+  /** Simulator Explore capture for partners / B2B (locale-specific). */
+  b2bExplore: string;
 };
 
 export function getLandingImages(locale: string): LandingImageSet {
@@ -35,5 +37,6 @@ export function getLandingImages(locale: string): LandingImageSet {
     moodMatch: isNl ? "/landing/nl-moody-chat.png" : "/landing/en-my-day.png",
     explore: isNl ? "/landing/nl-explore.png" : "/landing/en-explore.png",
     placeDetail: isNl ? "/landing/nl-place-detail.png" : "/landing/en-place-detail.png",
+    b2bExplore: isNl ? "/landing/b2b-explore-nl.png" : "/landing/b2b-explore-en.png",
   };
 }
