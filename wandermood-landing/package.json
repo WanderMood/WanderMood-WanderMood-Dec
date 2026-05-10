@@ -9,14 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@remotion/player": "4.0.451",
     "@supabase/supabase-js": "^2.49.1",
     "framer-motion": "^12.36.0",
     "next": "16.1.6",
     "next-intl": "^4.8.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "remotion": "4.0.451",
     "stripe": "^17.7.0"
   },
   "devDependencies": {

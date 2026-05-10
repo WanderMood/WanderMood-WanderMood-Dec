@@ -821,35 +821,6 @@
   margin: 0 48px;
 }
 
-.landing-root .walkthrough-video-section {
-  padding: 88px 48px 100px;
-  max-width: 1160px;
-  margin: 0 auto;
-}
-
-.landing-root .walkthrough-video-inner {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.landing-root .walkthrough-video-title {
-  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 600;
-  color: var(--charcoal);
-  line-height: 1.15;
-  margin-bottom: 16px;
-}
-
-.landing-root .walkthrough-video-title em {
-  font-style: italic;
-  color: var(--forest);
-}
-
-.landing-root .walkthrough-video-player-wrap {
-  margin-top: 32px;
-}
-
 /* Sticky nav (68px): in-page anchors scroll to readable position */
 .landing-root section[id] {
   scroll-margin-top: 76px;
@@ -941,10 +912,6 @@
 
   .landing-root .divider {
     margin: 0 24px;
-  }
-
-  .landing-root .walkthrough-video-section {
-    padding: 64px 24px 72px;
   }
 }
 

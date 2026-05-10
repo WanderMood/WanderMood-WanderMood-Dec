@@ -95,12 +95,6 @@
       "appStore": "App Store",
       "googlePlay": "Google Play"
     },
-    "walkthroughVideo": {
-      "eyebrow": "Visite en vidéo",
-      "title1": "Parcours",
-      "titleEm": "le site.",
-      "sub": "Tour animé avec les mêmes textes que la page — lance, mets en pause ou fais défiler avec les contrôles du lecteur."
-    },
     "tour": {
       "skip": "Passer",
       "next": "Suivant",

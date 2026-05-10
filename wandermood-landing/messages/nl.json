@@ -96,12 +96,6 @@
       "appStore": "App Store",
       "googlePlay": "Google Play"
     },
-    "walkthroughVideo": {
-      "eyebrow": "Videorondleiding",
-      "title1": "Loop door",
-      "titleEm": "de site.",
-      "sub": "Geprogrammeerde rondleiding met dezelfde teksten als op de pagina — gebruik de knoppen om af te spelen, te pauzeren of te scrubben."
-    },
     "tour": {
       "skip": "Overslaan",
       "next": "Volgende",
@@ -256,6 +250,8 @@
       "businessName": "Naam van je zaak",
       "businessNamePh": "Hopper Espresso Bar",
       "businessType": "Type zaak",
+      "businessTypeOther": "Beschrijf je type zaak",
+      "businessTypeOtherPh": "bijv. coworking, fietsverhuur…",
       "city": "Stad",
       "cityPh": "Rotterdam",
       "googleMaps": "Google Maps link van je zaak (optioneel)",
