@@ -1,0 +1,15 @@
+/* Operator console — aligned with business.wandermood.com tokens */
+.admin-dashboard-root {
+  --wm-bg: #0f0e0c;
+  --wm-card: #1a1916;
+  --wm-forest: #2a6049;
+  --wm-green: #5dcaa5;
+  --wm-sunset: #e8784a;
+  --wm-cream: #f5f0e8;
+  --wm-muted: #6b6560;
+  --wm-border: rgba(245, 240, 232, 0.08);
+  --wm-elevated: #22211e;
+  min-height: 100vh;
+  background: var(--wm-bg);
+  color: var(--wm-cream);
+}

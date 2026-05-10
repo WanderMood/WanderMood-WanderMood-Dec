@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./admin-theme.css";
 
 export const metadata: Metadata = {
   title: "Admin — WanderMood",
@@ -10,5 +11,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <div className="admin-dashboard-root font-sans antialiased">{children}</div>;
 }
