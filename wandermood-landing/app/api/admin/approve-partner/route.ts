@@ -1,5 +1,4 @@
 import {
-  adminOperatorSecrets,
   isOperatorSecretValid,
   parseClientAdminSecret,
   readTrimmedEnv,
@@ -7,21 +6,9 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { edgeForward } = adminOperatorSecrets();
-
   const provided = parseClientAdminSecret(req.headers);
   if (!isOperatorSecretValid(provided)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (!edgeForward) {
-    return NextResponse.json(
-      {
-        error:
-          "Server misconfigured: set ADMIN_SECRET or WANDERMOOD_ADMIN_SECRET on Vercel (must match Supabase partner-onboard secret), then redeploy.",
-      },
-      { status: 500 }
-    );
   }
 
   const body = await req.json().catch(() => ({}));
@@ -59,17 +46,21 @@ export async function POST(req: NextRequest) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${supabaseJwt}`,
-      "x-admin-secret": edgeForward,
+      // Must match what the operator used to pass auth — not ADMIN_SECRET ?? WANDERMOOD
+      // when those two Vercel env values differ (otherwise Edge sees the wrong secret).
+      "x-admin-secret": provided,
     },
     body: JSON.stringify({ lead_id }),
   });
 
   const data = (await res.json().catch(() => ({}))) as { error?: string };
   if (!res.ok) {
-    return NextResponse.json(
-      { error: data.error ?? "Onboarding failed" },
-      { status: res.status }
-    );
+    const base = data.error ?? "Onboarding failed";
+    const error =
+      res.status === 401
+        ? `${base} — zet Supabase Edge secret ADMIN_SECRET gelijk aan hetzelfde wachtwoord als hier in /admin.`
+        : base;
+    return NextResponse.json({ error }, { status: res.status });
   }
 
   return NextResponse.json({ success: true, ...data });
