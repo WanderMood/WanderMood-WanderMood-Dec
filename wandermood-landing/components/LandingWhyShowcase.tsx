@@ -79,8 +79,8 @@ export function LandingWhyShowcase() {
                 <IPhone16ProMaxShot
                   src={screens[active]}
                   alt={t(`why.previewAlt.${PREVIEW_KEYS[active]}`)}
-                  className="landing-why-iphone"
                   sizes="(max-width: 900px) 85vw, 260px"
+                  railMaxWidthPx={260}
                 />
               </div>
             </div>

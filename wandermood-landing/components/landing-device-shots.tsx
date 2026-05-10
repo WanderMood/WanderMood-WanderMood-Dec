@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { PhoneMockup } from "@/components/PhoneMockup";
 
 export function PhoneShot({
   src,
@@ -29,31 +30,33 @@ export function PhoneShot({
   );
 }
 
-/** iPhone 16 Pro Max–style frame: titanium rail + side controls (CSS). */
+/**
+ * Preset: screenshot inside {@link PhoneMockup} with Pro-style side buttons.
+ * `showIsland` defaults false — most simulator captures already include the island.
+ */
 export function IPhone16ProMaxShot({
   src,
   alt,
   className,
   sizes = "(max-width: 900px) 90vw, 300px",
+  railMaxWidthPx,
+  showIsland = false,
 }: {
   src: string;
   alt: string;
   className?: string;
   sizes?: string;
+  railMaxWidthPx?: number;
+  showIsland?: boolean;
 }) {
   return (
-    <div className={`landing-iphone16 ${className ?? ""}`}>
-      <span className="landing-iphone16-btn landing-iphone16-btn--vol-up" aria-hidden />
-      <span className="landing-iphone16-btn landing-iphone16-btn--vol-down" aria-hidden />
-      <span className="landing-iphone16-btn landing-iphone16-btn--power" aria-hidden />
-      <span className="landing-iphone16-btn landing-iphone16-btn--camera-ctl" aria-hidden />
-      <div className="landing-iphone16-rail">
-        <div className="landing-iphone16-inner">
-          <div className="landing-iphone16-screen">
-            <Image src={src} alt={alt} fill className="landing-iphone16-img" sizes={sizes} />
-          </div>
-        </div>
-      </div>
-    </div>
+    <PhoneMockup
+      sideButtons
+      showIsland={showIsland}
+      className={className}
+      railMaxWidthPx={railMaxWidthPx}
+    >
+      <Image src={src} alt={alt} fill sizes={sizes} />
+    </PhoneMockup>
   );
 }

@@ -1208,15 +1208,6 @@
   }
 }
 
-.landing-root .landing-why-iphone.landing-iphone16 {
-  margin-top: 0;
-  padding: 0 12px;
-}
-
-.landing-root .landing-why-iphone .landing-iphone16-rail {
-  max-width: 260px;
-}
-
 .landing-root .landing-why-mobile {
   margin-top: 24px;
 }
@@ -1453,116 +1444,8 @@
   align-items: start;
 }
 
-/* iPhone 16 Pro Max–style device (titanium rail + hardware controls) — B2B preview */
-.landing-root .landing-iphone16 {
-  position: relative;
-  width: fit-content;
-  max-width: 100%;
-  margin: 8px auto 0;
-  padding: 0 13px;
-}
-
-.landing-root .landing-iphone16-rail {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 268px;
-  margin: 0 auto;
-  border-radius: 54px;
-  padding: 3px;
-  background: linear-gradient(
-    155deg,
-    #f2f2f4 0%,
-    #b9b9be 14%,
-    #ececee 32%,
-    #9b9ba1 48%,
-    #e6e6ea 65%,
-    #a5a5ab 82%,
-    #d8d8dd 100%
-  );
-  box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.85),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.22),
-    0 28px 56px rgba(20, 18, 16, 0.38),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.landing-root .landing-iphone16-inner {
-  border-radius: 51px;
-  padding: 2px;
-  background: linear-gradient(180deg, #1a1a1c 0%, #0a0a0b 100%);
-}
-
-.landing-root .landing-iphone16-screen {
-  position: relative;
-  border-radius: 49px;
-  overflow: hidden;
-  aspect-ratio: 9 / 19.5;
-  background: #000;
-}
-
-.landing-root .landing-iphone16-img {
-  object-fit: cover;
-  object-position: top center;
-}
-
-.landing-root .landing-iphone16-btn {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    rgba(88, 88, 92, 0.95) 0%,
-    rgba(180, 180, 186, 0.98) 45%,
-    rgba(110, 110, 116, 0.95) 100%
-  );
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-
-.landing-root .landing-iphone16-btn--vol-up {
-  left: 4px;
-  top: 22%;
-  width: 5px;
-  height: 44px;
-  border-radius: 3px 0 0 3px;
-}
-
-.landing-root .landing-iphone16-btn--vol-down {
-  left: 4px;
-  top: calc(22% + 52px);
-  width: 5px;
-  height: 44px;
-  border-radius: 3px 0 0 3px;
-}
-
-.landing-root .landing-iphone16-btn--power {
-  right: 4px;
-  top: 19%;
-  width: 5px;
-  height: 86px;
-  border-radius: 0 3px 3px 0;
-  background: linear-gradient(
-    270deg,
-    rgba(88, 88, 92, 0.95) 0%,
-    rgba(180, 180, 186, 0.98) 45%,
-    rgba(110, 110, 116, 0.95) 100%
-  );
-}
-
-.landing-root .landing-iphone16-btn--camera-ctl {
-  right: 4px;
-  top: calc(19% + 98px);
-  width: 5px;
-  height: 56px;
-  border-radius: 0 4px 4px 0;
-  background: linear-gradient(
-    270deg,
-    rgba(72, 72, 76, 0.98) 0%,
-    rgba(150, 150, 156, 0.98) 50%,
-    rgba(90, 90, 96, 0.98) 100%
-  );
+.landing-root .landing-b2b-visual {
+  margin-top: 8px;
 }
 
 .landing-root .landing-b2b-caption {
