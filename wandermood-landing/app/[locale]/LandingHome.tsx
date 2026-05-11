@@ -305,16 +305,14 @@ export default function LandingHome() {
       >
         <Link href="/" className="nav-logo">
           <div className="nav-logo-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-              <circle cx="10" cy="10" r="4.5" fill="white" opacity="0.9" />
-              <path
-                d="M10 3C10 3 16 6 16 10C16 14 10 17 10 17C10 17 4 14 4 10C4 6 10 3 10 3Z"
-                stroke="white"
-                strokeWidth="1.2"
-                fill="none"
-                opacity="0.45"
-              />
-            </svg>
+            <Image
+              src="/icon.png"
+              alt=""
+              width={72}
+              height={72}
+              sizes="36px"
+              priority
+            />
           </div>
           <span className="nav-logo-text">{tFooter("brand")}</span>
         </Link>
@@ -414,10 +412,10 @@ export default function LandingHome() {
               <div className="home-hero-badge-block">
                 <a {...APP_STORE_LINK_PROPS} className="home-app-badge">
                   <Image
-                    src="/app-store-badge-white.svg"
+                    src="/app-store-badge-black.svg"
                     alt="Download on the App Store"
-                    width={157}
-                    height={44}
+                    width={135}
+                    height={40}
                     priority
                   />
                 </a>
@@ -579,7 +577,7 @@ export default function LandingHome() {
       <section
         id="moods"
         ref={moodsSectionRef}
-        className="home-section section-beige"
+        className="home-section section-dark home-moods-band"
       >
         <div className="home-section-inner">
           <div className="home-moods-head">
@@ -651,10 +649,10 @@ export default function LandingHome() {
         <div className="home-download-badge-wrap reveal">
           <a {...APP_STORE_LINK_PROPS} className="home-download-badge">
             <Image
-              src="/app-store-badge-white.svg"
+              src="/app-store-badge-black.svg"
               alt="Download on the App Store"
-              width={157}
-              height={44}
+              width={135}
+              height={40}
             />
           </a>
           <p className="home-download-note">{th("dlFoot")}</p>

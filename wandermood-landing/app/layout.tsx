@@ -48,8 +48,8 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: SITE_URL },
   icons: {
-    icon: [{ url: "/icon.png", type: "image/png", sizes: "180x180" }],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    icon: [{ url: "/icon.png?v=moody", type: "image/png", sizes: "180x180" }],
+    apple: [{ url: "/apple-touch-icon.png?v=moody", sizes: "180x180" }],
   },
 };
 

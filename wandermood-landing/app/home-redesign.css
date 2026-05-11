@@ -3,9 +3,15 @@
 .landing-root.landing-page--home {
   --home-bg: #1A1714;
   --home-card: #2A2420;
-  --home-green: #2a6049;
-  --home-accent: #5dcaa5;
+  /* Forest + mint: hero only (see .home-hero) */
+  --home-hero-green: #2a6049;
+  --home-hero-accent: #5dcaa5;
   --home-orange: #e8784a;
+  --home-warm: #c9b298;
+  --home-warm-muted: #8b7355;
+  --home-glass-fill: rgba(42, 36, 32, 0.52);
+  --home-glass-fill-hover: rgba(52, 44, 38, 0.62);
+  --home-glass-border: rgba(245, 240, 232, 0.14);
   --home-cream: #f5f0e8;
   --home-muted: rgba(245, 240, 232, 0.5);
   --home-border: rgba(245, 240, 232, 0.08);
@@ -60,7 +66,7 @@
 }
 
 .landing-page--home .section-beige .home-label {
-  color: #2a6049;
+  color: var(--home-warm-muted);
 }
 
 .landing-page--home .section-b2b {
@@ -72,7 +78,7 @@
 }
 
 .landing-page--home .section-b2b .home-label {
-  color: #2a6049;
+  color: var(--home-warm-muted);
 }
 
 .landing-page--home .section-b2b .home-h2 {
@@ -142,7 +148,20 @@
 }
 
 .landing-page--home .home-nav .nav-logo-icon {
-  background: var(--home-green);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(245, 240, 232, 0.06);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  line-height: 0;
+}
+
+.landing-page--home .home-nav .nav-logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .landing-page--home .home-nav .nav-logo-text {
@@ -215,7 +234,7 @@
 }
 
 .landing-page--home .home-nav-locale-btn.active {
-  background: rgba(42, 96, 73, 0.35);
+  background: rgba(200, 175, 145, 0.18);
   color: var(--home-cream);
 }
 
@@ -415,7 +434,7 @@
 
 .landing-page--home .home-hero-h1 em {
   font-style: normal;
-  color: var(--home-accent);
+  color: var(--home-hero-accent);
 }
 
 .landing-page--home .home-hero-sub {
@@ -575,7 +594,7 @@
 .landing-page--home .home-stat-value {
   font-size: 48px;
   font-weight: 700;
-  color: #2a6049;
+  color: #5c4d3d;
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   line-height: 1;
 }
@@ -607,7 +626,7 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--home-accent);
+  color: var(--home-warm);
   margin-bottom: 16px;
 }
 
@@ -667,8 +686,8 @@
   font-size: 96px;
   font-weight: 700;
   line-height: 1;
-  color: #2a6049;
-  opacity: 0.12;
+  color: #6b5340;
+  opacity: 0.14;
   pointer-events: none;
   user-select: none;
 }
@@ -701,8 +720,8 @@
   font-size: 48px;
   font-weight: 700;
   line-height: 1;
-  color: var(--home-accent);
-  opacity: 0.4;
+  color: var(--home-warm-muted);
+  opacity: 0.45;
   margin-bottom: 12px;
 }
 
@@ -897,7 +916,7 @@
 }
 
 .landing-page--home .home-feature-copy .home-label {
-  color: #2a6049;
+  color: var(--home-warm-muted);
 }
 
 .landing-page--home .home-feature-copy .home-feat-h2 {
@@ -936,7 +955,7 @@
 /* Mood match */
 .landing-page--home .home-mm {
   background:
-    linear-gradient(180deg, rgba(42, 96, 73, 0.15) 0%, transparent 40%),
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(90, 72, 58, 0.22) 0%, transparent 62%),
     #1A1714;
 }
 
@@ -987,8 +1006,8 @@
   margin: 48px auto 0;
   padding: 14px 28px;
   border-radius: 50px;
-  border: 1px solid var(--home-accent);
-  color: var(--home-accent);
+  border: 1px solid rgba(201, 178, 152, 0.45);
+  color: var(--home-warm);
   background: transparent;
   font-size: 15px;
   font-weight: 600;
@@ -999,14 +1018,20 @@
 }
 
 .landing-page--home .home-mm-cta:hover {
-  background: rgba(93, 202, 165, 0.12);
+  background: rgba(201, 178, 152, 0.1);
 }
 
 .landing-page--home .home-mm-cta-wrap {
   text-align: center;
 }
 
-/* Moods grid */
+/* Moods grid — glass chips on dark espresso (matches B2B / price card) */
+.landing-page--home .home-moods-band {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(72, 58, 48, 0.35) 0%, transparent 65%),
+    #1a1714;
+}
+
 .landing-page--home .home-moods-head {
   text-align: center;
   margin-bottom: 40px;
@@ -1054,6 +1079,15 @@
     box-shadow 0.15s ease;
 }
 
+.landing-page--home .home-moods-band .home-mood-chip {
+  background: var(--home-glass-fill);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--home-glass-border);
+  color: var(--home-cream);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
 .landing-page--home .home-moods-grid.home-moods-animate .home-mood-chip {
   opacity: 1;
   transform: translateY(0);
@@ -1098,9 +1132,9 @@
 
 .landing-page--home .home-moods-grid.home-moods-animate .home-mood-chip:hover {
   transform: scale(1.06) translateY(-2px);
-  border-color: #2a6049;
-  background: rgba(42, 96, 73, 0.08);
-  box-shadow: 0 6px 20px rgba(26, 23, 20, 0.06);
+  border-color: rgba(201, 178, 152, 0.4);
+  background: var(--home-glass-fill-hover);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
 }
 
 /* B2B */
@@ -1111,11 +1145,14 @@
 .landing-page--home .home-b2b-card {
   max-width: 400px;
   margin: 48px auto 0;
-  background: #2A2420;
-  border: 1px solid var(--home-border);
+  background: rgba(42, 36, 34, 0.78);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 240, 232, 0.12);
   border-radius: 20px;
   padding: 40px;
   text-align: left;
+  box-shadow: 0 24px 56px rgba(26, 23, 20, 0.18);
 }
 
 @media (max-width: 767px) {
@@ -1136,9 +1173,9 @@
   display: inline-block;
   padding: 6px 14px;
   border-radius: 50px;
-  background: rgba(93, 202, 165, 0.1);
-  border: 1px solid rgba(93, 202, 165, 0.2);
-  color: var(--home-accent);
+  background: rgba(201, 178, 152, 0.12);
+  border: 1px solid rgba(201, 178, 152, 0.28);
+  color: #e8dcc8;
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 20px;
@@ -1174,7 +1211,7 @@
 }
 
 .landing-page--home .home-b2b-check {
-  color: var(--home-accent);
+  color: var(--home-warm);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -1185,7 +1222,7 @@
   padding: 14px;
   border-radius: 12px;
   border: none;
-  background: var(--home-green);
+  background: linear-gradient(180deg, #eb8a5c 0%, var(--home-orange) 100%);
   color: var(--home-cream);
   font-size: 15px;
   font-weight: 700;
@@ -1193,6 +1230,11 @@
   text-decoration: none;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: 0 4px 16px rgba(232, 120, 74, 0.35);
+}
+
+.landing-page--home .home-b2b-btn:hover {
+  filter: brightness(1.05);
 }
 
 .landing-page--home .home-b2b-small {
@@ -1214,7 +1256,7 @@
 /* Download */
 .landing-page--home .home-download {
   background:
-    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(42, 96, 73, 0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(80, 64, 52, 0.28) 0%, transparent 72%),
     #1A1714;
   text-align: center;
   padding: 60px 24px;
