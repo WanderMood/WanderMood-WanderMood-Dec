@@ -2706,8 +2706,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
   }
 
-  /// Browsing vs search vs filters — editorial line above the feed (list + map).
-  /// Omits total place count so the feed feels open-ended.
+  /// Browsing vs search — editorial line above the feed (list + map).
+  /// Filter-only state uses [_buildExploreInlineFilterActions] only (no duplicate strip).
   /// Default “Discovering {city}” strip is hidden — users already know they are on Explore.
   Widget _buildExploreModeContextCard() {
     final l10n = AppLocalizations.of(context)!;
@@ -2719,9 +2719,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     } else if (_searchResults != null && _searchQuery.trim().isNotEmpty) {
       icon = Icons.search_rounded;
       title = l10n.exploreContextStripSearch(_searchQuery.trim());
-    } else if (_activeFiltersCount > 0) {
-      icon = Icons.tune_rounded;
-      title = l10n.exploreContextStripFiltered(_activeFiltersCount);
     } else {
       return const SizedBox.shrink();
     }
@@ -2769,7 +2766,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   Widget _buildExploreInlineFilterActions() {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
       child: Wrap(
         spacing: 8,
         runSpacing: 6,
@@ -2968,6 +2965,28 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     ).animate().fadeIn(duration: 320.ms, curve: Curves.easeOut);
   }
 
+  /// [SliverAppBar.expandedHeight] must cover [_buildExploreHeaderColumn] or the
+  /// flexible space overflows. Keep estimates **tight** — padding above Trending
+  /// is empty parchment when this value exceeds the real header height.
+  double _exploreSliverAppBarExpandedHeight(
+    BuildContext context, {
+    required bool showOfflineCachedHint,
+  }) {
+    final top = MediaQuery.paddingOf(context).top;
+    // Tight match to [_buildExploreHeaderColumn]. [SliverAppBar] defaults
+    // toolbarHeight to kToolbarHeight (56) even with no title — that steals
+    // flexible space and reads as a huge empty band above the feed unless 0.
+    const core = 180.0;
+    var extra = 0.0;
+    final hasSearchContextStrip = (_searchQuery.trim().isNotEmpty &&
+            _searchResults == null) ||
+        (_searchResults != null && _searchQuery.trim().isNotEmpty);
+    if (hasSearchContextStrip) extra += 48;
+    if (_activeFiltersCount > 0) extra += 32;
+    if (showOfflineCachedHint) extra += 42;
+    return (top + core + extra + 6).clamp(200.0, 400.0);
+  }
+
   Widget _buildExploreSliverAppBar(
     int activitiesCount, {
     bool showOfflineCachedHint = false,
@@ -2976,10 +2995,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       floating: true,
       pinned: true,
       snap: false,
-      // Tight fit: extra [expandedHeight] becomes empty parchment between the
-      // header (incl. list/grid/map toggles) and the first body sliver (e.g. Trending).
-      // Keep in sync with [_buildExploreHeaderColumn] + [ConversationalExploreHeader] height.
-      expandedHeight: _activeFiltersCount > 0 ? 246 : 210,
+      toolbarHeight: 0,
+      // Sized to [_buildExploreHeaderColumn] + safe area (see [_exploreSliverAppBarExpandedHeight]).
+      expandedHeight: _exploreSliverAppBarExpandedHeight(
+        context,
+        showOfflineCachedHint: showOfflineCachedHint,
+      ),
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -3507,10 +3528,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         if (explanationSliver != null) explanationSliver,
         if (storiesPartnersForUi.length >= 3)
           SliverToBoxAdapter(
-            child: PartnerStoriesRow(
-              partners: storiesPartnersForUi,
-              headline: l10n.explorePartnerTrendingHeadline,
-              onTapPartnerPlace: _openPlaceFromExplore,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PartnerStoriesRow(
+                  partners: storiesPartnersForUi,
+                  headline: l10n.explorePartnerTrendingHeadline,
+                  onTapPartnerPlace: _openPlaceFromExplore,
+                ),
+                const SizedBox(height: 14),
+              ],
             ),
           ),
         SliverPadding(
