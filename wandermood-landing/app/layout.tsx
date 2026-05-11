@@ -47,6 +47,10 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: { canonical: SITE_URL },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: "/favicon.svg",
+  },
 };
 
 const jsonLd = {
