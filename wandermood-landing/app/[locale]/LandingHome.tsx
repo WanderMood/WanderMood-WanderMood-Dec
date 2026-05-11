@@ -444,18 +444,6 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <div className="home-strip section-dark">
-        <div className="home-strip-inner">
-          <span>
-            {th("stripAppStore")} {th("stripStars")}
-          </span>
-          <span className="home-strip-div" aria-hidden />
-          <span>{th("stripGeo")}</span>
-          <span className="home-strip-div" aria-hidden />
-          <span>{th("stripTagline")}</span>
-        </div>
-      </div>
-
       {stats?.show ? (
         <section className="home-stats section-beige">
           <div className="home-stats-grid">
@@ -669,6 +657,18 @@ export default function LandingHome() {
           <p className="home-download-note">{th("dlFoot")}</p>
         </div>
       </section>
+
+      <div className="home-strip section-dark home-strip--end">
+        <div className="home-strip-inner">
+          <span>
+            {th("stripAppStore")} {th("stripStars")}
+          </span>
+          <span className="home-strip-div" aria-hidden />
+          <span>{th("stripGeo")}</span>
+          <span className="home-strip-div" aria-hidden />
+          <span>{th("stripTagline")}</span>
+        </div>
+      </div>
 
       <footer className="landing-footer">
         <div className="footer-logo">{tFooter("brand")}</div>

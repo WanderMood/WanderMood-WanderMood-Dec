@@ -40,9 +40,7 @@
 
 /* Overlap matches radius so rounded corners reveal the section below, not page bg */
 .landing-page--home .section-dark + .section-beige,
-.landing-page--home .section-dark + .home-stats.section-beige,
-.landing-page--home .home-strip.section-dark + .section-beige,
-.landing-page--home .home-strip.section-dark + .home-stats.section-beige {
+.landing-page--home .section-dark + .home-stats.section-beige {
   margin-top: -28px;
   border-radius: 28px 28px 0 0;
 }
@@ -549,6 +547,11 @@
   .landing-page--home .home-strip-div {
     display: none;
   }
+}
+
+/* Strip above footer: avoid double rule with footer border-top */
+.landing-page--home .home-strip--end {
+  border-bottom: none;
 }
 
 /* Section shell */
