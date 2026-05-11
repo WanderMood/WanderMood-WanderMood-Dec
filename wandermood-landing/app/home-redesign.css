@@ -1,8 +1,8 @@
 /* Dark premium homepage — only when .landing-page--home is on .landing-root */
 
 .landing-root.landing-page--home {
-  --home-bg: #1e1c18;
-  --home-card: #241f1a;
+  --home-bg: #1A1714;
+  --home-card: #2A2420;
   --home-green: #2a6049;
   --home-accent: #5dcaa5;
   --home-orange: #e8784a;
@@ -11,7 +11,7 @@
   --home-border: rgba(245, 240, 232, 0.08);
   --home-beige: #faf8f3;
   --home-ink: #2c2a26;
-  --home-headline: #1e1c18;
+  --home-headline: #1A1714;
 
   background: var(--home-bg);
   color: var(--home-cream);
@@ -23,7 +23,7 @@
 .landing-page--home .section-dark {
   position: relative;
   z-index: 2;
-  background: #1e1c18;
+  background: #1A1714;
   color: #f5f0e8;
 }
 
@@ -52,7 +52,7 @@
 
 .landing-page--home .section-beige h2,
 .landing-page--home .section-beige h3 {
-  color: #1e1c18;
+  color: #1A1714;
 }
 
 .landing-page--home .section-beige p {
@@ -76,7 +76,7 @@
 }
 
 .landing-page--home .section-b2b .home-h2 {
-  color: #1e1c18;
+  color: #1A1714;
 }
 
 .landing-page--home .section-b2b .home-b2b-sub {
@@ -89,7 +89,7 @@
 }
 
 .landing-page--home .section-beige .home-step-card--rich .home-step-h {
-  color: #1e1c18;
+  color: #1A1714;
 }
 
 .landing-page--home .section-beige .home-step-card--rich .home-step-p {
@@ -97,7 +97,7 @@
 }
 
 .landing-page--home .section-beige .home-feat-h2 {
-  color: #1e1c18;
+  color: #1A1714;
 }
 
 .landing-page--home .section-beige .home-feat-body {
@@ -120,7 +120,7 @@
   gap: 16px;
   padding: 0 24px;
   min-height: 68px;
-  background: #1e1c18;
+  background: #1A1714;
   border-bottom: 1px solid rgba(245, 240, 232, 0.06);
   transition:
     background 0.25s ease,
@@ -135,7 +135,7 @@
 }
 
 .landing-page--home .home-nav--scrolled {
-  background: rgba(30, 28, 24, 0.9);
+  background: rgba(26, 23, 20, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom-color: var(--home-border);
@@ -359,7 +359,7 @@
   align-items: center;
   background:
     radial-gradient(ellipse 80% 60% at 50% 0%, rgba(42, 96, 73, 0.25) 0%, transparent 70%),
-    #1e1c18;
+    #1A1714;
   padding: 48px 24px 80px;
 }
 
@@ -508,7 +508,7 @@
 
 /* Social strip */
 .landing-page--home .home-strip {
-  background: #1e1c18;
+  background: #1A1714;
   border-top: 1px solid rgba(245, 240, 232, 0.06);
   border-bottom: 1px solid rgba(245, 240, 232, 0.06);
   padding: 16px 24px;
@@ -901,7 +901,7 @@
 }
 
 .landing-page--home .home-feature-copy .home-feat-h2 {
-  color: #1e1c18;
+  color: #1A1714;
 }
 
 .landing-page--home .home-feature-copy .home-feat-body {
@@ -937,7 +937,7 @@
 .landing-page--home .home-mm {
   background:
     linear-gradient(180deg, rgba(42, 96, 73, 0.15) 0%, transparent 40%),
-    #1e1c18;
+    #1A1714;
 }
 
 .landing-page--home .home-mm-phones {
@@ -1100,7 +1100,7 @@
   transform: scale(1.06) translateY(-2px);
   border-color: #2a6049;
   background: rgba(42, 96, 73, 0.08);
-  box-shadow: 0 6px 20px rgba(30, 28, 24, 0.06);
+  box-shadow: 0 6px 20px rgba(26, 23, 20, 0.06);
 }
 
 /* B2B */
@@ -1111,7 +1111,7 @@
 .landing-page--home .home-b2b-card {
   max-width: 400px;
   margin: 48px auto 0;
-  background: #241f1a;
+  background: #2A2420;
   border: 1px solid var(--home-border);
   border-radius: 20px;
   padding: 40px;
@@ -1215,7 +1215,7 @@
 .landing-page--home .home-download {
   background:
     radial-gradient(ellipse 60% 80% at 50% 50%, rgba(42, 96, 73, 0.2) 0%, transparent 70%),
-    #1e1c18;
+    #1A1714;
   text-align: center;
   padding: 60px 24px;
 }
