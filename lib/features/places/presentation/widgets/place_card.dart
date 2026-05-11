@@ -1061,7 +1061,12 @@ class PlaceCard extends ConsumerWidget {
 
             // Content section
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              padding: EdgeInsets.fromLTRB(
+                14,
+                12,
+                14,
+                compactMoodCopy ? 8 : 12,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1183,7 +1188,7 @@ class PlaceCard extends ConsumerWidget {
                               hasDistancePill ||
                               hasBestTimePill ||
                               hasDurationPill) ...[
-                            const SizedBox(height: 14),
+                            SizedBox(height: compactMoodCopy ? 8 : 14),
                             Wrap(
                               spacing: 10,
                               runSpacing: 10,
@@ -1324,7 +1329,7 @@ class PlaceCard extends ConsumerWidget {
                           ],
                           // Full-width CTA (no overflow risk)
                           if (showAddToMyDayButton) ...[
-                            const SizedBox(height: 16),
+                            SizedBox(height: compactMoodCopy ? 10 : 16),
                             SizedBox(
                               width: double.infinity,
                               height: _kPlaceCardAddToMyDayCtaHeight,
@@ -1396,7 +1401,7 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
 
-                  const SizedBox(height: 2),
+                  if (!compactMoodCopy) const SizedBox(height: 2),
                 ],
               ),
             ),

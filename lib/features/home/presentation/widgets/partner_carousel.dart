@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math' as math;
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 
@@ -31,11 +30,6 @@ class PartnerCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (places.length < 2) return const SizedBox.shrink();
-
-    // PlaceCard is fairly tall (rich description + pills + CTA).
-    // If we keep the carousel height too small, Flutter paints a "bottom overflow".
-    final availableHeight = MediaQuery.sizeOf(context).height;
-    final carouselHeight = math.min(640.0, availableHeight * 0.78);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,30 +62,31 @@ class PartnerCarousel extends ConsumerWidget {
             ],
           ),
         ),
-        SizedBox(
-          height: carouselHeight,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            itemCount: places.length,
-            itemBuilder: (context, index) {
-              final place = places[index];
-              return SizedBox(
-                width: 328,
-                child: PlaceCard(
-                  place: place,
-                  userLocation: userLocation,
-                  cityName: cityName,
-                  photoSelectionSeed: photoSelectionSeed,
-                  allowVisibilityEnrichment: true,
-                  compactMoodCopy: true,
-                  cardMargin: const EdgeInsets.only(
-                      left: 8, right: 8, top: 2, bottom: 12),
-                  onTap: () => onOpenPlace(place),
-                  onAddToMyDayTap: () => onAddToMyDay(place),
+        // Height follows the tallest card — avoids a tall empty band under the CTA
+        // that a fixed-height horizontal ListView viewport would show.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final place in places)
+                SizedBox(
+                  width: 328,
+                  child: PlaceCard(
+                    place: place,
+                    userLocation: userLocation,
+                    cityName: cityName,
+                    photoSelectionSeed: photoSelectionSeed,
+                    allowVisibilityEnrichment: true,
+                    compactMoodCopy: true,
+                    cardMargin: const EdgeInsets.only(
+                        left: 8, right: 8, top: 2, bottom: 6),
+                    onTap: () => onOpenPlace(place),
+                    onAddToMyDayTap: () => onAddToMyDay(place),
+                  ),
                 ),
-              );
-            },
+            ],
           ),
         ),
       ],
