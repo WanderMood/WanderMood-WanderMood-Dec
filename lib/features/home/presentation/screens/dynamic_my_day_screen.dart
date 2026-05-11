@@ -51,6 +51,9 @@ import 'package:wandermood/core/utils/moody_toast.dart';
 import 'package:wandermood/core/notifications/engagement_in_app_nudges.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
+import 'package:wandermood/core/domain/providers/location_notifier_provider.dart';
+import 'package:wandermood/core/services/partner_listing_service.dart';
+import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
 import 'package:wandermood/features/mood/services/check_in_service.dart';
@@ -69,9 +72,10 @@ class DynamicMyDayScreen extends ConsumerStatefulWidget {
 
 class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final Map<String, bool> _collapsedSections = {}; // Track which sections are collapsed
+  final Map<String, bool> _collapsedSections =
+      {}; // Track which sections are collapsed
   late DateTime _selectedDate;
-  
+
   bool _hasInitialized = false; // Prevent invalidate on hot reload
 
   String _safeActivityTitle(Map<String, dynamic> activity) {
@@ -148,7 +152,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   Uri _googleAppDirectionsUri(double? lat, double? lng, String title) {
     if (lat != null && lng != null) {
-      return Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
+      return Uri.parse(
+          'comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
     }
     return Uri.parse('comgooglemaps://?q=${Uri.encodeComponent(title)}');
   }
@@ -159,7 +164,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     }
     return Uri.parse('maps://?q=${Uri.encodeComponent(title)}');
   }
-  
+
   @override
   void initState() {
     super.initState();
@@ -192,8 +197,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   void _preloadWeatherData() {
     unawaited(ref.read(weatherProvider.future).catchError((_) => null));
-    unawaited(ref.read(hourlyForecastProvider.future).catchError((_) => <WeatherForecast>[]));
-    unawaited(ref.read(dailyForecastProvider.future).catchError((_) => <WeatherForecast>[]));
+    unawaited(ref
+        .read(hourlyForecastProvider.future)
+        .catchError((_) => <WeatherForecast>[]));
+    unawaited(ref
+        .read(dailyForecastProvider.future)
+        .catchError((_) => <WeatherForecast>[]));
   }
 
   Future<void> _refreshStreakProviders() async {
@@ -242,100 +251,101 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     final bodyContent = currentStatusValue?['type'] == 'no_plan'
         ? _buildImmersiveNoPlanState(l10n)
         : CustomScrollView(
-          slivers: [
-            // Header Section
-            SliverToBoxAdapter(
-              // Match Explore: do not pad the header's bottom with the home-indicator
-              // inset — that reads as a large empty band above the timeline slivers.
-              child: SafeArea(
+            slivers: [
+              // Header Section
+              SliverToBoxAdapter(
+                // Match Explore: do not pad the header's bottom with the home-indicator
+                // inset — that reads as a large empty band above the timeline slivers.
+                child: SafeArea(
                   bottom: false,
                   child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header with profile button, title, and controls
-                      _buildHeaderRow(isImmersive: false),
-                      
-                      const SizedBox(height: 12),
-                      _buildDateNavigation(),
-                      const SizedBox(height: 12),
-                      
-                      // Dynamic greeting message
-                      Text(
-                        headerSubtitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF4A4640),
-                          height: 1.5,
-                        ),
-                      ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
-                      if (moodStreakForBadge > 0) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with profile button, title, and controls
+                        _buildHeaderRow(isImmersive: false),
+
+                        const SizedBox(height: 12),
+                        _buildDateNavigation(),
+                        const SizedBox(height: 12),
+
+                        // Dynamic greeting message
+                        Text(
+                          headerSubtitle,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF4A4640),
+                            height: 1.5,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF6E8),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: const Color(0xFFE8E2D8),
-                              width: 1,
+                        ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
+                        if (moodStreakForBadge > 0) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF6E8),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: const Color(0xFFE8E2D8),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              '🔥 ${l10n.myDayMoodStreakBadge(moodStreakForBadge)}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF2A6049),
+                              ),
                             ),
                           ),
-                          child: Text(
-                            '🔥 ${l10n.myDayMoodStreakBadge(moodStreakForBadge)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF2A6049),
-                            ),
-                          ),
+                        ],
+
+                        const SizedBox(height: 12),
+                        currentStatus.when(
+                          data: (status) {
+                            try {
+                              return _buildSmartStatusCard(status);
+                            } catch (_) {
+                              return const SizedBox.shrink();
+                            }
+                          },
+                          loading: () => _buildLoadingStatusCard(),
+                          error: (error, stack) => _buildErrorStatusCard(),
                         ),
+                        const SizedBox(height: 16),
                       ],
-                      
-                      const SizedBox(height: 12),
-                      currentStatus.when(
-                        data: (status) {
-                          try {
-                            return _buildSmartStatusCard(status);
-                          } catch (_) {
-                            return const SizedBox.shrink();
-                          }
-                        },
-                        loading: () => _buildLoadingStatusCard(),
-                        error: (error, stack) => _buildErrorStatusCard(),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Timeline (time-of-day sections)
-            ...timelineActivities.when(
-              data: (activities) => _buildTimelineView(activities),
-              loading: () => [_buildLoadingSliver()],
-              error: (error, stack) => [_buildErrorSliver()],
-            ),
+              // Timeline (time-of-day sections)
+              ...timelineActivities.when(
+                data: (activities) => _buildTimelineView(activities),
+                loading: () => [_buildLoadingSliver()],
+                error: (error, stack) => [_buildErrorSliver()],
+              ),
 
-            // Free Time Carousel
-            SliverToBoxAdapter(
-              child: _buildFreeTimeCarousel(),
-            ),
+              // Free Time Carousel
+              SliverToBoxAdapter(
+                child: _buildFreeTimeCarousel(),
+              ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        );
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          );
 
     return Scaffold(
       key: _scaffoldKey,
       drawer: const ProfileDrawer(),
-      backgroundColor: const Color(0xFFF5F0E8), // wmCream — match Explore / main shell
+      backgroundColor:
+          const Color(0xFFF5F0E8), // wmCream — match Explore / main shell
       body: bodyContent,
     );
   }
@@ -356,7 +366,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             constraints: const BoxConstraints.tightFor(width: 40, height: 40),
             icon: const Icon(Icons.chevron_left, color: Color(0xFF8C8780)),
             onPressed: canGoBack
-                ? () => _setSelectedDate(_selectedDate.subtract(const Duration(days: 1)))
+                ? () => _setSelectedDate(
+                    _selectedDate.subtract(const Duration(days: 1)))
                 : null,
           ),
           GestureDetector(
@@ -366,7 +377,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               decoration: BoxDecoration(
                 color: isToday ? const Color(0xFFFFF6E8) : Colors.white,
                 border: Border.all(
-                  color: isToday ? const Color(0xFFE8E2D8) : const Color(0xFFE8E2D8),
+                  color: isToday
+                      ? const Color(0xFFE8E2D8)
+                      : const Color(0xFFE8E2D8),
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -375,7 +388,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     ? AppLocalizations.of(context)!.timeLabelToday
                     : _formatDisplayDate(_selectedDate),
                 style: GoogleFonts.poppins(
-                  color: isToday ? const Color(0xFF2A6049) : const Color(0xFF1E1C18),
+                  color: isToday
+                      ? const Color(0xFF2A6049)
+                      : const Color(0xFF1E1C18),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -386,7 +401,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 40, height: 40),
             icon: const Icon(Icons.chevron_right, color: Color(0xFF8C8780)),
-            onPressed: () => _setSelectedDate(_selectedDate.add(const Duration(days: 1))),
+            onPressed: () =>
+                _setSelectedDate(_selectedDate.add(const Duration(days: 1))),
           ),
         ],
       ),
@@ -415,13 +431,34 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   String _getDayName(DateTime date) {
     final l10n = AppLocalizations.of(context)!;
-    final days = [l10n.dayMon, l10n.dayTue, l10n.dayWed, l10n.dayThu, l10n.dayFri, l10n.daySat, l10n.daySun];
+    final days = [
+      l10n.dayMon,
+      l10n.dayTue,
+      l10n.dayWed,
+      l10n.dayThu,
+      l10n.dayFri,
+      l10n.daySat,
+      l10n.daySun
+    ];
     return days[date.weekday - 1];
   }
 
   String _getShortMonth(DateTime date) {
     final l10n = AppLocalizations.of(context)!;
-    final months = [l10n.monthJan, l10n.monthFeb, l10n.monthMar, l10n.monthApr, l10n.monthMay, l10n.monthJun, l10n.monthJul, l10n.monthAug, l10n.monthSep, l10n.monthOct, l10n.monthNov, l10n.monthDec];
+    final months = [
+      l10n.monthJan,
+      l10n.monthFeb,
+      l10n.monthMar,
+      l10n.monthApr,
+      l10n.monthMay,
+      l10n.monthJun,
+      l10n.monthJul,
+      l10n.monthAug,
+      l10n.monthSep,
+      l10n.monthOct,
+      l10n.monthNov,
+      l10n.monthDec
+    ];
     return months[date.month - 1];
   }
 
@@ -474,7 +511,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         height: 54,
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => unawaited(_openMoodSelectionForPlanning()),
+                          onPressed: () =>
+                              unawaited(_openMoodSelectionForPlanning()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2A6049),
                             foregroundColor: Colors.white,
@@ -576,9 +614,14 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   Widget _buildHeaderRow({required bool isImmersive}) {
     final titleColor = isImmersive ? Colors.white : const Color(0xFF1E1C18);
-    final profileBgColor = isImmersive ? Colors.white.withOpacity(0.2) : Colors.white;
-    final profileBorder = isImmersive ? Border.all(color: Colors.white.withOpacity(0.5), width: 1) : null;
-    final shadowColor = isImmersive ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1);
+    final profileBgColor =
+        isImmersive ? Colors.white.withOpacity(0.2) : Colors.white;
+    final profileBorder = isImmersive
+        ? Border.all(color: Colors.white.withOpacity(0.5), width: 1)
+        : null;
+    final shadowColor = isImmersive
+        ? Colors.black.withOpacity(0.5)
+        : Colors.black.withOpacity(0.1);
 
     Widget menuButton = GestureDetector(
       onTap: () {
@@ -614,7 +657,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       children: [
         menuButton,
         const SizedBox(width: 16),
-        
+
         // Title (wmTitle — design system)
         Expanded(
           child: Text(
@@ -625,48 +668,67 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               color: titleColor,
               letterSpacing: -0.5,
               shadows: isImmersive
-                  ? [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 2))]
+                  ? [
+                      Shadow(
+                          color: shadowColor,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2))
+                    ]
                   : null,
             ),
           ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
         ),
-        
+
         // Weather pill only (no reset / refresh / agenda in header)
         Row(
           children: [
             Consumer(
               builder: (context, ref, child) {
                 final weatherAsync = ref.watch(weatherProvider);
-                
+
                 return weatherAsync.when(
                   data: (weather) {
                     if (weather == null) {
                       return GestureDetector(
                         onTap: () => _showWeatherDialog(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
+                            color: isImmersive
+                                ? Colors.white.withOpacity(0.15)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             border: isImmersive
-                                ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
-                                : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
+                                ? Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1)
+                                : Border.all(
+                                    color: const Color(0xFFE8E2D8), width: 0.5),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: BackdropFilter(
-                              filter: isImmersive ? ImageFilter.blur(sigmaX: 5, sigmaY: 5) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                              filter: isImmersive
+                                  ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
+                                  : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.cloud_off, color: isImmersive ? Colors.white : const Color(0xFF8C8780), size: 20),
+                                  Icon(Icons.cloud_off,
+                                      color: isImmersive
+                                          ? Colors.white
+                                          : const Color(0xFF8C8780),
+                                      size: 20),
                                   const SizedBox(width: 6),
                                   Text(
                                     '--°',
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: isImmersive ? Colors.white : Colors.grey[600],
+                                      color: isImmersive
+                                          ? Colors.white
+                                          : Colors.grey[600],
                                     ),
                                   ),
                                 ],
@@ -676,67 +738,85 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         ),
                       );
                     }
-                    
+
                     // Get appropriate weather icon
                     IconData weatherIcon;
                     Color dynamicIconColor;
                     switch (weather.condition.toLowerCase()) {
                       case 'clear':
                         weatherIcon = Icons.wb_sunny;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.orange;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.orange;
                         break;
                       case 'clouds':
                         weatherIcon = Icons.cloud;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.grey[600]!;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.grey[600]!;
                         break;
                       case 'rain':
                         weatherIcon = Icons.water_drop;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.blue;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.blue;
                         break;
                       case 'snow':
                         weatherIcon = Icons.ac_unit;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.lightBlue;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.lightBlue;
                         break;
                       case 'thunderstorm':
                         weatherIcon = Icons.flash_on;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.deepPurple;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.deepPurple;
                         break;
                       case 'mist':
                       case 'fog':
                         weatherIcon = Icons.blur_on;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.grey[500]!;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.grey[500]!;
                         break;
                       default:
                         weatherIcon = Icons.wb_sunny;
-                        dynamicIconColor = isImmersive ? Colors.white : Colors.orange;
+                        dynamicIconColor =
+                            isImmersive ? Colors.white : Colors.orange;
                     }
-                    
+
                     return GestureDetector(
                       onTap: () => _showWeatherDialog(context),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
+                          color: isImmersive
+                              ? Colors.white.withOpacity(0.15)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           border: isImmersive
-                              ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
-                              : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
+                              ? Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1)
+                              : Border.all(
+                                  color: const Color(0xFFE8E2D8), width: 0.5),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: BackdropFilter(
-                            filter: isImmersive ? ImageFilter.blur(sigmaX: 5, sigmaY: 5) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                            filter: isImmersive
+                                ? ImageFilter.blur(sigmaX: 5, sigmaY: 5)
+                                : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(weatherIcon, color: dynamicIconColor, size: 20),
+                                Icon(weatherIcon,
+                                    color: dynamicIconColor, size: 20),
                                 const SizedBox(width: 6),
                                 Text(
                                   '${weather.temperature.round()}°',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: isImmersive ? Colors.white : Colors.black87,
+                                    color: isImmersive
+                                        ? Colors.white
+                                        : Colors.black87,
                                   ),
                                 ),
                               ],
@@ -747,13 +827,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     );
                   },
                   loading: () => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
+                      color: isImmersive
+                          ? Colors.white.withOpacity(0.15)
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: isImmersive
-                          ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
-                          : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
+                          ? Border.all(
+                              color: Colors.white.withOpacity(0.3), width: 1)
+                          : Border.all(
+                              color: const Color(0xFFE8E2D8), width: 0.5),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -763,7 +848,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(isImmersive ? Colors.white : Colors.grey[600]!),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                isImmersive ? Colors.white : Colors.grey[600]!),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -772,25 +858,32 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isImmersive ? Colors.white : Colors.grey[600],
+                            color:
+                                isImmersive ? Colors.white : Colors.grey[600],
                           ),
                         ),
                       ],
                     ),
                   ),
                   error: (_, __) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isImmersive ? Colors.white.withOpacity(0.15) : Colors.white,
+                      color: isImmersive
+                          ? Colors.white.withOpacity(0.15)
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: isImmersive
-                          ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
-                          : Border.all(color: const Color(0xFFE8E2D8), width: 0.5),
+                          ? Border.all(
+                              color: Colors.white.withOpacity(0.3), width: 1)
+                          : Border.all(
+                              color: const Color(0xFFE8E2D8), width: 0.5),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                        const Icon(Icons.error_outline,
+                            color: Colors.red, size: 20),
                         const SizedBox(width: 6),
                         Text(
                           '!°',
@@ -827,12 +920,16 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
             child: profile?.imageUrl == null
                 ? Text(
                     ((profile?.fullName?.trim().isNotEmpty ?? false)
-                            ? profile!.fullName!.trim().substring(0, 1).toUpperCase()
-                            : 'U'),
+                        ? profile!.fullName!
+                            .trim()
+                            .substring(0, 1)
+                            .toUpperCase()
+                        : 'U'),
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isImmersive ? Colors.white : const Color(0xFF2A6049),
+                      color:
+                          isImmersive ? Colors.white : const Color(0xFF2A6049),
                     ),
                   )
                 : null,
@@ -861,10 +958,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   Widget _buildSmartStatusCard(Map<String, dynamic> status) {
-    final enhancedActivity = status['enhancedActivity'] as EnhancedActivityData?;
+    final enhancedActivity =
+        status['enhancedActivity'] as EnhancedActivityData?;
 
     if (status['type'] == 'no_plan') {
-      return _buildNoPlanGreetingCard();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildNoPlanGreetingCard(),
+          const SizedBox(height: 16),
+          _buildEmptyStatePartnerSuggestions(),
+        ],
+      );
     }
 
     if (status['type'] == 'active' && enhancedActivity != null) {
@@ -958,7 +1063,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               color: const Color(0xFF1E1C18),
               letterSpacing: -0.5,
             ),
-          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
+          ).animate().fadeIn(delay: 200.ms).slideY(
+              begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
           const SizedBox(height: 10),
           Text(
             config.subtitle,
@@ -969,189 +1075,291 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               fontWeight: FontWeight.w400,
               color: const Color(0xFF4A4640),
             ),
-          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
+          ).animate().fadeIn(delay: 300.ms).slideY(
+              begin: 0.2, end: 0, duration: 400.ms, curve: Curves.easeOut),
         ],
       ),
-    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
+    )
+        .animate()
+        .fadeIn(duration: 600.ms)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
+  }
+
+  Future<List<Place>> _loadPartnerSuggestionPlaces() async {
+    final city = ref.read(locationNotifierProvider).valueOrNull?.trim() ?? '';
+    if (city.isEmpty) return const [];
+    final partners = await PartnerListingService.getForCity(city);
+    if (partners.isEmpty) return const [];
+    final placeIds = partners
+        .map((p) => p.placeId)
+        .whereType<String>()
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (placeIds.isEmpty) return const [];
+
+    placeIds.shuffle();
+    final picked = placeIds.take(4).toList();
+    final svc = ref.read(placesServiceProvider.notifier);
+    final out = <Place>[];
+    for (final id in picked) {
+      try {
+        final normalized = (id.startsWith('google_') ||
+                id.startsWith('ChIJ') ||
+                id.startsWith('EhIJ'))
+            ? id
+            : 'google_$id';
+        out.add(await svc.getPlaceById(normalized));
+      } catch (_) {}
+    }
+    return out;
+  }
+
+  Widget _buildEmptyStatePartnerSuggestions() {
+    final hour = MoodyClock.now().hour;
+    if (hour >= 18) return const SizedBox.shrink();
+    return FutureBuilder<List<Place>>(
+      future: _loadPartnerSuggestionPlaces(),
+      builder: (context, snap) {
+        final places = snap.data ?? const <Place>[];
+        if (places.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                'Misschien leuk vandaag?',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF8C8780),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 410,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                itemCount: places.length,
+                itemBuilder: (context, i) {
+                  final place = places[i];
+                  return SizedBox(
+                    width: 320,
+                    child: PlaceCard(
+                      place: place,
+                      onTap: () => context.push('/place/${place.id}'),
+                      cardMargin:
+                          const EdgeInsets.only(right: 12, top: 2, bottom: 12),
+                      photoSelectionSeed: 0,
+                      onAddToMyDayTap: () => _saveActivity({
+                        'title': place.name,
+                        'description': place.description ?? '',
+                        'address': place.address,
+                        'placeId': place.id,
+                        'location': {
+                          'lat': place.location.lat,
+                          'lng': place.location.lng
+                        },
+                        'imageUrl':
+                            place.photos.isNotEmpty ? place.photos.first : '',
+                        'rating': place.rating,
+                        'priceLevel': place.priceLevel,
+                      }),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildEnhancedFreeTimeCard(Map<String, dynamic> status) {
     final hour = MoodyClock.now().hour;
     final timeConfig = TimeBasedTheme.getConfigForHour(hour);
-    
+
     return Consumer(
       builder: (context, ref, child) {
         final l10n = AppLocalizations.of(context)!;
         final suggestion = ref.watch(timeSuggestionProvider);
-        
+
         return Container(
-            height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: timeConfig.gradientColors,
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: timeConfig.gradientColors,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+                spreadRadius: 0,
               ),
-        boxShadow: [
-          BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-            spreadRadius: 0,
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 0,
+              ),
+            ],
           ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 20,
-                  offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-        child: Stack(
-          children: [
-                // Background pattern
-            Positioned.fill(
-                  child: CustomPaint(
-                    painter: CirclePatternPainter(
-                      color: Colors.white.withOpacity(0.1),
+          child: Stack(
+            children: [
+              // Background pattern
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: CirclePatternPainter(
+                    color: Colors.white.withOpacity(0.1),
+                  ),
                 ),
               ),
-            ),
-            
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                      // Title row
-                  Row(
-                    children: [
-                      Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                        ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                          children: [
-                                Icon(timeConfig.icon, size: 16, color: Colors.white),
-                                const SizedBox(width: 8),
-                            Text(
-                                  timeConfig.name.toUpperCase(),
-                              style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                color: Colors.white,
+
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title row
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(timeConfig.icon,
+                                  size: 16, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Text(
+                                timeConfig.name.toUpperCase(),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                          const Spacer(),
-                          Text(
-                            timeConfig.emoji,
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                    ],
-                  ),
-                  
-                      const Spacer(),
-                  
-                      // Dynamic suggestion
-                      suggestion.when(
-                        data: (text) => Text(
-                          text,
-                    style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.2,
+                            ],
                           ),
                         ),
-                        loading: () => const CircularProgressIndicator(color: Colors.white),
-                        error: (_, __) => Text(
-                          timeConfig.defaultSuggestion,
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.2,
-                          ),
+                        const Spacer(),
+                        Text(
+                          timeConfig.emoji,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ],
                     ),
-                  ),
-                  
-                  const Spacer(),
-                  // Primary: plan with Moody (tab 2). Secondary: explore (tab 1).
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          unawaited(_openMoodSelectionForPlanning());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF2A6049),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.auto_awesome_rounded, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.myDayPlanWithMoodyButton,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+
+                    const Spacer(),
+
+                    // Dynamic suggestion
+                    suggestion.when(
+                      data: (text) => Text(
+                        text,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      FilledButton(
-                        onPressed: () {
-                          unawaited(_openMoodMatchHub());
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _myDayMoodMatchOrange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.favorite_rounded, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${l10n.moodMatchTitle} 🫶',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                      loading: () =>
+                          const CircularProgressIndicator(color: Colors.white),
+                      error: (_, __) => Text(
+                        timeConfig.defaultSuggestion,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.2,
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+
+                    const Spacer(),
+                    // Primary: plan with Moody (tab 2). Secondary: explore (tab 1).
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            unawaited(_openMoodSelectionForPlanning());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFF2A6049),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.auto_awesome_rounded, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.myDayPlanWithMoodyButton,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        FilledButton(
+                          onPressed: () {
+                            unawaited(_openMoodMatchHub());
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _myDayMoodMatchOrange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.favorite_rounded, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${l10n.moodMatchTitle} 🫶',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         );
       },
     );
@@ -1169,7 +1377,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     Color backgroundColor;
     IconData statusIcon;
     bool isUpcoming = false;
-    
+
     const wmForest = Color(0xFF2A6049);
     const wmParchment = Color(0xFFE8E2D8);
     switch (status['type']) {
@@ -1189,7 +1397,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         backgroundColor = Colors.white;
         statusIcon = Icons.explore;
     }
-    
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
@@ -1260,11 +1468,11 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ),
               ],
             ),
-            
+
             // Action buttons
             if ((status['action1'] != null || status['action2'] != null)) ...[
               const SizedBox(height: 20),
-              if (isUpcoming && status['action2'] != null) 
+              if (isUpcoming && status['action2'] != null)
                 // Special case for "Coming Up" card - single "Get Ready" button
                 Container(
                   height: 44,
@@ -1277,10 +1485,13 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(24),
-                      onTap: () => _handleStatusAction(status['action2'] as String, status),
+                      onTap: () => _handleStatusAction(
+                          status['action2'] as String, status),
                       child: Center(
                         child: Text(
-                          isUpcoming ? l10n.myDayGetReadyButton : status['action2'],
+                          isUpcoming
+                              ? l10n.myDayGetReadyButton
+                              : status['action2'],
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1300,17 +1511,20 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFF2A6049), width: 1.5),
+                            border: Border.all(
+                                color: const Color(0xFF2A6049), width: 1.5),
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
-                              onTap: () => _handleStatusAction(status['action1'] as String, status),
+                              onTap: () => _handleStatusAction(
+                                  status['action1'] as String, status),
                               child: Center(
                                 child: Text(
-                                  myDayActionButtonLabel(l10n, status['action1'] as String),
+                                  myDayActionButtonLabel(
+                                      l10n, status['action1'] as String),
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -1338,14 +1552,18 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
-                              onTap: () => _handleStatusAction(status['action2'] as String, status),
+                              onTap: () => _handleStatusAction(
+                                  status['action2'] as String, status),
                               child: Center(
                                 child: Text(
-                                  myDayActionButtonLabel(l10n, status['action2'] as String),
+                                  myDayActionButtonLabel(
+                                      l10n, status['action2'] as String),
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: status['type'] == 'upcoming' ? Colors.white : Colors.white,
+                                    color: status['type'] == 'upcoming'
+                                        ? Colors.white
+                                        : Colors.white,
                                   ),
                                 ),
                               ),
@@ -1359,11 +1577,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ],
         ),
       ),
-    ).animate()
-      .slideY(begin: 0.3, duration: 600.ms, delay: 300.ms)
-      .fadeIn(duration: 600.ms, delay: 300.ms)
-      .scale(begin: const Offset(0.95, 0.95), duration: 400.ms)
-      .shimmer(delay: 1000.ms, duration: 2000.ms, color: Colors.white.withOpacity(0.2));
+    )
+        .animate()
+        .slideY(begin: 0.3, duration: 600.ms, delay: 300.ms)
+        .fadeIn(duration: 600.ms, delay: 300.ms)
+        .scale(begin: const Offset(0.95, 0.95), duration: 400.ms)
+        .shimmer(
+            delay: 1000.ms,
+            duration: 2000.ms,
+            color: Colors.white.withOpacity(0.2));
   }
 
   Widget _buildRightNowCard(Map<String, dynamic> status) {
@@ -1409,7 +1631,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   status['imageUrl']?.toString() ??
                       'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80',
                   fit: BoxFit.cover,
-                  progressIndicatorBuilder: (context, url, progress) => Container(
+                  progressIndicatorBuilder: (context, url, progress) =>
+                      Container(
                     color: Colors.grey[300],
                     child: const Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
@@ -1463,7 +1686,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.6),
                               borderRadius: BorderRadius.circular(20),
@@ -1482,10 +1706,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                                     color: Colors.red,
                                     shape: BoxShape.circle,
                                   ),
-                                ).animate(onPlay: (controller) => controller.repeat())
-                                    .scaleXY(begin: 0.8, end: 1.4, duration: 1000.ms)
+                                )
+                                    .animate(
+                                        onPlay: (controller) =>
+                                            controller.repeat())
+                                    .scaleXY(
+                                        begin: 0.8, end: 1.4, duration: 1000.ms)
                                     .then()
-                                    .scaleXY(begin: 1.4, end: 0.8, duration: 1000.ms),
+                                    .scaleXY(
+                                        begin: 1.4,
+                                        end: 0.8,
+                                        duration: 1000.ms),
                                 const SizedBox(width: 8),
                                 Text(
                                   l10n.myDayRightNow,
@@ -1514,9 +1745,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const Spacer(),
-                      
+
                       // Bottom section - Place name and details
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1546,7 +1777,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                               color: Colors.white.withOpacity(0.9),
                               fontWeight: FontWeight.w500,
                             ),
-                                                     ),
+                          ),
                         ],
                       ),
                     ],
@@ -1557,11 +1788,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
           ),
         ),
       ),
-          ).animate()
+    )
+        .animate()
         .slideY(begin: 0.3, duration: 600.ms, delay: 300.ms)
         .fadeIn(duration: 600.ms, delay: 300.ms)
         .scale(begin: const Offset(0.95, 0.95), duration: 400.ms)
-        .shimmer(delay: 1500.ms, duration: 3000.ms, color: Colors.white.withOpacity(0.3));
+        .shimmer(
+            delay: 1500.ms,
+            duration: 3000.ms,
+            color: Colors.white.withOpacity(0.3));
   }
 
   Widget _buildLoadingStatusCard() {
@@ -1668,7 +1903,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     );
   }
 
-  List<Widget> _buildTimelineView(Map<String, List<EnhancedActivityData>> activities) {
+  List<Widget> _buildTimelineView(
+      Map<String, List<EnhancedActivityData>> activities) {
     final l10n = AppLocalizations.of(context)!;
     final viewDay = DateTime(
       _selectedDate.year,
@@ -1688,7 +1924,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 ? 'evening'
                 : null;
 
-    Widget? crossSectionConnector(List<EnhancedActivityData> from, List<EnhancedActivityData> to) {
+    Widget? crossSectionConnector(
+        List<EnhancedActivityData> from, List<EnhancedActivityData> to) {
       final fromLoc = parseTravelLocation(from.last.rawData);
       final toLoc = parseTravelLocation(to.first.rawData);
       if (fromLoc == null || toLoc == null) return null;
@@ -1726,10 +1963,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         isFirstSection: firstVisibleSection == 'morning',
       ));
       if (hasAfternoon) {
-        final c = crossSectionConnector(activities['morning']!, activities['afternoon']!);
+        final c = crossSectionConnector(
+            activities['morning']!, activities['afternoon']!);
         if (c != null) widgets.add(c);
       } else if (hasEvening) {
-        final c = crossSectionConnector(activities['morning']!, activities['evening']!);
+        final c = crossSectionConnector(
+            activities['morning']!, activities['evening']!);
         if (c != null) widgets.add(c);
       }
     }
@@ -1753,7 +1992,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         isFirstSection: firstVisibleSection == 'afternoon',
       ));
       if (hasEvening) {
-        final c = crossSectionConnector(activities['afternoon']!, activities['evening']!);
+        final c = crossSectionConnector(
+            activities['afternoon']!, activities['evening']!);
         if (c != null) widgets.add(c);
       }
     }
@@ -1802,7 +2042,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       isCollapsed: _collapsedSections[sectionKey] ?? false,
       onToggleCollapse: () {
         setState(() {
-          _collapsedSections[sectionKey] = !(_collapsedSections[sectionKey] ?? false);
+          _collapsedSections[sectionKey] =
+              !(_collapsedSections[sectionKey] ?? false);
         });
       },
       onActivityTap: (activity) =>
@@ -1904,8 +2145,15 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                       size: 38,
                       color: Color(0xFF2A6049),
                     ),
-                  ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-                   .scale(begin: const Offset(1, 1), end: const Offset(1.05, 1.05), duration: 2.seconds, curve: Curves.easeInOut),
+                  )
+                      .animate(
+                          onPlay: (controller) =>
+                              controller.repeat(reverse: true))
+                      .scale(
+                          begin: const Offset(1, 1),
+                          end: const Offset(1.05, 1.05),
+                          duration: 2.seconds,
+                          curve: Curves.easeInOut),
                   const SizedBox(height: 22),
                   Text(
                     l10n.myDayEmptyPlanTitle,
@@ -1930,7 +2178,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => unawaited(_openMoodSelectionForPlanning()),
+                      onPressed: () =>
+                          unawaited(_openMoodSelectionForPlanning()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2A6049),
                         foregroundColor: Colors.white,
@@ -1982,7 +2231,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   ),
                 ],
               ),
-            ).animate().fadeIn(delay: 200.ms, duration: 600.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
+            )
+                .animate()
+                .fadeIn(delay: 200.ms, duration: 600.ms)
+                .slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
             const SizedBox(height: 22),
             _buildFreeTimeCarousel()
                 .animate()
@@ -2006,7 +2258,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   ),
                 ),
               ],
-            ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1, end: 0, curve: Curves.easeOut),
+            )
+                .animate()
+                .fadeIn(delay: 400.ms)
+                .slideX(begin: -0.1, end: 0, curve: Curves.easeOut),
             const SizedBox(height: 16),
             SizedBox(
               height: 180,
@@ -2015,28 +2270,40 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 clipBehavior: Clip.none,
                 children: [
                   _buildInspirationCard(
-                    imageUrl: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop',
+                    imageUrl:
+                        'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop',
                     icon: Icons.local_cafe_rounded,
                     title: l10n.myDayInspiredCafesTitle,
                     subtitle: l10n.myDayInspiredCafesSubtitle,
                     onTap: () => context.goNamed('main', extra: {'tab': 1}),
-                  ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                  )
+                      .animate()
+                      .fadeIn(delay: 500.ms)
+                      .slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
                   const SizedBox(width: 16),
                   _buildInspirationCard(
-                    imageUrl: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop',
+                    imageUrl:
+                        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop',
                     icon: Icons.trending_up_rounded,
                     title: l10n.myDayInspiredTrendingTitle,
                     subtitle: l10n.myDayInspiredTrendingSubtitle,
                     onTap: () => context.goNamed('main', extra: {'tab': 1}),
-                  ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                  )
+                      .animate()
+                      .fadeIn(delay: 600.ms)
+                      .slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
                   const SizedBox(width: 16),
                   _buildInspirationCard(
-                    imageUrl: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=800&auto=format&fit=crop',
+                    imageUrl:
+                        'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=800&auto=format&fit=crop',
                     icon: Icons.explore_rounded,
                     title: l10n.myDayInspiredHiddenGemsTitle,
                     subtitle: l10n.myDayInspiredHiddenGemsSubtitle,
                     onTap: () => context.goNamed('main', extra: {'tab': 1}),
-                  ).animate().fadeIn(delay: 700.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                  )
+                      .animate()
+                      .fadeIn(delay: 700.ms)
+                      .slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
                 ],
               ),
             ),
@@ -2209,7 +2476,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   void _handleStatusAction(String action, Map<String, dynamic> status) {
     // Provide immediate feedback for button press
     HapticFeedback.lightImpact();
-    
+
     // Handle different status card actions (stable keys from provider + legacy English)
     switch (action) {
       case 'explore_nearby':
@@ -2267,7 +2534,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
     HapticFeedback.mediumImpact();
     final day = ref.read(selectedMyDayDateProvider);
-    ref.read(activityManagerProvider.notifier).markActivityDone(activityId, day);
+    ref
+        .read(activityManagerProvider.notifier)
+        .markActivityDone(activityId, day);
     TasteProfileService.recordFromActivityRaw(
       activity.rawData,
       interactionType: 'completed',
@@ -2275,8 +2544,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       timeSlot:
           TasteProfileService.inferTimeSlotFromHour(MoodyClock.now().hour),
     );
-    final confirmId =
-        activity.rawData['placeId'] as String? ??
+    final confirmId = activity.rawData['placeId'] as String? ??
         activity.rawData['id'] as String? ??
         activity.rawData['title'] as String? ??
         '';
@@ -2402,7 +2670,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         return;
       }
     }
-    
+
     // Show brief visual feedback
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
@@ -2414,10 +2682,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         duration: const Duration(milliseconds: 600),
       );
     }
-    
+
     // Small delay for better UX - lets user see the feedback
     await Future.delayed(const Duration(milliseconds: 250));
-    
+
     // Use context.go() for navigation instead of modifying provider directly
     if (mounted) {
       context.go('/main', extra: {'tab': tabIndex});
@@ -2450,11 +2718,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (!mounted) return;
     context.pushNamed('group-planning');
   }
-  
-
 
   String _formatTime(DateTime time) {
-    final hour = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
+    final hour =
+        time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -2612,10 +2879,10 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                         onPressed: () async {
                           final coords = _activityLatLng(activity);
                           final title = _safeActivityTitle(activity);
-                          final googleAppUri =
-                              _googleAppDirectionsUri(coords.lat, coords.lng, title);
-                          final googleWebUri =
-                              _googleWebDirectionsUri(coords.lat, coords.lng, title);
+                          final googleAppUri = _googleAppDirectionsUri(
+                              coords.lat, coords.lng, title);
+                          final googleWebUri = _googleWebDirectionsUri(
+                              coords.lat, coords.lng, title);
                           final canOpenGoogleApp =
                               await canLaunchUrl(googleAppUri);
                           Navigator.pop(sheetContext);
@@ -2869,7 +3136,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               _activityOptionSheetTile(
                 icon: Icons.delete_outline_rounded,
                 title: AppLocalizations.of(context)!.myDayDeleteActivity,
-                subtitle: AppLocalizations.of(context)!.myDayDeleteActivitySubtitle,
+                subtitle:
+                    AppLocalizations.of(context)!.myDayDeleteActivitySubtitle,
                 destructive: true,
                 onTap: () {
                   Navigator.pop(sheetContext);
@@ -2923,7 +3191,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
   }
 
   /// Free-time carousel CTA: schedule on My Day (same sheet + persistence as Explore).
-  Future<void> _addFreeTimeCarouselToMyDay(Map<String, dynamic> activity) async {
+  Future<void> _addFreeTimeCarouselToMyDay(
+      Map<String, dynamic> activity) async {
     final l10n = AppLocalizations.of(context)!;
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
@@ -2938,10 +3207,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     if (fromCarousel != null) {
       placeToSchedule = fromCarousel;
     } else {
-      final title =
-          activity['title']?.toString().trim().isNotEmpty == true
-              ? activity['title']!.toString().trim()
-              : l10n.dayPlanCardActivity;
+      final title = activity['title']?.toString().trim().isNotEmpty == true
+          ? activity['title']!.toString().trim()
+          : l10n.dayPlanCardActivity;
       final coords = _activityLatLng(activity);
       final rawId = activity['id']?.toString() ?? '';
       final placeIdField =
@@ -2975,8 +3243,7 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
       selectedDate.day,
     );
 
-    final scheduledActivityService =
-        ref.read(scheduledActivityServiceProvider);
+    final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     final occupied =
         await scheduledActivityService.getOccupiedTimeSlotKeysForPlaceOnDate(
       placeId: placeToSchedule.id,
@@ -3033,10 +3300,9 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
 
   Future<void> _saveActivity(Map<String, dynamic> activity) async {
     final l10n = AppLocalizations.of(context)!;
-    final title =
-        activity['title']?.toString().trim().isNotEmpty == true
-            ? activity['title']!.toString().trim()
-            : l10n.dayPlanCardActivity;
+    final title = activity['title']?.toString().trim().isNotEmpty == true
+        ? activity['title']!.toString().trim()
+        : l10n.dayPlanCardActivity;
     try {
       final coords = _activityLatLng(activity);
       final rawId = activity['id']?.toString() ?? '';
@@ -3161,8 +3427,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     }
 
     try {
-      await ref.read(scheduledActivityServiceProvider).deleteScheduledActivity(activityId);
-      ref.read(activityManagerProvider.notifier).clearLocalStatusForActivity(activityId);
+      await ref
+          .read(scheduledActivityServiceProvider)
+          .deleteScheduledActivity(activityId);
+      ref
+          .read(activityManagerProvider.notifier)
+          .clearLocalStatusForActivity(activityId);
       ref.invalidate(scheduledActivityServiceProvider);
       ref.invalidate(cachedActivitySuggestionsProvider);
       ref.invalidate(scheduledActivitiesForTodayProvider);
@@ -3255,7 +3525,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
               const SizedBox(height: 8),
               ...options.map(
                 (opt) => ListTile(
-                  leading: const Icon(Icons.map_outlined, color: Color(0xFF2A6049)),
+                  leading:
+                      const Icon(Icons.map_outlined, color: Color(0xFF2A6049)),
                   title: Text(
                     opt.label,
                     style: GoogleFonts.poppins(
@@ -3264,7 +3535,8 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                   ),
                   onTap: () async {
                     Navigator.pop(sheetContext);
-                    await launchUrl(opt.uri, mode: LaunchMode.externalApplication);
+                    await launchUrl(opt.uri,
+                        mode: LaunchMode.externalApplication);
                   },
                 ),
               ),
@@ -3328,17 +3600,17 @@ class _DotPatternPainter extends CustomPainter {
     final paint = Paint()
       ..color = Colors.white.withOpacity(0.1)
       ..style = PaintingStyle.fill;
-    
+
     const double dotSize = 2.0;
     const double spacing = 20.0;
-    
+
     for (double x = 0; x < size.width; x += spacing) {
       for (double y = 0; y < size.height; y += spacing) {
         canvas.drawCircle(Offset(x, y), dotSize, paint);
       }
     }
   }
-  
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

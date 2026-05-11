@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/notifications/in_app_notification_copy.dart';
+import 'package:wandermood/core/services/partner_listing_service.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart';
 import 'package:wandermood/core/services/push_notify_edge.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
@@ -183,11 +184,14 @@ class GroupPlanningRepository {
 
   /// Explore → **Plan together**: new session, seed [group_plans] with one place
   /// and [GroupPlanningMode.placeTogether] (no Mood Match grid / no AI day plan).
-  Future<({String sessionId, String joinCode})> createPlaceTogetherSessionFromExplorePlace(
+  Future<({String sessionId, String joinCode})>
+      createPlaceTogetherSessionFromExplorePlace(
     Place place,
   ) async {
     final r = await createSession(
-      title: place.name.length > 120 ? '${place.name.substring(0, 120)}…' : place.name,
+      title: place.name.length > 120
+          ? '${place.name.substring(0, 120)}…'
+          : place.name,
     );
     final slot = _placeTogetherSeedSlot(place);
     final image = place.photos.isNotEmpty ? place.photos.first : '';
@@ -267,7 +271,8 @@ class GroupPlanningRepository {
     }
 
     await mergePlanData(id, (d) {
-      d[kPlanDataPlanningModeKey] = GroupPlanningMode.placeTogether.planDataValue;
+      d[kPlanDataPlanningModeKey] =
+          GroupPlanningMode.placeTogether.planDataValue;
       if (planned.isNotEmpty) d['planned_date'] = planned;
       d['time_slot'] = normalizedSlot;
       final activities = d['activities'];
@@ -769,8 +774,9 @@ class GroupPlanningRepository {
     final allCandidates = <Map<String, dynamic>>[...planActs, ...swapFlat];
     if (allCandidates.isEmpty) return merged;
 
-    final match = _matchGroupPlanActivityFromScheduledId(merged, allCandidates) ??
-        _matchGroupPlanActivityForEnrich(merged, allCandidates);
+    final match =
+        _matchGroupPlanActivityFromScheduledId(merged, allCandidates) ??
+            _matchGroupPlanActivityForEnrich(merged, allCandidates);
     if (match == null) return merged;
 
     final from = GroupPlanV2.resolvePlaceId(match);
@@ -848,8 +854,7 @@ class GroupPlanningRepository {
         : null;
     final participantNames = members.map((m) => m.displayName).toList();
     final rawCity = (city ?? '').trim();
-    final locationForPlan =
-        rawCity.isNotEmpty ? rawCity : 'Rotterdam';
+    final locationForPlan = rawCity.isNotEmpty ? rawCity : 'Rotterdam';
     final mood1 = moods.isNotEmpty ? moods.first : '';
     final mood2 = moods.length > 1 ? moods[1] : mood1;
 
@@ -873,6 +878,11 @@ class GroupPlanningRepository {
     }
 
     try {
+      final partnerContext =
+          await PartnerListingService.buildMoodMatchPartnerContext(
+        city: locationForPlan,
+        sharedMoods: moods,
+      );
       final ai = await WanderMoodAIService.getGroupMatchCreateDayPlan(
         moods: moods,
         location: locationForPlan,
@@ -880,6 +890,7 @@ class GroupPlanningRepository {
         longitude: longitude,
         languageCode: languageCode,
         plannedDay: plannedDayLocal,
+        partnerContext: partnerContext,
       );
       if (ai.recommendations.isEmpty) {
         throw Exception('Moody create_day_plan returned no activities');
@@ -1501,10 +1512,9 @@ class GroupPlanningRepository {
         final normalized = GroupPlanV2.normalizePlanData(
           Map<String, dynamic>.from(d),
         );
-        final required =
-            GroupPlanV2.slotsRequiringConfirmation(normalized);
-        final allGuest = required.isNotEmpty &&
-            required.every((s) => m[s] == true);
+        final required = GroupPlanV2.slotsRequiringConfirmation(normalized);
+        final allGuest =
+            required.isNotEmpty && required.every((s) => m[s] == true);
         if (allGuest) {
           d['guestReviewState'] = 'confirmed';
         } else {
@@ -1664,9 +1674,8 @@ class GroupPlanningRepository {
       final sp = Map<String, dynamic>.from(
         d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
       );
-      final proposalSnap = sp[slot] is Map
-          ? Map<String, dynamic>.from(sp[slot] as Map)
-          : null;
+      final proposalSnap =
+          sp[slot] is Map ? Map<String, dynamic>.from(sp[slot] as Map) : null;
       final reqs = Map<String, dynamic>.from(
         d['swapRequests'] is Map ? d['swapRequests'] as Map : {},
       );
@@ -1723,9 +1732,8 @@ class GroupPlanningRepository {
       final sp = Map<String, dynamic>.from(
         d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
       );
-      final proposalSnap = sp[slot] is Map
-          ? Map<String, dynamic>.from(sp[slot] as Map)
-          : null;
+      final proposalSnap =
+          sp[slot] is Map ? Map<String, dynamic>.from(sp[slot] as Map) : null;
 
       if (accept) {
         final proposed = req['proposedActivity'];
@@ -1830,9 +1838,8 @@ class GroupPlanningRepository {
       final sp2 = Map<String, dynamic>.from(
         d['swapProposals'] is Map ? d['swapProposals'] as Map : {},
       );
-      final proposalSnap = sp2[slot] is Map
-          ? Map<String, dynamic>.from(sp2[slot] as Map)
-          : null;
+      final proposalSnap =
+          sp2[slot] is Map ? Map<String, dynamic>.from(sp2[slot] as Map) : null;
 
       if (accept) {
         final proposed = req['proposedActivity'];

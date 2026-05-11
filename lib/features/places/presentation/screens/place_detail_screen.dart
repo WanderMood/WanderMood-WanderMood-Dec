@@ -39,6 +39,7 @@ import 'package:wandermood/core/utils/place_gallery_merge.dart';
 import 'package:wandermood/core/utils/places_new_photo_resolver.dart';
 import 'package:wandermood/core/utils/place_type_formatter.dart';
 import 'package:wandermood/core/services/business_listing_tracker.dart';
+import 'package:wandermood/core/services/partner_listing_service.dart';
 
 /// Set `--dart-define=WM_PLACE_DETAIL_HERO_DEBUG=true` on IPA/TestFlight builds to
 /// overlay the first hero URL + resolver flags (remove when finished debugging).
@@ -70,7 +71,8 @@ void _agentLogPlaceDetail(
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     File('/Users/edviennemerencia/WanderMood-WanderMood-Dec/.cursor/debug-9a3a3b.log')
-        .writeAsStringSync('${jsonEncode(entry)}\n', mode: FileMode.append, flush: true);
+        .writeAsStringSync('${jsonEncode(entry)}\n',
+            mode: FileMode.append, flush: true);
   } catch (_) {}
 }
 
@@ -179,13 +181,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   List<Map<String, dynamic>> _realReviews = []; // Real reviews from Google API
   bool _loadingReviews = false;
   bool _hasAttemptedReviewFetch = false;
-  
+
   // Request deduplication: Track in-flight API requests
   final Set<String> _inFlightRequests = {};
   Place? _cachedPlace; // Cache the found place to avoid repeated lookups
   Future<List<String>>? _cachedMoodyTipsFuture; // Cache AI tips Future
   String? _cachedPlaceIdForTips; // Track which place the tips are for
-  bool _isInitialized = false; // Track if widget has been initialized to prevent rebuild loops
+  bool _isInitialized =
+      false; // Track if widget has been initialized to prevent rebuild loops
   /// Single resolved gallery for hero, Foto's tab, gallery strip, fullscreen (deduped, max 10).
   List<String> _unifiedDetailPhotos = [];
   bool _unifiedDetailPhotosLoading = false;
@@ -234,7 +237,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) debugPrint('🔥 PLACE DETAIL SCREEN - BUILDING WITH PLACE ID: ${widget.placeId}');
+    if (kDebugMode)
+      debugPrint(
+          '🔥 PLACE DETAIL SCREEN - BUILDING WITH PLACE ID: ${widget.placeId}');
     final l10n = AppLocalizations.of(context)!;
 
     // Instant open when the user tapped a card we already have in memory (Explore / My Day).
@@ -256,7 +261,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return Scaffold(
         backgroundColor: const Color(0xFFF5F0E8),
         body: _buildPlaceDetail(_placeForDetailBody(memoryPlace)),
-        bottomNavigationBar: _buildBottomActionBar(_placeForDetailBody(memoryPlace)),
+        bottomNavigationBar:
+            _buildBottomActionBar(_placeForDetailBody(memoryPlace)),
       );
     }
 
@@ -279,9 +285,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         bottomNavigationBar: _buildBottomActionBar(_cachedPlace!),
       );
     }
-    
+
     // Resolve from Supabase places_cache aggregate only (same as Moody Hub / My Day free time).
-    if (kDebugMode) debugPrint('🔍 Looking for place in places_cache aggregate...');
+    if (kDebugMode)
+      debugPrint('🔍 Looking for place in places_cache aggregate...');
     final edgePlacesAsync = ref.watch(moodyHubExploreCacheOnlyProvider);
 
     Widget bodyForAsync() {
@@ -311,7 +318,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF2A6049)),
                     ),
                   );
                 }
@@ -353,7 +361,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           : const SizedBox.shrink(),
     );
   }
-  
+
   /// Side effects when the resolved [Place] is known (reviews, booking state).
   void _syncResolvedPlace(Place place) {
     if (_currentPlace?.id != place.id) {
@@ -427,7 +435,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         data: {
           'placeId': place.id,
           'initialCount': photos.length,
-          'firstPhoto': photos.isNotEmpty ? _wmHeroDebugClipUrl(photos.first) : '',
+          'firstPhoto':
+              photos.isNotEmpty ? _wmHeroDebugClipUrl(photos.first) : '',
           'hasV1Media': photos.any(isPlacesApiNewPhotoMediaUrl),
           'isGoogleBacked': _isGoogleBackedPlace(place.id),
         },
@@ -439,7 +448,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       // (different URL strings for the same bitmap) and fills Foto's with duplicates.
       final hasMultiV1Gallery =
           photos.length >= 2 && photos.any(isPlacesApiNewPhotoMediaUrl);
-      if (place.id.isNotEmpty && _isGoogleBackedPlace(place.id) && !hasMultiV1Gallery) {
+      if (place.id.isNotEmpty &&
+          _isGoogleBackedPlace(place.id) &&
+          !hasMultiV1Gallery) {
         try {
           final urls = await ref
               .read(placesServiceProvider.notifier)
@@ -448,11 +459,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           _agentLogPlaceDetail(
             'H2',
             'fetched google place photo urls',
-            location: 'place_detail_screen.dart:_resolveUnifiedDetailPhotos:fetchPhotoUrls',
+            location:
+                'place_detail_screen.dart:_resolveUnifiedDetailPhotos:fetchPhotoUrls',
             data: {
               'placeId': place.id,
               'fetchedCount': urls.length,
-              'firstFetched': urls.isNotEmpty ? _wmHeroDebugClipUrl(urls.first) : '',
+              'firstFetched':
+                  urls.isNotEmpty ? _wmHeroDebugClipUrl(urls.first) : '',
             },
           );
           // #endregion
@@ -496,7 +509,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       }
 
       // Collapse exact + semantic dupes; strip repeats of the hero frame (v1 vs legacy).
-      var merged = PlacesService.mergeUniquePhotoUrls(photos, [], maxPhotos: 10);
+      var merged =
+          PlacesService.mergeUniquePhotoUrls(photos, [], maxPhotos: 10);
       merged = dedupeRepeatedHeroIdentity(merged);
       // Resolve Places API (New) `/media` → direct `photoUri` once so hero / Foto's /
       // CachedNetworkImage never follow redirects (iOS release hang on `/media`).
@@ -511,14 +525,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         data: {
           'placeId': place.id,
           'finalCount': merged.length,
-          'finalFirst': merged.isNotEmpty ? _wmHeroDebugClipUrl(merged.first) : '',
+          'finalFirst':
+              merged.isNotEmpty ? _wmHeroDebugClipUrl(merged.first) : '',
         },
       );
       // #endregion
       return PlacesService.mergeUniquePhotoUrls(merged, [], maxPhotos: 10);
     } catch (e) {
       debugPrint('📷 place_detail: error resolving unified detail photos: $e');
-      final fb = PlacesService.mergeUniquePhotoUrls(place.photos, [], maxPhotos: 10);
+      final fb =
+          PlacesService.mergeUniquePhotoUrls(place.photos, [], maxPhotos: 10);
       final deduped = dedupeRepeatedHeroIdentity(fb);
       final direct = await resolvePlacesNewPhotoUrlList(deduped);
       return _dedupeDetailPhotosPostResolve(dedupeRepeatedHeroIdentity(direct));
@@ -646,7 +662,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       final raw = place.id.startsWith('google_')
           ? place.id.substring('google_'.length)
           : place.id;
-      final details = await ref.read(placesServiceProvider.notifier).getPlaceDetails(raw);
+      final details =
+          await ref.read(placesServiceProvider.notifier).getPlaceDetails(raw);
       if (!mounted || _cachedPlace?.id != place.id) return;
       final desc = details['description'] as String?;
       final website = details['website'] as String?;
@@ -668,11 +685,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         );
       }
       setState(() {
-        if (desc != null && desc.trim().isNotEmpty && !RegExp(r'^\d').hasMatch(desc.trim())) {
+        if (desc != null &&
+            desc.trim().isNotEmpty &&
+            !RegExp(r'^\d').hasMatch(desc.trim())) {
           _cachedPlace = _cachedPlace!.copyWith(description: desc);
           _currentPlace = _cachedPlace;
         }
-        if (website != null && website.trim().isNotEmpty) _enrichedWebsite = website;
+        if (website != null && website.trim().isNotEmpty)
+          _enrichedWebsite = website;
         if (phone != null && phone.trim().isNotEmpty) _enrichedPhone = phone;
         if (mergedHours != null) {
           _cachedPlace = _cachedPlace!.copyWith(openingHours: mergedHours);
@@ -696,24 +716,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         _buildSliverAppBar(place, innerBoxIsScrolled),
       ],
       body: Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFF5F0E8),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
-              ),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                _buildTabBar(),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F0E8),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(32),
+            topRight: Radius.circular(32),
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            _buildTabBar(),
             const SizedBox(height: 16),
             Expanded(
               child: _buildTabContent(place),
             ),
-              ],
-            ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -891,15 +911,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   Widget _buildSliverAppBar(Place place, bool innerBoxIsScrolled) {
     final l10n = AppLocalizations.of(context)!;
     // Use solid background when scrolled to prevent content bleed-through
-    final backgroundColor = innerBoxIsScrolled
-        ? const Color(0xFFF5F0E8)
-        : Colors.transparent;
-    
+    final backgroundColor =
+        innerBoxIsScrolled ? const Color(0xFFF5F0E8) : Colors.transparent;
+
     final iconColor = innerBoxIsScrolled ? Colors.black : Colors.white;
     final buttonBackground = innerBoxIsScrolled
         ? Colors.white.withOpacity(0.9)
         : Colors.black.withOpacity(0.3);
-    
+
     return SliverAppBar(
       expandedHeight: 300,
       pinned: true,
@@ -947,30 +966,34 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           child: Consumer(
             builder: (context, ref, child) {
               final savedPlacesAsync = ref.watch(savedPlacesProvider);
-              
+
               return savedPlacesAsync.when(
                 data: (savedPlaces) {
-                  final isSaved = savedPlaces.any((sp) => sp.placeId == place.id);
-                  
+                  final isSaved =
+                      savedPlaces.any((sp) => sp.placeId == place.id);
+
                   return IconButton(
                     icon: Icon(
                       isSaved ? Icons.favorite : Icons.favorite_border,
                       color: isSaved ? Colors.red : iconColor,
                     ),
                     onPressed: () async {
-                      final savedPlacesService = ref.read(savedPlacesServiceProvider);
+                      final savedPlacesService =
+                          ref.read(savedPlacesServiceProvider);
                       try {
                         if (isSaved) {
                           await savedPlacesService.unsavePlace(place.id);
                           showWanderMoodToast(
                             context,
-                            message: l10n.dayPlanCardRemovedFromSaved(place.name),
+                            message:
+                                l10n.dayPlanCardRemovedFromSaved(place.name),
                           );
                         } else {
                           await savedPlacesService.savePlace(place);
                           showWanderMoodToast(
                             context,
-                            message: l10n.placeDetailSavedToFavorites(place.name),
+                            message:
+                                l10n.placeDetailSavedToFavorites(place.name),
                           );
                         }
                         ref.invalidate(savedPlacesProvider);
@@ -1069,7 +1092,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.image_not_supported_outlined, size: 56, color: Colors.grey[400]),
+            Icon(Icons.image_not_supported_outlined,
+                size: 56, color: Colors.grey[400]),
             const SizedBox(height: 8),
             Text(
               l10n.placeDetailNoPhotos,
@@ -1099,203 +1123,207 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               }
             },
       child: Stack(
-      key: ValueKey<int>(photos.length),
-      children: [
-        PageView.builder(
-          controller: _photoController,
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (index) => setState(() => _currentPhotoIndex = index),
-          itemCount: photos.length,
-          itemBuilder: (context, index) {
-            final photoUrl = photos[index].trim();
-            if (!place.isAsset && photoUrl.isEmpty) {
-              return _buildImageFallback();
-            }
-            return place.isAsset
-                ? Image.asset(
-                    photos[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildImageFallback(),
-                  )
-                : WmPlacePhotoNetworkImage(
-                    photoUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildImageFallback(),
-                  );
-          },
-        ),
-        // Pass touches through to PageView (these layers sit above it in the Stack).
-        IgnorePointer(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.2),
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.8),
-                ],
+        key: ValueKey<int>(photos.length),
+        children: [
+          PageView.builder(
+            controller: _photoController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) =>
+                setState(() => _currentPhotoIndex = index),
+            itemCount: photos.length,
+            itemBuilder: (context, index) {
+              final photoUrl = photos[index].trim();
+              if (!place.isAsset && photoUrl.isEmpty) {
+                return _buildImageFallback();
+              }
+              return place.isAsset
+                  ? Image.asset(
+                      photos[index],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildImageFallback(),
+                    )
+                  : WmPlacePhotoNetworkImage(
+                      photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildImageFallback(),
+                    );
+            },
+          ),
+          // Pass touches through to PageView (these layers sit above it in the Stack).
+          IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.2),
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.8),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 24,
-          right: 24,
-          left: 24,
-          child: IgnorePointer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-              // Activity tags
-              if (place.activities.isNotEmpty) ...[
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: place.activities.take(2).map((activity) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _pdWmForestTint,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: _pdWmParchment, width: 0.5),
-                      ),
-                      child: Text(
-                        _localizedPlaceActivityLabel(context, activity),
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.2,
-                          color: _pdWmForest,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 12),
-              ],
-              // Place name (activity name only, no location)
-              Row(
+          Positioned(
+            bottom: 24,
+            right: 24,
+            left: 24,
+            child: IgnorePointer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      _getCleanActivityName(place.name),
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            offset: const Offset(0, 1),
-                            blurRadius: 3,
-                            color: Colors.black.withOpacity(0.5),
+                  // Activity tags
+                  if (place.activities.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: place.activities.take(2).map((activity) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _pdWmForestTint,
+                            borderRadius: BorderRadius.circular(16),
+                            border:
+                                Border.all(color: _pdWmParchment, width: 0.5),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Rating badge
-                  if (place.rating > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A6049),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star_rounded,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            place.rating.toStringAsFixed(1),
+                          child: Text(
+                            _localizedPlaceActivityLabel(context, activity),
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
+                              color: _pdWmForest,
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      }).toList(),
                     ),
+                    const SizedBox(height: 12),
                   ],
+                  // Place name (activity name only, no location)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _getCleanActivityName(place.name),
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                offset: const Offset(0, 1),
+                                blurRadius: 3,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Rating badge
+                      if (place.rating > 0) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2A6049),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                place.rating.toStringAsFixed(1),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  // Removed address from image overlay as requested
                 ],
               ),
-              // Removed address from image overlay as requested
-              ],
             ),
           ),
-        ),
-        if (photos.length > 1) ...[
-          Positioned(
-            bottom: 80,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(photos.length, (index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentPhotoIndex == index
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.5),
-                    ),
-                  );
-                }),
+          if (photos.length > 1) ...[
+            Positioned(
+              bottom: 80,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(photos.length, (index) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentPhotoIndex == index
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.5),
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
-          ),
-        ],
-        if (kWmPlaceDetailHeroPhotoDebug && photos.isNotEmpty)
-          Positioned(
-            left: 8,
-            right: 8,
-            top: 52,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Text(
-                    'hero[${_currentPhotoIndex.clamp(0, photos.length - 1)}/${photos.length}]\n'
-                    'unified=$_unifiedDetailPhotosResolutionComplete '
-                    'load=$_unifiedDetailPhotosLoading\n'
-                    '${_wmHeroDebugClipUrl(photos[_currentPhotoIndex.clamp(0, photos.length - 1)])}',
-                    maxLines: 8,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      height: 1.2,
+          ],
+          if (kWmPlaceDetailHeroPhotoDebug && photos.isNotEmpty)
+            Positioned(
+              left: 8,
+              right: 8,
+              top: 52,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Text(
+                      'hero[${_currentPhotoIndex.clamp(0, photos.length - 1)}/${photos.length}]\n'
+                      'unified=$_unifiedDetailPhotosResolutionComplete '
+                      'load=$_unifiedDetailPhotosLoading\n'
+                      '${_wmHeroDebugClipUrl(photos[_currentPhotoIndex.clamp(0, photos.length - 1)])}',
+                      maxLines: 8,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        height: 1.2,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -1307,8 +1335,6 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
     );
   }
-
-
 
   Widget _buildTabBar() {
     final l10n = AppLocalizations.of(context)!;
@@ -1332,28 +1358,28 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           ],
         ),
         child: TabBar(
-        controller: _tabController,
-        labelColor: Colors.white,
-        unselectedLabelColor: _pdWmCharcoal.withValues(alpha: 0.78),
-        indicator: BoxDecoration(
-          color: _pdWmForest,
-          borderRadius: BorderRadius.circular(28),
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: _pdWmCharcoal.withValues(alpha: 0.78),
+          indicator: BoxDecoration(
+            color: _pdWmForest,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          labelStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          tabs: [
+            Tab(text: '✨ ${l10n.placeDetailTabDetails}'),
+            Tab(text: '📸 ${l10n.placeDetailTabPhotos}'),
+            Tab(text: '⭐ ${l10n.placeDetailTabReviews}'),
+          ],
         ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelStyle: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        tabs: [
-          Tab(text: '✨ ${l10n.placeDetailTabDetails}'),
-          Tab(text: '📸 ${l10n.placeDetailTabPhotos}'),
-          Tab(text: '⭐ ${l10n.placeDetailTabReviews}'),
-        ],
-      ),
       ),
     );
   }
@@ -1361,14 +1387,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   Widget _buildTabContent(Place place) {
     if (kDebugMode) debugPrint('📋 BUILDING TAB CONTENT for: ${place.name}');
     return Padding(
-        padding: const EdgeInsets.all(24),
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildDetailsTab(place),
-            _buildPhotosTab(place),
+      padding: const EdgeInsets.all(24),
+      child: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildDetailsTab(place),
+          _buildPhotosTab(place),
           _buildReviewsTab(place),
-          ],
+        ],
       ),
     );
   }
@@ -1377,226 +1403,226 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       {bool wrapInSingleChildScrollView = true}) {
     final l10n = AppLocalizations.of(context)!;
     final column = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // v2: Duration / Price / Distance — uniform tiles (SCREEN 8)
-          _buildQuickStatsRow(place),
-          const SizedBox(height: 24),
-          // About section - title only
-          Row(
-            children: [
-              const Text(
-                '🏛️✨',
-                style: TextStyle(fontSize: 24),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                l10n.placeDetailAboutThisPlace,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: _pdWmCharcoal,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Rich place info card
-          _buildPlaceInfoCard(place),
-          const SizedBox(height: 24),
-          if (place.openingHours != null) ...[
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: _pdWmCard,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: _pdWmCardBorder,
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _pdWmForestTint,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _pdWmParchment,
-                            width: 0.5,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.schedule,
-                          size: 20,
-                          color: _pdWmForest,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // v2: Duration / Price / Distance — uniform tiles (SCREEN 8)
+        _buildQuickStatsRow(place),
+        const SizedBox(height: 24),
+        // About section - title only
+        Row(
+          children: [
+            const Text(
+              '🏛️✨',
+              style: TextStyle(fontSize: 24),
+            ),
+            const SizedBox(width: 12),
             Text(
-                        l10n.placeDetailOpeningHours,
+              l10n.placeDetailAboutThisPlace,
               style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: _pdWmCharcoal,
-              ),
-                      ),
-                    ],
-            ),
-                  const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                      color: _pdWmCard,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: place.openingHours!.isOpen
-                            ? _pdWmForest.withOpacity(0.25)
-                            : Colors.red.withOpacity(0.35),
-                        width: 1.5,
-                      ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                              width: 12,
-                              height: 12,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: place.openingHours!.isOpen
-                              ? _pdWmForest
-                              : Colors.red,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: place.openingHours!.isOpen
-                                        ? _pdWmForest.withOpacity(0.3)
-                                        : Colors.red.withOpacity(0.3),
-                                    blurRadius: 4,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
-                        ),
-                      ),
-                            const SizedBox(width: 12),
-                      Text(
-                              place.openingHours!.isOpen
-                                  ? l10n.placeDetailHeroOpenNowLine
-                                  : l10n.placeDetailHeroClosedLine,
-                        style: GoogleFonts.poppins(
-                                fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: place.openingHours!.isOpen
-                              ? _pdWmForest
-                              : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (place.openingHours!.currentStatus != null) ...[
-                          const SizedBox(height: 8),
-                    Text(
-                      _localizedOpeningSecondary(
-                            l10n,
-                            place.openingHours!.currentStatus,
-                          ) ??
-                          place.openingHours!.currentStatus!,
-                      style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: _pdWmCharcoal.withValues(alpha: 0.75),
-                              fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                      ],
-                    ),
-                  ),
-                ],
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: _pdWmCharcoal,
               ),
             ),
-            const SizedBox(height: 24),
           ],
-          // Features section - colorful pills without card container
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Row(
+        ),
+        const SizedBox(height: 16),
+        // Rich place info card
+        _buildPlaceInfoCard(place),
+        const SizedBox(height: 24),
+        if (place.openingHours != null) ...[
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: _pdWmCard,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _pdWmCardBorder,
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    const Text(
-                      '✨',
-                      style: TextStyle(fontSize: 24),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _pdWmForestTint,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _pdWmParchment,
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.schedule,
+                        size: 20,
+                        color: _pdWmForest,
+                      ),
                     ),
-                    const SizedBox(width: 8),
-          Text(
-                      l10n.placeDetailAmazingFeatures,
-            style: GoogleFonts.poppins(
+                    const SizedBox(width: 12),
+                    Text(
+                      l10n.placeDetailOpeningHours,
+                      style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: _pdWmCharcoal,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _pdWmCard,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: place.openingHours!.isOpen
+                          ? _pdWmForest.withOpacity(0.25)
+                          : Colors.red.withOpacity(0.35),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: place.openingHours!.isOpen
+                                  ? _pdWmForest
+                                  : Colors.red,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: place.openingHours!.isOpen
+                                      ? _pdWmForest.withOpacity(0.3)
+                                      : Colors.red.withOpacity(0.3),
+                                  blurRadius: 4,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            place.openingHours!.isOpen
+                                ? l10n.placeDetailHeroOpenNowLine
+                                : l10n.placeDetailHeroClosedLine,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: place.openingHours!.isOpen
+                                  ? _pdWmForest
+                                  : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (place.openingHours!.currentStatus != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _localizedOpeningSecondary(
+                                l10n,
+                                place.openingHours!.currentStatus,
+                              ) ??
+                              place.openingHours!.currentStatus!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: _pdWmCharcoal.withValues(alpha: 0.75),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 36, // Fixed height for carousel
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemCount: (place.types.isNotEmpty ? 3 : 2),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _buildColorfulFeatureChip(
-                          place.isIndoor ? '🏠' : '☀️',
-                          place.isIndoor
-                              ? l10n.placeDetailIndoorVibes
-                              : l10n.placeDetailOutdoorFun,
-                        ),
-                      );
-                    } else if (index == 1) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _buildColorfulFeatureChip(
-                          _getEnergyEmoji(place.energyLevel),
-                          _energyChipLabel(l10n, place.energyLevel),
-                        ),
-                      );
-                    } else {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _buildColorfulFeatureChip(
-                          _getCategoryEmoji(place.types.first),
-                          _localizedGooglePlaceType(l10n, place.types.first),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 24),
-          _buildGoodToKnow(place),
-          const SizedBox(height: 24),
-          _buildImageCarousel(place),
         ],
+        // Features section - colorful pills without card container
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Row(
+                children: [
+                  const Text(
+                    '✨',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.placeDetailAmazingFeatures,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: _pdWmCharcoal,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 36, // Fixed height for carousel
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: (place.types.isNotEmpty ? 3 : 2),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _buildColorfulFeatureChip(
+                        place.isIndoor ? '🏠' : '☀️',
+                        place.isIndoor
+                            ? l10n.placeDetailIndoorVibes
+                            : l10n.placeDetailOutdoorFun,
+                      ),
+                    );
+                  } else if (index == 1) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _buildColorfulFeatureChip(
+                        _getEnergyEmoji(place.energyLevel),
+                        _energyChipLabel(l10n, place.energyLevel),
+                      ),
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _buildColorfulFeatureChip(
+                        _getCategoryEmoji(place.types.first),
+                        _localizedGooglePlaceType(l10n, place.types.first),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildGoodToKnow(place),
+        const SizedBox(height: 24),
+        _buildImageCarousel(place),
+      ],
     );
     if (wrapInSingleChildScrollView) {
       return SingleChildScrollView(child: column);
@@ -1608,15 +1634,23 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   String _localizedPlaceActivityLabel(BuildContext context, String activity) {
     final l10n = AppLocalizations.of(context)!;
     final t = activity.toLowerCase();
-    if (t.contains('food tour') || t.contains('tasting')) return l10n.placeCategoryFood;
+    if (t.contains('food tour') || t.contains('tasting'))
+      return l10n.placeCategoryFood;
     if (t.contains('shopping')) return l10n.placeCategoryShopping;
-    if (t.contains('museum') || t.contains('gallery')) return l10n.placeCategoryMuseum;
-    if (t.contains('park') || t.contains('walk') || t.contains('nature')) return l10n.placeCategoryNature;
-    if (t.contains('night') || t.contains('bar ') || t.contains('club')) return l10n.placeCategoryNightlife;
-    if (t.contains('coffee') || t.contains('café') || t.contains('cafe')) return l10n.placeCategoryCafe;
-    if (t.contains('restaurant') || t.contains('dining')) return l10n.placeCategoryRestaurant;
-    if (t.contains('adventure') || t.contains('hiking')) return l10n.placeCategoryAdventure;
-    if (t.contains('culture') || t.contains('historic')) return l10n.placeCategoryCulture;
+    if (t.contains('museum') || t.contains('gallery'))
+      return l10n.placeCategoryMuseum;
+    if (t.contains('park') || t.contains('walk') || t.contains('nature'))
+      return l10n.placeCategoryNature;
+    if (t.contains('night') || t.contains('bar ') || t.contains('club'))
+      return l10n.placeCategoryNightlife;
+    if (t.contains('coffee') || t.contains('café') || t.contains('cafe'))
+      return l10n.placeCategoryCafe;
+    if (t.contains('restaurant') || t.contains('dining'))
+      return l10n.placeCategoryRestaurant;
+    if (t.contains('adventure') || t.contains('hiking'))
+      return l10n.placeCategoryAdventure;
+    if (t.contains('culture') || t.contains('historic'))
+      return l10n.placeCategoryCulture;
     return activity;
   }
 
@@ -1684,12 +1718,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ' Rotterdam',
       ' The Netherlands',
     ];
-    
+
     String cleanName = name;
     for (final pattern in patterns) {
       cleanName = cleanName.replaceAll(pattern, '');
     }
-    
+
     return cleanName.trim();
   }
 
@@ -1788,30 +1822,29 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   String _distanceLineForPlace(Place place, AppLocalizations l10n) {
     final lat = place.location.lat;
     final lng = place.location.lng;
-    final placeHasCoords =
-        lat.abs() > 1e-6 || lng.abs() > 1e-6;
+    final placeHasCoords = lat.abs() > 1e-6 || lng.abs() > 1e-6;
     if (!placeHasCoords) {
       return '—';
     }
     return ref.watch(userLocationProvider).when(
-      data: (pos) {
-        if (pos == null) {
-          return l10n.placeDetailOpenMaps;
-        }
-        final km = DistanceService.calculateDistance(
-          pos.latitude,
-          pos.longitude,
-          lat,
-          lng,
+          data: (pos) {
+            if (pos == null) {
+              return l10n.placeDetailOpenMaps;
+            }
+            final km = DistanceService.calculateDistance(
+              pos.latitude,
+              pos.longitude,
+              lat,
+              lng,
+            );
+            if (km > 2500) {
+              return '—';
+            }
+            return DistanceService.formatDistance(km);
+          },
+          loading: () => '…',
+          error: (_, __) => l10n.placeDetailOpenMaps,
         );
-        if (km > 2500) {
-          return '—';
-        }
-        return DistanceService.formatDistance(km);
-      },
-      loading: () => '…',
-      error: (_, __) => l10n.placeDetailOpenMaps,
-    );
   }
 
   /// New "Good to know" section - lighter and more decision-focused
@@ -1823,7 +1856,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final energyLevel = place.energyLevel;
     final timeNeeded = _getTimeNeeded(place, l10n);
     final moodAwareLabel = _getMoodAwareLabel(place, hour, l10n);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1936,7 +1969,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
     );
   }
-  
+
   /// Helper to build compact info cards for Good to know section
   Widget _buildCompactInfoCard(String emoji, String label, String value) {
     return Container(
@@ -1977,20 +2010,24 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
     );
   }
-  
+
   /// Get best time for place based on current hour and place properties
   String _getBestTimeForPlace(Place place, int hour, AppLocalizations l10n) {
     // Check place type for time hints
     final types = place.types.map((t) => t.toLowerCase()).toList();
-    
-    if (types.any((t) => t.contains('bar') || t.contains('night_club') || t.contains('nightclub'))) {
+
+    if (types.any((t) =>
+        t.contains('bar') ||
+        t.contains('night_club') ||
+        t.contains('nightclub'))) {
       return l10n.placeDetailEvening;
-    } else if (types.any((t) => t.contains('cafe') || t.contains('breakfast'))) {
+    } else if (types
+        .any((t) => t.contains('cafe') || t.contains('breakfast'))) {
       return l10n.placeDetailMorning;
     } else if (types.any((t) => t.contains('restaurant'))) {
       return l10n.placeDetailBestTimeLunchDinner;
     }
-    
+
     // Fallback to energy level
     if (place.energyLevel.toLowerCase() == 'high') {
       return l10n.placeDetailAfternoon;
@@ -2000,37 +2037,38 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return l10n.placeDetailMorning;
     }
   }
-  
+
   /// Helper to check if place is good for groups based on type
   bool _isGoodForGroups(Place place) {
     final types = place.types.map((t) => t.toLowerCase()).toList();
-    return types.any((t) => 
-      t.contains('restaurant') || 
-      t.contains('bar') || 
-      t.contains('park') || 
-      t.contains('stadium') ||
-      t.contains('bowling') ||
-      t.contains('amusement') ||
-      t.contains('tourist_attraction')
-    );
+    return types.any((t) =>
+        t.contains('restaurant') ||
+        t.contains('bar') ||
+        t.contains('park') ||
+        t.contains('stadium') ||
+        t.contains('bowling') ||
+        t.contains('amusement') ||
+        t.contains('tourist_attraction'));
   }
-  
+
   /// Get social context for place
   String _getGoodWithContext(Place place, AppLocalizations l10n) {
     if (_isGoodForGroups(place)) {
       return l10n.placeDetailFriendsGroups;
-    } else if (place.types.any((t) => 
-      t.contains('restaurant') || t.contains('cafe') || t.contains('bar'))) {
+    } else if (place.types.any((t) =>
+        t.contains('restaurant') || t.contains('cafe') || t.contains('bar'))) {
       return l10n.placeDetailSoloDate;
     } else {
       return l10n.placeDetailSoloFriends;
     }
   }
-  
+
   /// Get estimated time needed
   String _getTimeNeeded(Place place, AppLocalizations l10n) {
     if (place.types.any((t) =>
-        t.contains('museum') || t.contains('art_gallery') || t.contains('zoo'))) {
+        t.contains('museum') ||
+        t.contains('art_gallery') ||
+        t.contains('zoo'))) {
       return l10n.placeDetailDurationTwoToThree;
     } else if (place.types.any((t) =>
         t.contains('cafe') || t.contains('bar') || t.contains('restaurant'))) {
@@ -2041,35 +2079,40 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return l10n.placeDetailDurationAboutOneHour;
     }
   }
-  
+
   /// Get mood-aware label based on current time and place properties
   String? _getMoodAwareLabel(Place place, int hour, AppLocalizations l10n) {
     final isEvening = hour >= 17;
     final isWeekend = DateTime.now().weekday >= 6;
     final isLateNight = hour >= 21 || hour < 6;
-    
+
     // Evening fit
-    if (isEvening && place.energyLevel.toLowerCase() != 'low' && 
-        place.types.any((t) => 
-          t.contains('bar') || t.contains('restaurant') || t.contains('night_club'))) {
+    if (isEvening &&
+        place.energyLevel.toLowerCase() != 'low' &&
+        place.types.any((t) =>
+            t.contains('bar') ||
+            t.contains('restaurant') ||
+            t.contains('night_club'))) {
       return l10n.placeDetailGoodFitForTonight;
     }
-    
+
     // Weekend fit
     if (isWeekend && _isGoodForGroups(place)) {
       return l10n.placeDetailBestOnWeekends;
     }
-    
+
     // Chill warning
     if (place.energyLevel.toLowerCase() == 'high' && hour < 12) {
       return l10n.placeDetailSkipIfChill;
     }
-    
+
     // Late night warning
-    if (isLateNight && place.openingHours != null && !place.openingHours!.isOpen) {
+    if (isLateNight &&
+        place.openingHours != null &&
+        !place.openingHours!.isOpen) {
       return l10n.placeDetailClosedCheckHours;
     }
-    
+
     return null; // No special label
   }
 
@@ -2080,12 +2123,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         Row(
           children: [
             Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
                 color: Colors.grey[600],
               ),
             ),
@@ -2152,12 +2195,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (place.priceRange != null) return place.priceRange!;
     if (place.priceLevel != null) {
       switch (place.priceLevel!) {
-        case 0: return l10n.placeDetailFreeToVisit;
-        case 1: return l10n.placeDetailPrice5to15;
-        case 2: return l10n.placeDetailPrice15to35;
-        case 3: return l10n.placeDetailPrice30to50;
-        case 4: return l10n.placeDetailPrice50Plus;
-        default: return l10n.placeDetailVaries;
+        case 0:
+          return l10n.placeDetailFreeToVisit;
+        case 1:
+          return l10n.placeDetailPrice5to15;
+        case 2:
+          return l10n.placeDetailPrice15to35;
+        case 3:
+          return l10n.placeDetailPrice30to50;
+        case 4:
+          return l10n.placeDetailPrice50Plus;
+        default:
+          return l10n.placeDetailVaries;
       }
     }
     return _inferCostFromPlace(place, l10n);
@@ -2166,41 +2215,45 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   String _inferCostFromPlace(Place place, AppLocalizations l10n) {
     final placeName = place.name.toLowerCase();
     final description = place.description?.toLowerCase() ?? '';
-    
+
     // Check specific place names/types
-    if (placeName.contains('park') || placeName.contains('garden') || 
-        placeName.contains('beach') || placeName.contains('square') ||
-        placeName.contains('harbor') || placeName.contains('haven')) {
+    if (placeName.contains('park') ||
+        placeName.contains('garden') ||
+        placeName.contains('beach') ||
+        placeName.contains('square') ||
+        placeName.contains('harbor') ||
+        placeName.contains('haven')) {
       return l10n.placeDetailFreeToVisit;
     }
-    
+
     if (placeName.contains('museum') || placeName.contains('gallery')) {
       return l10n.placeDetailPrice8to25;
     }
-    
+
     if (placeName.contains('market') || placeName.contains('markt')) {
       return l10n.placeDetailFreeEntryPayItems;
     }
-    
+
     if (placeName.contains('restaurant') || placeName.contains('cafe')) {
-      if (description.contains('fine dining') || description.contains('upscale')) {
+      if (description.contains('fine dining') ||
+          description.contains('upscale')) {
         return l10n.placeDetailPrice40to80;
       }
       return l10n.placeDetailPrice15to35;
     }
-    
+
     if (placeName.contains('mall') || placeName.contains('shopping')) {
       return l10n.placeDetailFreeEntryPayItems;
     }
-    
+
     if (placeName.contains('church') || placeName.contains('cathedral')) {
       return l10n.placeDetailFreeDonationsWelcome;
     }
-    
+
     if (placeName.contains('tower') || placeName.contains('observation')) {
       return l10n.placeDetailPrice10to20;
     }
-    
+
     // Fallback to place types
     for (final type in place.types) {
       switch (type.toLowerCase()) {
@@ -2266,7 +2319,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return l10n.placeDetailDurationOneToTwo;
     }
 
-    if (activities.contains('quick tour') || activities.contains('short visit')) {
+    if (activities.contains('quick tour') ||
+        activities.contains('short visit')) {
       return l10n.placeDetailDurationThirtyToSixty;
     }
 
@@ -2302,14 +2356,14 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     // Check description or activities for accessibility mentions
     final description = place.description?.toLowerCase() ?? '';
     final activities = place.activities.join(' ').toLowerCase();
-    
-    if (description.contains('accessible') || 
+
+    if (description.contains('accessible') ||
         description.contains('wheelchair') ||
         activities.contains('accessible') ||
         activities.contains('easy walking')) {
       return 'Easy walking (accessible)';
     }
-    
+
     // Check place types for accessibility assumptions
     for (final type in place.types) {
       switch (type.toLowerCase()) {
@@ -2325,7 +2379,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           continue;
       }
     }
-    
+
     return 'Easy walking';
   }
 
@@ -2333,18 +2387,21 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final placeName = place.name.toLowerCase();
     final description = place.description?.toLowerCase() ?? '';
     final activities = place.activities.join(' ').toLowerCase();
-    
+
     // First check for specific place characteristics
     if (placeName.contains('market') || placeName.contains('markt')) {
       return 'Morning hours (fresh produce)';
     }
-    
+
     if (placeName.contains('museum') || placeName.contains('gallery')) {
       return 'Weekday mornings (less crowded)';
     }
-    
-    if (placeName.contains('restaurant') || placeName.contains('cafe') || placeName.contains('bar')) {
-      if (placeName.contains('breakfast') || description.contains('breakfast')) {
+
+    if (placeName.contains('restaurant') ||
+        placeName.contains('cafe') ||
+        placeName.contains('bar')) {
+      if (placeName.contains('breakfast') ||
+          description.contains('breakfast')) {
         return 'Early morning (8-11 AM)';
       }
       if (placeName.contains('lunch') || description.contains('lunch')) {
@@ -2352,47 +2409,58 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       }
       return 'Evening for dinner (6-9 PM)';
     }
-    
+
     if (placeName.contains('park') || placeName.contains('garden')) {
       if (activities.contains('photo') || description.contains('scenic')) {
         return 'Golden hour (6-8 PM) for photos';
       }
       return 'Sunny weather, any time of day';
     }
-    
-    if (placeName.contains('beach') || placeName.contains('waterfront') || placeName.contains('harbor') || placeName.contains('haven')) {
+
+    if (placeName.contains('beach') ||
+        placeName.contains('waterfront') ||
+        placeName.contains('harbor') ||
+        placeName.contains('haven')) {
       return 'Golden hour (sunset) for photos';
     }
-    
-    if (placeName.contains('mall') || placeName.contains('shopping') || placeName.contains('store')) {
+
+    if (placeName.contains('mall') ||
+        placeName.contains('shopping') ||
+        placeName.contains('store')) {
       return 'Weekday afternoons (less busy)';
     }
-    
-    if (placeName.contains('church') || placeName.contains('cathedral') || placeName.contains('temple')) {
+
+    if (placeName.contains('church') ||
+        placeName.contains('cathedral') ||
+        placeName.contains('temple')) {
       return 'Quiet morning hours';
     }
-    
-    if (placeName.contains('tower') || placeName.contains('viewpoint') || placeName.contains('observation')) {
+
+    if (placeName.contains('tower') ||
+        placeName.contains('viewpoint') ||
+        placeName.contains('observation')) {
       return 'Clear weather, sunset for views';
     }
-    
+
     // Check activities for specific recommendations
     if (activities.contains('food') || activities.contains('dining')) {
       return 'Meal times (lunch or dinner)';
     }
-    
+
     if (activities.contains('shopping')) {
       return 'Weekday afternoons (less crowded)';
     }
-    
+
     if (activities.contains('photo') || activities.contains('sightseeing')) {
       // Only recommend sunset if it's actually outdoor/scenic
-      if (place.isIndoor || placeName.contains('hall') || placeName.contains('mall')) {
+      if (place.isIndoor ||
+          placeName.contains('hall') ||
+          placeName.contains('mall')) {
         return 'Good lighting hours (10 AM - 4 PM)';
       }
       return 'Golden hour (6-8 PM) for photos';
     }
-    
+
     // Final fallback based on place type with better logic
     for (final type in place.types) {
       switch (type.toLowerCase()) {
@@ -2410,7 +2478,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
           continue;
       }
     }
-    
+
     return 'Check opening hours for best times';
   }
 
@@ -2502,96 +2570,99 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
       children: [
-        Text(
-          '📸 ${l10n.placeDetailGalleryTitle}',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-                ),
-                if (showStripSpinner) ...[
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color(0xFF2A6049),
-                      ),
-                    ),
-                  ),
-                ],
-                const Spacer(),
-                Text(
-                  l10n.placeDetailPhotoCount(allImages.length),
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+        Row(
+          children: [
+            Text(
+              '📸 ${l10n.placeDetailGalleryTitle}',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            if (showStripSpinner) ...[
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    const Color(0xFF2A6049),
                   ),
                 ),
-              ],
+              ),
+            ],
+            const Spacer(),
+            Text(
+              l10n.placeDetailPhotoCount(allImages.length),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         SizedBox(
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-                itemCount: allImages.length,
+            itemCount: allImages.length,
             itemBuilder: (context, index) {
               return Container(
                 margin: EdgeInsets.only(
-                      right: index == allImages.length - 1 ? 0 : 12,
+                  right: index == allImages.length - 1 ? 0 : 12,
                 ),
                 child: GestureDetector(
-                      onTap: () => _showFullScreenPhoto(allImages, index, place.isAsset),
+                  onTap: () =>
+                      _showFullScreenPhoto(allImages, index, place.isAsset),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: 150,
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                          child: Stack(
-                            children: [
-                              place.isAsset
-                          ? Image.asset(
-                                      allImages[index],
-                              fit: BoxFit.cover,
-                                      width: 150,
-                                      height: 120,
-                              errorBuilder: (_, __, ___) => _buildImageFallback(),
-                            )
-                          : WmPlacePhotoNetworkImage(
-                                      allImages[index],
-                              fit: BoxFit.cover,
-                                      width: 150,
-                                      height: 120,
-                              errorBuilder: (_, __, ___) => _buildImageFallback(),
-                                    ),
-                              // Add a subtle gradient overlay for better visual appeal
-                              Container(
-                                width: 150,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.black.withOpacity(0.1),
-                                    ],
-                                  ),
+                      child: Stack(
+                        children: [
+                          place.isAsset
+                              ? Image.asset(
+                                  allImages[index],
+                                  fit: BoxFit.cover,
+                                  width: 150,
+                                  height: 120,
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildImageFallback(),
+                                )
+                              : WmPlacePhotoNetworkImage(
+                                  allImages[index],
+                                  fit: BoxFit.cover,
+                                  width: 150,
+                                  height: 120,
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildImageFallback(),
                                 ),
+                          // Add a subtle gradient overlay for better visual appeal
+                          Container(
+                            width: 150,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.1),
+                                ],
                               ),
-                            ],
                             ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -2642,7 +2713,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               runSpacing: 6,
               children: categoryChips.map((chip) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: _pdWmForestTint,
                     borderRadius: BorderRadius.circular(20),
@@ -2661,8 +2733,67 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             ),
             const SizedBox(height: 12),
           ],
-          // Description — sectioned rich copy or long blurb (no misleading loading text)
-          PlaceDetailAboutBlock(place: place),
+          FutureBuilder<PartnerListing?>(
+            future: PartnerListingService.findByPlaceId(
+              place.id.startsWith('google_')
+                  ? place.id.substring('google_'.length)
+                  : place.id,
+            ),
+            builder: (context, snap) {
+              final partner = snap.data;
+              final hasOffer = partner != null &&
+                  partner.hasActiveOffer &&
+                  (partner.activeOffer?.trim().isNotEmpty ?? false);
+              final offerText = partner?.activeOffer?.trim();
+              final custom = partner?.customDescription?.trim();
+              final effectivePlace = (custom != null && custom.isNotEmpty)
+                  ? place.copyWith(description: custom)
+                  : place;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (hasOffer) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0x142A6049),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: const Color(0x332A6049), width: 1),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '🎁 WanderMood aanbieding',
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              letterSpacing: 0.06,
+                              fontWeight: FontWeight.w700,
+                              color: _pdWmForest,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            offerText ?? '',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              height: 1.45,
+                              color: _pdWmCharcoal.withValues(alpha: 0.88),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  // Description — sectioned rich copy or long blurb (no misleading loading text)
+                  PlaceDetailAboutBlock(place: effectivePlace),
+                ],
+              );
+            },
+          ),
           // Address
           if (place.address.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -2697,7 +2828,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: tappable ? _pdWmForest : _pdWmForest.withValues(alpha: 0.7)),
+        Icon(icon,
+            size: 16,
+            color: tappable ? _pdWmForest : _pdWmForest.withValues(alpha: 0.7)),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -2721,27 +2854,52 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   /// Map a Google place type string to a localised label. Returns null for generic/useless types.
   String? _typeToCategoryLabel(String type, AppLocalizations l10n) {
     switch (type.toLowerCase()) {
-      case 'restaurant': return l10n.placeTypeRestaurant;
-      case 'cafe': case 'coffee_shop': return l10n.placeTypeCafe;
-      case 'bar': return l10n.placeTypeBar;
-      case 'night_club': return l10n.placeTypeNightclub;
-      case 'museum': return l10n.placeTypeMuseum;
-      case 'art_gallery': return l10n.placeTypeArtGallery;
-      case 'park': case 'national_park': return l10n.placeTypePark;
-      case 'tourist_attraction': return l10n.placeTypeTouristAttraction;
-      case 'bakery': return l10n.placeTypeBakery;
-      case 'shopping_mall': return l10n.placeTypeShoppingMall;
-      case 'spa': return l10n.placeTypeSpa;
-      case 'gym': case 'health': return l10n.placeTypeGym;
-      case 'movie_theater': return l10n.placeTypeMovieTheater;
-      case 'library': return l10n.placeTypeLibrary;
-      case 'church': case 'place_of_worship': return l10n.placeTypeChurch;
-      case 'amusement_park': return l10n.placeTypeAmusementPark;
-      case 'zoo': return l10n.placeTypeZoo;
-      case 'aquarium': return l10n.placeTypeAquarium;
-      case 'bowling_alley': return l10n.placeTypeBowling;
-      case 'stadium': return l10n.placeTypeStadium;
-      default: return null;
+      case 'restaurant':
+        return l10n.placeTypeRestaurant;
+      case 'cafe':
+      case 'coffee_shop':
+        return l10n.placeTypeCafe;
+      case 'bar':
+        return l10n.placeTypeBar;
+      case 'night_club':
+        return l10n.placeTypeNightclub;
+      case 'museum':
+        return l10n.placeTypeMuseum;
+      case 'art_gallery':
+        return l10n.placeTypeArtGallery;
+      case 'park':
+      case 'national_park':
+        return l10n.placeTypePark;
+      case 'tourist_attraction':
+        return l10n.placeTypeTouristAttraction;
+      case 'bakery':
+        return l10n.placeTypeBakery;
+      case 'shopping_mall':
+        return l10n.placeTypeShoppingMall;
+      case 'spa':
+        return l10n.placeTypeSpa;
+      case 'gym':
+      case 'health':
+        return l10n.placeTypeGym;
+      case 'movie_theater':
+        return l10n.placeTypeMovieTheater;
+      case 'library':
+        return l10n.placeTypeLibrary;
+      case 'church':
+      case 'place_of_worship':
+        return l10n.placeTypeChurch;
+      case 'amusement_park':
+        return l10n.placeTypeAmusementPark;
+      case 'zoo':
+        return l10n.placeTypeZoo;
+      case 'aquarium':
+        return l10n.placeTypeAquarium;
+      case 'bowling_alley':
+        return l10n.placeTypeBowling;
+      case 'stadium':
+        return l10n.placeTypeStadium;
+      default:
+        return null;
     }
   }
 
@@ -2752,7 +2910,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       _cachedMoodyTipsFuture = _generateAIMoodyTips(place);
       _cachedPlaceIdForTips = place.id;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -2768,66 +2926,69 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         ],
       ),
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const MoodyAvatarCompact(size: 30, glowOpacityScale: 0.18),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const MoodyAvatarCompact(size: 30, glowOpacityScale: 0.18),
               const SizedBox(width: 8),
-            Text(
+              Text(
                 l10n.placeDetailMoodyName,
-              style: GoogleFonts.poppins(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
-                fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w600,
                   color: const Color(0xFF2A6049),
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
           const SizedBox(height: 8),
           FutureBuilder<List<String>>(
             future: _cachedMoodyTipsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Row(
-                      children: [
-                        SizedBox(
+                    children: [
+                      SizedBox(
                         width: 12,
                         height: 12,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              const Color(0xFF2A6049),
-                            ),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            const Color(0xFF2A6049),
                           ),
                         ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           l10n.placeDetailMoodyLoadingTips,
-                            style: GoogleFonts.poppins(
-                          fontSize: 13,
-                              fontStyle: FontStyle.italic,
-                          color: const Color(0xFF2A6049),
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: const Color(0xFF2A6049),
                           ),
                         ),
                       ),
-                      ],
-                    ),
+                    ],
+                  ),
                 );
               }
-              
-              final moodyTips = snapshot.data ?? [
-                l10n.placeDetailMoodyFallbackTipA,
-                l10n.placeDetailMoodyFallbackTipB,
-                l10n.placeDetailMoodyFallbackTipC,
-              ];
-              
+
+              final moodyTips = snapshot.data ??
+                  [
+                    l10n.placeDetailMoodyFallbackTipA,
+                    l10n.placeDetailMoodyFallbackTipB,
+                    l10n.placeDetailMoodyFallbackTipC,
+                  ];
+
               // Combine all tips into one conversational message
-              final conversationalTip = _formatTipsAsConversation(moodyTips, place);
-              
+              final conversationalTip =
+                  _formatTipsAsConversation(moodyTips, place);
+
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -2838,21 +2999,21 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                     width: 1,
                   ),
                 ),
-                          child: Text(
+                child: Text(
                   conversationalTip,
-                            style: GoogleFonts.poppins(
+                  style: GoogleFonts.poppins(
                     fontSize: 13,
                     height: 1.4,
                     color: const Color(0xFF2E2E2E),
                     fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                  ),
+                ),
               );
             },
-                        ),
-                      ],
-                    ),
-                  );
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatTipsAsConversation(List<String> tips, Place place) {
@@ -2860,49 +3021,53 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       // Fallback decision-focused message based on place properties
       return _getDecisionFocusedMessage(place);
     }
-    
+
     // Take first tip only and make it decision-focused (1-2 sentences max)
     String tip = tips.first;
-    
+
     // Clean up the tip (remove ** formatting)
     tip = tip.replaceAll('**', '').replaceAll('*', '').trim();
-    
+
     // Keep it short and decision-oriented (max 2 sentences)
     if (tip.length > 120) {
       // Find the first sentence or cut at 120 chars
       final firstSentence = tip.split(RegExp(r'[.!?]')).first;
-      tip = firstSentence.length <= 120 ? firstSentence + '.' : tip.substring(0, 117) + '...';
+      tip = firstSentence.length <= 120
+          ? firstSentence + '.'
+          : tip.substring(0, 117) + '...';
     }
-    
+
     return tip;
   }
-  
+
   /// Generate a decision-focused message based on place properties
   String _getDecisionFocusedMessage(Place place) {
     final hour = DateTime.now().hour;
     final isEvening = hour >= 17;
     final isMorning = hour < 12;
-    
+
     // Build decision-focused message based on place characteristics
     String fitContext = '';
     String energyNote = '';
-    
+
     // Determine fit based on time and energy level
     if (place.energyLevel.toLowerCase() == 'high') {
       fitContext = isEvening ? 'evening' : 'daytime';
       energyNote = 'engaging but high-energy';
-    } else if (place.energyLevel.toLowerCase() == 'low' || place.energyLevel.toLowerCase() == 'relaxed') {
+    } else if (place.energyLevel.toLowerCase() == 'low' ||
+        place.energyLevel.toLowerCase() == 'relaxed') {
       fitContext = 'any time';
       energyNote = 'relaxed and easy-going';
     } else {
       fitContext = isEvening ? 'evening' : 'afternoon';
       energyNote = 'moderately active';
     }
-    
+
     // Determine social context
     final isGroupPlace = _isGoodForGroups(place);
-    String socialContext = isGroupPlace ? 'friends or groups' : 'solo or intimate outings';
-    
+    String socialContext =
+        isGroupPlace ? 'friends or groups' : 'solo or intimate outings';
+
     return 'Perfect for ${isGroupPlace ? 'a ' : ''}$fitContext with $socialContext — $energyNote, not too intense.';
   }
 
@@ -2912,24 +3077,29 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     // Request deduplication: Check if request is already in flight
     final requestKey = 'moody_tips_${place.id}';
     if (_inFlightRequests.contains(requestKey)) {
-      if (kDebugMode) debugPrint('⏸️ Moody Tips request already in flight for: ${place.id}');
+      if (kDebugMode)
+        debugPrint('⏸️ Moody Tips request already in flight for: ${place.id}');
       return MoodyAIService.emergencyTips(languageCode);
     }
-    
+
     // Mark request as in-flight
     _inFlightRequests.add(requestKey);
-    
+
     try {
       final moodyService = ref.read(moodyAIServiceProvider);
-      
+
       // Get current time context
       final hour = DateTime.now().hour;
-      final timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
-      
+      final timeOfDay = hour < 12
+          ? 'morning'
+          : hour < 17
+              ? 'afternoon'
+              : 'evening';
+
       // You could also get user's current mood from preferences/state if available
       String? userMood;
       // Example: userMood = ref.read(currentMoodProvider);
-      
+
       final tips = await moodyService.generateMoodyTips(
         place: place,
         userMood: userMood,
@@ -2938,8 +3108,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         // You could add weather context here if available
         // weather: ref.read(weatherProvider).value?.description,
       );
-      
-      if (kDebugMode) debugPrint('✅ Generated ${tips.length} AI-powered Moody Tips');
+
+      if (kDebugMode)
+        debugPrint('✅ Generated ${tips.length} AI-powered Moody Tips');
       return tips;
     } catch (e) {
       debugPrint('❌ Error generating AI Moody Tips: $e');
@@ -2953,13 +3124,16 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   Widget _buildReviews(Place place) {
     if (!_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
+        if (mounted &&
+            !_loadingReviews &&
+            _realReviews.isEmpty &&
+            !_hasAttemptedReviewFetch) {
           _fetchRealReviews(place);
         }
       });
     }
     final reviews = _realReviews;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3080,7 +3254,9 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         Row(
                           children: List.generate(5, (index) {
                             return Icon(
-                              index < review['rating'] ? Icons.star : Icons.star_border,
+                              index < review['rating']
+                                  ? Icons.star
+                                  : Icons.star_border,
                               size: 14,
                               color: Colors.amber,
                             );
@@ -3088,7 +3264,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          review['relative_time_description'] ?? l10n.placeDetailRecently,
+                          review['relative_time_description'] ??
+                              l10n.placeDetailRecently,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -3122,33 +3299,36 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     if (googlePlaceId.startsWith('google_')) {
       googlePlaceId = googlePlaceId.substring('google_'.length);
     }
-    
+
     // Request deduplication: Check if request is already in flight
     final requestKey = 'reviews_$googlePlaceId';
     if (_inFlightRequests.contains(requestKey)) {
-      if (kDebugMode) debugPrint('⏸️ Reviews request already in flight for: $googlePlaceId');
+      if (kDebugMode)
+        debugPrint('⏸️ Reviews request already in flight for: $googlePlaceId');
       return; // Request already in progress, don't start another one
     }
-    
+
     if (_loadingReviews) return;
-    
+
     // If we already have reviews, don't fetch again
     if (_realReviews.isNotEmpty) {
-      if (kDebugMode) debugPrint('✅ Already have reviews cached in memory for: $googlePlaceId');
+      if (kDebugMode)
+        debugPrint(
+            '✅ Already have reviews cached in memory for: $googlePlaceId');
       return;
     }
-    
+
     setState(() {
       _loadingReviews = true;
     });
-    
+
     // Mark request as in-flight
     _inFlightRequests.add(requestKey);
 
     try {
       _hasAttemptedReviewFetch = true;
       final reviewsCache = ref.read(reviewsCacheServiceProvider);
-      
+
       // Step 1: Check cache first
       final cachedReviews = await reviewsCache.getCachedReviews(googlePlaceId);
       if (cachedReviews != null && cachedReviews.isNotEmpty) {
@@ -3158,33 +3338,35 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             _loadingReviews = false;
           });
           if (kDebugMode) {
-            debugPrint('✅ Using cached reviews for place: $googlePlaceId (${cachedReviews.length} reviews)');
+            debugPrint(
+                '✅ Using cached reviews for place: $googlePlaceId (${cachedReviews.length} reviews)');
           }
         }
         _inFlightRequests.remove(requestKey);
         return; // Use cached reviews, no API call needed
       }
-      
+
       // Step 2: Cache miss - fetch from API
       if (kDebugMode) {
-        debugPrint('🔄 Cache miss - fetching reviews from API for: $googlePlaceId');
+        debugPrint(
+            '🔄 Cache miss - fetching reviews from API for: $googlePlaceId');
       }
-      
+
       // Check if widget is still mounted before making API call
       if (!mounted) {
         _inFlightRequests.remove(requestKey);
         return;
       }
-      
+
       final placesService = ref.read(placesServiceProvider.notifier);
       final details = await placesService.getPlaceDetails(googlePlaceId);
-      
+
       // Check again after async operation
       if (!mounted) {
         _inFlightRequests.remove(requestKey);
         return;
       }
-      
+
       // Step 3: Safely extract reviews with null safety
       List<Map<String, dynamic>> reviews = [];
       if (details.containsKey('reviews') && details['reviews'] != null) {
@@ -3196,19 +3378,20 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               .toList();
         }
       }
-      
+
       // Step 4: Cache the fetched reviews
       if (reviews.isNotEmpty) {
         await reviewsCache.cacheReviews(googlePlaceId, reviews);
       }
-      
+
       if (mounted) {
         setState(() {
           _realReviews = reviews;
           _loadingReviews = false;
         });
         if (kDebugMode) {
-          debugPrint('✅ Loaded ${reviews.length} real reviews from Google Places API and cached them');
+          debugPrint(
+              '✅ Loaded ${reviews.length} real reviews from Google Places API and cached them');
         }
       }
     } catch (e) {
@@ -3318,8 +3501,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final l10n = AppLocalizations.of(context)!;
     final allUrls = _displayPhotosForDetail(place);
     final urls = _fotosTabPhotoUrlsExcludingHero(allUrls);
-    final handle =
-        NestedScrollView.sliverOverlapAbsorberHandleFor(context);
+    final handle = NestedScrollView.sliverOverlapAbsorberHandleFor(context);
 
     if (allUrls.isEmpty) {
       if (_unifiedDetailPhotosLoading) {
@@ -3410,22 +3592,19 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               itemCount: urls.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () =>
-                      _showFullScreenPhoto(urls, index, place.isAsset),
+                  onTap: () => _showFullScreenPhoto(urls, index, place.isAsset),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: place.isAsset
                         ? Image.asset(
                             urls[index],
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildImageFallback(),
+                            errorBuilder: (_, __, ___) => _buildImageFallback(),
                           )
                         : WmPlacePhotoNetworkImage(
                             urls[index],
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildImageFallback(),
+                            errorBuilder: (_, __, ___) => _buildImageFallback(),
                           ),
                   ),
                 );
@@ -3442,163 +3621,170 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final l10n = AppLocalizations.of(context)!;
     if (!_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_loadingReviews && _realReviews.isEmpty && !_hasAttemptedReviewFetch) {
+        if (mounted &&
+            !_loadingReviews &&
+            _realReviews.isEmpty &&
+            !_hasAttemptedReviewFetch) {
           _fetchRealReviews(place);
         }
       });
     }
 
     final column = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Reviews header with rating summary
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Reviews header with rating summary
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '⭐ ${l10n.placeDetailReviewsSectionTitle}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (_realReviews.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  const DataSourceBadge(
+                    source: DataSource.real,
+                    tooltip: 'Real reviews from Google Places API',
+                  ),
+                ],
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF5EE),
+                borderRadius: BorderRadius.circular(20),
+                border:
+                    Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  const Icon(
+                    Icons.star,
+                    size: 16,
+                    color: Colors.amber,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    '⭐ ${l10n.placeDetailReviewsSectionTitle}',
+                    '${place.rating.toStringAsFixed(1)}',
                     style: GoogleFonts.poppins(
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: const Color(0xFF2A6049),
                     ),
                   ),
-                  if (_realReviews.isNotEmpty) ...[
-                    const SizedBox(width: 8),
+                  if (place.reviewCount > 0) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '(${place.reviewCount} reviews)',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(width: 4),
                     const DataSourceBadge(
                       source: DataSource.real,
-                      tooltip: 'Real reviews from Google Places API',
+                      tooltip: 'Rating and review count from Google Places API',
+                      size: 10,
                     ),
                   ],
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF5EE),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.star,
-                      size: 16,
-                      color: Colors.amber,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${place.rating.toStringAsFixed(1)}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF2A6049),
-                      ),
-                    ),
-                    if (place.reviewCount > 0) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${place.reviewCount} reviews)',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const DataSourceBadge(
-                        source: DataSource.real,
-                        tooltip: 'Rating and review count from Google Places API',
-                        size: 10,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          // Reviews list - show loading or real reviews
-          if (_loadingReviews)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24.0),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (_realReviews.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    Icon(Icons.reviews_outlined, size: 48, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.placeDetailNoReviews,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.placeDetailReviewsWhenAvailable,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Column(
-              children: _realReviews.map((review) => _buildDetailedReviewCard(review)).toList(),
             ),
-          
-          const SizedBox(height: 16),
-          
-          // Add review button - coming soon (hidden for now)
-          // SizedBox(
-          //   width: double.infinity,
-          //   child: OutlinedButton.icon(
-          //     onPressed: () {
-          //       ScaffoldMessenger.of(context).showSnackBar(
-          //         SnackBar(
-          //           content: Text(
-          //             'Add review feature coming soon!',
-          //             style: GoogleFonts.poppins(),
-          //           ),
-          //           backgroundColor: const Color(0xFF2A6049),
-          //           behavior: SnackBarBehavior.floating,
-          //         ),
-          //       );
-          //     },
-          //     icon: const Icon(Icons.add_comment),
-          //     label: Text(
-          //       'Add Your Review',
-          //       style: GoogleFonts.poppins(
-          //         fontSize: 14,
-          //         fontWeight: FontWeight.w600,
-          //       ),
-          //     ),
-          //     style: OutlinedButton.styleFrom(
-          //       foregroundColor: const Color(0xFF2A6049),
-          //       side: const BorderSide(color: Color(0xFF2A6049)),
-          //       padding: const EdgeInsets.symmetric(vertical: 16),
-          //       shape: RoundedRectangleBorder(
-          //         borderRadius: BorderRadius.circular(25),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-        ],
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Reviews list - show loading or real reviews
+        if (_loadingReviews)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (_realReviews.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  Icon(Icons.reviews_outlined,
+                      size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.placeDetailNoReviews,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.placeDetailReviewsWhenAvailable,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Column(
+            children: _realReviews
+                .map((review) => _buildDetailedReviewCard(review))
+                .toList(),
+          ),
+
+        const SizedBox(height: 16),
+
+        // Add review button - coming soon (hidden for now)
+        // SizedBox(
+        //   width: double.infinity,
+        //   child: OutlinedButton.icon(
+        //     onPressed: () {
+        //       ScaffoldMessenger.of(context).showSnackBar(
+        //         SnackBar(
+        //           content: Text(
+        //             'Add review feature coming soon!',
+        //             style: GoogleFonts.poppins(),
+        //           ),
+        //           backgroundColor: const Color(0xFF2A6049),
+        //           behavior: SnackBarBehavior.floating,
+        //         ),
+        //       );
+        //     },
+        //     icon: const Icon(Icons.add_comment),
+        //     label: Text(
+        //       'Add Your Review',
+        //       style: GoogleFonts.poppins(
+        //         fontSize: 14,
+        //         fontWeight: FontWeight.w600,
+        //       ),
+        //     ),
+        //     style: OutlinedButton.styleFrom(
+        //       foregroundColor: const Color(0xFF2A6049),
+        //       side: const BorderSide(color: Color(0xFF2A6049)),
+        //       padding: const EdgeInsets.symmetric(vertical: 16),
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(25),
+        //       ),
+        //     ),
+        //   ),
+        // ),
+      ],
     );
     if (wrapInSingleChildScrollView) {
       return SingleChildScrollView(child: column);
@@ -3610,11 +3796,11 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
         color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -3622,12 +3808,12 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             offset: const Offset(0, 2),
           ),
         ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
               CircleAvatar(
                 radius: 24,
                 backgroundColor: const Color(0xFFEAF5EE),
@@ -3636,10 +3822,10 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2A6049),
+                    color: const Color(0xFF2A6049),
                   ),
                 ),
-                    ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -3659,31 +3845,34 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                         Row(
                           children: List.generate(5, (index) {
                             return Icon(
-                              index < review['rating'] ? Icons.star : Icons.star_border,
+                              index < review['rating']
+                                  ? Icons.star
+                                  : Icons.star_border,
                               size: 16,
                               color: Colors.amber,
                             );
                           }),
                         ),
                         const SizedBox(width: 8),
-                Text(
-                          review['relative_time_description'] ?? l10n.placeDetailRecently,
-                  style: GoogleFonts.poppins(
+                        Text(
+                          review['relative_time_description'] ??
+                              l10n.placeDetailRecently,
+                          style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ],
-                ),
+          ),
           const SizedBox(height: 12),
           Text(
             review['text'] ?? '',
-              style: GoogleFonts.poppins(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               height: 1.6,
               color: Colors.grey[700],
@@ -3876,7 +4065,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     }
   }
 
-  void _showFullScreenPhoto(List<String> photos, int initialIndex, bool isAsset) {
+  void _showFullScreenPhoto(
+      List<String> photos, int initialIndex, bool isAsset) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => FullScreenPhotoView(
@@ -3908,7 +4098,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: AppLocalizations.of(context)!.placeDetailCouldNotOpenMaps('$e'),
+          message:
+              AppLocalizations.of(context)!.placeDetailCouldNotOpenMaps('$e'),
           isError: true,
         );
       }
@@ -3921,13 +4112,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     debugPrint('   - Types: ${place.types}');
     debugPrint('   - priceLevel: ${place.priceLevel}');
     debugPrint('   - isFree: ${place.isFree}');
-    
+
     // First, exclude all free or walk-in attractions
     if (_isFreeWalkInPlace(place)) {
       debugPrint('   ❌ Place is free/walk-in, no booking needed');
       return false;
     }
-    
+
     // Show booking for places that typically need reservations/tickets
     final bookableTypes = [
       // Food & Drink
@@ -3961,73 +4152,90 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       'tour_operator',
       'travel_agency',
     ];
-    
+
     // Check if place type matches bookable types
-    final hasBookableType = place.types.any((type) => 
-      bookableTypes.any((bookable) => 
-        type.toLowerCase().contains(bookable.toLowerCase())
-      )
-    );
-    
+    final hasBookableType = place.types.any((type) => bookableTypes.any(
+        (bookable) => type.toLowerCase().contains(bookable.toLowerCase())));
+
     // Also check activities for paid tour/ticket hints
     final hasBookableActivity = place.activities.any((activity) {
       final lowerActivity = activity.toLowerCase();
       return lowerActivity.contains('guided tour') ||
-             lowerActivity.contains('reservation') ||
-             lowerActivity.contains('booking required') ||
-             lowerActivity.contains('ticket required');
+          lowerActivity.contains('reservation') ||
+          lowerActivity.contains('booking required') ||
+          lowerActivity.contains('ticket required');
     });
-    
+
     // Show booking if:
     // 1. Has bookable type (restaurant, spa, hotel, museum, tourist_attraction, etc.)
     // 2. OR has paid/ticketed activities
     // 3. AND is not explicitly free (price level 0 or flagged as free)
     final isKnownFree = place.isFree;
-    final hasCost = !isKnownFree && (place.priceLevel == null || place.priceLevel! > 0);
-    
+    final hasCost =
+        !isKnownFree && (place.priceLevel == null || place.priceLevel! > 0);
+
     final shouldShow = (hasBookableType || hasBookableActivity) && hasCost;
-    
+
     debugPrint('   - hasBookableType: $hasBookableType');
     debugPrint('   - hasBookableActivity: $hasBookableActivity');
     debugPrint('   - hasCost: $hasCost');
     debugPrint('   ${shouldShow ? "✅" : "❌"} Should show booking: $shouldShow');
-    
+
     return shouldShow;
   }
-  
+
   // Helper to determine if a place is free/walk-in (no booking needed)
   bool _isFreeWalkInPlace(Place place) {
     // Explicitly free based on flag or price level
     if (place.isFree || place.priceLevel == 0) {
       return true;
     }
-    
+
     // First, check if place has bookable types - if so, it's NOT free/walk-in
     final bookableTypes = [
-      'restaurant', 'cafe', 'bar', 'spa', 'beauty_salon', 'hair_care',
-      'lodging', 'hotel', 'gym', 'movie_theater', 'night_club', 'bowling_alley',
-      'museum', 'tourist_attraction', 'amusement_park', 'zoo', 'aquarium',
-      'art_gallery', 'stadium', 'theater', 'opera_house', 'concert_hall',
-      'tour_operator', 'travel_agency', 'meal_takeaway', 'food',
+      'restaurant',
+      'cafe',
+      'bar',
+      'spa',
+      'beauty_salon',
+      'hair_care',
+      'lodging',
+      'hotel',
+      'gym',
+      'movie_theater',
+      'night_club',
+      'bowling_alley',
+      'museum',
+      'tourist_attraction',
+      'amusement_park',
+      'zoo',
+      'aquarium',
+      'art_gallery',
+      'stadium',
+      'theater',
+      'opera_house',
+      'concert_hall',
+      'tour_operator',
+      'travel_agency',
+      'meal_takeaway',
+      'food',
     ];
-    
-    final hasBookableType = place.types.any((type) => 
-      bookableTypes.any((bookable) => 
-        type.toLowerCase().contains(bookable.toLowerCase())
-      )
-    );
-    
+
+    final hasBookableType = place.types.any((type) => bookableTypes.any(
+        (bookable) => type.toLowerCase().contains(bookable.toLowerCase())));
+
     // If it has bookable types, it's NOT free/walk-in
     if (hasBookableType) {
-      debugPrint('   ⚠️ Has bookable types (${place.types.where((t) => bookableTypes.any((bt) => t.toLowerCase().contains(bt.toLowerCase()))).toList()}), NOT free/walk-in');
+      debugPrint(
+          '   ⚠️ Has bookable types (${place.types.where((t) => bookableTypes.any((bt) => t.toLowerCase().contains(bt.toLowerCase()))).toList()}), NOT free/walk-in');
       return false;
     }
-    
+
     // Free types - public spaces, monuments, parks (ONLY if no bookable types)
     final freeWalkInTypes = [
       'park',
-      'arboretum',        // Botanical gardens/arboretums
-      'garden',           // Public gardens
+      'arboretum', // Botanical gardens/arboretums
+      'garden', // Public gardens
       'botanical_garden', // Botanical gardens
       'natural_feature',
       'cemetery',
@@ -4045,18 +4253,15 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       'route',
       'neighborhood',
       'locality',
-      'viewpoint',        // Scenic viewpoints
-      'monument',         // Public monuments
+      'viewpoint', // Scenic viewpoints
+      'monument', // Public monuments
       // Removed 'point_of_interest' - too generic, many paid places have this
     ];
-    
+
     // Check if place is a free type (and has no bookable types)
-    final isFreeType = place.types.any((type) => 
-      freeWalkInTypes.any((freeType) => 
-        type.toLowerCase().contains(freeType.toLowerCase())
-      )
-    );
-    
+    final isFreeType = place.types.any((type) => freeWalkInTypes.any(
+        (freeType) => type.toLowerCase().contains(freeType.toLowerCase())));
+
     return isFreeType;
   }
 
@@ -4104,11 +4309,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       }
 
       // Fallback to user_saved_places payload when external details are unavailable.
-      final savedPlaces = await ref.read(savedPlacesServiceProvider).getSavedPlaces();
+      final savedPlaces =
+          await ref.read(savedPlacesServiceProvider).getSavedPlaces();
       for (final saved in savedPlaces) {
         if (saved.placeId == placeId || saved.place.id == placeId) {
           if (kDebugMode) {
-            debugPrint('✅ Using fallback place data from saved places: ${saved.place.name}');
+            debugPrint(
+                '✅ Using fallback place data from saved places: ${saved.place.name}');
           }
           return saved.place;
         }
@@ -4117,11 +4324,13 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       return place;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Error fetching place directly: $e');
-      final savedPlaces = await ref.read(savedPlacesServiceProvider).getSavedPlaces();
+      final savedPlaces =
+          await ref.read(savedPlacesServiceProvider).getSavedPlaces();
       for (final saved in savedPlaces) {
         if (saved.placeId == placeId || saved.place.id == placeId) {
           if (kDebugMode) {
-            debugPrint('✅ Recovered place from saved places after fetch failure: ${saved.place.name}');
+            debugPrint(
+                '✅ Recovered place from saved places after fetch failure: ${saved.place.name}');
           }
           return saved.place;
         }

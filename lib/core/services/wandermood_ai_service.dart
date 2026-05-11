@@ -7,6 +7,7 @@ import 'package:wandermood/core/models/ai_recommendation.dart';
 import 'package:wandermood/core/models/ai_chat_message.dart';
 import 'package:wandermood/core/services/ai_chat_quota_service.dart';
 import 'package:wandermood/core/services/moody_edge_function_service.dart';
+import 'package:wandermood/core/services/partner_listing_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/features/places/models/place.dart';
 
@@ -48,10 +49,9 @@ class WanderMoodAIService {
     List<String> moods,
     Map<String, dynamic>? preferences,
   ) {
-    final types = (card['types'] as List<dynamic>?)
-            ?.map((e) => e.toString())
-            .toList() ??
-        <String>[];
+    final types =
+        (card['types'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+            <String>[];
     final type = types.isNotEmpty ? types.first : 'place';
 
     Map<String, dynamic>? location;
@@ -149,9 +149,10 @@ class WanderMoodAIService {
         : (act['paymentType']?.toString() ?? 'place');
     final rawSlot = act['timeSlot'] ?? act['time_slot'];
     final slot = rawSlot?.toString().trim().toLowerCase() ?? '';
-    final timeSlot = (slot == 'morning' || slot == 'afternoon' || slot == 'evening')
-        ? slot
-        : 'flexible';
+    final timeSlot =
+        (slot == 'morning' || slot == 'afternoon' || slot == 'evening')
+            ? slot
+            : 'flexible';
     final moodMatch = moods.isNotEmpty ? moods.join(', ') : '';
 
     return AIRecommendation(
@@ -176,6 +177,7 @@ class WanderMoodAIService {
     required double longitude,
     String? languageCode,
     DateTime? plannedDay,
+    String? partnerContext,
   }) async {
     debugPrint(
       '🤖 Mood Match: moody create_day_plan for moods: $moods @ $location',
@@ -190,6 +192,7 @@ class WanderMoodAIService {
       filters: const <String, dynamic>{},
       languageCode: languageCode,
       targetDate: plannedDay,
+      partnerContext: partnerContext,
       planResponseCache: prefs,
     );
 
@@ -197,8 +200,7 @@ class WanderMoodAIService {
     final recommendations = <AIRecommendation>[];
     for (final raw in activities) {
       if (raw is Map<String, dynamic>) {
-        recommendations
-            .add(_createDayPlanActivityToRecommendation(raw, moods));
+        recommendations.add(_createDayPlanActivityToRecommendation(raw, moods));
       } else if (raw is Map) {
         recommendations.add(
           _createDayPlanActivityToRecommendation(
@@ -239,12 +241,12 @@ class WanderMoodAIService {
     List<String>? participantNames,
     bool groupMatch = false,
   }) async {
-    debugPrint('🤖 Getting explore recommendations (moody/get_explore) for moods: $moods');
+    debugPrint(
+        '🤖 Getting explore recommendations (moody/get_explore) for moods: $moods');
 
     try {
       final locationName = city ?? 'Rotterdam';
-      final primaryMood =
-          moods.isNotEmpty ? moods.first : 'adventurous';
+      final primaryMood = moods.isNotEmpty ? moods.first : 'adventurous';
 
       final userId = _supabase.auth.currentUser?.id;
       var isLocal = false;
@@ -254,9 +256,8 @@ class WanderMoodAIService {
             .select('currently_exploring')
             .eq('id', userId)
             .maybeSingle();
-        final v = (profile?['currently_exploring'] as String?)
-            ?.toLowerCase()
-            .trim();
+        final v =
+            (profile?['currently_exploring'] as String?)?.toLowerCase().trim();
         isLocal = v == 'local';
       }
 
@@ -328,7 +329,8 @@ class WanderMoodAIService {
         }
       }
 
-      debugPrint('✅ Moody explore cards mapped: ${recommendations.length} items');
+      debugPrint(
+          '✅ Moody explore cards mapped: ${recommendations.length} items');
 
       return AIRecommendationResponse(
         success: recommendations.isNotEmpty,
@@ -412,9 +414,7 @@ class WanderMoodAIService {
     final activities = <Map<String, dynamic>>[];
     for (final r in recommendations) {
       final slot = r.timeSlot.toLowerCase().trim();
-      if (slot != 'morning' &&
-          slot != 'afternoon' &&
-          slot != 'evening') {
+      if (slot != 'morning' && slot != 'afternoon' && slot != 'evening') {
         continue;
       }
       activities.add({
@@ -509,11 +509,14 @@ class WanderMoodAIService {
     String? city,
     DateTime? clientLocalSnapshot,
     String? planningCalendarDateIso,
+
     /// Prior turns in the current UI session (excluding the message being sent).
     /// Used when [getConversationHistory] is empty (e.g. guest or failed saves).
     List<Map<String, String>>? clientTurns,
+
     /// BCP 47 language code (e.g. `de`, `nl`) so Moody replies match app locale.
     String languageCode = 'en',
+
     /// Optional grounded context (e.g. My Day "free time" card) — sent as `shared_place` to moody.
     Map<String, dynamic>? sharedPlace,
   }) async {
@@ -538,10 +541,12 @@ class WanderMoodAIService {
     List<Map<String, String>> history = [];
     try {
       final dbHistory = await getConversationHistory(convId);
-      history = dbHistory.map((msg) => {
-        'role': msg.role,
-        'content': msg.content,
-      }).toList();
+      history = dbHistory
+          .map((msg) => {
+                'role': msg.role,
+                'content': msg.content,
+              })
+          .toList();
       if (history.isNotEmpty) {
         debugPrint('📚 Loaded ${history.length} messages from DB history');
       }
@@ -555,9 +560,8 @@ class WanderMoodAIService {
 
     final resolvedLat = latitude ?? 51.9225;
     final resolvedLng = longitude ?? 4.4792;
-    final resolvedCity = (city != null && city.trim().isNotEmpty)
-        ? city.trim()
-        : 'Rotterdam';
+    final resolvedCity =
+        (city != null && city.trim().isNotEmpty) ? city.trim() : 'Rotterdam';
 
     try {
       final clockFields = moodyChatClientClockFields(
@@ -586,6 +590,18 @@ class WanderMoodAIService {
         'moods': moods ?? <String>[],
         ...clockFields,
       };
+      try {
+        final partnerContext =
+            await PartnerListingService.buildChatPartnerContext(
+          city: resolvedCity,
+          moods: moods ?? const <String>[],
+        );
+        if (partnerContext.trim().isNotEmpty) {
+          body['partner_context'] = partnerContext;
+        }
+      } catch (_) {
+        // Optional enrichment only; never block chat path.
+      }
       if (sharedPlace != null && sharedPlace.isNotEmpty) {
         body['shared_place'] = sharedPlace;
       }
@@ -671,11 +687,10 @@ class WanderMoodAIService {
       );
     }
   }
-  
+
   /// True when the message is only a short greeting (not e.g. "this" or "ship").
   static bool _isStandaloneGreeting(String trimmedLower) {
-    final t =
-        trimmedLower.replaceAll(RegExp(r'[\s\u200b]+'), ' ').trim();
+    final t = trimmedLower.replaceAll(RegExp(r'[\s\u200b]+'), ' ').trim();
     return RegExp(
       r'^(hi+|hey+|hello+|heya+|howdy+|yo+|sup+|hola+|hallo+)(\s*[!.?👋🙂😊]*)$',
       caseSensitive: false,
@@ -712,19 +727,24 @@ class WanderMoodAIService {
       final place = (city != null && city.isNotEmpty) ? city : 'your city';
       return "I'm here 🙌 Tell me one vibe for $place: cozy cafe, unique dinner, scenic walk, or hidden gems.";
     }
-    
-    if (lowerMessage.contains('help') || lowerMessage.contains('what can you do')) {
+
+    if (lowerMessage.contains('help') ||
+        lowerMessage.contains('what can you do')) {
       return "I can help you find activities, restaurants, and places that match your mood! Just tell me what you're feeling, and I'll suggest the perfect spots. 🎯";
     }
-    
-    if (lowerMessage.contains('food') || lowerMessage.contains('eat') || lowerMessage.contains('restaurant')) {
+
+    if (lowerMessage.contains('food') ||
+        lowerMessage.contains('eat') ||
+        lowerMessage.contains('restaurant')) {
       return "Great choice! 🍽️ Based on your ${mood} mood, I'd recommend checking out some local favorites. Want me to find specific restaurants or cafes?";
     }
-    
-    if (lowerMessage.contains('activity') || lowerMessage.contains('do') || lowerMessage.contains('fun')) {
+
+    if (lowerMessage.contains('activity') ||
+        lowerMessage.contains('do') ||
+        lowerMessage.contains('fun')) {
       return "Let's find something fun! 🎉 For your ${mood} vibe, I suggest exploring local attractions, parks, or cultural spots. What type of activity interests you?";
     }
-    
+
     // Default response
     if (hasPriorExchanges) {
       return "Nice — tell me a bit more so I can narrow it down: budget, distance, and whether you want indoor or outdoor spots.";
@@ -740,14 +760,14 @@ class WanderMoodAIService {
     String? notes,
   }) async {
     debugPrint('📊 Submitting AI recommendation feedback: $rating/5');
-    
+
     try {
       await _supabase.from('ai_recommendations').update({
         'user_feedback': rating,
         'user_selected': selectedRecommendations,
         'feedback_notes': notes,
       }).eq('id', recommendationId);
-      
+
       debugPrint('✅ Feedback submitted successfully');
     } catch (e) {
       debugPrint('❌ Error submitting feedback: $e');
@@ -756,9 +776,10 @@ class WanderMoodAIService {
   }
 
   /// Get user's AI conversation history
-  static Future<List<AIChatMessage>> getConversationHistory(String conversationId) async {
+  static Future<List<AIChatMessage>> getConversationHistory(
+      String conversationId) async {
     debugPrint('📜 Loading conversation history: $conversationId');
-    
+
     try {
       final response = await _supabase
           .from('ai_conversations')
@@ -770,8 +791,9 @@ class WanderMoodAIService {
       final messages = (response as List)
           .map((json) => AIChatMessage.fromJson(json))
           .toList();
-      
-      debugPrint('✅ Loaded ${messages.length} conversation messages for context');
+
+      debugPrint(
+          '✅ Loaded ${messages.length} conversation messages for context');
       return messages;
     } catch (e) {
       debugPrint('❌ Error loading conversation history: $e');
@@ -790,24 +812,28 @@ class WanderMoodAIService {
     String? languagePreference,
   }) async {
     debugPrint('⚙️ Updating user AI preferences');
-    
+
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
       final updateData = <String, dynamic>{};
       if (budgetRange != null) updateData['budget_range'] = budgetRange;
-      if (preferredTimeSlots != null) updateData['preferred_time_slots'] = preferredTimeSlots;
+      if (preferredTimeSlots != null)
+        updateData['preferred_time_slots'] = preferredTimeSlots;
       if (favoriteMoods != null) updateData['favorite_moods'] = favoriteMoods;
-      if (dietaryRestrictions != null) updateData['dietary_restrictions'] = dietaryRestrictions;
-      if (mobilityRequirements != null) updateData['mobility_requirements'] = mobilityRequirements;
-      if (languagePreference != null) updateData['language_preference'] = languagePreference;
+      if (dietaryRestrictions != null)
+        updateData['dietary_restrictions'] = dietaryRestrictions;
+      if (mobilityRequirements != null)
+        updateData['mobility_requirements'] = mobilityRequirements;
+      if (languagePreference != null)
+        updateData['language_preference'] = languagePreference;
 
       await _supabase.from('user_preferences').upsert({
         'user_id': user.id,
         ...updateData,
       });
-      
+
       debugPrint('✅ User preferences updated');
     } catch (e) {
       debugPrint('❌ Error updating user preferences: $e');
@@ -827,7 +853,7 @@ class WanderMoodAIService {
     String? feedbackNotes,
   }) async {
     debugPrint('📝 Logging activity completion: $name');
-    
+
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
@@ -844,7 +870,7 @@ class WanderMoodAIService {
         'feedback_notes': feedbackNotes,
         'completed_at': MoodyClock.now().toIso8601String(),
       });
-      
+
       debugPrint('✅ Activity completion logged');
     } catch (e) {
       debugPrint('❌ Error logging activity completion: $e');
@@ -885,7 +911,8 @@ class WanderMoodAIService {
       }
 
       // No existing conversation, create a new one
-      final newId = 'conv_${user.id}_${MoodyClock.now().millisecondsSinceEpoch}';
+      final newId =
+          'conv_${user.id}_${MoodyClock.now().millisecondsSinceEpoch}';
       debugPrint('🆕 Created new conversation ID: $newId');
       return newId;
     } catch (e) {
@@ -894,7 +921,6 @@ class WanderMoodAIService {
       return _generateConversationId();
     }
   }
-
 }
 
-// Removed custom debugPrint function - using Flutter's debugPrint from foundation.dart instead 
+// Removed custom debugPrint function - using Flutter's debugPrint from foundation.dart instead

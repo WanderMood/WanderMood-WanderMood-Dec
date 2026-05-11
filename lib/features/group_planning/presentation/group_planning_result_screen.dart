@@ -14,6 +14,7 @@ import 'package:wandermood/core/domain/providers/location_notifier_provider.dart
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
 import 'package:wandermood/core/providers/user_location_provider.dart';
+import 'package:wandermood/core/services/partner_listing_service.dart';
 import 'package:wandermood/core/services/wandermood_ai_service.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_realtime_event_adapter.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_push_intent.dart';
@@ -51,17 +52,21 @@ class GroupPlanningResultScreen extends ConsumerStatefulWidget {
 // Dark header strip matches lobby; cream body matches [GroupPlanningLobbyScreen].
 const _wmForest = GroupPlanningUi.forest;
 const _wmSunset = Color(0xFFE8784A);
+
 /// Light ink on dark bars (header, loading, bottom CTA strip).
 const _textPrimary = Color(0xFFF5F0E8);
 const _mint = Color(0xFF5DCAA5);
 const _starGold = Color(0xFFD4A012);
+
 /// Primary copy on white Mood Match activity cards (high contrast).
 const _slotCardBodyInk = Color(0xFF000000);
+
 /// Same as lobby Mood Match body: titles and copy on [GroupPlanningUi.cream].
 const _creamInk = GroupPlanningUi.charcoal;
 const _creamInkSoft = GroupPlanningUi.stone;
 
-class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultScreen> {
+class _GroupPlanningResultScreenState
+    extends ConsumerState<GroupPlanningResultScreen> {
   void _agentLogMoodMatch(
     String hypothesisId,
     String message, {
@@ -80,7 +85,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       };
       File('/Users/edviennemerencia/WanderMood-WanderMood-Dec/.cursor/debug-9a3a3b.log')
-          .writeAsStringSync('${jsonEncode(entry)}\n', mode: FileMode.append, flush: true);
+          .writeAsStringSync('${jsonEncode(entry)}\n',
+              mode: FileMode.append, flush: true);
     } catch (_) {}
   }
 
@@ -98,6 +104,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
   bool _ownerBatchSaving = false;
   int _slotCarouselIndex = 0;
   PageController? _slotPageController;
+
   /// True once this session’s plan is already in [scheduled_activities] for the user.
   bool _savedToMyDay = false;
 
@@ -230,7 +237,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     Map<String, dynamic> row,
     AppLocalizations l10n,
   ) {
-    final sid = row['sender_id']?.toString() ?? row['related_user_id']?.toString();
+    final sid =
+        row['sender_id']?.toString() ?? row['related_user_id']?.toString();
     if (sid != null && sid.isNotEmpty) {
       for (final m in _members) {
         if (m.member.userId == sid) return _firstName(m, l10n);
@@ -415,8 +423,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         _savedToMyDay = savedIds.contains(widget.sessionId);
         _loading = false;
         if (isInitialLoad) {
-          _slotCarouselIndex =
-              _initialSlotCarouselIndex(planData, session);
+          _slotCarouselIndex = _initialSlotCarouselIndex(planData, session);
           _slotPageController?.dispose();
           _slotPageController = PageController(
             initialPage:
@@ -436,7 +443,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
           _ownerSlotDraft
             ..clear()
             ..addAll({
-              for (final s in GroupPlanV2.slots) if (oc[s] == true) s,
+              for (final s in GroupPlanV2.slots)
+                if (oc[s] == true) s,
             });
         }
       });
@@ -457,9 +465,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         setState(() {
-          _error = l10n == null
-              ? null
-              : GroupPlanningUi.classifyError(l10n, e);
+          _error = l10n == null ? null : GroupPlanningUi.classifyError(l10n, e);
           _loading = false;
         });
       }
@@ -511,8 +517,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     // Owner resolve + guest push need the guest's auth id. `_guestMember()` can
     // be null briefly or if member rows are out of sync; `requestedBy` on the
     // swap is still the guest when they initiated the request.
-    final guestUserIdForSheet =
-        guestId ?? (swapBy != ownerId ? swapBy : null);
+    final guestUserIdForSheet = guestId ?? (swapBy != ownerId ? swapBy : null);
     _swapDecisionSheetsShown.add(key);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -576,8 +581,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     return uid != null && uid == _session?.createdBy;
   }
 
-  bool _sentToGuest(Map<String, dynamic>? data) =>
-      data?['sentToGuest'] == true;
+  bool _sentToGuest(Map<String, dynamic>? data) => data?['sentToGuest'] == true;
 
   Map<String, bool> _oc(Map? p) =>
       GroupPlanV2.boolSlotMap(p?['ownerConfirmed']);
@@ -745,7 +749,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
     }
 
     return normalize(_session?.plannedDate) ??
-        normalize(await MoodMatchSessionPrefs.readPlannedDate(widget.sessionId)) ??
+        normalize(
+            await MoodMatchSessionPrefs.readPlannedDate(widget.sessionId)) ??
         normalize(_planData?['planned_date'] as String?);
   }
 
@@ -755,7 +760,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       ref.read(selectedMyDayDateProvider.notifier).state =
           DateTime(d.year, d.month, d.day);
     }
-    unawaited(MoodMatchSessionPrefs.savePlannedDate(widget.sessionId, yyyyMmDd));
+    unawaited(
+        MoodMatchSessionPrefs.savePlannedDate(widget.sessionId, yyyyMmDd));
     ref.invalidate(scheduledActivitiesForTodayProvider);
     ref.invalidate(todayActivitiesProvider);
   }
@@ -1057,24 +1063,24 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       final owner = _ownerMember();
       final guest = _guestMember();
       final uid = Supabase.instance.client.auth.currentUser?.id;
-      final String? notifyUserId = uid != null && owner != null &&
-              uid == owner.member.userId
-          ? guest?.member.userId
-          : owner?.member.userId;
+      final String? notifyUserId =
+          uid != null && owner != null && uid == owner.member.userId
+              ? guest?.member.userId
+              : owner?.member.userId;
       // Draft phase: owner refines before "Send to guest" — no swap ping to guest.
       if (notifyUserId != null && sent) {
         try {
           await ref.read(groupPlanningRepositoryProvider).sendPlanUpdateEvent(
-                targetUserId: notifyUserId,
-                sessionId: widget.sessionId,
-                payload: {
-                  'event': 'swap_requested',
-                  'slot': slot,
-                  'session_id': widget.sessionId,
-                  'proposed_place_name':
-                      (activity['name'] ?? activity['title'] ?? '').toString(),
-                },
-              );
+            targetUserId: notifyUserId,
+            sessionId: widget.sessionId,
+            payload: {
+              'event': 'swap_requested',
+              'slot': slot,
+              'session_id': widget.sessionId,
+              'proposed_place_name':
+                  (activity['name'] ?? activity['title'] ?? '').toString(),
+            },
+          );
         } catch (_) {}
       }
       if (mounted) Navigator.of(context).pop();
@@ -1115,6 +1121,11 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
         plannedDayLocal = DateTime(l.year, l.month, l.day);
       }
     }
+    final partnerContext =
+        await PartnerListingService.buildMoodMatchPartnerContext(
+      city: city,
+      sharedMoods: moods,
+    );
     final ai = await WanderMoodAIService.getGroupMatchCreateDayPlan(
       moods: moods,
       location: city,
@@ -1122,6 +1133,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       longitude: lng,
       languageCode: prefs.languagePreference,
       plannedDay: plannedDayLocal,
+      partnerContext: partnerContext,
     );
     if (ai.recommendations.isEmpty) return;
 
@@ -1233,7 +1245,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                       final name =
                           (o['name'] ?? o['title'] ?? 'Place').toString();
                       final rating = (o['rating'] as num?)?.toDouble() ?? 0;
-                      final url = _activityImageUrl(Map<String, dynamic>.from(o));
+                      final url =
+                          _activityImageUrl(Map<String, dynamic>.from(o));
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Material(
@@ -1346,14 +1359,14 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       if (owner != null) {
         try {
           await ref.read(groupPlanningRepositoryProvider).sendPlanUpdateEvent(
-                targetUserId: owner.member.userId,
-                sessionId: widget.sessionId,
-                payload: {
-                  'event': 'swap_declined',
-                  'slot': slot,
-                  'session_id': widget.sessionId,
-                },
-              );
+            targetUserId: owner.member.userId,
+            sessionId: widget.sessionId,
+            payload: {
+              'event': 'swap_declined',
+              'slot': slot,
+              'session_id': widget.sessionId,
+            },
+          );
         } catch (_) {}
       }
       await _load();
@@ -1374,14 +1387,14 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       if (guest != null && _sentToGuest(_planData)) {
         try {
           await ref.read(groupPlanningRepositoryProvider).sendPlanUpdateEvent(
-                targetUserId: guest.member.userId,
-                sessionId: widget.sessionId,
-                payload: {
-                  'event': 'swap_declined',
-                  'slot': slot,
-                  'session_id': widget.sessionId,
-                },
-              );
+            targetUserId: guest.member.userId,
+            sessionId: widget.sessionId,
+            payload: {
+              'event': 'swap_declined',
+              'slot': slot,
+              'session_id': widget.sessionId,
+            },
+          );
         } catch (_) {}
       }
       await _load();
@@ -1528,9 +1541,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
           )
         : l10n.moodMatchPlanV2GuestMoody(ownerName);
 
-    final dateStr = plan['planned_date'] as String? ??
-        _session?.plannedDate ??
-        '';
+    final dateStr =
+        plan['planned_date'] as String? ?? _session?.plannedDate ?? '';
     String dayPretty = dateStr;
     final dt = DateTime.tryParse(dateStr);
     if (dt != null) {
@@ -1539,8 +1551,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
 
     final sent = _sentToGuest(plan);
     final guestWaiting = !_isOwner && !sent;
-    final activitySlots =
-        GroupPlanV2.slotsRequiringConfirmation(plan).toList();
+    final activitySlots = GroupPlanV2.slotsRequiringConfirmation(plan).toList();
     final activityCount = activitySlots.length;
     final carouselIdx =
         _slotCarouselIndex.clamp(0, GroupPlanV2.slots.length - 1);
@@ -1591,7 +1602,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.refresh_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.refresh_rounded,
+                        color: Colors.white70),
                     onPressed: _load,
                   ),
                 ],
@@ -1656,8 +1668,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      GroupPlanningUi.moodMatchShadow(0.4),
+                                  color: GroupPlanningUi.moodMatchShadow(0.4),
                                   blurRadius: 22,
                                   offset: const Offset(0, 10),
                                 ),
@@ -1669,8 +1680,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                 vertical: 14,
                               ),
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.stretch,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _moodyHeroLine(
@@ -1686,8 +1696,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                           child: Material(
                             color: GroupPlanningUi.cream,
                             elevation: 8,
-                            shadowColor:
-                                GroupPlanningUi.moodMatchShadow(0.35),
+                            shadowColor: GroupPlanningUi.moodMatchShadow(0.35),
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
                                 top: Radius.circular(28),
@@ -1702,8 +1711,7 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                 120,
                               ),
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.stretch,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   Center(
                                     child: Container(
@@ -1843,8 +1851,9 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             child: Text(
               text,
               maxLines: maxLines,
-              overflow:
-                  maxLines != null ? TextOverflow.ellipsis : TextOverflow.visible,
+              overflow: maxLines != null
+                  ? TextOverflow.ellipsis
+                  : TextOverflow.visible,
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontStyle: FontStyle.italic,
@@ -1928,8 +1937,9 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       decoration: BoxDecoration(
-                        color:
-                            selected ? GroupPlanningUi.forest : Colors.transparent,
+                        color: selected
+                            ? GroupPlanningUi.forest
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Center(
@@ -1985,7 +1995,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       color: GroupPlanningUi.forestTint.withValues(alpha: 0.35),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: GroupPlanningUi.cardBorder.withValues(alpha: 0.6)),
+        side: BorderSide(
+            color: GroupPlanningUi.cardBorder.withValues(alpha: 0.6)),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
@@ -2264,11 +2275,9 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
       if (by != null && ownerId != null && by == ownerId) continue;
       final proposed = r['proposedActivity'];
       if (proposed is! Map) continue;
-      final propName =
-          (proposed['name'] ?? proposed['title'] ?? '').toString();
+      final propName = (proposed['name'] ?? proposed['title'] ?? '').toString();
       final act = GroupPlanV2.activityForSlot(_planData, slot);
-      final origName =
-          (act?['name'] ?? act?['title'] ?? '').toString();
+      final origName = (act?['name'] ?? act?['title'] ?? '').toString();
       widgets.add(
         Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -2505,8 +2514,8 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
             !placeBlurp.startsWith(moodyStory)
         ? placeBlurp
         : '';
-    final planFullySignedOff = _allGuestConfirmed(_planData) &&
-        _allOwnerConfirmed(_planData);
+    final planFullySignedOff =
+        _allGuestConfirmed(_planData) && _allOwnerConfirmed(_planData);
 
     String? statusBadge;
     Color statusColor = const Color(0xFF5DCAA5);
@@ -2669,223 +2678,270 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                       ),
                   ],
                 ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      place.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: _slotCardBodyInk,
-                        height: 1.25,
-                      ),
-                    ),
-                    if (moodLine != null) ...[
-                      const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       Text(
-                        moodLine,
-                        maxLines: 1,
+                        place.name,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          height: 1.35,
-                          color: const Color(0xFF2A6049),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: _slotCardBodyInk,
+                          height: 1.25,
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 8),
-                    _slotCardMetaLine(
-                      rating: place.rating,
-                      costRaw: act['cost'],
-                      typeLabel: typeLabel,
-                    ),
-                    // Fixed vertical space so every slot card reads as the same
-                    // height, whether the model attached a long Moody line or not.
-                    SizedBox(
-                      height: 104,
-                      child: primaryStory.isEmpty && secondaryStory.isEmpty
-                          ? const SizedBox.shrink()
-                          : Column(
+                      if (moodLine != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          moodLine,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            height: 1.35,
+                            color: const Color(0xFF2A6049),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      _slotCardMetaLine(
+                        rating: place.rating,
+                        costRaw: act['cost'],
+                        typeLabel: typeLabel,
+                      ),
+                      // Fixed vertical space so every slot card reads as the same
+                      // height, whether the model attached a long Moody line or not.
+                      SizedBox(
+                        height: 104,
+                        child: primaryStory.isEmpty && secondaryStory.isEmpty
+                            ? const SizedBox.shrink()
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (primaryStory.isNotEmpty)
+                                    Text(
+                                      primaryStory.startsWith('✨')
+                                          ? primaryStory
+                                          : '✨ $primaryStory',
+                                      maxLines: 4,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.45,
+                                        color: _slotCardBodyInk.withValues(
+                                            alpha: 0.82),
+                                      ),
+                                    ),
+                                  if (secondaryStory.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      secondaryStory,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        height: 1.45,
+                                        fontWeight: FontWeight.w500,
+                                        color: _slotCardBodyInk.withValues(
+                                            alpha: 0.76),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                      ),
+                      if (!_isOwner &&
+                          sent &&
+                          guestOk &&
+                          !pendingSwap &&
+                          !planFullySignedOff) ...[
+                        const SizedBox(height: 6),
+                        Center(
+                          child: TextButton(
+                            onPressed: _saving
+                                ? null
+                                : () => _onGuestUnconfirmSlot(slot),
+                            child: Text(l10n.moodMatchPlanV2UndoMyChoice),
+                          ),
+                        ),
+                      ],
+                      if (bothConfirmedOnSlot) ...[
+                        const SizedBox(height: 12),
+                        GroupPlanningResultSlotBothInFooter(
+                          l10n: l10n,
+                          isOwner: _isOwner,
+                          ownerMember: ownerMv,
+                          guestMember: guestMv,
+                          ownerName: ownerName,
+                          guestName: guestName,
+                        ),
+                      ],
+                      if (_isOwner) ...[
+                        const SizedBox(height: 10),
+                        if (pendingSwap &&
+                            ownerId != null &&
+                            swapBy == ownerId) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _wmSunset.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _wmSunset.withValues(alpha: 0.35),
+                              ),
+                            ),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                if (primaryStory.isNotEmpty)
-                                  Text(
-                                    primaryStory.startsWith('✨')
-                                        ? primaryStory
-                                        : '✨ $primaryStory',
-                                    maxLines: 4,
-                                    overflow: TextOverflow.ellipsis,
-                                    softWrap: true,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontStyle: FontStyle.italic,
-                                      fontWeight: FontWeight.w600,
-                                      height: 1.45,
-                                      color: _slotCardBodyInk
-                                          .withValues(alpha: 0.82),
+                                Text(
+                                  l10n.moodMatchPlanV2WaitingGuestApproveSwap(
+                                    guestName,
+                                  ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: _slotCardBodyInk,
+                                    height: 1.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                OutlinedButton(
+                                  onPressed: _saving
+                                      ? null
+                                      : () => _ownerWithdrawSwap(slot),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _slotCardBodyInk,
+                                    side: BorderSide(
+                                      color: _slotCardBodyInk.withValues(
+                                        alpha: 0.35,
+                                      ),
                                     ),
                                   ),
-                                if (secondaryStory.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    secondaryStory,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    softWrap: true,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      height: 1.45,
-                                      fontWeight: FontWeight.w500,
-                                      color: _slotCardBodyInk
-                                          .withValues(alpha: 0.76),
-                                    ),
-                                  ),
-                                ],
+                                  child: Text(l10n.moodMatchPlanV2WithdrawSwap),
+                                ),
                               ],
                             ),
-                    ),
-                    if (!_isOwner &&
-                        sent &&
-                        guestOk &&
-                        !pendingSwap &&
-                        !planFullySignedOff) ...[
-                      const SizedBox(height: 6),
-                      Center(
-                        child: TextButton(
-                          onPressed: _saving
-                              ? null
-                              : () => _onGuestUnconfirmSlot(slot),
-                          child: Text(l10n.moodMatchPlanV2UndoMyChoice),
-                        ),
-                      ),
-                    ],
-                    if (bothConfirmedOnSlot) ...[
-                      const SizedBox(height: 12),
-                      GroupPlanningResultSlotBothInFooter(
-                        l10n: l10n,
-                        isOwner: _isOwner,
-                        ownerMember: ownerMv,
-                        guestMember: guestMv,
-                        ownerName: ownerName,
-                        guestName: guestName,
-                      ),
-                    ],
-                    if (_isOwner) ...[
-                      const SizedBox(height: 10),
-                      if (pendingSwap &&
-                          ownerId != null &&
-                          swapBy == ownerId) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: _wmSunset.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _wmSunset.withValues(alpha: 0.35),
+                          ),
+                        ] else if (pendingSwap &&
+                            guestUserId != null &&
+                            swapBy == guestUserId) ...[
+                          Text(
+                            l10n.moodMatchPlanV2RespondSwapsOnCards,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: _slotCardBodyInk.withValues(alpha: 0.88),
+                              fontStyle: FontStyle.italic,
+                              height: 1.35,
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                        ] else if (!ownerLocks) ...[
+                          Row(
                             children: [
-                              Text(
-                                l10n.moodMatchPlanV2WaitingGuestApproveSwap(
-                                  guestName,
+                              if (!sent) ...[
+                                Expanded(
+                                  child: draftSelected
+                                      ? FilledButton.icon(
+                                          onPressed: _saving
+                                              ? null
+                                              : () =>
+                                                  _toggleOwnerSlotDraft(slot),
+                                          icon: const Icon(
+                                            Icons.lock_outline_rounded,
+                                            size: 18,
+                                          ),
+                                          label: Text(
+                                            l10n.moodMatchPlanV2YourPickSaved,
+                                          ),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFFEAE6DF,
+                                            ),
+                                            foregroundColor: _slotCardBodyInk,
+                                            elevation: 0,
+                                            shadowColor: Colors.transparent,
+                                            shape: const StadiumBorder(),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                        )
+                                      : FilledButton(
+                                          onPressed: _saving
+                                              ? null
+                                              : () =>
+                                                  _toggleOwnerSlotDraft(slot),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: _wmForest,
+                                            foregroundColor: Colors.white,
+                                            shape: const StadiumBorder(),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            l10n.moodMatchPlanV2PickThis,
+                                          ),
+                                        ),
                                 ),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: _slotCardBodyInk,
-                                  height: 1.35,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              OutlinedButton(
-                                onPressed: _saving
-                                    ? null
-                                    : () => _ownerWithdrawSwap(slot),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: _slotCardBodyInk,
-                                  side: BorderSide(
-                                    color: _slotCardBodyInk.withValues(
-                                      alpha: 0.35,
+                                const SizedBox(width: 8),
+                              ],
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _saving || pendingSwap
+                                      ? null
+                                      : () => _openSwapSheet(slot, l10n),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _slotCardBodyInk,
+                                    backgroundColor: Colors.white,
+                                    side: const BorderSide(
+                                      color: Color(0xFFD9D0C3),
                                     ),
+                                    shape: const StadiumBorder(),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                  child: Text(
+                                    l10n.moodMatchPlanV2SuggestDifferentPlace,
                                   ),
                                 ),
-                                child: Text(l10n.moodMatchPlanV2WithdrawSwap),
                               ),
                             ],
                           ),
-                        ),
-                      ] else if (pendingSwap &&
-                          guestUserId != null &&
-                          swapBy == guestUserId) ...[
-                        Text(
-                          l10n.moodMatchPlanV2RespondSwapsOnCards,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            color: _slotCardBodyInk.withValues(alpha: 0.88),
-                            fontStyle: FontStyle.italic,
-                            height: 1.35,
-                          ),
-                        ),
-                      ] else if (!ownerLocks) ...[
+                        ],
+                      ],
+                      if (!_isOwner &&
+                          _sentToGuest(_planData) &&
+                          !guestOk &&
+                          !pendingSwap) ...[
+                        const SizedBox(height: 10),
                         Row(
                           children: [
-                            if (!sent) ...[
-                              Expanded(
-                                child: draftSelected
-                                    ? FilledButton.icon(
-                                        onPressed: _saving
-                                            ? null
-                                            : () =>
-                                                _toggleOwnerSlotDraft(slot),
-                                        icon: const Icon(
-                                          Icons.lock_outline_rounded,
-                                          size: 18,
-                                        ),
-                                        label: Text(
-                                          l10n.moodMatchPlanV2YourPickSaved,
-                                        ),
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFFEAE6DF,
-                                          ),
-                                          foregroundColor: _slotCardBodyInk,
-                                          elevation: 0,
-                                          shadowColor: Colors.transparent,
-                                          shape: const StadiumBorder(),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                          ),
-                                        ),
-                                      )
-                                    : FilledButton(
-                                        onPressed: _saving
-                                            ? null
-                                            : () =>
-                                                _toggleOwnerSlotDraft(slot),
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: _wmForest,
-                                          foregroundColor: Colors.white,
-                                          shape: const StadiumBorder(),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          l10n.moodMatchPlanV2PickThis,
-                                        ),
-                                      ),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: _saving
+                                    ? null
+                                    : () => _onGuestConfirmSlot(slot),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _wmForest,
+                                  foregroundColor: Colors.white,
+                                  shape: const StadiumBorder(),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                ),
+                                child: Text(l10n.moodMatchPlanV2WorksForMe),
                               ),
-                              const SizedBox(width: 8),
-                            ],
+                            ),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: _saving || pendingSwap
@@ -2893,170 +2949,126 @@ class _GroupPlanningResultScreenState extends ConsumerState<GroupPlanningResultS
                                     : () => _openSwapSheet(slot, l10n),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: _slotCardBodyInk,
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                    color: Color(0xFFD9D0C3),
+                                  side: BorderSide(
+                                    color: _slotCardBodyInk.withValues(
+                                      alpha: 0.35,
+                                    ),
                                   ),
                                   shape: const StadiumBorder(),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
                                 ),
-                                child: Text(
-                                  l10n.moodMatchPlanV2SuggestDifferentPlace,
-                                ),
+                                child: Text(l10n.moodMatchPlanV2NotForMe),
                               ),
                             ),
                           ],
                         ),
                       ],
-                    ],
-                    if (!_isOwner &&
-                        _sentToGuest(_planData) &&
-                        !guestOk &&
-                        !pendingSwap) ...[
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: _saving
-                                  ? null
-                                  : () => _onGuestConfirmSlot(slot),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: _wmForest,
-                                foregroundColor: Colors.white,
-                                shape: const StadiumBorder(),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10),
-                              ),
-                              child: Text(l10n.moodMatchPlanV2WorksForMe),
+                      if (!_isOwner && pendingSwap) ...[
+                        const SizedBox(height: 10),
+                        if (ownerId != null && swapBy == ownerId) ...[
+                          Text(
+                            l10n.moodMatchPlanV2OwnerSuggestedDifferentPlace(
+                              ownerName,
+                              (swapReq['proposedActivity'] is Map
+                                      ? (swapReq['proposedActivity']
+                                              as Map)['name'] ??
+                                          ''
+                                      : '')
+                                  .toString(),
+                            ),
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: _slotCardBodyInk,
+                              height: 1.35,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: _saving || pendingSwap
-                                  ? null
-                                  : () => _openSwapSheet(slot, l10n),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: _slotCardBodyInk,
-                                side: BorderSide(
-                                  color: _slotCardBodyInk.withValues(
-                                    alpha: 0.35,
-                                  ),
-                                ),
-                                shape: const StadiumBorder(),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10),
-                              ),
-                              child: Text(l10n.moodMatchPlanV2NotForMe),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (!_isOwner && pendingSwap) ...[
-                      const SizedBox(height: 10),
-                      if (ownerId != null && swapBy == ownerId) ...[
-                        Text(
-                          l10n.moodMatchPlanV2OwnerSuggestedDifferentPlace(
-                            ownerName,
-                            (swapReq['proposedActivity'] is Map
-                                    ? (swapReq['proposedActivity'] as Map)['name'] ??
-                                        ''
-                                    : '')
-                                .toString(),
-                          ),
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: _slotCardBodyInk,
-                            height: 1.35,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: _saving
-                                    ? null
-                                    : () =>
-                                        _guestResolveSwap(slot, false, l10n),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: _slotCardBodyInk,
-                                  side: BorderSide(
-                                    color: _slotCardBodyInk.withValues(
-                                      alpha: 0.35,
-                                    ),
-                                  ),
-                                ),
-                                child: Text(
-                                  l10n.moodMatchPlanV2KeepCurrentPlace,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: FilledButton(
-                                onPressed: _saving
-                                    ? null
-                                    : () =>
-                                        _guestResolveSwap(slot, true, l10n),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _wmForest,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: Text(l10n.moodMatchPlanV2UseOwnersPick),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ] else if (guestUserId != null &&
-                          swapBy == guestUserId) ...[
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: _wmSunset.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                          const SizedBox(height: 8),
+                          Row(
                             children: [
-                              Text(
-                                l10n.moodMatchPlanV2YourSwapPendingOwner(
-                                  (swapReq['proposedActivity'] is Map
-                                          ? (swapReq['proposedActivity']
-                                                  as Map)['name'] ??
-                                              ''
-                                          : '')
-                                      .toString(),
-                                  ownerName,
-                                ),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: _slotCardBodyInk,
-                                  height: 1.35,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              OutlinedButton(
-                                onPressed: _saving
-                                    ? null
-                                    : () => _guestCancelSwap(slot),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: _slotCardBodyInk,
-                                  side: BorderSide(
-                                    color: _slotCardBodyInk.withValues(
-                                      alpha: 0.35,
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _saving
+                                      ? null
+                                      : () =>
+                                          _guestResolveSwap(slot, false, l10n),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _slotCardBodyInk,
+                                    side: BorderSide(
+                                      color: _slotCardBodyInk.withValues(
+                                        alpha: 0.35,
+                                      ),
                                     ),
                                   ),
+                                  child: Text(
+                                    l10n.moodMatchPlanV2KeepCurrentPlace,
+                                  ),
                                 ),
-                                child: Text(l10n.moodMatchPlanV2WithdrawSwap),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: _saving
+                                      ? null
+                                      : () =>
+                                          _guestResolveSwap(slot, true, l10n),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: _wmForest,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child:
+                                      Text(l10n.moodMatchPlanV2UseOwnersPick),
+                                ),
                               ),
                             ],
                           ),
-                        ),
+                        ] else if (guestUserId != null &&
+                            swapBy == guestUserId) ...[
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: _wmSunset.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  l10n.moodMatchPlanV2YourSwapPendingOwner(
+                                    (swapReq['proposedActivity'] is Map
+                                            ? (swapReq['proposedActivity']
+                                                    as Map)['name'] ??
+                                                ''
+                                            : '')
+                                        .toString(),
+                                    ownerName,
+                                  ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: _slotCardBodyInk,
+                                    height: 1.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                OutlinedButton(
+                                  onPressed: _saving
+                                      ? null
+                                      : () => _guestCancelSwap(slot),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _slotCardBodyInk,
+                                    side: BorderSide(
+                                      color: _slotCardBodyInk.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(l10n.moodMatchPlanV2WithdrawSwap),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
                     ],
                   ),
                 ),

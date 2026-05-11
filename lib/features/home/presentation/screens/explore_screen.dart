@@ -52,6 +52,9 @@ import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:wandermood/features/home/presentation/providers/explore_intent_provider.dart';
 import 'package:wandermood/features/places/providers/moody_place_card_blurb_provider.dart';
 import 'package:wandermood/core/services/business_listing_tracker.dart';
+import 'package:wandermood/core/services/partner_listing_service.dart';
+import 'package:wandermood/features/home/presentation/widgets/partner_stories_row.dart';
+import 'package:wandermood/features/home/presentation/widgets/partner_carousel.dart';
 
 part 'explore_screen_data.dart';
 part 'explore_screen_map_view.part.dart';
@@ -119,6 +122,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   /// Dedupes partner listing view RPCs for the same visible Explore slice.
   String? _partnerListingViewsTrackedSig;
+  List<PartnerListing> _partnerMoodMatches = const [];
+  List<PartnerListing> _partnerTrending = const [];
+  bool _partnerLoading = false;
 
   /// Incremented on pull-to-refresh so the feed re-shuffles within open/closed tiers
   /// (opening-only sort alone kept the same place on top every time).
@@ -300,6 +306,41 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
   }
 
+  List<String> _activeMoodFiltersForPartners() {
+    final out = <String>[];
+    if (_selectedMood != null && _selectedMood!.trim().isNotEmpty) {
+      out.add(_selectedMood!.trim().toLowerCase());
+    }
+    return out;
+  }
+
+  String _normalizePartnerPlaceId(String raw) {
+    final t = raw.trim();
+    if (t.startsWith('google_')) return t.substring('google_'.length);
+    return t;
+  }
+
+  Future<void> _refreshPartnerDataForCity(String city) async {
+    if (_partnerLoading) return;
+    _partnerLoading = true;
+    final moods = _activeMoodFiltersForPartners();
+    try {
+      final results = await Future.wait([
+        PartnerListingService.getMatchingMoods(city, moods),
+        PartnerListingService.getTrending(city),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _partnerMoodMatches = results[0] as List<PartnerListing>;
+        _partnerTrending = results[1] as List<PartnerListing>;
+      });
+    } catch (_) {
+      // Optional data layer; ignore failures.
+    } finally {
+      _partnerLoading = false;
+    }
+  }
+
   Future<void> _runExploreRichPrewarmQueue() async {
     try {
       while (mounted && _exploreRichPrewarmQueue.isNotEmpty) {
@@ -365,7 +406,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     if (!mounted) return;
     unawaited(_maybeLockSessionAnchor());
     final anchor = ref.read(exploreSessionAnchorProvider);
-    final city = anchor?.city ?? ref.read(locationNotifierProvider).value?.trim();
+    final city =
+        anchor?.city ?? ref.read(locationNotifierProvider).value?.trim();
     final hasPos =
         anchor != null || ref.read(userLocationProvider).value != null;
     if (city != null && city.isNotEmpty && hasPos) {
@@ -392,7 +434,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final city = ref.read(locationNotifierProvider).valueOrNull?.trim();
     final pos = ref.read(userLocationProvider).valueOrNull;
     if (city == null || city.isEmpty || pos == null) return;
-    ref.read(exploreSessionAnchorProvider.notifier).state = ExploreSessionAnchor(
+    ref.read(exploreSessionAnchorProvider.notifier).state =
+        ExploreSessionAnchor(
       city: city,
       latitude: pos.latitude,
       longitude: pos.longitude,
@@ -426,7 +469,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final city = ref.read(locationNotifierProvider).valueOrNull?.trim();
     final pos = ref.read(userLocationProvider).valueOrNull;
     if (city == null || city.isEmpty || pos == null) return;
-    ref.read(exploreSessionAnchorProvider.notifier).state = ExploreSessionAnchor(
+    ref.read(exploreSessionAnchorProvider.notifier).state =
+        ExploreSessionAnchor(
       city: city,
       latitude: pos.latitude,
       longitude: pos.longitude,
@@ -448,9 +492,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         pos.latitude,
         pos.longitude,
       );
-      if (moved >= 5000 &&
-          city != null &&
-          city.isNotEmpty) {
+      if (moved >= 5000 && city != null && city.isNotEmpty) {
         ref.read(exploreSessionAnchorProvider.notifier).state =
             ExploreSessionAnchor(
           city: city,
@@ -518,9 +560,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     await _maybeLockSessionAnchor();
     final anchor = ref.read(exploreSessionAnchorProvider);
-    final city = (anchor?.city ?? ref.read(locationNotifierProvider).value)
-            ?.trim() ??
-        '';
+    final city =
+        (anchor?.city ?? ref.read(locationNotifierProvider).value)?.trim() ??
+            '';
     if (city.isEmpty) return;
 
     if (_exploreBulkSeedGateCity != city) {
@@ -639,8 +681,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
     await _maybeLockSessionAnchor();
     final anchor = ref.read(exploreSessionAnchorProvider);
-    final cityForCache =
-        anchor?.city ?? ref.read(locationNotifierProvider).valueOrNull?.trim() ?? '';
+    final cityForCache = anchor?.city ??
+        ref.read(locationNotifierProvider).valueOrNull?.trim() ??
+        '';
 
     final connected = await ref.read(connectivityServiceProvider).isConnected;
     if (!connected) {
@@ -656,9 +699,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     // Always try Supabase `places_cache` first when no advanced filters —
     // never skip this path for "refresh" (pull-to-refresh uses cache + rotate;
     // moody Edge runs only inside getExplore / deferred stale refresh).
-    if (!skipPlacesCacheFirstPass &&
-        cityForCache.isNotEmpty &&
-        mounted) {
+    if (!skipPlacesCacheFirstPass && cityForCache.isNotEmpty && mounted) {
       final client = Supabase.instance.client;
       final exploreLang = PlacesCacheUtils.effectiveExploreLanguageTag(
         appLocale: ref.read(localeProvider),
@@ -789,9 +830,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     if (!mounted) return;
     await _maybeLockSessionAnchor();
     final anchor = ref.read(exploreSessionAnchorProvider);
-    final city = anchor?.city ??
-        ref.read(locationNotifierProvider).value?.trim() ??
-        '';
+    final city =
+        anchor?.city ?? ref.read(locationNotifierProvider).value?.trim() ?? '';
     final position = anchor != null
         ? _positionForExploreLoad()
         : ref.read(userLocationProvider).value;
@@ -1041,7 +1081,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   void _applyRelatedSearchOption(String option) {
     _searchDebounce?.cancel();
     _searchController.text = option;
-    _searchController.selection = TextSelection.collapsed(offset: option.length);
+    _searchController.selection =
+        TextSelection.collapsed(offset: option.length);
     setState(() {
       _searchQuery = option;
       _isSearching = true;
@@ -1335,11 +1376,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return 'google_$t';
       return t;
     }
+
     final targetId = normalizedId(place.id);
     HapticFeedback.lightImpact();
     unawaited(_trackExploreTasteInteraction(place, 'tapped'));
-    final seeded =
-        targetId != place.id ? place.copyWith(id: targetId) : place;
+    final seeded = targetId != place.id ? place.copyWith(id: targetId) : place;
     ref.read(placesServiceProvider.notifier).cachePlaceObject(seeded);
 
     final l10n = AppLocalizations.of(context)!;
@@ -1406,9 +1447,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Uri _exploreGoogleWebDirectionsUri(double? lat, double? lng, String title) {
-    if (lat != null &&
-        lng != null &&
-        (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
+    if (lat != null && lng != null && (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
       return Uri.parse(
         'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
       );
@@ -1419,9 +1458,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Uri _exploreGoogleAppDirectionsUri(double? lat, double? lng, String title) {
-    if (lat != null &&
-        lng != null &&
-        (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
+    if (lat != null && lng != null && (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
       return Uri.parse(
         'comgooglemaps://?daddr=$lat,$lng&directionsmode=driving',
       );
@@ -1430,9 +1467,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Uri _exploreAppleMapsUri(double? lat, double? lng, String title) {
-    if (lat != null &&
-        lng != null &&
-        (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
+    if (lat != null && lng != null && (lat.abs() > 1e-5 || lng.abs() > 1e-5)) {
       return Uri.parse('maps://?q=${Uri.encodeComponent(title)}&ll=$lat,$lng');
     }
     return Uri.parse('maps://?q=${Uri.encodeComponent(title)}');
@@ -1516,7 +1551,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   ),
                   onTap: () async {
                     Navigator.pop(sheetContext);
-                    await launchUrl(opt.uri, mode: LaunchMode.externalApplication);
+                    await launchUrl(opt.uri,
+                        mode: LaunchMode.externalApplication);
                   },
                 ),
               ),
@@ -1547,7 +1583,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             : 'evening';
     final allTypes = <String>{
       ...place.types,
-      if ((place.primaryType ?? '').trim().isNotEmpty) place.primaryType!.trim(),
+      if ((place.primaryType ?? '').trim().isNotEmpty)
+        place.primaryType!.trim(),
     }.toList();
 
     try {
@@ -1588,7 +1625,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         return l10n.profileModeTravelFeature1;
       case 'events':
         return l10n.exploreCategoryChipNightlife;
-      default: return key;
+      default:
+        return key;
     }
   }
 
@@ -1742,8 +1780,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         }
       }
     }
-    list
-      ..clear();
+    list..clear();
     for (final t in [0, 1, 2]) {
       final bucket = byTier[t];
       if (bucket == null) continue;
@@ -1754,8 +1791,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   /// Substring match across fields we keep on [Place] (not menus/reviews — those are not stored here).
   static bool _placeTextContainsQuery(Place place, String queryLower) {
     if (queryLower.isEmpty) return true;
-    bool hay(String? s) =>
-        s != null && s.toLowerCase().contains(queryLower);
+    bool hay(String? s) => s != null && s.toLowerCase().contains(queryLower);
     if (hay(place.name)) return true;
     if (hay(place.description)) return true;
     if (hay(place.address)) return true;
@@ -1782,8 +1818,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     final hour = DateTime.now().hour;
     final queryLower = _searchQuery.toLowerCase().trim();
-    final trustBackendSearch =
-        _searchResults != null && queryLower.isNotEmpty;
+    final trustBackendSearch = _searchResults != null && queryLower.isNotEmpty;
 
     var filteredPlaces = places.where((place) {
       // Always strip utility / errand places (supermarkets, pharmacies, gas stations, etc.)
@@ -1940,15 +1975,36 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   static const _kUtilityTypes = {
-    'supermarket', 'grocery_or_supermarket', 'convenience_store', 'gas_station',
-    'pharmacy', 'drugstore', 'hardware_store', 'car_repair', 'car_wash',
-    'car_dealer', 'storage', 'laundry', 'moving_company', 'locksmith',
-    'insurance_agency', 'bank', 'atm', 'post_office', 'government_office',
+    'supermarket',
+    'grocery_or_supermarket',
+    'convenience_store',
+    'gas_station',
+    'pharmacy',
+    'drugstore',
+    'hardware_store',
+    'car_repair',
+    'car_wash',
+    'car_dealer',
+    'storage',
+    'laundry',
+    'moving_company',
+    'locksmith',
+    'insurance_agency',
+    'bank',
+    'atm',
+    'post_office',
+    'government_office',
   };
 
   static const _kUtilityNamePatterns = [
-    'jumbo', 'albert heijn', 'lidl', 'aldi', 'plus supermarkt',
-    'dirk van den broek', 'dekamarkt', 'spar supermarkt',
+    'jumbo',
+    'albert heijn',
+    'lidl',
+    'aldi',
+    'plus supermarkt',
+    'dirk van den broek',
+    'dekamarkt',
+    'spar supermarkt',
   ];
 
   bool _isUtilityPlace(Place place) {
@@ -1967,7 +2023,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             .toLowerCase();
 
     // Breakfast/brunch places (strongly breakfast-cued): hide after 14:00
-    final isBreakfastOnly = (types.contains('bakery') || types.contains('breakfast_restaurant')) &&
+    final isBreakfastOnly = (types.contains('bakery') ||
+            types.contains('breakfast_restaurant')) &&
         RegExp(r'\b(ontbijt|breakfast only|brunch only)\b').hasMatch(nameLower);
     if (isBreakfastOnly && hour >= 14) return false;
 
@@ -2028,8 +2085,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     if (_pescatarian &&
         !_backendNamedFilterActive('pescatarian') &&
         !_placeSupportsVeganVegetarian(place)) {
-      final blob =
-          '${place.name} ${place.description ?? ''}'.toLowerCase();
+      final blob = '${place.name} ${place.description ?? ''}'.toLowerCase();
       if (!RegExp(r'pescatar|seafood|fish|sushi|ceviche|poke|oyster')
           .hasMatch(blob)) {
         return false;
@@ -2416,9 +2472,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final rating = place.rating;
     final reviews = place.reviewCount;
     final sig = (place.socialSignal ?? '').toLowerCase().trim();
-    final moodyBoost = sig == 'trending' ||
-        sig == 'popular' ||
-        sig == 'loved_by_locals';
+    final moodyBoost =
+        sig == 'trending' || sig == 'popular' || sig == 'loved_by_locals';
     if (moodyBoost && rating >= 4.0 && reviews >= 25) return true;
     if (rating >= 4.35 && reviews >= 50) return true;
     if (rating >= 4.2 && reviews >= 180) return true;
@@ -2442,8 +2497,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
                 .toLowerCase();
         return RegExp(
-          r'walking tour|city tour|guided tour|free tour|architecture tour|self[- ]guided',
-        ).hasMatch(blob) ||
+              r'walking tour|city tour|guided tour|free tour|architecture tour|self[- ]guided',
+            ).hasMatch(blob) ||
             place.types.any((t) => {
                   'tourist_attraction',
                   'point_of_interest',
@@ -2476,8 +2531,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
                 .toLowerCase();
         return RegExp(
-          r'boat|harbor cruise|canal cruise|splash|water taxi|rib',
-        ).hasMatch(boatBlob) ||
+              r'boat|harbor cruise|canal cruise|splash|water taxi|rib',
+            ).hasMatch(boatBlob) ||
             place.types.any((t) => {
                   'marina',
                   'tourist_attraction',
@@ -2487,8 +2542,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
                 .toLowerCase();
         return RegExp(
-          r'landmark|viewpoint|observation|tower|iconic|panoramic|euromast',
-        ).hasMatch(landmarkBlob) ||
+              r'landmark|viewpoint|observation|tower|iconic|panoramic|euromast',
+            ).hasMatch(landmarkBlob) ||
             place.types.any((t) => {
                   'historical_landmark',
                   'tourist_attraction',
@@ -2499,8 +2554,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             '${place.name} ${place.description ?? ''} ${place.editorialSummary ?? ''}'
                 .toLowerCase();
         return RegExp(
-          r'event|concert|show|theater|theatre|comedy|live music|festival|night',
-        ).hasMatch(eventsBlob) ||
+              r'event|concert|show|theater|theatre|comedy|live music|festival|night',
+            ).hasMatch(eventsBlob) ||
             place.types.any((t) => {
                   'night_club',
                   'bar',
@@ -2519,7 +2574,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           'marina',
           'hiking_area',
         };
-        return place.types.any((type) => natureTypes.contains(type.toLowerCase()));
+        return place.types
+            .any((type) => natureTypes.contains(type.toLowerCase()));
       case 'food':
         const foodTypes = <String>{
           'restaurant',
@@ -2533,7 +2589,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           'ice_cream_shop',
           'dessert_shop',
         };
-        return place.types.any((type) => foodTypes.contains(type.toLowerCase()));
+        return place.types
+            .any((type) => foodTypes.contains(type.toLowerCase()));
       case 'activities':
         const activityTypes = <String>{
           'amusement_park',
@@ -2556,28 +2613,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           'golf_course',
           'ski_resort',
         };
-        if (place.types.any((type) => activityTypes.contains(type.toLowerCase()))) {
+        if (place.types
+            .any((type) => activityTypes.contains(type.toLowerCase()))) {
           if (place.types.any((type) => {
-                'restaurant',
-                'cafe',
-                'bakery',
-                'meal_takeaway',
-              }.contains(type.toLowerCase())) &&
+                    'restaurant',
+                    'cafe',
+                    'bakery',
+                    'meal_takeaway',
+                  }.contains(type.toLowerCase())) &&
               !place.types.any((type) => {
-                'amusement_park',
-                'aquarium',
-                'bowling_alley',
-                'casino',
-                'movie_theater',
-                'night_club',
-                'stadium',
-                'zoo',
-                'gym',
-                'fitness_center',
-                'sports_complex',
-                'golf_course',
-                'ski_resort',
-              }.contains(type.toLowerCase()))) {
+                    'amusement_park',
+                    'aquarium',
+                    'bowling_alley',
+                    'casino',
+                    'movie_theater',
+                    'night_club',
+                    'stadium',
+                    'zoo',
+                    'gym',
+                    'fitness_center',
+                    'sports_complex',
+                    'golf_course',
+                    'ski_resort',
+                  }.contains(type.toLowerCase()))) {
             return false;
           }
           return true;
@@ -2751,87 +2809,87 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          // Match [DynamicMyDayScreen] title row: horizontal 24, top 16, wmTitle scale.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.navExplore,
-                    style: GoogleFonts.poppins(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
-                      color: Colors.grey[900],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const LocationDropdown(),
-              ],
-            ),
-          ),
-          const SizedBox(height: 6),
-          ConversationalExploreHeader(
-            onSearchChanged: _onConversationalSearchChanged,
-            onFilterTap: _showAdvancedFilters,
-            activeFiltersCount: _activeFiltersCount,
-            isGridView: _isGridView,
-            isMapView: _isMapView,
-            onViewToggle: (isGrid, isMap) {
-              setState(() {
-                _isGridView = isGrid;
-                _isMapView = isMap;
-              });
-            },
-            categoryKeys: _categories,
-            selectedCategory: _selectedCategory,
-            categoryLabel: _categoryLabel,
-            categoryEmoji: (k) => _filterIcons[k] ?? '📍',
-            onCategorySelected: _onCategorySelected,
-          ),
-          _buildExploreModeContextCard(),
-          if (_activeFiltersCount > 0) _buildExploreInlineFilterActions(),
-          if (showOfflineCachedHint)
+            // Match [DynamicMyDayScreen] title row: horizontal 24, top 16, wmTitle scale.
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEBF3EE),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFD0E4DA)),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.cloud_off_outlined,
-                        size: 18,
-                        color: _afWmForest.withValues(alpha: 0.9),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.navExplore,
+                      style: GoogleFonts.poppins(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                        color: Colors.grey[900],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          l10n.exploreOfflineShowingCached,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF2A6049),
-                            height: 1.35,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const LocationDropdown(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            ConversationalExploreHeader(
+              onSearchChanged: _onConversationalSearchChanged,
+              onFilterTap: _showAdvancedFilters,
+              activeFiltersCount: _activeFiltersCount,
+              isGridView: _isGridView,
+              isMapView: _isMapView,
+              onViewToggle: (isGrid, isMap) {
+                setState(() {
+                  _isGridView = isGrid;
+                  _isMapView = isMap;
+                });
+              },
+              categoryKeys: _categories,
+              selectedCategory: _selectedCategory,
+              categoryLabel: _categoryLabel,
+              categoryEmoji: (k) => _filterIcons[k] ?? '📍',
+              onCategorySelected: _onCategorySelected,
+            ),
+            _buildExploreModeContextCard(),
+            if (_activeFiltersCount > 0) _buildExploreInlineFilterActions(),
+            if (showOfflineCachedHint)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 4),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEBF3EE),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFD0E4DA)),
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.cloud_off_outlined,
+                          size: 18,
+                          color: _afWmForest.withValues(alpha: 0.9),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            l10n.exploreOfflineShowingCached,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF2A6049),
+                              height: 1.35,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ).animate().fadeIn(duration: 280.ms, curve: Curves.easeOut),
-        ],
+              ).animate().fadeIn(duration: 280.ms, curve: Curves.easeOut),
+          ],
         ),
       ),
     );
@@ -3033,6 +3091,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final userLocationAsync = ref.read(userLocationProvider);
     final currentCity = locationAsync.value ?? 'Rotterdam';
     final userLocation = userLocationAsync.value;
+    unawaited(_refreshPartnerDataForCity(currentCity));
 
     final List<Place> basePlaces =
         _searchResults != null ? _searchResults! : allPlaces;
@@ -3065,6 +3124,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       currentCity: currentCity,
     );
 
+    final activeMoodFilters = _activeMoodFiltersForPartners();
+    if (activeMoodFilters.isNotEmpty && _partnerMoodMatches.isNotEmpty) {
+      final partnerIds = _partnerMoodMatches
+          .map((p) => p.placeId)
+          .whereType<String>()
+          .map(_normalizePartnerPlaceId)
+          .toSet();
+      final partners = <Place>[];
+      final others = <Place>[];
+      for (final p in filteredPlaces) {
+        final id = _normalizePartnerPlaceId(p.id);
+        if (partnerIds.contains(id)) {
+          partners.add(p);
+        } else {
+          others.add(p);
+        }
+      }
+      filteredPlaces = [...partners, ...others];
+    }
+
     if (filteredPlaces.length < 5 && allPlaces.length >= 50) {
       debugPrint(
           '⚠️ Filters reduced results to ${filteredPlaces.length} places (${allPlaces.length} unfiltered).');
@@ -3073,6 +3152,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final visibleCount =
         math.min(_exploreVisiblePlaceCount, filteredPlaces.length);
     final visiblePlaces = filteredPlaces.sublist(0, visibleCount);
+    final partnerIds = _partnerMoodMatches
+        .map((p) => p.placeId)
+        .whereType<String>()
+        .map(_normalizePartnerPlaceId)
+        .toSet();
+    final carouselPlaces = filteredPlaces
+        .where((p) => partnerIds.contains(_normalizePartnerPlaceId(p.id)))
+        .take(8)
+        .toList();
     _enqueueVisibleRichPrewarm(visiblePlaces);
     _trackPartnerListingViewsForVisibleSlice(visiblePlaces);
     final hasMoreLocally = visibleCount < filteredPlaces.length;
@@ -3113,12 +3201,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: const Color(0xFFE8E2D8)),
+                                  border: Border.all(
+                                      color: const Color(0xFFE8E2D8)),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.05),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.05),
                                       blurRadius: 14,
                                       offset: const Offset(0, 4),
                                     ),
@@ -3157,7 +3245,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                                   _relatedSearchOptions.isNotEmpty) ...[
                                 const SizedBox(height: 16),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
                                   child: Wrap(
                                     alignment: WrapAlignment.center,
                                     spacing: 8,
@@ -3167,10 +3256,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                                         .map(
                                           (option) => InkWell(
                                             onTap: () =>
-                                                _applyRelatedSearchOption(option),
-                                            borderRadius: BorderRadius.circular(20),
+                                                _applyRelatedSearchOption(
+                                                    option),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 12,
                                                 vertical: 8,
                                               ),
@@ -3188,7 +3280,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w600,
-                                                  color: const Color(0xFF2A6049),
+                                                  color:
+                                                      const Color(0xFF2A6049),
                                                 ),
                                               ),
                                             ),
@@ -3200,9 +3293,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                               ],
                             ],
                           ).animate().fadeIn(
-                                duration: 320.ms,
-                                curve: Curves.easeOutCubic,
-                              ),
+                              duration: 320.ms,
+                              curve: Curves.easeOutCubic,
+                            ),
                   ),
                 ),
               ],
@@ -3285,8 +3378,27 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             key: const ValueKey<String>('explore_sliver_list'),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final place = visiblePlaces[index];
                 final ul = userLocationAsync.value;
+                final showCarousel = carouselPlaces.length >= 2;
+                final injectAt = math.min(4, visiblePlaces.length);
+                if (showCarousel && index == injectAt) {
+                  return PartnerCarousel(
+                    label: 'Aanbevolen voor jou',
+                    places: carouselPlaces,
+                    userLocation: ul,
+                    cityName: currentCity,
+                    photoSelectionSeed: _explorePlacePhotoRefreshSeed,
+                    onOpenPlace: _openPlaceFromExplore,
+                    onAddToMyDay: _showAddToMyDaySheet,
+                    onMoreTap: () {},
+                  ).animate().fadeIn(
+                        duration: 300.ms,
+                        delay: Duration(milliseconds: index * 50),
+                      );
+                }
+                final placeIndex =
+                    (showCarousel && index > injectAt) ? index - 1 : index;
+                final place = visiblePlaces[placeIndex];
                 return PlaceCard(
                   place: place,
                   userLocation: ul,
@@ -3304,7 +3416,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     duration: 300.ms,
                     delay: Duration(milliseconds: index * 50));
               },
-              childCount: visiblePlaces.length,
+              childCount:
+                  visiblePlaces.length + (carouselPlaces.length >= 2 ? 1 : 0),
             ),
           );
 
@@ -3317,7 +3430,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF8EE),
                   borderRadius: BorderRadius.circular(12),
@@ -3325,7 +3439,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.tune_rounded, size: 16, color: Color(0xFF2A6049)),
+                    const Icon(Icons.tune_rounded,
+                        size: 16, color: Color(0xFF2A6049)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -3343,8 +3458,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
           ),
         if (explanationSliver != null) explanationSliver,
+        if (_partnerTrending.length >= 3)
+          SliverToBoxAdapter(
+            child: PartnerStoriesRow(
+              partners: _partnerTrending,
+              label: 'Trending op WanderMood',
+              onTapPartnerPlace: _openPlaceFromExplore,
+            ),
+          ),
         SliverPadding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
           sliver: placesSliver,
         ),
         if (showExploreLoadMore) exploreFooterSliver,
@@ -3375,7 +3499,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeOut,
                 ),
-                child: const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
+                child: const Icon(Icons.arrow_upward,
+                    color: Colors.white, size: 18),
               ),
             ),
           ),
@@ -3415,7 +3540,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8),
-        body: userLocAsync.when(
+      body: userLocAsync.when(
         loading: () {
           final hasCached = _sections.any((s) => s.cards.isNotEmpty);
           if (hasCached) {
@@ -3539,8 +3664,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       selectedDate.day,
     );
 
-    final scheduledActivityService =
-        ref.read(scheduledActivityServiceProvider);
+    final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
     final occupied =
         await scheduledActivityService.getOccupiedTimeSlotKeysForPlaceOnDate(
       placeId: place.id,

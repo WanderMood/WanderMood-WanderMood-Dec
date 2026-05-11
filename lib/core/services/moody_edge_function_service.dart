@@ -15,7 +15,7 @@ class MoodyEdgeFunctionService {
   final SupabaseClient _supabase;
 
   MoodyEdgeFunctionService(this._supabase);
-  
+
   /// Wait for session to be fully ready (not just valid)
   /// This prevents race conditions during email verification
   Future<void> _waitForSessionReady() async {
@@ -24,7 +24,7 @@ class MoodyEdgeFunctionService {
       final user = _supabase.auth.currentUser;
       final session = _supabase.auth.currentSession;
       final token = session?.accessToken;
-      
+
       // All 3 must be true for session to be ready
       if (user != null && session != null && token != null) {
         // Double-check: verify token is not empty
@@ -35,16 +35,16 @@ class MoodyEdgeFunctionService {
           return;
         }
       }
-      
+
       // Wait 100ms before checking again
       await Future.delayed(const Duration(milliseconds: 100));
     }
-    
+
     // If we get here, session is still not ready after 2 seconds
     final user = _supabase.auth.currentUser;
     final session = _supabase.auth.currentSession;
     final token = session?.accessToken;
-    
+
     if (user == null || session == null || token == null) {
       throw Exception('Session not ready after waiting. Please sign in again.');
     }
@@ -71,12 +71,12 @@ class MoodyEdgeFunctionService {
     String? section,
     Map<String, dynamic>? filters,
     List<String>? namedFilters,
+
     /// BCP-47 primary tag (`en`, `nl`, `es`, …). Matches moody `normalizeAppLang`.
     String? languageCode,
     bool bypassPlacesCache = false,
   }) async {
-    final hasNamedFilters =
-        namedFilters != null && namedFilters.isNotEmpty;
+    final hasNamedFilters = namedFilters != null && namedFilters.isNotEmpty;
     try {
       if (location.isEmpty || location.trim().isEmpty) {
         throw const ExploreLocationException(ExploreLocationReason.missingCity);
@@ -118,7 +118,8 @@ class MoodyEdgeFunctionService {
       final user = _supabase.auth.currentUser;
 
       if (user == null || session == null || token == null) {
-        throw Exception('Session not ready. Please wait a moment and try again.');
+        throw Exception(
+            'Session not ready. Please wait a moment and try again.');
       }
 
       if (kDebugMode) {
@@ -169,13 +170,15 @@ class MoodyEdgeFunctionService {
 
       if (kDebugMode) {
         debugPrint('📡 Edge Function response status: ${response.statusCode}');
-        debugPrint('   🔑 Authorization header sent: Bearer ${token.substring(0, 20)}...');
+        debugPrint(
+            '   🔑 Authorization header sent: Bearer ${token.substring(0, 20)}...');
       }
 
       if (response.statusCode != 200) {
         final errorData = response.data;
         if (kDebugMode) {
-          debugPrint('❌ Edge Function error: Status ${response.statusCode}, Data: $errorData');
+          debugPrint(
+              '❌ Edge Function error: Status ${response.statusCode}, Data: $errorData');
         }
         if (response.statusCode == 503) {
           // Edge cold start / transient outage: fail soft for Explore UI.
@@ -196,11 +199,13 @@ class MoodyEdgeFunctionService {
             return fallback.places;
           }
           if (kDebugMode) {
-            debugPrint('⚠️ moody 503 -> returning empty explore list (no cache fallback)');
+            debugPrint(
+                '⚠️ moody 503 -> returning empty explore list (no cache fallback)');
           }
           return const <Place>[];
         }
-        throw Exception('Edge Function returned status ${response.statusCode}: ${errorData ?? 'Unknown error'}');
+        throw Exception(
+            'Edge Function returned status ${response.statusCode}: ${errorData ?? 'Unknown error'}');
       }
 
       final responseData = response.data as Map<String, dynamic>;
@@ -232,14 +237,19 @@ class MoodyEdgeFunctionService {
       // #region agent log – H-A: log photo_url distinctness from edge function cards
       final _photoUrls9a3a3b = <String>{};
       for (final c in cards.take(8)) {
-        final m9 = c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
+        final m9 =
+            c is Map<String, dynamic> ? c : Map<String, dynamic>.from(c as Map);
         _photoUrls9a3a3b.add((m9['photo_url'] as String?) ?? '');
       }
-      debugPrint('🔍 dbg9a3a3b explore_response: cached=${responseData['cached']} total=${cards.length} distinct_photo_urls=${_photoUrls9a3a3b.length}');
+      debugPrint(
+          '🔍 dbg9a3a3b explore_response: cached=${responseData['cached']} total=${cards.length} distinct_photo_urls=${_photoUrls9a3a3b.length}');
       for (int _i9 = 0; _i9 < cards.length && _i9 < 5; _i9++) {
-        final m9 = cards[_i9] is Map<String, dynamic> ? cards[_i9] as Map<String, dynamic> : Map<String, dynamic>.from(cards[_i9] as Map);
+        final m9 = cards[_i9] is Map<String, dynamic>
+            ? cards[_i9] as Map<String, dynamic>
+            : Map<String, dynamic>.from(cards[_i9] as Map);
         final url9 = (m9['photo_url'] as String?) ?? '';
-        debugPrint('  [${_i9}] ${m9['name']} | photo_url_path=${url9.length > 50 ? url9.substring(30, url9.length > 100 ? 100 : url9.length) : url9}');
+        debugPrint(
+            '  [${_i9}] ${m9['name']} | photo_url_path=${url9.length > 50 ? url9.substring(30, url9.length > 100 ? 100 : url9.length) : url9}');
       }
       // #endregion
 
@@ -247,12 +257,15 @@ class MoodyEdgeFunctionService {
         debugPrint('✅ Edge Function returned ${places.length} places');
         debugPrint('   cached: ${responseData['cached'] ?? false}');
         debugPrint('   total_found: ${responseData['total_found'] ?? 0}');
-        debugPrint('   unfiltered_total: ${responseData['unfiltered_total'] ?? places.length}');
-        
+        debugPrint(
+            '   unfiltered_total: ${responseData['unfiltered_total'] ?? places.length}');
+
         // CRITICAL: If filtered results < 5, log warning
-        final unfilteredTotal = responseData['unfiltered_total'] as int? ?? places.length;
+        final unfilteredTotal =
+            responseData['unfiltered_total'] as int? ?? places.length;
         if (places.length < 5 && unfilteredTotal >= 50) {
-          debugPrint('⚠️ Filters reduced results to ${places.length} places ($unfilteredTotal unfiltered). Consider triggering wider fetch.');
+          debugPrint(
+              '⚠️ Filters reduced results to ${places.length} places ($unfilteredTotal unfiltered). Consider triggering wider fetch.');
         }
       }
 
@@ -310,6 +323,8 @@ class MoodyEdgeFunctionService {
     String? languageCode,
     DateTime? targetDate,
     String? quickPick,
+    String? partnerContext,
+
     /// Moody `allowed_slots` (`morning` / `afternoon` / `evening`).
     List<String>? allowedSlots,
     SharedPreferences? planResponseCache,
@@ -333,10 +348,10 @@ class MoodyEdgeFunctionService {
     final functionUrl = SupabaseConfig.moodyFunctionUrl;
     final isLocal = await _readIsLocalMode();
 
-    final String? moodyLang = (languageCode != null &&
-            languageCode.trim().isNotEmpty)
-        ? PlacesCacheUtils.normalizeExploreLanguageCode(languageCode)
-        : null;
+    final String? moodyLang =
+        (languageCode != null && languageCode.trim().isNotEmpty)
+            ? PlacesCacheUtils.normalizeExploreLanguageCode(languageCode)
+            : null;
 
     final effectiveFilters = filters ?? <String, dynamic>{};
     if (planResponseCache != null && !bypassPlanResponseCache) {
@@ -355,7 +370,8 @@ class MoodyEdgeFunctionService {
       );
       if (cached != null) {
         if (kDebugMode) {
-          debugPrint('✅ create_day_plan: using local cached response (moody Edge skipped)');
+          debugPrint(
+              '✅ create_day_plan: using local cached response (moody Edge skipped)');
         }
         return cached;
       }
@@ -379,6 +395,8 @@ class MoodyEdgeFunctionService {
         'quick_pick': quickPick.trim().toLowerCase(),
       if (allowedSlots != null && allowedSlots.isNotEmpty)
         'allowed_slots': allowedSlots,
+      if (partnerContext != null && partnerContext.trim().isNotEmpty)
+        'partner_context': partnerContext.trim(),
     };
 
     const maxAttempts = 4;
@@ -582,6 +600,4 @@ class MoodyEdgeFunctionService {
     };
     await prefs.setString(key, jsonEncode(wrap));
   }
-
 }
-
