@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { LandingWhyShowcase } from "@/components/LandingWhyShowcase";
-import { IPhone16ProMaxShot, PhoneShot } from "@/components/landing-device-shots";
-import { getLandingImages } from "@/lib/landing-images";
+import { PhoneFrame } from "@/components/PhoneFrame";
+import { getHomepageScreens } from "@/lib/homepage-screens";
 
 const APP_STORE_URL =
   "https://apps.apple.com/nl/app/wandermood/id6760943488";
@@ -26,63 +25,54 @@ const LOCALES = [
 ] as const;
 
 const LEGACY_HASH_TARGETS: Record<string, string> = {
-  hero: "app-preview",
+  hero: "hero",
+  "app-preview": "hero",
   experience: "how",
   "how-it-works": "how",
+  features: "features",
+  "mood-match": "mood-match",
+  moods: "moods",
+  business: "business",
   cta: "download",
+  download: "download",
 };
 
-const MOOD_ITEMS = [
+const MOOD_GRID = [
   { key: "relaxed", emoji: "😌" },
-  { key: "foodie", emoji: "🍴" },
-  { key: "energetic", emoji: "🔥" },
-  { key: "adventurous", emoji: "🏕️" },
-  { key: "cultural", emoji: "🎨" },
-  { key: "cozy", emoji: "🧘" },
+  { key: "foodie", emoji: "🍽️" },
+  { key: "energetic", emoji: "⚡" },
+  { key: "adventurous", emoji: "🚀" },
+  { key: "cultural", emoji: "🎭" },
+  { key: "cozy", emoji: "☕" },
   { key: "romantic", emoji: "💕" },
-  { key: "social", emoji: "👥" },
+  { key: "social", emoji: "👫" },
   { key: "curious", emoji: "🔍" },
-  { key: "excited", emoji: "🌟" },
+  { key: "excited", emoji: "🤩" },
   { key: "happy", emoji: "😊" },
   { key: "surprise", emoji: "😲" },
 ] as const;
 
-function AppStoreIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M11 2H5C4.4 2 4 2.4 4 3v10c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1zm-3 10.5a.75.75 0 110-1.5.75.75 0 010 1.5z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden>
-      <polyline
-        points="1,4 4,7 9,1"
-        stroke="#2A6049"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function LandingHome() {
-  const t = useTranslations("landing");
+  const th = useTranslations("landing.home");
+  const tMoods = useTranslations("landing.moods");
+  const tLanding = useTranslations("landing");
   const tFooter = useTranslations("footer");
   const tLegal = useTranslations("legal.common");
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const img = useMemo(() => getLandingImages(currentLocale), [currentLocale]);
+  const screens = useMemo(() => getHomepageScreens(currentLocale), [currentLocale]);
+
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -95,12 +85,12 @@ export default function LandingHome() {
             const el = entry.target as HTMLElement;
             window.setTimeout(() => {
               el.classList.add("visible");
-            }, i * 60);
+            }, i * 50);
             observer.unobserve(el);
           }
         });
       },
-      { threshold: 0.1 },
+      { threshold: 0.12 },
     );
     nodes.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -117,11 +107,32 @@ export default function LandingHome() {
     });
   }, [pathname]);
 
-  const title2 = t("hero.title2");
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  const howSteps = [
+    { h: th("how1h"), p: th("how1p") },
+    { h: th("how2h"), p: th("how2p") },
+    { h: th("how3h"), p: th("how3p") },
+    { h: th("how4h"), p: th("how4p") },
+  ] as const;
 
   return (
-    <div ref={rootRef} className="landing-root">
-      <nav id="landing-nav">
+    <div ref={rootRef} className="landing-root landing-page--home">
+      <header
+        className={`home-nav ${navScrolled ? "home-nav--scrolled" : ""}`}
+        id="landing-nav"
+      >
         <Link href="/" className="nav-logo">
           <div className="nav-logo-icon">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -137,282 +148,306 @@ export default function LandingHome() {
           </div>
           <span className="nav-logo-text">{tFooter("brand")}</span>
         </Link>
-        <ul className="nav-links">
+
+        <ul className="home-nav-links">
           <li>
-            <a href="#how">{t("nav.how")}</a>
+            <a href="#how">{th("navHow")}</a>
           </li>
           <li>
-            <a href="#features">{t("nav.features")}</a>
+            <a href="#features">{th("navFeatures")}</a>
           </li>
           <li>
-            <a href="#meet-moody">{t("nav.meetMoody")}</a>
-          </li>
-          <li>
-            <a href="#mood-match">{t("nav.moodMatch")}</a>
-          </li>
-          <li>
-            <a href="#explore-city">{t("nav.exploreNav")}</a>
-          </li>
-          <li>
-            <Link href="/partners">{t("nav.partners")}</Link>
+            <Link href="/partners">{th("navPartners")}</Link>
           </li>
         </ul>
-        <div className="nav-end">
-          <div className="nav-locales" role="group" aria-label="Language">
+
+        <div className="home-nav-end">
+          <div className="home-nav-locales" role="group" aria-label="Language">
             {LOCALES.map(({ code, label }) => (
               <button
                 key={code}
                 type="button"
-                className={`nav-locale-btn ${currentLocale === code ? "active" : ""}`}
+                className={`home-nav-locale-btn ${currentLocale === code ? "active" : ""}`}
                 onClick={() => router.replace(pathname, { locale: code })}
                 aria-pressed={currentLocale === code}
-                aria-label={`${label}`}
+                aria-label={label}
               >
                 {label}
               </button>
             ))}
           </div>
-          <a {...APP_STORE_LINK_PROPS} className="nav-cta">
-            {t("nav.download")}
+          <a {...APP_STORE_LINK_PROPS} className="home-nav-download">
+            {th("navDownload")}
           </a>
+          <button
+            type="button"
+            className="home-nav-burger"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? th("navMenuClose") : th("navMenuOpen")}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            {menuOpen ? "×" : "☰"}
+          </button>
         </div>
-      </nav>
+      </header>
 
-      <section id="app-preview" className="landing-hero-v2">
-        <div className="landing-hero-inner">
-          <div className="landing-hero-copy">
-            <div className="hero-badge">
-              <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden>
-                <circle cx="4" cy="4" r="4" fill="#2A6049" />
-              </svg>
-              {t("hero.badge")}
-            </div>
-            <h1>
-              {t("hero.title1")}
-              <br />
-              <em>{t("hero.titleEm")}</em>
-              {title2 ? (
-                <>
-                  <br />
-                  {title2}
-                </>
-              ) : null}
+      <div
+        className={`home-sheet-backdrop ${menuOpen ? "open" : ""}`}
+        aria-hidden
+        onClick={() => setMenuOpen(false)}
+      />
+      <aside className={`home-sheet ${menuOpen ? "open" : ""}`} aria-hidden={!menuOpen}>
+        <nav>
+          <a href="#how" onClick={() => setMenuOpen(false)}>
+            {th("navHow")}
+          </a>
+          <a href="#features" onClick={() => setMenuOpen(false)}>
+            {th("navFeatures")}
+          </a>
+          <Link href="/partners" onClick={() => setMenuOpen(false)}>
+            {th("navPartners")}
+          </Link>
+          <a {...APP_STORE_LINK_PROPS} className="home-nav-download" onClick={() => setMenuOpen(false)}>
+            {th("navDownload")}
+          </a>
+        </nav>
+      </aside>
+
+      <section id="hero" className="home-hero">
+        <div className="home-hero-inner">
+          <div>
+            <h1 className="home-hero-h1">
+              <span className="block">
+                {th("heroL1a")}
+                <em>{th("heroL1b")}</em>
+                {th("heroL1c")}
+              </span>
+              <span className="block">{th("heroL2")}</span>
+              <span className="block">{th("heroL3")}</span>
             </h1>
-            <p className="hero-sub">{t("hero.sub")}</p>
-            <div className="hero-actions">
-              <a {...APP_STORE_LINK_PROPS} className="btn-primary">
-                <AppStoreIcon />
-                {t("hero.appStore")}
+            <p className="home-hero-sub">
+              {th("heroSubLine1")}
+              <br />
+              {th("heroSubLine2")}
+            </p>
+            <div className="home-hero-cta">
+              <a {...APP_STORE_LINK_PROPS} className="home-app-badge">
+                <Image
+                  src="/app-store-badge-white.svg"
+                  alt="Download on the App Store"
+                  width={157}
+                  height={52}
+                  priority
+                />
               </a>
-              <a href="#how" className="btn-secondary">
-                {t("hero.seeHow")}
+              <a href="#how" className="home-hero-seehow">
+                {th("heroSeeHow")}
               </a>
             </div>
-            <p className="landing-proof-line">
-              <span className="landing-proof-strong">{t("proof.appStoreLine")}</span>{" "}
-              {t("proof.line")}
-            </p>
           </div>
-          <div className="landing-hero-visual">
-            <PhoneShot
-              src={img.heroPhone}
-              alt={t("imgAlt.hero")}
+          <div className="home-hero-visual">
+            <PhoneFrame
+              src={screens.hero}
+              alt={th("imgHero")}
               priority
-              className="landing-hero-phone"
+              className="home-hero-phone"
             />
           </div>
         </div>
       </section>
 
-      <div className="divider" aria-hidden />
-
-      <LandingWhyShowcase />
-
-      <section id="how" className="landing-demo">
-        <div className="landing-section-inner">
-          <p className="section-eyebrow reveal">{t("demo.eyebrow")}</p>
-          <h2 className="reveal landing-section-title">
-            {t("demo.title")} <em>{t("demo.titleEm")}</em>
-          </h2>
-          <p className="section-sub reveal">{t("demo.sub")}</p>
-          <div className="landing-demo-grid">
-            {(
-              [
-                ["s1t", "s1b", img.stepMood],
-                ["s2t", "s2b", img.stepMoody],
-                ["s3t", "s3b", img.stepPlan],
-                ["s4t", "s4b", img.stepDetail],
-              ] as const
-            ).map(([tk, bk, shot]) => (
-              <div key={tk} className="landing-demo-step reveal">
-                <PhoneShot src={shot} alt={t("imgAlt.demoStep")} className="landing-demo-phone" />
-                <h3>{t(`demo.${tk}`)}</h3>
-                <p>{t(`demo.${bk}`)}</p>
-              </div>
-            ))}
-          </div>
-          <div className="landing-mid-cta reveal">
-            <a {...APP_STORE_LINK_PROPS} className="btn-primary">
-              <AppStoreIcon />
-              {t("hero.appStore")}
-            </a>
-          </div>
+      <div className="home-strip">
+        <div className="home-strip-inner">
+          <span>
+            {th("stripAppStore")} {th("stripStars")}
+          </span>
+          <span className="home-strip-div" aria-hidden />
+          <span>{th("stripGeo")}</span>
+          <span className="home-strip-div" aria-hidden />
+          <span>{th("stripTagline")}</span>
         </div>
-      </section>
+      </div>
 
-      <section id="meet-moody" className="landing-meet">
-        <div className="landing-section-inner landing-meet-grid">
-          <div>
-            <p className="section-eyebrow reveal">{t("meetMoodySect.eyebrow")}</p>
-            <h2 className="reveal landing-section-title">{t("meetMoodySect.title")}</h2>
-            <p className="section-sub reveal">{t("meetMoodySect.sub")}</p>
-            <ul className="landing-chat-prompts reveal">
-              {(["q1", "q2", "q3", "q4", "q5", "q6"] as const).map((k) => (
-                <li key={k}>{t(`meetMoodySect.${k}`)}</li>
-              ))}
-            </ul>
-            <a {...APP_STORE_LINK_PROPS} className="btn-primary landing-meet-cta">
-              <AppStoreIcon />
-              {t("hero.appStore")}
-            </a>
-          </div>
-          <div className="reveal">
-            <PhoneShot src={img.meetMoody} alt={t("imgAlt.meetMoody")} />
-          </div>
-        </div>
-      </section>
-
-      <section id="mood-match" className="landing-mood-match">
-        <div className="landing-section-inner landing-mood-match-grid">
-          <div className="reveal landing-mood-match-shots">
-            <PhoneShot
-              src={img.moodMatchWait}
-              alt={t("imgAlt.moodMatchWait")}
-              className="landing-mm-wait"
-            />
-            <PhoneShot
-              src={img.moodMatch}
-              alt={t("imgAlt.moodMatch")}
-              className="landing-mm-result"
-            />
-          </div>
-          <div>
-            <p className="section-eyebrow reveal">{t("moodMatchSect.eyebrow")}</p>
-            <h2 className="reveal landing-section-title">
-              {t("moodMatchSect.title")} <em>{t("moodMatchSect.titleEm")}</em>
-            </h2>
-            <p className="section-sub reveal">{t("moodMatchSect.sub")}</p>
-            <a {...APP_STORE_LINK_PROPS} className="btn-primary landing-mood-match-cta reveal">
-              <AppStoreIcon />
-              {t("moodMatchSect.cta")}
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section id="explore-city" className="landing-explore">
-        <div className="landing-section-inner landing-explore-grid">
-          <div className="reveal">
-            <PhoneShot src={img.explore} alt={t("imgAlt.explore")} />
-          </div>
-          <div>
-            <p className="section-eyebrow reveal">{t("exploreSect.eyebrow")}</p>
-            <h2 className="reveal landing-section-title">
-              {t("exploreSect.title")} <em>{t("exploreSect.titleEm")}</em>
-            </h2>
-            <p className="section-sub reveal">{t("exploreSect.sub")}</p>
-            <ul className="landing-bullet-list reveal">
-              {(["b1", "b2", "b3", "b4", "b5"] as const).map((k) => (
-                <li key={k}>{t(`exploreSect.${k}`)}</li>
-              ))}
-            </ul>
-            <a {...APP_STORE_LINK_PROPS} className="btn-secondary">
-              {t("hero.appStore")}
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section id="moods" className="moods-section">
-        <div className="moods-inner">
-          <p className="section-eyebrow reveal">{t("moodsSection.eyebrow")}</p>
-          <h2 className="reveal">
-            {t("moodsSection.title1")}
+      <section id="how" className="home-section">
+        <div className="home-section-inner">
+          <p className="home-label reveal">{th("howLabel")}</p>
+          <h2 className="home-h2 reveal">
+            {th("howTitleLine1")}
             <br />
-            <em>{t("moodsSection.titleEm")}</em>
+            {th("howTitleLine2")}
           </h2>
-          <div className="moods-grid">
-            {MOOD_ITEMS.map(({ key, emoji }) => (
-              <div key={key} className="mood-chip reveal">
-                <span className="mood-emoji">{emoji}</span>
-                <span className="mood-name">{t(`moods.${key}`)}</span>
+          <div className="home-how-grid">
+            {howSteps.map((step, i) => (
+              <div key={step.h} className="home-step-card reveal">
+                <div className="home-step-num">{i + 1}</div>
+                <h3 className="home-step-h">
+                  {step.h.replace(/^\d+\s*·\s*/, "").trim()}
+                </h3>
+                <p className="home-step-p">{step.p}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="business" className="b2b-section">
-        <div className="b2b-inner landing-b2b-grid">
-          <div>
-            <p className="section-eyebrow reveal">{t("b2b.eyebrow")}</p>
-            <h2 className="reveal">
-              {t("b2b.titleBefore")}
-              <em>{t("b2b.titleEm")}</em>
-            </h2>
-            <p className="b2b-desc reveal">{t("b2b.desc1")}</p>
-            <p className="b2b-small reveal">{t("b2b.desc2")}</p>
-            <Link href="/partners#aanvragen" className="btn-trial reveal">
-              {t("b2b.trialCta")}
-            </Link>
+      <section id="features">
+        <div className="home-band">
+          <div className="home-band-inner">
+            <div className="home-band-visual reveal">
+              <PhoneFrame src={screens.moodyChat} alt={th("imgChat")} />
+            </div>
+            <div className="home-band-copy">
+              <p className="home-label reveal">{th("featMoodyLabel")}</p>
+              <h2 className="home-feat-h2 reveal">{th("featMoodyH")}</h2>
+              <p className="home-feat-body reveal">{th("featMoodyB")}</p>
+            </div>
           </div>
-          <div className="reveal landing-b2b-visual">
-            <p className="landing-b2b-caption">{t("b2bPreview.caption")}</p>
-            <IPhone16ProMaxShot src={img.b2bExplore} alt={t("imgAlt.b2bExplore")} />
+        </div>
+
+        <div className="home-band home-band--reverse">
+          <div className="home-band-inner">
+            <div className="home-band-visual reveal">
+              <PhoneFrame src={screens.myDay} alt={th("imgMyDay")} />
+            </div>
+            <div className="home-band-copy">
+              <p className="home-label reveal">{th("featDayLabel")}</p>
+              <h2 className="home-feat-h2 reveal">{th("featDayH")}</h2>
+              <p className="home-feat-body reveal">{th("featDayB")}</p>
+            </div>
           </div>
-          <div className="pricing-card reveal landing-b2b-pricing">
-            <div className="pricing-price">{t("b2b.price")}</div>
-            <div className="pricing-note">{t("b2b.priceNote")}</div>
-            <ul className="pricing-features">
-              {(["f1", "f2", "f3", "f4"] as const).map((k) => (
-                <li key={k}>
-                  <div className="check-circle">
-                    <CheckIcon />
-                  </div>
-                  {t(`b2b.${k}`)}
-                </li>
-              ))}
-            </ul>
-            <Link href="/partners#aanvragen" className="btn-trial">
-              {t("b2b.trialCta")}
-            </Link>
+        </div>
+
+        <div className="home-band">
+          <div className="home-band-inner">
+            <div className="home-band-visual reveal">
+              <PhoneFrame src={screens.explore} alt={th("imgExplore")} />
+            </div>
+            <div className="home-band-copy">
+              <p className="home-label reveal">{th("featExploreLabel")}</p>
+              <h2 className="home-feat-h2 reveal">{th("featExploreH")}</h2>
+              <p className="home-feat-body reveal">{th("featExploreB")}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="download">
-        <div className="cta-section">
-          <p className="section-eyebrow reveal" style={{ textAlign: "center" }}>
-            {t("cta.eyebrow")}
+      <section id="mood-match" className="home-section home-mm">
+        <div className="home-section-inner">
+          <p className="home-label reveal" style={{ textAlign: "center" }}>
+            {th("mmLabel")}
           </p>
-          <h2 className="reveal">
-            {t("cta.title1")}
+          <h2 className="home-h2 reveal" style={{ textAlign: "center" }}>
+            {th("mmH1")}
             <br />
-            <em>{t("cta.titleEm")}</em>
+            {th("mmH2")}
           </h2>
-          <p className="reveal">{t("cta.sub")}</p>
-          <div className="cta-buttons reveal">
-            <a {...APP_STORE_LINK_PROPS} className="btn-primary">
-              <AppStoreIcon />
-              {t("cta.appStore")}
+          <p
+            className="home-b2b-sub reveal"
+            style={{ marginTop: 20, maxWidth: 480 }}
+          >
+            {th("mmSubL1")}
+            <br />
+            {th("mmSubL2")}
+            <br />
+            {th("mmSubL3")}
+          </p>
+          <div className="home-mm-phones">
+            <PhoneFrame
+              src={screens.moodMatchLeft}
+              alt={th("imgMoodMatch")}
+              className="home-mm-phone1"
+            />
+            <PhoneFrame
+              src={screens.placeDetail}
+              alt={th("imgPlace")}
+              className="home-mm-phone2"
+            />
+          </div>
+          <div className="home-mm-cta-wrap">
+            <a {...APP_STORE_LINK_PROPS} className="home-mm-cta reveal">
+              {th("mmCta")}
             </a>
-            {process.env.NEXT_PUBLIC_SHOW_GOOGLE_PLAY === "true" ? (
-              <a href="#" className="btn-secondary">
-                {t("cta.googlePlay")}
-              </a>
-            ) : null}
           </div>
         </div>
+      </section>
+
+      <section id="moods" className="home-section">
+        <div className="home-section-inner">
+          <div className="home-moods-head">
+            <h2 className="home-h2 reveal">
+              {th("moodsH1")}
+              <br />
+              {th("moodsH2")}
+            </h2>
+          </div>
+          <div className="home-moods-grid">
+            {MOOD_GRID.map(({ key, emoji }) => (
+              <div key={key} className="home-mood-chip reveal">
+                {emoji} {tMoods(key)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="business" className="home-section home-b2b">
+        <div className="home-section-inner">
+          <p className="home-label reveal">{th("b2bLabel")}</p>
+          <h2 className="home-h2 reveal">
+            {th("b2bH1")}
+            <br />
+            {th("b2bH2")}
+          </h2>
+          <p className="home-b2b-sub reveal">{th("b2bSub")}</p>
+
+          <div className="home-b2b-card reveal">
+            <span className="home-b2b-pill">{th("b2bPill")}</span>
+            <div className="home-b2b-price">{tLanding("b2b.price")}</div>
+            <div className="home-b2b-per">{th("b2bPer")}</div>
+            <ul className="home-b2b-list">
+              <li>
+                <span className="home-b2b-check" aria-hidden>
+                  ✓
+                </span>
+                {th("b2bBul1")}
+              </li>
+              <li>
+                <span className="home-b2b-check" aria-hidden>
+                  ✓
+                </span>
+                {th("b2bBul2")}
+              </li>
+              <li>
+                <span className="home-b2b-check" aria-hidden>
+                  ✓
+                </span>
+                {th("b2bBul3")}
+              </li>
+            </ul>
+            <Link href="/partners#aanvragen" className="home-b2b-btn">
+              {th("b2bCta")}
+            </Link>
+            <p className="home-b2b-small">{th("b2bNote")}</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="download" className="home-download">
+        <h2 className="home-download-h2 reveal">{th("dlH")}</h2>
+        <p className="home-download-sub reveal">
+          {th("dlSubL1")}
+          <br />
+          {th("dlSubL2")}
+        </p>
+        <a {...APP_STORE_LINK_PROPS} className="home-download-badge reveal">
+          <Image
+            src="/app-store-badge-white.svg"
+            alt="Download on the App Store"
+            width={157}
+            height={52}
+          />
+        </a>
+        <p className="home-download-note reveal">{th("dlFoot")}</p>
       </section>
 
       <footer className="landing-footer">

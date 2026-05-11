@@ -1,0 +1,99 @@
+/**
+ * iPhone 15 Pro–style frame — CSS only (spec).
+ * Dynamic Island + power (::after) on .frame; side controls as child spans.
+ */
+.frame {
+  position: relative;
+  width: 280px;
+  height: 574px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  border-radius: 44px;
+  padding: 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.frame::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 120px;
+  width: 3px;
+  height: 70px;
+  background: #2a2a2a;
+  border-radius: 0 3px 3px 0;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.silent {
+  position: absolute;
+  left: -3px;
+  top: 75px;
+  width: 3px;
+  height: 28px;
+  background: #2a2a2a;
+  border-radius: 3px 0 0 3px;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.volUp {
+  position: absolute;
+  left: -3px;
+  top: 100px;
+  width: 3px;
+  height: 45px;
+  background: #2a2a2a;
+  border-radius: 3px 0 0 3px;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.volDown {
+  position: absolute;
+  left: -3px;
+  top: 155px;
+  width: 3px;
+  height: 45px;
+  background: #2a2a2a;
+  border-radius: 3px 0 0 3px;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 32px;
+  overflow: hidden;
+  background: #000;
+  z-index: 1;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top center;
+}
