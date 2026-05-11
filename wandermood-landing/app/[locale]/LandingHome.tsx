@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { AppStoreCtaLink } from "@/components/AppStoreCtaLink";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { getHomepageScreens } from "@/lib/homepage-screens";
 
@@ -114,6 +116,7 @@ export default function LandingHome() {
   const [featurePhoneFade, setFeaturePhoneFade] = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPortalReady, setMenuPortalReady] = useState(false);
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   const screens = useMemo(() => getHomepageScreens(currentLocale), [currentLocale]);
@@ -282,15 +285,25 @@ export default function LandingHome() {
   }, [pathname]);
 
   useEffect(() => {
+    setMenuPortalReady(true);
+  }, []);
+
+  useEffect(() => {
     if (!menuOpen) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlOverflow = html.style.overflow;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMenuOpen(false);
     };
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      body.style.overflow = prevBodyOverflow;
+      html.style.overflow = prevHtmlOverflow;
     };
   }, [menuOpen]);
 
@@ -302,7 +315,8 @@ export default function LandingHome() {
   ] as const;
 
   return (
-    <div ref={rootRef} className="landing-root landing-page--home">
+    <>
+      <div ref={rootRef} className="landing-root landing-page--home">
       <header
         className={`home-nav ${navScrolled ? "home-nav--scrolled" : ""}`}
         id="landing-nav"
@@ -374,91 +388,6 @@ export default function LandingHome() {
         </div>
       </header>
 
-      <div
-        className={`home-sheet-backdrop ${menuOpen ? "open" : ""}`}
-        aria-hidden
-        onClick={() => setMenuOpen(false)}
-      />
-      <aside
-        className={`home-sheet ${menuOpen ? "open" : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-hidden={!menuOpen}
-        aria-labelledby="home-sheet-title"
-      >
-        <div className="home-sheet-header">
-          <span id="home-sheet-title" className="home-sheet-title">
-            {tFooter("brand")}
-          </span>
-          <button
-            type="button"
-            className="home-sheet-close"
-            aria-label={th("navMenuClose")}
-            onClick={() => setMenuOpen(false)}
-          >
-            ×
-          </button>
-        </div>
-        <div className="home-sheet-main">
-          <nav className="home-sheet-nav">
-            <a
-              href="#how"
-              className="home-sheet-nav-link"
-              onClick={() => setMenuOpen(false)}
-            >
-              {th("navHow")}
-            </a>
-            <a
-              href="#features"
-              className="home-sheet-nav-link"
-              onClick={() => setMenuOpen(false)}
-            >
-              {th("navFeatures")}
-            </a>
-            <Link
-              href="/partners"
-              className="home-sheet-nav-link"
-              onClick={() => setMenuOpen(false)}
-            >
-              {th("navPartners")}
-            </Link>
-          </nav>
-          <div className="home-sheet-footer">
-            <div className="home-sheet-locales" role="group" aria-label="Language">
-              {LOCALES.map(({ code, label }) => (
-                <button
-                  key={code}
-                  type="button"
-                  className={`home-nav-locale-btn home-sheet-locale-btn ${currentLocale === code ? "active" : ""}`}
-                  onClick={() => {
-                    router.replace(pathname, { locale: code });
-                    setMenuOpen(false);
-                  }}
-                  aria-pressed={currentLocale === code}
-                  aria-label={label}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <a
-              {...APP_STORE_LINK_PROPS}
-              className="home-sheet-app-badge"
-              onClick={() => setMenuOpen(false)}
-              aria-label="Download on the App Store"
-            >
-              <Image
-                src="/app-store-badge-white.svg"
-                alt=""
-                width={220}
-                height={70}
-                className="home-sheet-app-badge-img"
-              />
-            </a>
-          </div>
-        </div>
-      </aside>
-
       <section id="hero" className="home-hero section-dark">
         <div className="home-hero-inner">
           <div className="home-hero-copy">
@@ -478,20 +407,13 @@ export default function LandingHome() {
             </p>
             <div className="home-hero-cta">
               <div className="home-hero-badge-block">
-                <a
+                <AppStoreCtaLink
                   {...APP_STORE_LINK_PROPS}
-                  className="home-app-badge"
-                  aria-label="Download on the App Store"
-                >
-            <Image
-              src="/app-store-badge-white.svg"
-              alt=""
-              width={220}
-              height={70}
-              priority
-              className="home-app-badge-img"
-            />
-                </a>
+                  line1={th("appStoreCtaLine1")}
+                  line2={th("appStoreCtaLine2")}
+                  className="home-hero-app-store"
+                  aria-label={`${th("appStoreCtaLine1")} ${th("appStoreCtaLine2")}`}
+                />
               </div>
               <a href="#how" className="home-hero-seehow">
                 {th("heroSeeHow")}
@@ -707,19 +629,13 @@ export default function LandingHome() {
           <h2 className="home-download-h2">{th("dlH")}</h2>
         </div>
         <div className="home-download-badge-wrap reveal">
-          <a
+          <AppStoreCtaLink
             {...APP_STORE_LINK_PROPS}
+            line1={th("appStoreCtaLine1")}
+            line2={th("appStoreCtaLine2")}
             className="home-download-badge"
-            aria-label="Download on the App Store"
-          >
-            <Image
-              src="/app-store-badge-white.svg"
-              alt=""
-              width={220}
-              height={70}
-              className="home-download-badge-img"
-            />
-          </a>
+            aria-label={`${th("appStoreCtaLine1")} ${th("appStoreCtaLine2")}`}
+          />
         </div>
       </section>
 
@@ -743,6 +659,96 @@ export default function LandingHome() {
           © {new Date().getFullYear()} {tFooter("brand")}
         </div>
       </footer>
-    </div>
+      </div>
+      {menuPortalReady
+        ? createPortal(
+            <div className="landing-page--home landing-home-menu-portal">
+              <div
+                className={`home-sheet-backdrop ${menuOpen ? "open" : ""}`}
+                aria-hidden
+                onClick={() => setMenuOpen(false)}
+              />
+              <aside
+                className={`home-sheet ${menuOpen ? "open" : ""}`}
+                role="dialog"
+                aria-modal="true"
+                aria-hidden={!menuOpen}
+                aria-labelledby="home-sheet-title"
+              >
+                <div className="home-sheet-header">
+                  <span id="home-sheet-title" className="home-sheet-title">
+                    {tFooter("brand")}
+                  </span>
+                  <button
+                    type="button"
+                    className="home-sheet-close"
+                    aria-label={th("navMenuClose")}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="home-sheet-main">
+                  <nav className="home-sheet-nav">
+                    <a
+                      href="#how"
+                      className="home-sheet-nav-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {th("navHow")}
+                    </a>
+                    <a
+                      href="#features"
+                      className="home-sheet-nav-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {th("navFeatures")}
+                    </a>
+                    <Link
+                      href="/partners"
+                      className="home-sheet-nav-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {th("navPartners")}
+                    </Link>
+                  </nav>
+                  <div className="home-sheet-footer">
+                    <div
+                      className="home-sheet-locales"
+                      role="group"
+                      aria-label="Language"
+                    >
+                      {LOCALES.map(({ code, label }) => (
+                        <button
+                          key={code}
+                          type="button"
+                          className={`home-nav-locale-btn home-sheet-locale-btn ${currentLocale === code ? "active" : ""}`}
+                          onClick={() => {
+                            router.replace(pathname, { locale: code });
+                            setMenuOpen(false);
+                          }}
+                          aria-pressed={currentLocale === code}
+                          aria-label={label}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <AppStoreCtaLink
+                      {...APP_STORE_LINK_PROPS}
+                      line1={th("appStoreCtaLine1")}
+                      line2={th("appStoreCtaLine2")}
+                      className="home-sheet-app-store"
+                      onClick={() => setMenuOpen(false)}
+                      aria-label={`${th("appStoreCtaLine1")} ${th("appStoreCtaLine2")}`}
+                    />
+                  </div>
+                </div>
+              </aside>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }
