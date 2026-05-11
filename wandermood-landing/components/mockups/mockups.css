@@ -682,6 +682,7 @@
   width: 100%;
 }
 
+.wm-day__dot {
   position: absolute;
   left: -26px;
   top: 14px;
