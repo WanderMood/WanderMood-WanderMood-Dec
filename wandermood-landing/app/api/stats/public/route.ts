@@ -26,7 +26,7 @@ export async function GET() {
     supabase
       .from("business_listings")
       .select("id", { count: "exact", head: true })
-      .in("subscription_status", ["active", "trial"]),
+      .in("subscription_status", ["active", "trialing"]),
   ]);
 
   const userCount = usersRes.count ?? 0;
