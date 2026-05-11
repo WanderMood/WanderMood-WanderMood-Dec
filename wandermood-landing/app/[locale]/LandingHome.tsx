@@ -52,6 +52,48 @@ const MOOD_GRID = [
   { key: "surprise", emoji: "😲" },
 ] as const;
 
+type PublicStats = {
+  users: number | null;
+  partners: number | null;
+  show: boolean;
+};
+
+function AnimatedCounter({ value, locale }: { value: number; locale: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting || started.current) return;
+        started.current = true;
+        const t0 = performance.now();
+        const dur = 1500;
+        const step = (now: number) => {
+          const t = Math.min(1, (now - t0) / dur);
+          setCount(Math.floor(value * t));
+          if (t < 1) requestAnimationFrame(step);
+          else setCount(value);
+        };
+        requestAnimationFrame(step);
+      },
+      { threshold: 0.15 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [value]);
+
+  const loc = locale === "nl" ? "nl-NL" : "en-GB";
+  return (
+    <span ref={ref} className="home-stat-value">
+      {count.toLocaleString(loc)}
+    </span>
+  );
+}
+
 export default function LandingHome() {
   const th = useTranslations("landing.home");
   const tMoods = useTranslations("landing.moods");
@@ -64,6 +106,7 @@ export default function LandingHome() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [stats, setStats] = useState<PublicStats | null>(null);
 
   const screens = useMemo(() => getHomepageScreens(currentLocale), [currentLocale]);
 
@@ -72,6 +115,13 @@ export default function LandingHome() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/stats/public")
+      .then((r) => r.json())
+      .then((data: PublicStats) => setStats(data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -186,7 +236,17 @@ export default function LandingHome() {
             aria-label={menuOpen ? th("navMenuClose") : th("navMenuOpen")}
             onClick={() => setMenuOpen((o) => !o)}
           >
-            {menuOpen ? "×" : "☰"}
+            {menuOpen ? (
+              <span className="home-nav-burger-close" aria-hidden>
+                ×
+              </span>
+            ) : (
+              <span className="home-nav-burger-icon" aria-hidden>
+                <span />
+                <span />
+                <span />
+              </span>
+            )}
           </button>
         </div>
       </header>
@@ -213,7 +273,7 @@ export default function LandingHome() {
         </nav>
       </aside>
 
-      <section id="hero" className="home-hero">
+      <section id="hero" className="home-hero section-dark">
         <div className="home-hero-inner">
           <div>
             <h1 className="home-hero-h1">
@@ -231,15 +291,18 @@ export default function LandingHome() {
               {th("heroSubLine2")}
             </p>
             <div className="home-hero-cta">
-              <a {...APP_STORE_LINK_PROPS} className="home-app-badge">
-                <Image
-                  src="/app-store-badge-white.svg"
-                  alt="Download on the App Store"
-                  width={157}
-                  height={52}
-                  priority
-                />
-              </a>
+              <div className="home-hero-badge-block">
+                <a {...APP_STORE_LINK_PROPS} className="home-app-badge">
+                  <Image
+                    src="/app-store-badge-white.svg"
+                    alt="Download on the App Store"
+                    width={157}
+                    height={44}
+                    priority
+                  />
+                </a>
+                <p className="home-badge-sub">{th("dlFoot")}</p>
+              </div>
               <a href="#how" className="home-hero-seehow">
                 {th("heroSeeHow")}
               </a>
@@ -268,7 +331,30 @@ export default function LandingHome() {
         </div>
       </div>
 
-      <section id="how" className="home-section">
+      {stats?.show ? (
+        <section className="home-stats">
+          <div className="home-stats-grid">
+            {stats.users != null ? (
+              <div className="home-stat-item">
+                <AnimatedCounter value={stats.users} locale={currentLocale} />
+                <span className="home-stat-caption">{th("statsUsers")}</span>
+              </div>
+            ) : null}
+            {stats.partners != null ? (
+              <div className="home-stat-item">
+                <AnimatedCounter value={stats.partners} locale={currentLocale} />
+                <span className="home-stat-caption">{th("statsPartners")}</span>
+              </div>
+            ) : null}
+            <div className="home-stat-item">
+              <span className="home-stat-value">Rotterdam</span>
+              <span className="home-stat-caption">{th("statsHome")}</span>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="how" className="home-section section-beige">
         <div className="home-section-inner">
           <p className="home-label reveal">{th("howLabel")}</p>
           <h2 className="home-h2 reveal">
@@ -290,11 +376,11 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="features">
+      <section id="features" className="section-beige">
         <div className="home-band">
           <div className="home-band-inner">
             <div className="home-band-visual reveal">
-              <PhoneFrame src={screens.moodyChat} alt={th("imgChat")} />
+              <PhoneFrame variant="band" src={screens.moodyChat} alt={th("imgChat")} />
             </div>
             <div className="home-band-copy">
               <p className="home-label reveal">{th("featMoodyLabel")}</p>
@@ -307,7 +393,7 @@ export default function LandingHome() {
         <div className="home-band home-band--reverse">
           <div className="home-band-inner">
             <div className="home-band-visual reveal">
-              <PhoneFrame src={screens.myDay} alt={th("imgMyDay")} />
+              <PhoneFrame variant="band" src={screens.myDay} alt={th("imgMyDay")} />
             </div>
             <div className="home-band-copy">
               <p className="home-label reveal">{th("featDayLabel")}</p>
@@ -320,7 +406,7 @@ export default function LandingHome() {
         <div className="home-band">
           <div className="home-band-inner">
             <div className="home-band-visual reveal">
-              <PhoneFrame src={screens.explore} alt={th("imgExplore")} />
+              <PhoneFrame variant="band" src={screens.explore} alt={th("imgExplore")} />
             </div>
             <div className="home-band-copy">
               <p className="home-label reveal">{th("featExploreLabel")}</p>
@@ -331,7 +417,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="mood-match" className="home-section home-mm">
+      <section id="mood-match" className="home-section home-mm section-dark">
         <div className="home-section-inner">
           <p className="home-label reveal" style={{ textAlign: "center" }}>
             {th("mmLabel")}
@@ -371,7 +457,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="moods" className="home-section">
+      <section id="moods" className="home-section section-beige">
         <div className="home-section-inner">
           <div className="home-moods-head">
             <h2 className="home-h2 reveal">
@@ -390,7 +476,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="business" className="home-section home-b2b">
+      <section id="business" className="home-section home-b2b section-b2b">
         <div className="home-section-inner">
           <p className="home-label reveal">{th("b2bLabel")}</p>
           <h2 className="home-h2 reveal">
@@ -432,22 +518,24 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="download" className="home-download">
+      <section id="download" className="home-download section-dark">
         <h2 className="home-download-h2 reveal">{th("dlH")}</h2>
         <p className="home-download-sub reveal">
           {th("dlSubL1")}
           <br />
           {th("dlSubL2")}
         </p>
-        <a {...APP_STORE_LINK_PROPS} className="home-download-badge reveal">
-          <Image
-            src="/app-store-badge-white.svg"
-            alt="Download on the App Store"
-            width={157}
-            height={52}
-          />
-        </a>
-        <p className="home-download-note reveal">{th("dlFoot")}</p>
+        <div className="home-download-badge-wrap reveal">
+          <a {...APP_STORE_LINK_PROPS} className="home-download-badge">
+            <Image
+              src="/app-store-badge-white.svg"
+              alt="Download on the App Store"
+              width={157}
+              height={44}
+            />
+          </a>
+          <p className="home-download-note">{th("dlFoot")}</p>
+        </div>
       </section>
 
       <footer className="landing-footer">

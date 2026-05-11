@@ -83,7 +83,10 @@
       "imgMyDay": "My Day timeline in WanderMood",
       "imgExplore": "Explore places in WanderMood",
       "imgPlace": "Place detail in WanderMood",
-      "imgMoodMatch": "Mood Match in WanderMood"
+      "imgMoodMatch": "Mood Match in WanderMood",
+      "statsUsers": "users",
+      "statsPartners": "partners",
+      "statsHome": "home base"
     },
     "hero": {
       "badge": "On the App Store",
