@@ -21,7 +21,7 @@ export function AppStoreCtaLink({
       {...rest}
     >
       <span className="home-app-store-cta__mark" aria-hidden>
-        <svg viewBox="0 0 20 24" width={22} height={26} focusable="false">
+        <svg viewBox="0 0 20 24" width={24} height={29} focusable="false">
           <path fill="currentColor" d={APPLE_PATH} />
         </svg>
       </span>
