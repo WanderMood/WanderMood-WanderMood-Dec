@@ -284,6 +284,8 @@ class ExplorePlaceCardCopy {
         return l10n.placeTypeBakery;
       case 'museum':
         return l10n.placeTypeMuseum;
+      case 'art_museum':
+        return l10n.placeTypeMuseum;
       case 'art_gallery':
         return l10n.placeCardVenueGallery;
       case 'night_club':

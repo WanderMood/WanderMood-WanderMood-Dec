@@ -572,7 +572,6 @@ export default function LandingHome() {
                   <p className="home-label reveal">{slide.label}</p>
                   <h2 className="home-feat-h2 reveal">
                     <span className="home-feat-h2-line">{slide.titleLine1}</span>
-                    <br />
                     <span className="home-feat-h2-line">{slide.titleLine2}</span>
                   </h2>
                   <p className="home-feat-body reveal">{slide.body}</p>

@@ -134,7 +134,7 @@
   /* Fill the viewport width (up to a cap): physical devices were still reading tiny
      with fixed ~238px. Aspect ratio keeps the same silhouette as desktop. */
   .phoneOuter {
-    width: min(300px, 78vw);
+    width: min(338px, 90vw);
     max-width: 100%;
     height: auto;
     aspect-ratio: 260 / 532;
@@ -186,9 +186,9 @@
     min-height: 44px;
   }
 
-  /* Band variant: still full-bleed friendly, slightly narrower cap */
+  /* Band variant: match default mobile width on landing (same as Mood Match row) */
   .phoneOuter--band {
-    width: min(268px, 74vw);
+    width: min(338px, 90vw);
     height: auto;
     aspect-ratio: 260 / 532;
   }

@@ -336,10 +336,13 @@
   position: fixed;
   top: 0;
   right: 0;
-  bottom: 0;
+  bottom: auto;
   width: min(340px, 92vw);
-  min-height: 100dvh;
-  min-height: 100vh;
+  max-height: 100dvh;
+  max-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background-color: #1a1714;
   background: #1a1714;
   color: var(--home-cream);
@@ -470,7 +473,7 @@
 }
 
 .landing-page--home .home-sheet-footer {
-  margin-top: auto;
+  margin-top: 0;
   padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0));
   border-top: 1px solid rgba(245, 240, 232, 0.08);
   flex-shrink: 0;
@@ -1169,7 +1172,7 @@
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   font-size: clamp(32px, 4vw, 52px);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.02;
   color: var(--home-cream);
   margin-top: 12px;
   white-space: normal;
@@ -1177,6 +1180,12 @@
 
 .landing-page--home .home-feat-h2-line {
   display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.landing-page--home .home-feat-h2-line + .home-feat-h2-line {
+  margin-top: 0.06em;
 }
 
 .landing-page--home .home-story-intro .home-feat-h2 {
@@ -1240,7 +1249,7 @@
 
 @media (min-width: 900px) {
   .landing-page--home .home-sticky-phone-slot .home-phone-elevated--band {
-    transform: scale(1.08);
+    transform: scale(1.12);
     transform-origin: center top;
   }
 }
@@ -1409,16 +1418,10 @@
 
 @media (min-width: 768px) {
   .landing-page--home .home-mm-phones-wrap {
-    transform: scale(0.92);
+    transform: none;
     transform-origin: center bottom;
     margin-top: 32px;
     margin-bottom: 4px;
-  }
-}
-
-@media (min-width: 1100px) {
-  .landing-page--home .home-mm-phones-wrap {
-    transform: scale(0.96);
   }
 }
 

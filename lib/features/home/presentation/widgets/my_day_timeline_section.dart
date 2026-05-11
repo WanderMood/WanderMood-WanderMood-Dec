@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
+import 'package:wandermood/core/utils/place_type_formatter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -785,12 +786,14 @@ String _localizedActivityKindLabel(String raw, AppLocalizations l10n) {
     case 'wellness':
       return l10n.profileVibeWellnessName;
     default:
-      return _capitalize(raw);
+      final formatted =
+          formatPlaceType(raw, languageCode: l10n.localeName).trim();
+      if (formatted.isNotEmpty) return formatted;
+      final spaced = raw.replaceAll('_', ' ').trim();
+      if (spaced.isEmpty) return l10n.myDayActivityFallbackLabel;
+      return spaced[0].toUpperCase() + spaced.substring(1).toLowerCase();
   }
 }
-
-String _capitalize(String s) =>
-    s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
 
 String _slotEmoji(int hour) {
   if (hour >= 6 && hour < 12) return '🌅';
