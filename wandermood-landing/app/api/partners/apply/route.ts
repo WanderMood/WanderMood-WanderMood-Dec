@@ -1,13 +1,6 @@
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { NextRequest, NextResponse } from "next/server";
-
-const REQUIRED = [
-  "business_name",
-  "business_type",
-  "city",
-  "contact_email",
-  "gdpr_consent",
-] as const;
+import Stripe from "stripe";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,47 +12,134 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function appBaseUrl(): string {
+  const u = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "");
+  return u && u.length > 0 ? u : "https://wandermood.com";
+}
+
+function stripePriceId(): string | null {
+  const id =
+    process.env.STRIPE_PRICE_ID?.trim() ||
+    process.env.STRIPE_PREMIUM_PRICE_ID?.trim();
+  return id && id.length > 0 ? id : null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, unknown>;
-
-    console.log("Partner apply route called");
-    console.log("RESEND_API_KEY set:", !!process.env.RESEND_API_KEY);
-    console.log(
-      "SUPABASE_SERVICE_ROLE_KEY set:",
-      !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    );
-    console.log("Contact email:", body.contact_email);
 
     if (body.website_url) {
       return NextResponse.json({ success: true });
     }
 
-    for (const field of REQUIRED) {
-      if (body[field] === undefined || body[field] === null || body[field] === "") {
-        return NextResponse.json({ error: `${field} is required` }, { status: 400 });
-      }
+    const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
+    const priceId = stripePriceId();
+    if (!stripeKey || !priceId) {
+      return NextResponse.json(
+        { error: "Betaling niet geconfigureerd. Neem contact op met support." },
+        { status: 500 },
+      );
     }
 
-    if (body.gdpr_consent !== true) {
-      return NextResponse.json({ error: "GDPR consent required" }, { status: 400 });
+    const localeRaw = typeof body.locale === "string" ? body.locale.trim() : "en";
+    const locale = /^[a-z]{2}$/i.test(localeRaw) ? localeRaw.toLowerCase() : "en";
+
+    const businessName = String(body.business_name ?? "").trim();
+    const businessType = String(body.business_type ?? "").trim();
+    const streetAddress = String(body.street_address ?? "").trim();
+    const city = String(body.city ?? "").trim();
+    const googlePlaceUrl = String(body.google_place_url ?? "").trim();
+    const priceRange = String(body.price_range ?? "").trim();
+    const openingHours =
+      typeof body.opening_hours === "string" && body.opening_hours.trim()
+        ? body.opening_hours.trim()
+        : null;
+    const website =
+      typeof body.website === "string" && body.website.trim()
+        ? body.website.trim()
+        : null;
+    let instagram =
+      typeof body.instagram_handle === "string" && body.instagram_handle.trim()
+        ? body.instagram_handle.trim()
+        : null;
+    if (instagram) instagram = instagram.replace(/^@+/, "");
+
+    const contactName = String(body.contact_name ?? "").trim();
+    const contactEmail = String(body.contact_email ?? "").trim();
+    const contactPhone = String(body.contact_phone ?? "").trim();
+    const kvkRaw = String(body.kvk_number ?? "").replace(/\s/g, "");
+    const billingName =
+      typeof body.billing_name === "string" && body.billing_name.trim()
+        ? body.billing_name.trim()
+        : null;
+    const billingAddress =
+      typeof body.billing_address === "string" && body.billing_address.trim()
+        ? body.billing_address.trim()
+        : null;
+    const vatNumber =
+      typeof body.vat_number === "string" && body.vat_number.trim()
+        ? body.vat_number.trim()
+        : null;
+
+    const whatOffer = String(body.what_they_offer ?? "").trim();
+    const whyWandermood = String(body.why_wandermood ?? "").trim();
+    const targetMoods = Array.isArray(body.target_moods)
+      ? (body.target_moods as unknown[]).filter((m) => typeof m === "string")
+      : [];
+
+    const gdprOk = body.gdpr_consent === true;
+    const pricingOk = body.pricing_consent === true;
+
+    if (
+      !businessName ||
+      !businessType ||
+      !streetAddress ||
+      !city ||
+      !googlePlaceUrl ||
+      !priceRange
+    ) {
+      return NextResponse.json({ error: "Verplichte velden ontbreken." }, { status: 400 });
     }
 
-    const contactEmail = String(body.contact_email).trim();
+    try {
+      const u = new URL(googlePlaceUrl.startsWith("http") ? googlePlaceUrl : `https://${googlePlaceUrl}`);
+      if (!u.hostname) throw new Error("bad host");
+    } catch {
+      return NextResponse.json({ error: "Ongeldige Google Maps-link." }, { status: 400 });
+    }
+
+    if (!contactName || !contactEmail || !contactPhone) {
+      return NextResponse.json({ error: "Contactgegevens zijn verplicht." }, { status: 400 });
+    }
+
     if (!EMAIL_RE.test(contactEmail)) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
-    const whatOffer =
-      typeof body.what_they_offer === "string" ? body.what_they_offer.trim() : "";
-    if (!whatOffer) {
-      return NextResponse.json({ error: "what_they_offer is required" }, { status: 400 });
+    if (!kvkRaw || !/^\d{8}$/.test(kvkRaw)) {
+      return NextResponse.json(
+        { error: "KvK-nummer moet 8 cijfers bevatten" },
+        { status: 400 },
+      );
     }
 
-    const contactName =
-      typeof body.contact_name === "string" ? body.contact_name.trim() : "";
-    if (!contactName) {
-      return NextResponse.json({ error: "contact_name is required" }, { status: 400 });
+    if (!whatOffer || !whyWandermood) {
+      return NextResponse.json({ error: "Vul beide beschrijvingen in." }, { status: 400 });
+    }
+
+    if (targetMoods.length < 1) {
+      return NextResponse.json(
+        { error: "Selecteer minimaal 1 stemming" },
+        { status: 400 },
+      );
+    }
+
+    if (!gdprOk) {
+      return NextResponse.json({ error: "GDPR consent required" }, { status: 400 });
+    }
+
+    if (!pricingOk) {
+      return NextResponse.json({ error: "Pricing consent required" }, { status: 400 });
     }
 
     const supabase = createSupabaseAdmin();
@@ -70,46 +150,50 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const targetMoods = Array.isArray(body.target_moods)
-      ? (body.target_moods as unknown[]).filter((m) => typeof m === "string")
-      : [];
+    const { data: insertedLead, error: dbError } = await supabase
+      .from("partner_leads")
+      .insert({
+        business_name: businessName,
+        business_type: businessType,
+        city,
+        country: "NL",
+        street_address: streetAddress,
+        opening_hours: openingHours,
+        price_range: priceRange,
+        website,
+        instagram_handle: instagram,
+        google_place_url: googlePlaceUrl,
+        contact_name: contactName,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
+        kvk_number: kvkRaw,
+        billing_name: billingName,
+        billing_address: billingAddress,
+        vat_number: vatNumber,
+        what_they_offer: whatOffer.slice(0, 400),
+        why_wandermood: whyWandermood.slice(0, 400),
+        target_moods: targetMoods,
+        gdpr_consent: true,
+        pricing_consent: true,
+        status: "new",
+        source: "website",
+      })
+      .select("id")
+      .single();
 
-    const { error: dbError } = await supabase.from("partner_leads").insert({
-      business_name: String(body.business_name).trim(),
-      business_type: String(body.business_type).trim(),
-      city: String(body.city).trim(),
-      country:
-        typeof body.country === "string" && body.country.trim()
-          ? body.country.trim().toUpperCase().slice(0, 2)
-          : "NL",
-      website:
-        typeof body.website === "string" && body.website.trim()
-          ? body.website.trim()
-          : null,
-      google_place_url:
-        typeof body.google_place_url === "string" && body.google_place_url.trim()
-          ? body.google_place_url.trim()
-          : null,
-      contact_name: contactName,
-      contact_email: contactEmail,
-      what_they_offer: whatOffer.slice(0, 300),
-      target_moods: targetMoods,
-      gdpr_consent: true,
-      status: "new",
-      source: "website",
-    });
-
-    if (dbError) {
+    if (dbError || !insertedLead?.id) {
       console.error("partner_leads insert error:", dbError);
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    const businessNameRaw = String(body.business_name).trim();
+    const leadId = insertedLead.id as string;
+    const base = appBaseUrl();
+
+    const businessNameRaw = businessName;
     const bnEscaped = escapeHtml(businessNameRaw);
 
     if (process.env.RESEND_API_KEY) {
       try {
-        console.log("Attempting to send email to:", body.contact_email);
         const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -123,30 +207,27 @@ export async function POST(req: NextRequest) {
             html: `
               <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;">
                 <div style="background:#2A6049;border-radius:12px;padding:24px;margin-bottom:24px;">
-                  <h2 style="color:#F5F0E8;margin:0;">Nieuwe partneraanvraag 🎉</h2>
+                  <h2 style="color:#F5F0E8;margin:0;">Nieuwe partneraanvraag (checkout gestart) 🎉</h2>
                 </div>
                 <p><strong>Zaak:</strong> ${bnEscaped}</p>
-                <p><strong>Type:</strong> ${escapeHtml(String(body.business_type))}</p>
-                <p><strong>Stad:</strong> ${escapeHtml(String(body.city))}</p>
-                <p><strong>Contact:</strong> ${escapeHtml(contactName)} — ${escapeHtml(contactEmail)}</p>
-                <p><strong>Website:</strong> ${body.website ? escapeHtml(String(body.website)) : "—"}</p>
-                <p><strong>Google Maps:</strong> ${body.google_place_url ? escapeHtml(String(body.google_place_url)) : "—"}</p>
+                <p><strong>Type:</strong> ${escapeHtml(businessType)}</p>
+                <p><strong>Adres:</strong> ${escapeHtml(streetAddress)}, ${escapeHtml(city)}</p>
+                <p><strong>Contact:</strong> ${escapeHtml(contactName)} — ${escapeHtml(contactEmail)} — ${escapeHtml(contactPhone)}</p>
+                <p><strong>KvK:</strong> ${escapeHtml(kvkRaw)}</p>
+                <p><strong>Prijsniveau:</strong> ${escapeHtml(priceRange)}</p>
+                <p><strong>Website:</strong> ${website ? escapeHtml(website) : "—"}</p>
+                <p><strong>Instagram:</strong> ${instagram ? escapeHtml(instagram) : "—"}</p>
+                <p><strong>Google Maps:</strong> ${escapeHtml(googlePlaceUrl)}</p>
                 <p><strong>Stemmingen:</strong> ${targetMoods.length ? escapeHtml(targetMoods.join(", ")) : "—"}</p>
                 <p><strong>Aanbod:</strong><br>${escapeHtml(whatOffer)}</p>
+                <p><strong>Waarom WanderMood:</strong><br>${escapeHtml(whyWandermood)}</p>
                 <hr style="margin:24px 0;border:1px solid #eee;">
-                <p style="color:#6B6560;font-size:13px;">Bekijk en keur goed op
-                  <a href="https://wandermood.com/admin">wandermood.com/admin</a>
-                </p>
+                <p style="color:#6B6560;font-size:13px;">Lead id: ${escapeHtml(leadId)}</p>
               </div>
             `,
           }),
         });
-        const emailResult = await emailRes.json();
-        console.log("Resend response status:", emailRes.status);
-        console.log("Resend response:", JSON.stringify(emailResult));
-
-        // Confirmation email to the applicant
-        console.log("Attempting to send email to:", body.contact_email);
+        console.log("Resend team notify status:", emailRes.status);
         const emailResApplicant = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -155,65 +236,77 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             from: "WanderMood Partners <partners@wandermood.com>",
-            to: [body.contact_email],
-            subject: `Aanvraag ontvangen — ${body.business_name}`,
+            to: [contactEmail],
+            subject: `Aanvraag ontvangen — ${businessNameRaw}`,
             html: `
-        <div style="font-family:sans-serif;max-width:560px;
-          margin:0 auto;padding:32px 24px;">
-          <div style="background:#2A6049;border-radius:12px;
-            padding:24px;margin-bottom:24px;">
-            <h2 style="color:#F5F0E8;margin:0;">
-              Aanvraag ontvangen! 🎉
-            </h2>
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;">
+          <div style="background:#2A6049;border-radius:12px;padding:24px;margin-bottom:24px;">
+            <h2 style="color:#F5F0E8;margin:0;">Volgende stap: betaalgegevens 🎉</h2>
           </div>
-          <p style="color:#2C2A26;font-size:16px;">
-            Hoi ${body.contact_name || body.business_name},
-          </p>
+          <p style="color:#2C2A26;font-size:16px;">Hoi ${escapeHtml(contactName)},</p>
           <p style="color:#2C2A26;font-size:16px;line-height:1.6;">
-            We hebben je aanvraag voor
-            <strong>${body.business_name}</strong>
-            ontvangen. Bedankt!
+            We hebben je aanvraag voor <strong>${bnEscaped}</strong> ontvangen.
+            Rond je aanvraag af door je betaalgegevens veilig in te stellen via Stripe (geen kosten tijdens de proefperiode).
           </p>
-          <div style="background:#F5F0E8;border-radius:8px;
-            padding:20px;margin:24px 0;">
-            <h3 style="color:#2A6049;margin:0 0 12px;">
-              Wat gebeurt er nu?
-            </h3>
-            <ul style="color:#2C2A26;margin:0;
-              padding-left:20px;line-height:1.8;">
-              <li>We reviewen je aanvraag handmatig</li>
-              <li>Je hoort binnen 3 werkdagen van ons</li>
-              <li>Bij goedkeuring starten we direct
-                je gratis proefperiode van 30 dagen</li>
-            </ul>
-          </div>
           <p style="color:#2C2A26;font-size:16px;">
-            Vragen? Mail naar
-            <a href="mailto:info@wandermood.com"
-              style="color:#2A6049;">
-              info@wandermood.com
-            </a>
+            Vragen? Mail naar <a href="mailto:info@wandermood.com" style="color:#2A6049;">info@wandermood.com</a>
           </p>
-          <p style="color:#6B6560;font-size:14px;
-            margin-top:32px;">
-            Met groet,<br>
-            <strong>Edvienne van WanderMood</strong><br>
-            Rotterdam
-          </p>
-        </div>
-      `,
+        </div>`,
           }),
         });
-        const emailResultApplicant = await emailResApplicant.json();
-        console.log("Resend response status:", emailResApplicant.status);
-        console.log("Resend response:", JSON.stringify(emailResultApplicant));
+        console.log("Resend applicant status:", emailResApplicant.status);
       } catch (e) {
         console.error("Email send failed:", e);
-        console.error("Error details:", JSON.stringify(e));
       }
     }
 
-    return NextResponse.json({ success: true });
+    const stripe = new Stripe(stripeKey);
+
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card", "ideal", "sepa_debit"],
+        customer_email: contactEmail,
+        line_items: [{ price: priceId, quantity: 1 }],
+        subscription_data: {
+          trial_period_days: 30,
+          metadata: {
+            lead_id: leadId,
+            business_name: businessName,
+            city,
+          },
+        },
+        metadata: {
+          lead_id: leadId,
+          business_name: businessName,
+        },
+        success_url: `${base}/${locale}/partners/bedankt?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${base}/${locale}/partners?cancelled=true`,
+        locale: locale === "nl" ? "nl" : "auto",
+      });
+    } catch (e) {
+      console.error("Stripe checkout create failed:", e);
+      return NextResponse.json(
+        { error: "Kon betaalpagina niet starten. Probeer later opnieuw." },
+        { status: 502 },
+      );
+    }
+
+    const { error: upErr } = await supabase
+      .from("partner_leads")
+      .update({ stripe_session_id: session.id })
+      .eq("id", leadId);
+
+    if (upErr) {
+      console.error("partner_leads stripe_session_id update:", upErr);
+    }
+
+    if (!session.url) {
+      return NextResponse.json({ error: "Geen checkout-URL" }, { status: 502 });
+    }
+
+    return NextResponse.json({ success: true, checkoutUrl: session.url });
   } catch (err) {
     console.error("Partner apply error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

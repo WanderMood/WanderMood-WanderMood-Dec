@@ -49,7 +49,7 @@ The Next.js app lives in a subfolder, so Vercel must build from that folder:
   - `NEXT_PUBLIC_SUPABASE_URL` — optional fallback where code reads the public URL; may match `SUPABASE_URL`.
 - **Stripe** (Checkout + webhook + admin revenue): see [Stripe on Vercel](#stripe-on-vercel-subscriptions) below.
 - **Checkout API** (`/api/stripe/create-checkout-session`): also needs `SUPABASE_ANON_KEY` (same as Flutter “anon” key), `STRIPE_SECRET_KEY`, `STRIPE_PREMIUM_PRICE_ID`.
-- **Partner application form** (`POST /api/partners/apply`): requires `SUPABASE_SERVICE_ROLE_KEY` (and `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL` so the server can reach Supabase). Optional: **`RESEND_API_KEY`** — if set, sends a notification email to `info@wandermood.com` on each application. Configure a verified sender/domain in [Resend](https://resend.com) so `from: partners@wandermood.com` (or change the `from` address in `app/api/partners/apply/route.ts` to match your verified domain).
+- **Partner application + Stripe Checkout** (`POST /api/partners/apply`): requires `SUPABASE_SERVICE_ROLE_KEY` (and `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`), **`STRIPE_SECRET_KEY`**, and a subscription **price** id: **`STRIPE_PRICE_ID`** (or reuse **`STRIPE_PREMIUM_PRICE_ID`**). Set **`NEXT_PUBLIC_APP_URL`** to `https://wandermood.com` (no trailing slash) so success/cancel URLs for partner Checkout are correct. Apply migration `20260511140000_partner_leads_extend.sql` on Supabase for the extra lead columns + `stripe_session_id` / `payment_captured_at`. Optional: **`RESEND_API_KEY`** — notifies `info@wandermood.com` on each application. Configure a verified sender/domain in [Resend](https://resend.com) for `from: partners@wandermood.com`.
 
 After saving env vars, **redeploy** the project (Deployments → … → Redeploy, or push a new commit).
 
@@ -79,6 +79,8 @@ Set these in **Vercel → Project → Settings → Environment Variables** (Prod
 | `STRIPE_SECRET_KEY` | [Stripe Dashboard](https://dashboard.stripe.com) → **Developers → API keys** → **Secret key** (`sk_live_...` or `sk_test_...`). Use **test** keys until you go live. |
 | `STRIPE_WEBHOOK_SECRET` | **Developers → Webhooks** → **Add endpoint** → URL: `https://wandermood.com/api/stripe/webhook` → select events: `checkout.session.completed`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted` → after creating, open the endpoint and reveal **Signing secret** (`whsec_...`). |
 | `STRIPE_PREMIUM_PRICE_ID` | **Product catalog** → your premium **Product** → **Pricing** → copy the **Price ID** (`price_...`) for the subscription price you want Checkout to use by default. |
+| `STRIPE_PRICE_ID` | Optional alias used by **`/api/partners/apply`** for the €79/mo partner subscription; if unset, the apply route falls back to `STRIPE_PREMIUM_PRICE_ID`. |
+| `NEXT_PUBLIC_APP_URL` | Public site origin, e.g. `https://wandermood.com`. Used for partner Stripe Checkout `success_url` / `cancel_url`. |
 | `SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | Supabase → **Project Settings → API** → **anon public** key. Server-only use here: verifies the user JWT for `/api/stripe/create-checkout-session`. Prefer `SUPABASE_ANON_KEY` on Vercel so the key isn’t exposed in the browser bundle unless you already use the `NEXT_PUBLIC_` variant. |
 
 Optional:

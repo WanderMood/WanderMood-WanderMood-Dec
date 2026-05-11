@@ -1,0 +1,368 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(92vh, 900px);
+  overflow-y: auto;
+  margin: auto;
+  background: #1a1916;
+  border: 1px solid rgba(245, 240, 232, 0.08);
+  border-radius: 16px;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: rgba(245, 240, 232, 0.55);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close:hover {
+  color: #f5f0e8;
+  background: rgba(245, 240, 232, 0.06);
+}
+
+.stepMobile {
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.45);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+@media (min-width: 480px) {
+  .stepMobile {
+    display: none;
+  }
+}
+
+.progress {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+  margin-bottom: 28px;
+  padding-right: 28px;
+}
+
+.progressStep {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.progressDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: rgba(245, 240, 232, 0.15);
+  color: rgba(245, 240, 232, 0.45);
+}
+
+.progressDotActive {
+  background: #2a6049;
+  color: #f5f0e8;
+}
+
+.progressDotDone {
+  background: #5dcaa5;
+  color: #1a1916;
+}
+
+.progressLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(245, 240, 232, 0.45);
+  text-align: center;
+  line-height: 1.25;
+}
+
+.progressLabelActive {
+  color: #f5f0e8;
+}
+
+.progressLine {
+  flex: 1;
+  height: 2px;
+  margin-top: 13px;
+  background: rgba(245, 240, 232, 0.1);
+  min-width: 12px;
+  align-self: flex-start;
+}
+
+.progressLineDone {
+  background: #5dcaa5;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.label {
+  display: block;
+  color: rgba(245, 240, 232, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.req {
+  color: #e8784a;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(245, 240, 232, 0.04);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #f5f0e8;
+  font-size: 15px;
+  outline: none;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(245, 240, 232, 0.35);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #2a6049;
+}
+
+.select {
+  cursor: pointer;
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.help {
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.4);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.err {
+  font-size: 12px;
+  color: #e8784a;
+  margin-top: 4px;
+}
+
+.priceRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pricePill {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  background: rgba(245, 240, 232, 0.04);
+  color: rgba(245, 240, 232, 0.5);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pricePillSelected {
+  background: #2a6049;
+  color: #f5f0e8;
+  border-color: #2a6049;
+}
+
+.moodRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.moodChip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 240, 232, 0.15);
+  background: rgba(245, 240, 232, 0.04);
+  color: rgba(245, 240, 232, 0.85);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.moodChipSelected {
+  border-color: #2a6049;
+  background: rgba(42, 96, 73, 0.35);
+}
+
+.checkRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.checkRow input {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.checkText {
+  font-size: 14px;
+  color: rgba(245, 240, 232, 0.75);
+  line-height: 1.5;
+}
+
+.checkText a {
+  color: #5dcaa5;
+  text-decoration: underline;
+}
+
+.navRow {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.btnNext {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: #2a6049;
+  color: #f5f0e8;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btnNext:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.back {
+  background: none;
+  border: none;
+  color: rgba(245, 240, 232, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+}
+
+.back:hover {
+  color: #f5f0e8;
+}
+
+.reassurance {
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.45);
+  text-align: center;
+  margin-top: 12px;
+  line-height: 1.45;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(245, 240, 232, 0.25);
+  border-top-color: #f5f0e8;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.details {
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 240, 232, 0.1);
+  overflow: hidden;
+}
+
+.details summary {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.55);
+  list-style: none;
+}
+
+.details summary::-webkit-details-marker {
+  display: none;
+}
+
+.detailsBody {
+  padding: 0 12px 12px;
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.45);
+  line-height: 1.45;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.counter {
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.4);
+  margin-top: 4px;
+}
+

@@ -101,6 +101,21 @@ async function handleCheckoutSessionCompleted(
   supabase: NonNullable<ReturnType<typeof createSupabaseAdmin>>,
   session: Stripe.Checkout.Session
 ) {
+  const leadId = session.metadata?.lead_id;
+  if (leadId) {
+    const { error } = await supabase
+      .from("partner_leads")
+      .update({
+        payment_captured_at: new Date().toISOString(),
+        stripe_session_id: session.id,
+      })
+      .eq("id", leadId);
+    if (error) {
+      console.warn("[stripe webhook] partner_leads checkout update:", error.message);
+    }
+    return;
+  }
+
   const userId = session.metadata?.supabase_user_id ?? session.client_reference_id;
   if (!userId) {
     console.warn("[stripe webhook] checkout.session.completed: missing supabase_user_id / client_reference_id");

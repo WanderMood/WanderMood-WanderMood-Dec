@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { PartnerApplyModal } from "@/components/PartnerApplyModal";
 
 const LOCALES = [
   { code: "en", label: "EN" },
@@ -12,60 +13,14 @@ const LOCALES = [
   { code: "fr", label: "FR" },
 ] as const;
 
-const BUSINESS_TYPES = [
-  { value: "Restaurant / Café", msgKey: "restaurant" },
-  { value: "Museum / Experience", msgKey: "museum" },
-  { value: "Boutique hotel", msgKey: "hotel" },
-  { value: "Tour / Workshop / Event", msgKey: "tour" },
-  { value: "Bar / Nightlife", msgKey: "bar" },
-  { value: "Park / Outdoor", msgKey: "park" },
-  { value: "Destination / DMO", msgKey: "dmo" },
-  { value: "Other", msgKey: "other" },
-] as const;
-
-const MOOD_KEYS = [
-  { key: "happy", emoji: "😊" },
-  { key: "adventurous", emoji: "🚀" },
-  { key: "relaxed", emoji: "😌" },
-  { key: "energetic", emoji: "⚡" },
-  { key: "romantic", emoji: "💕" },
-  { key: "social", emoji: "👫" },
-  { key: "cultural", emoji: "🎭" },
-  { key: "curious", emoji: "🔍" },
-  { key: "cozy", emoji: "☕" },
-  { key: "excited", emoji: "🤩" },
-  { key: "foodie", emoji: "🍽️" },
-  { key: "surprise", emoji: "😲" },
-] as const;
-
-type MoodKey = (typeof MOOD_KEYS)[number]["key"];
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export default function PartnersClient() {
   const t = useTranslations("partners");
   const tFooter = useTranslations("footer");
   const tLegal = useTranslations("legal.common");
-  const tLanding = useTranslations("landing");
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale();
-  const honeypotRef = useRef<HTMLInputElement>(null);
-
-  const [businessName, setBusinessName] = useState("");
-  const [businessType, setBusinessType] = useState("");
-  const [city, setCity] = useState("");
-  const [googlePlaceUrl, setGooglePlaceUrl] = useState("");
-  const [website, setWebsite] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [whatTheyOffer, setWhatTheyOffer] = useState("");
-  const [selectedMoods, setSelectedMoods] = useState<MoodKey[]>([]);
-  const [gdprConsent, setGdprConsent] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [successEmail, setSuccessEmail] = useState<string | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const faqItems = useMemo(() => {
@@ -83,74 +38,10 @@ export default function PartnersClient() {
     }));
   }, [t]);
 
-  function toggleMood(key: MoodKey) {
-    setSelectedMoods((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitError(null);
-    const hp = honeypotRef.current?.value?.trim();
-    if (hp) {
-      setSuccessEmail(contactEmail.trim());
-      return;
-    }
-
-    const err: Record<string, string> = {};
-    if (!businessName.trim()) err.business_name = t("form.errorRequired");
-    if (!businessType) err.business_type = t("form.errorRequired");
-    if (!city.trim()) err.city = t("form.errorRequired");
-    if (!contactName.trim()) err.contact_name = t("form.errorRequired");
-    const em = contactEmail.trim();
-    if (!em) err.contact_email = t("form.errorRequired");
-    else if (!EMAIL_RE.test(em)) err.contact_email = t("form.errorEmail");
-    if (!whatTheyOffer.trim()) err.what_they_offer = t("form.errorRequired");
-    if (!gdprConsent) err.gdpr = t("form.errorGdpr");
-
-    setFieldErrors(err);
-    if (Object.keys(err).length > 0) return;
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/partners/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          business_name: businessName.trim(),
-          business_type: businessType,
-          city: city.trim(),
-          country: "NL",
-          website: website.trim() || null,
-          google_place_url: googlePlaceUrl.trim() || null,
-          contact_name: contactName.trim(),
-          contact_email: em,
-          what_they_offer: whatTheyOffer.trim().slice(0, 300),
-          target_moods: selectedMoods,
-          gdpr_consent: true,
-          website_url: "",
-        }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) {
-        setSubmitError(t("form.errorGeneric"));
-        return;
-      }
-      if (data.error) {
-        setSubmitError(t("form.errorGeneric"));
-        return;
-      }
-      setSuccessEmail(em);
-    } catch {
-      setSubmitError(t("form.errorGeneric"));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <div className="landing-root">
+      <PartnerApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
+
       <nav id="landing-nav">
         <Link href="/" className="nav-logo">
           <div className="nav-logo-icon">
@@ -196,9 +87,9 @@ export default function PartnersClient() {
               </button>
             ))}
           </div>
-          <a href="#aanvragen" className="nav-cta">
+          <button type="button" className="nav-cta" onClick={() => setApplyOpen(true)}>
             {t("hero.ctaPrimary")}
-          </a>
+          </button>
         </div>
       </nav>
 
@@ -209,9 +100,9 @@ export default function PartnersClient() {
           {t("hero.sub")}
         </p>
         <div className="hero-actions">
-          <a href="#aanvragen" className="btn-primary">
+          <button type="button" className="btn-primary" onClick={() => setApplyOpen(true)}>
             {t("hero.ctaPrimary")}
-          </a>
+          </button>
           <a href="#hoe-werkt-het" className="btn-secondary">
             {t("hero.ctaSecondary")}
           </a>
@@ -290,9 +181,13 @@ export default function PartnersClient() {
             <div className="partners-price-sub">{t("what.perMonth")}</div>
             <div className="partners-price-note">{t("what.trialNote")}</div>
             <div className="partners-price-small">{t("what.cancelNote")}</div>
-            <a href="#aanvragen" className="partners-btn-cream">
+            <button
+              type="button"
+              className="partners-btn-cream"
+              onClick={() => setApplyOpen(true)}
+            >
               {t("what.pricingCta")}
-            </a>
+            </button>
           </div>
         </div>
       </section>
@@ -306,238 +201,13 @@ export default function PartnersClient() {
           {t("form.sub")}
         </p>
 
-        {successEmail ? (
-          <div className="partners-form-card" role="status">
-            <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, color: "var(--forest)" }}>
-              {t("form.successTitle")}
-            </p>
-            <p style={{ fontSize: 15, color: "var(--dusk)", lineHeight: 1.6 }}>
-              {t("form.successBody", { email: successEmail })}
-            </p>
-          </div>
-        ) : (
-          <form className="partners-form-card" onSubmit={handleSubmit} noValidate>
-            <input
-              ref={honeypotRef}
-              type="text"
-              name="website_url"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden
-              style={{
-                position: "absolute",
-                left: -9999,
-                width: 1,
-                height: 1,
-                opacity: 0,
-              }}
-            />
+        <div className="partners-form-card">
+          <button type="button" className="btn-trial" onClick={() => setApplyOpen(true)}>
+            {t("hero.ctaPrimary")}
+          </button>
+        </div>
 
-            <div className="partners-field">
-              <label htmlFor="business_name">{t("form.businessName")}</label>
-              <input
-                id="business_name"
-                className="partners-input"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                placeholder={t("form.businessNamePh")}
-                autoComplete="organization"
-                aria-invalid={Boolean(fieldErrors.business_name)}
-                aria-describedby={fieldErrors.business_name ? "err-business_name" : undefined}
-              />
-              {fieldErrors.business_name ? (
-                <p id="err-business_name" className="err" role="alert">
-                  {fieldErrors.business_name}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="business_type">{t("form.businessType")}</label>
-              <select
-                id="business_type"
-                className="partners-select"
-                value={businessType}
-                onChange={(e) => setBusinessType(e.target.value)}
-                aria-invalid={Boolean(fieldErrors.business_type)}
-              >
-                <option value="">—</option>
-                {BUSINESS_TYPES.map((opt) => (
-                  <option key={opt.msgKey} value={opt.value}>
-                    {t(`form.businessTypes.${opt.msgKey}` as "form.businessTypes.restaurant")}
-                  </option>
-                ))}
-              </select>
-              {fieldErrors.business_type ? (
-                <p className="err" role="alert">
-                  {fieldErrors.business_type}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="city">{t("form.city")}</label>
-              <input
-                id="city"
-                className="partners-input"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder={t("form.cityPh")}
-                autoComplete="address-level2"
-                aria-invalid={Boolean(fieldErrors.city)}
-              />
-              {fieldErrors.city ? (
-                <p className="err" role="alert">
-                  {fieldErrors.city}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="google_place_url">{t("form.googleMaps")}</label>
-              <input
-                id="google_place_url"
-                className="partners-input"
-                value={googlePlaceUrl}
-                onChange={(e) => setGooglePlaceUrl(e.target.value)}
-                placeholder={t("form.googleMapsPh")}
-                inputMode="url"
-                autoComplete="off"
-              />
-              <p className="help">{t("form.googleMapsHelp")}</p>
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="website">{t("form.website")}</label>
-              <input
-                id="website"
-                className="partners-input"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder={t("form.websitePh")}
-                inputMode="url"
-                autoComplete="url"
-              />
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="contact_name">{t("form.contactName")}</label>
-              <input
-                id="contact_name"
-                className="partners-input"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder={t("form.contactNamePh")}
-                autoComplete="name"
-                aria-invalid={Boolean(fieldErrors.contact_name)}
-              />
-              {fieldErrors.contact_name ? (
-                <p className="err" role="alert">
-                  {fieldErrors.contact_name}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="contact_email">{t("form.email")}</label>
-              <input
-                id="contact_email"
-                type="email"
-                className="partners-input"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder={t("form.emailPh")}
-                autoComplete="email"
-                aria-invalid={Boolean(fieldErrors.contact_email)}
-              />
-              {fieldErrors.contact_email ? (
-                <p className="err" role="alert">
-                  {fieldErrors.contact_email}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="partners-field">
-              <label htmlFor="what_they_offer">{t("form.offer")}</label>
-              <textarea
-                id="what_they_offer"
-                className="partners-textarea"
-                value={whatTheyOffer}
-                maxLength={300}
-                onChange={(e) => setWhatTheyOffer(e.target.value)}
-                placeholder={t("form.offerPh")}
-                aria-invalid={Boolean(fieldErrors.what_they_offer)}
-              />
-              <p className="help">{t("form.chars", { count: whatTheyOffer.length })}</p>
-              {fieldErrors.what_they_offer ? (
-                <p className="err" role="alert">
-                  {fieldErrors.what_they_offer}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="partners-field">
-              <span id="moods-label">{t("form.moodsLabel")}</span>
-              <p className="help" id="moods-help">
-                {t("form.moodsHelp")}
-              </p>
-              <div
-                className="partners-mood-row"
-                role="group"
-                aria-labelledby="moods-label"
-                aria-describedby="moods-help"
-                style={{ marginTop: 10 }}
-              >
-                {MOOD_KEYS.map(({ key, emoji }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={`partners-mood-chip ${selectedMoods.includes(key) ? "selected" : ""}`}
-                    onClick={() => toggleMood(key)}
-                    aria-pressed={selectedMoods.includes(key)}
-                  >
-                    {emoji} {tLanding(`moods.${key}` as "moods.happy")}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="partners-field">
-              <label
-                style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer" }}
-              >
-                <input
-                  type="checkbox"
-                  checked={gdprConsent}
-                  onChange={(e) => setGdprConsent(e.target.checked)}
-                  style={{ marginTop: 4 }}
-                  aria-invalid={Boolean(fieldErrors.gdpr)}
-                />
-                <span style={{ fontSize: 14, color: "var(--dusk)", lineHeight: 1.5 }}>
-                  {t("form.gdprBefore")}
-                  <Link href="/privacy" style={{ color: "var(--forest)", textDecoration: "underline" }}>
-                    {t("form.gdprLink")}
-                  </Link>
-                </span>
-              </label>
-              {fieldErrors.gdpr ? (
-                <p className="err" role="alert">
-                  {fieldErrors.gdpr}
-                </p>
-              ) : null}
-            </div>
-
-            {submitError ? (
-              <p className="err" role="alert" style={{ marginBottom: 16 }}>
-                {submitError}
-              </p>
-            ) : null}
-
-            <button type="submit" className="btn-trial" disabled={loading}>
-              {loading ? t("form.submitting") : t("form.submit")}
-            </button>
-          </form>
-        )}
+        <form hidden aria-hidden="true" tabIndex={-1} data-partner-form-legacy />
       </section>
 
       <section className="partners-section">
@@ -564,9 +234,14 @@ export default function PartnersClient() {
 
       <div className="partners-final">
         <h2>{t("final.title")}</h2>
-        <a href="#aanvragen" className="btn-primary" style={{ justifyContent: "center" }}>
+        <button
+          type="button"
+          className="btn-primary"
+          style={{ justifyContent: "center" }}
+          onClick={() => setApplyOpen(true)}
+        >
           {t("final.cta")}
-        </a>
+        </button>
       </div>
 
       <footer className="landing-footer">
