@@ -7,7 +7,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { AppStoreCtaLink } from "@/components/AppStoreCtaLink";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ExploreMockup } from "@/components/mockups/ExploreMockup";
+import { MoodMatchMockup } from "@/components/mockups/MoodMatchMockup";
+import { MoodyChatMockup } from "@/components/mockups/MoodyChatMockup";
+import { MyDayMockup } from "@/components/mockups/MyDayMockup";
 import { getHomepageScreens } from "@/lib/homepage-screens";
+import "@/components/mockups/mockups.css";
 
 const APP_STORE_URL =
   "https://apps.apple.com/nl/app/wandermood/id6760943488";
@@ -61,6 +66,12 @@ type PublicStats = {
   partners: number | null;
   show: boolean;
 };
+
+function FeatureBandPhoneMock({ index }: { index: number }) {
+  if (index === 0) return <MoodyChatMockup />;
+  if (index === 1) return <MyDayMockup />;
+  return <ExploreMockup />;
+}
 
 function AnimatedCounter({ value, locale }: { value: number; locale: string }) {
   const [count, setCount] = useState(0);
@@ -128,27 +139,21 @@ export default function LandingHome() {
         titleLine1: th("featMoodyH1"),
         titleLine2: th("featMoodyH2"),
         body: th("featMoodyB"),
-        src: screens.moodyChat,
-        alt: th("imgChat"),
       },
       {
         label: th("featDayLabel"),
         titleLine1: th("featDayH1"),
         titleLine2: th("featDayH2"),
         body: th("featDayB"),
-        src: screens.myDay,
-        alt: th("imgMyDay"),
       },
       {
         label: th("featExploreLabel"),
         titleLine1: th("featExploreH1"),
         titleLine2: th("featExploreH2"),
         body: th("featExploreB"),
-        src: screens.explore,
-        alt: th("imgExplore"),
       },
     ],
-    [currentLocale, screens, th],
+    [th],
   );
 
   useEffect(() => {
@@ -502,7 +507,9 @@ export default function LandingHome() {
                 </div>
                 <div className="home-sticky-mobile-visual">
                   <div className="home-feature-mobile-phone-wrap home-phone-elevated home-phone-elevated--band">
-                    <PhoneFrame src={slide.src} alt={slide.alt} />
+                    <PhoneFrame variant="band">
+                      <FeatureBandPhoneMock index={i} />
+                    </PhoneFrame>
                   </div>
                 </div>
               </div>
@@ -513,10 +520,9 @@ export default function LandingHome() {
               className={`home-sticky-phone-slot ${featurePhoneFade ? "is-dim" : ""}`}
             >
               <div className="home-phone-elevated home-phone-elevated--band">
-                <PhoneFrame
-                  src={featureSlides[featurePhoneIdx]?.src ?? featureSlides[0].src}
-                  alt={featureSlides[featurePhoneIdx]?.alt ?? featureSlides[0].alt}
-                />
+                <PhoneFrame variant="band">
+                  <FeatureBandPhoneMock index={featurePhoneIdx} />
+                </PhoneFrame>
               </div>
             </div>
           </div>
@@ -537,10 +543,12 @@ export default function LandingHome() {
           <div className="home-mm-phones-wrap">
             <div className="home-mm-phones">
               <div className="home-mm-phone1 home-phone-elevated">
-                <PhoneFrame src={screens.moodMatchLeft} alt={th("imgMoodMatch")} />
+                <PhoneFrame variant="band">
+                  <MoodMatchMockup />
+                </PhoneFrame>
               </div>
               <div className="home-mm-phone2 home-phone-elevated">
-                <PhoneFrame src={screens.placeDetail} alt={th("imgPlace")} />
+                <PhoneFrame variant="band" src={screens.placeDetail} alt={th("imgPlace")} />
               </div>
             </div>
           </div>

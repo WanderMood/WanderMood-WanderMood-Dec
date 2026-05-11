@@ -69,6 +69,14 @@
   position: relative;
 }
 
+/* Live mockups: fill rounded rect without layout overflow */
+.screenSlot {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
 .img {
   object-fit: cover;
   object-position: top center;
@@ -210,6 +218,10 @@
   }
 
   .phoneOuter--band .phoneScreen {
+    border-radius: 30px;
+  }
+
+  .phoneOuter--band .screenSlot {
     border-radius: 30px;
   }
 

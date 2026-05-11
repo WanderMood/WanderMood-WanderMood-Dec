@@ -1,19 +1,30 @@
 "use client";
 
 import Image from "next/image";
+import type { ReactNode } from "react";
 import styles from "./phone-frame.module.css";
 
 type Props = {
-  src: string;
-  alt: string;
+  /** Static screenshot (hero + any non–live band). Omit when [children] is set. */
+  src?: string;
+  alt?: string;
   priority?: boolean;
+  /** Live HTML mockup inside the screen (feature bands, mood match demo). */
+  children?: ReactNode;
   /** Merged onto the outer wrapper (e.g. hero float animation). */
   className?: string;
   /** Feature bands use a narrower frame on mobile. */
   variant?: "hero" | "band";
 };
 
-export function PhoneFrame({ src, alt, priority, className, variant = "hero" }: Props) {
+export function PhoneFrame({
+  src,
+  alt,
+  priority,
+  children,
+  className,
+  variant = "hero",
+}: Props) {
   const outerClass = [
     styles.phoneOuter,
     variant === "band" ? styles["phoneOuter--band"] : "",
@@ -22,23 +33,29 @@ export function PhoneFrame({ src, alt, priority, className, variant = "hero" }: 
     .filter(Boolean)
     .join(" ");
 
+  const showImage = !children && src;
+
   return (
     <div className={outerClass}>
       <div className={styles.phoneFrame}>
         <div className={styles.phoneInner}>
           <div className={styles.phoneScreen}>
-            <Image
-              src={src}
-              alt={alt}
-              fill
-              sizes={
-              variant === "band"
-                ? "(max-width: 767px) 74vw, 260px"
-                : "(max-width: 767px) 78vw, (max-width: 1099px) 300px, 380px"
-            }
-              priority={priority}
-              className={styles.img}
-            />
+            {children ? (
+              <div className={styles.screenSlot}>{children}</div>
+            ) : showImage ? (
+              <Image
+                src={src}
+                alt={alt ?? ""}
+                fill
+                sizes={
+                  variant === "band"
+                    ? "(max-width: 767px) 74vw, 260px"
+                    : "(max-width: 767px) 78vw, (max-width: 1099px) 300px, 380px"
+                }
+                priority={priority}
+                className={styles.img}
+              />
+            ) : null}
           </div>
         </div>
       </div>
