@@ -38,17 +38,29 @@
   box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.08);
 }
 
+/* Overlap matches radius so rounded corners reveal the section below, not page bg */
 .landing-page--home .section-dark + .section-beige,
 .landing-page--home .section-dark + .home-stats.section-beige,
 .landing-page--home .home-strip.section-dark + .section-beige,
 .landing-page--home .home-strip.section-dark + .home-stats.section-beige {
-  margin-top: -2px;
+  margin-top: -28px;
   border-radius: 28px 28px 0 0;
 }
 
 .landing-page--home .section-beige + .section-dark {
-  margin-top: -2px;
+  margin-top: -28px;
   border-radius: 28px 28px 0 0;
+}
+
+/* Extra bottom space on beige before a dark band so content stays above the overlap */
+.landing-page--home .section-beige:has(+ .section-dark) {
+  padding-bottom: calc(60px + 28px);
+}
+
+@media (min-width: 768px) {
+  .landing-page--home .section-beige:has(+ .section-dark) {
+    padding-bottom: calc(100px + 28px);
+  }
 }
 
 .landing-page--home .section-beige h2,
@@ -228,6 +240,7 @@
   color: var(--home-bg);
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.2;
   text-decoration: none;
   white-space: nowrap;
   transition: opacity 0.2s;
@@ -364,15 +377,15 @@
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  gap: 48px;
+  gap: 32px;
   align-items: center;
   width: 100%;
 }
 
 @media (min-width: 900px) {
   .landing-page--home .home-hero-inner {
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+    gap: min(28px, 3vw);
   }
 }
 
@@ -444,8 +457,10 @@
 }
 
 .landing-page--home .home-app-badge img {
-  height: 44px;
-  width: auto;
+  display: block;
+  width: 157px;
+  height: auto;
+  max-height: 52px;
 }
 
 .landing-page--home .home-badge-sub {
@@ -457,7 +472,8 @@
 
 @media (max-width: 767px) {
   .landing-page--home .home-app-badge img {
-    height: 40px;
+    width: 140px;
+    max-height: 46px;
   }
 }
 
@@ -479,7 +495,7 @@
 
 @media (min-width: 900px) {
   .landing-page--home .home-hero-visual {
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 }
 
@@ -834,7 +850,7 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 80px;
+  gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
   padding: 100px 40px;
@@ -851,7 +867,7 @@
 }
 
 .landing-page--home .home-sticky-right {
-  flex: 0 0 300px;
+  flex: 0 0 min(280px, 32vw);
   position: sticky;
   top: 100px;
   align-self: flex-start;
@@ -1273,13 +1289,16 @@
 }
 
 .landing-page--home .home-download-badge img {
-  height: 44px;
-  width: auto;
+  display: block;
+  width: 157px;
+  height: auto;
+  max-height: 52px;
 }
 
 @media (max-width: 767px) {
   .landing-page--home .home-download-badge img {
-    height: 40px;
+    width: 140px;
+    max-height: 46px;
   }
 }
 

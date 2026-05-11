@@ -413,12 +413,16 @@ export default function LandingHome() {
             </p>
             <div className="home-hero-cta">
               <div className="home-hero-badge-block">
-                <a {...APP_STORE_LINK_PROPS} className="home-app-badge">
+                <a
+                  {...APP_STORE_LINK_PROPS}
+                  className="home-app-badge"
+                  aria-label="Download on the App Store"
+                >
                   <Image
                     src="/app-store-badge-white.svg"
-                    alt="Download on the App Store"
+                    alt=""
                     width={157}
-                    height={44}
+                    height={52}
                     priority
                   />
                 </a>
@@ -650,12 +654,16 @@ export default function LandingHome() {
           {th("dlSubL2")}
         </p>
         <div className="home-download-badge-wrap reveal">
-          <a {...APP_STORE_LINK_PROPS} className="home-download-badge">
+          <a
+            {...APP_STORE_LINK_PROPS}
+            className="home-download-badge"
+            aria-label="Download on the App Store"
+          >
             <Image
               src="/app-store-badge-white.svg"
-              alt="Download on the App Store"
+              alt=""
               width={157}
-              height={44}
+              height={52}
             />
           </a>
           <p className="home-download-note">{th("dlFoot")}</p>
