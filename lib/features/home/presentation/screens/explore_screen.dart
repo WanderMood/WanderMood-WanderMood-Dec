@@ -122,6 +122,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   /// Dedupes partner listing view RPCs for the same visible Explore slice.
   String? _partnerListingViewsTrackedSig;
+
+  /// Dedupes partner listing fetches so we don't call setState in build()
+  /// for the same city+filters slice.
+  String? _partnerFetchSig;
   List<PartnerListing> _partnerMoodMatches = const [];
   List<PartnerListing> _partnerTrending = const [];
   bool _partnerLoading = false;
@@ -3091,7 +3095,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final userLocationAsync = ref.read(userLocationProvider);
     final currentCity = locationAsync.value ?? 'Rotterdam';
     final userLocation = userLocationAsync.value;
-    unawaited(_refreshPartnerDataForCity(currentCity));
+    final sig = '$currentCity|${_activeMoodFiltersForPartners().join(',')}';
+    if (_partnerFetchSig != sig) {
+      _partnerFetchSig = sig;
+      unawaited(_refreshPartnerDataForCity(currentCity));
+    }
 
     final List<Place> basePlaces =
         _searchResults != null ? _searchResults! : allPlaces;
