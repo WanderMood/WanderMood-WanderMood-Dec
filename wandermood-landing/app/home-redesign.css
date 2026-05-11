@@ -3,8 +3,8 @@
 .landing-root.landing-page--home {
   --home-bg: #1a1714;
   --home-card: #2a2420;
-  --home-green: #2a6049;
-  --home-accent: #5dcaa5;
+  /* Warm accent only — no green/mint on homepage */
+  --home-accent: #e8784a;
   --home-orange: #e8784a;
   --home-cream: #f5f0e8;
   --home-muted: rgba(245, 240, 232, 0.5);
@@ -61,7 +61,7 @@
 }
 
 .landing-page--home .section-beige .home-label {
-  color: #2a6049;
+  color: rgba(26, 23, 20, 0.5);
 }
 
 .landing-page--home .home-b2b.section-beige {
@@ -71,7 +71,7 @@
 }
 
 .landing-page--home .home-b2b.section-beige .home-label {
-  color: #2a6049;
+  color: rgba(26, 23, 20, 0.5);
 }
 
 .landing-page--home .home-b2b.section-beige .home-h2 {
@@ -141,7 +141,7 @@
 }
 
 .landing-page--home .home-nav .nav-logo-icon {
-  background: var(--home-green);
+  background: #3a322c;
 }
 
 .landing-page--home .home-nav .nav-logo-text {
@@ -214,7 +214,7 @@
 }
 
 .landing-page--home .home-nav-locale-btn.active {
-  background: rgba(42, 96, 73, 0.35);
+  background: rgba(245, 240, 232, 0.14);
   color: var(--home-cream);
 }
 
@@ -356,9 +356,7 @@
   min-height: 100dvh;
   display: flex;
   align-items: center;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(42, 96, 73, 0.25) 0%, transparent 70%),
-    #1A1714;
+  background: #1a1714;
   padding: 48px 24px 80px;
 }
 
@@ -574,7 +572,7 @@
 .landing-page--home .home-stat-value {
   font-size: 48px;
   font-weight: 700;
-  color: #2a6049;
+  color: var(--home-accent);
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   line-height: 1;
 }
@@ -666,8 +664,8 @@
   font-size: 96px;
   font-weight: 700;
   line-height: 1;
-  color: #2a6049;
-  opacity: 0.12;
+  color: #1a1714;
+  opacity: 0.08;
   pointer-events: none;
   user-select: none;
 }
@@ -901,7 +899,7 @@
 }
 
 .landing-page--home .section-dark .home-feature-copy .home-label {
-  color: #5dcaa5;
+  color: var(--home-accent);
 }
 
 .landing-page--home .section-dark .home-feature-copy .home-feat-h2 {
@@ -942,9 +940,7 @@
 
 /* Mood match */
 .landing-page--home .home-mm {
-  background:
-    linear-gradient(180deg, rgba(42, 96, 73, 0.15) 0%, transparent 40%),
-    #1A1714;
+  background: #1a1714;
 }
 
 .landing-page--home .home-mm-phones {
@@ -1006,7 +1002,7 @@
 }
 
 .landing-page--home .home-mm-cta:hover {
-  background: rgba(93, 202, 165, 0.12);
+  background: rgba(232, 120, 74, 0.12);
 }
 
 .landing-page--home .home-mm-cta-wrap {
@@ -1105,8 +1101,8 @@
 
 .landing-page--home .home-moods-grid.home-moods-animate .home-mood-chip:hover {
   transform: scale(1.06) translateY(-2px);
-  border-color: #2a6049;
-  background: rgba(42, 96, 73, 0.08);
+  border-color: rgba(26, 23, 20, 0.22);
+  background: rgba(26, 23, 20, 0.04);
   box-shadow: 0 6px 20px rgba(26, 23, 20, 0.06);
 }
 
@@ -1148,8 +1144,8 @@
   display: inline-block;
   padding: 6px 14px;
   border-radius: 50px;
-  background: rgba(93, 202, 165, 0.1);
-  border: 1px solid rgba(93, 202, 165, 0.2);
+  background: rgba(232, 120, 74, 0.1);
+  border: 1px solid rgba(232, 120, 74, 0.28);
   color: var(--home-accent);
   font-size: 12px;
   font-weight: 600;
@@ -1209,8 +1205,8 @@
   padding: 14px;
   border-radius: 12px;
   border: none;
-  background: var(--home-green);
-  color: var(--home-cream);
+  background: var(--home-accent);
+  color: #f5f0e8;
   font-size: 15px;
   font-weight: 700;
   text-align: center;
@@ -1241,9 +1237,7 @@
 
 /* Download */
 .landing-page--home .home-download {
-  background:
-    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(42, 96, 73, 0.2) 0%, transparent 70%),
-    #1A1714;
+  background: #1a1714;
   text-align: center;
   padding: 60px 24px;
 }
