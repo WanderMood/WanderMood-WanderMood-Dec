@@ -2,12 +2,32 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+function WmStatusBar() {
+  return (
+    <div className="wm-mock__status">
+      <span className="wm-mock__time">9:41</span>
+      <div className="wm-mock__sys">
+        <span className="wm-mock__signal" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </span>
+        <span className="wm-mock__wifi" aria-hidden />
+        <span className="wm-mock__battery" aria-hidden>
+          <span className="wm-mock__battery-fill" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function MoodyChatMockup() {
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
   const [on, setOn] = useState(false);
   const [step, setStep] = useState(0);
+  const [exiting, setExiting] = useState(false);
 
   const clearT = () => {
     timers.current.forEach((id) => clearTimeout(id));
@@ -22,17 +42,24 @@ export function MoodyChatMockup() {
 
   const runCycle = useCallback(() => {
     clearT();
+    setExiting(false);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 480);
-    q(() => setStep(3), 960);
-    q(() => setStep(4), 1500);
-    q(() => setStep(5), 2100);
+    q(() => setStep(2), 600);
+    q(() => setStep(3), 1800);
+    q(() => setStep(4), 3200);
+    q(() => setStep(5), 4200);
+    q(() => setStep(6), 5400);
+    q(() => setStep(7), 6600);
+    q(() => setStep(8), 8000);
+    q(() => setStep(9), 10000);
+    q(() => setExiting(true), 11500);
     q(() => {
+      setExiting(false);
       setOn(false);
       setStep(0);
-    }, 5200);
-    q(() => runRef.current?.(), 5200 + 5200);
+    }, 13000);
+    q(() => runRef.current?.(), 13500);
   }, []);
 
   useEffect(() => {
@@ -72,31 +99,96 @@ export function MoodyChatMockup() {
     };
   }, [runCycle]);
 
+  const showTyping1 = step === 2;
+  const showMsg1 = step >= 3;
+  const showUser = step >= 4;
+  const showTyping2 = step === 5;
+  const showMsg2 = step >= 6;
+  const showCard = step >= 7;
+  const showMsg3 = step >= 8;
+
   return (
     <div
       ref={root}
       role="presentation"
       aria-hidden
-      className={`wm-mock wm-moody wm-moody--s${step} ${on ? "wm-mock--on" : ""}`}
+      className={`wm-mock wm-moody wm-moody--s${Math.min(step, 9)} ${on ? "wm-mock--on" : ""} ${exiting ? "wm-mock--exiting" : ""}`}
     >
-      <div className="wm-mock__status">
-        <span>9:41</span>
-        <span>●●●●</span>
-      </div>
+      <WmStatusBar />
       <div className="wm-mock__scroll">
-        <div className="wm-moody__title">Moody</div>
+        <header className="wm-moody__header">
+          <div className="wm-moody__avatar" aria-hidden>
+            M
+          </div>
+          <div className="wm-moody__headlines">
+            <div className="wm-moody__brand">Moody</div>
+            <div className="wm-moody__sub">Je stadskenner</div>
+          </div>
+        </header>
+
         <div className="wm-moody__thread">
-          <div className="wm-moody__bubble wm-moody__bubble--m">
-            Waar heb je zin in vandaag?
-          </div>
-          <div className="wm-moody__bubble wm-moody__bubble--u">
-            Gezellig koffie in Rotterdam
-          </div>
-          <div className="wm-moody__bubble wm-moody__bubble--m">
-            Top — ik zoek plekken voor je.
-          </div>
+          {showTyping1 ? (
+            <div className="wm-moody__typing" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
+          ) : null}
+
+          {showMsg1 ? (
+            <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--in">
+              Goedemorgen ☀️ Luie vibe vandaag of wil je echt iets doen?
+            </div>
+          ) : null}
+
+          {showUser ? (
+            <div className="wm-moody__bubble wm-moody__bubble--u wm-moody__bubble--in">
+              Iets gezelligs, niet te ver
+            </div>
+          ) : null}
+
+          {showTyping2 ? (
+            <div className="wm-moody__typing" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
+          ) : null}
+
+          {showMsg2 ? (
+            <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--in">
+              Dan weet ik precies waar ik je heen stuur 💚
+            </div>
+          ) : null}
+
+          {showCard ? (
+            <div className="wm-moody__placeCard wm-moody__placeCard--in">
+              <div className="wm-moody__placeCircle" aria-hidden>
+                ☕
+              </div>
+              <div className="wm-moody__placeMid">
+                <div className="wm-moody__placeName">Hopper Espresso Bar</div>
+                <div className="wm-moody__placeMeta">★ 4.6 · 8 min lopen</div>
+                <div className="wm-moody__placeBtns">
+                  <button type="button" className="wm-moody__btn wm-moody__btn--pri">
+                    Voeg toe
+                  </button>
+                  <button type="button" className="wm-moody__btn wm-moody__btn--sec">
+                    Meer
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {showMsg3 ? (
+            <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--soft wm-moody__bubble--in">
+              Flat white, goed licht, geen haast.
+            </div>
+          ) : null}
         </div>
-        <div className="wm-moody__hint">Tip: stel gerust een vervolgvraag.</div>
+
+        <div className="wm-moody__inputBar">Bericht aan Moody…</div>
       </div>
     </div>
   );
