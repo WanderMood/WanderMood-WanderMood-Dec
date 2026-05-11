@@ -40,6 +40,7 @@ const Color _wmError = Color(0xFFE05C5C);
 /// Outer shell + hero top clip (single radius so accent + photo align).
 const double _kPlaceCardRadius = 16;
 const double _kPlaceCardTopAccentWidth = 3;
+
 /// Full-width "Add to My Day" — slightly taller than minimum for easier taps.
 const double _kPlaceCardAddToMyDayCtaHeight = 48;
 const double _kPlaceCardAddToMyDayCtaRadius = 24;
@@ -51,19 +52,29 @@ class PlaceCard extends ConsumerWidget {
   final String? cityName; // City name for fallback distance calculation
   /// When false, hides the "Add to My Day" button.
   final bool showAddToMyDayButton;
+
   /// Optional override for the "Add to My Day" tap — e.g. to show a time-picker sheet.
   final VoidCallback? onAddToMyDayTap;
+
   /// Optional callback when this place gets newly saved (not unsaved).
   final VoidCallback? onSavedTap;
+
   /// When true, shows a "See activity" label (e.g. on Day Plan where we don't book yet).
   final bool showSeeActivityLabel;
+
   /// Outer margin around the card.
   final EdgeInsetsGeometry cardMargin;
+
   /// Bumps hero photo selection on Explore refresh (see [placeCardPhotoIndex]).
   final int photoSelectionSeed;
+
   /// When true, card can fetch extra details/photos while visible.
   /// Set false for strict cache-only Explore scrolling.
   final bool allowVisibilityEnrichment;
+
+  /// When true: show condensed Moody copy (title + one sentence),
+  /// and avoid the rich "What is ..." stacked block.
+  final bool compactMoodCopy;
 
   const PlaceCard({
     Key? key,
@@ -78,6 +89,7 @@ class PlaceCard extends ConsumerWidget {
     this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.photoSelectionSeed = 0,
     this.allowVisibilityEnrichment = true,
+    this.compactMoodCopy = false,
   }) : super(key: key);
 
   // Cache distance calculation to prevent spam
@@ -85,18 +97,18 @@ class PlaceCard extends ConsumerWidget {
   static final Map<String, DateTime> _distanceCacheTime = {};
   static const Duration _cacheValidDuration = Duration(minutes: 5);
   static const int _kMaxCardPhotos = 10;
-  
+
   // Clean up expired cache entries
   static void _cleanupCache() {
     final now = DateTime.now();
     final keysToRemove = <String>[];
-    
+
     for (final entry in _distanceCacheTime.entries) {
       if (now.difference(entry.value) > _cacheValidDuration) {
         keysToRemove.add(entry.key);
       }
     }
-    
+
     for (final key in keysToRemove) {
       _distanceCache.remove(key);
       _distanceCacheTime.remove(key);
@@ -121,12 +133,10 @@ class PlaceCard extends ConsumerWidget {
 
   // Removed duplicate _getPriceLevelText method
 
-
-
   /// Get city center coordinates as fallback
   Position? _getCityCenterCoordinates(String? cityName) {
     if (cityName == null) return null;
-    
+
     final cityCoords = {
       'Rotterdam': {'lat': 51.9244, 'lng': 4.4777},
       'Amsterdam': {'lat': 52.3676, 'lng': 4.9041},
@@ -137,7 +147,7 @@ class PlaceCard extends ConsumerWidget {
       'Delft': {'lat': 52.0067, 'lng': 4.3556},
       'Beneden-Leeuwen': {'lat': 51.8892, 'lng': 5.5142},
     };
-    
+
     final coords = cityCoords[cityName];
     if (coords != null) {
       return Position(
@@ -153,7 +163,7 @@ class PlaceCard extends ConsumerWidget {
         speedAccuracy: 0,
       );
     }
-    
+
     // Try to extract city from place address if not provided
     final extractedCity = _extractCityName();
     if (extractedCity.isNotEmpty) {
@@ -173,7 +183,7 @@ class PlaceCard extends ConsumerWidget {
         );
       }
     }
-    
+
     return null;
   }
 
@@ -182,14 +192,15 @@ class PlaceCard extends ConsumerWidget {
     // Determine reference point: user location > city center > null
     Position? referencePoint;
     late String cacheKey;
-    
+
     if (userLocation != null) {
       final userLat = userLocation!.latitude;
       final userLng = userLocation!.longitude;
       final cityCenter = _getCityCenterCoordinates(cityName);
-      
+
       // Check if this is unrealistic coordinates (SF simulator)
-      final isSanFrancisco = (userLat - 37.785834).abs() < 0.1 && (userLng + 122.406417).abs() < 0.1;
+      final isSanFrancisco = (userLat - 37.785834).abs() < 0.1 &&
+          (userLng + 122.406417).abs() < 0.1;
       final isFarFromSelectedCity = cityCenter != null &&
           DistanceService.calculateDistance(
                 userLat,
@@ -198,39 +209,42 @@ class PlaceCard extends ConsumerWidget {
                 cityCenter.longitude,
               ) >
               150;
-      
+
       if (!isSanFrancisco && !isFarFromSelectedCity) {
         // Use valid user location
         referencePoint = userLocation;
-        cacheKey = '${place.id}_user_${userLat.toStringAsFixed(4)}_${userLng.toStringAsFixed(4)}';
+        cacheKey =
+            '${place.id}_user_${userLat.toStringAsFixed(4)}_${userLng.toStringAsFixed(4)}';
       }
     }
-    
+
     // Fallback to city center if user location unavailable or invalid
     if (referencePoint == null) {
       final cityCenter = _getCityCenterCoordinates(cityName);
       if (cityCenter != null) {
         referencePoint = cityCenter;
-        cacheKey = '${place.id}_city_${cityCenter.latitude.toStringAsFixed(4)}_${cityCenter.longitude.toStringAsFixed(4)}';
+        cacheKey =
+            '${place.id}_city_${cityCenter.latitude.toStringAsFixed(4)}_${cityCenter.longitude.toStringAsFixed(4)}';
       } else {
         // No reference point available
         return null;
       }
     }
-    
+
     // Clean up expired cache entries periodically
     if (_distanceCache.length > 100) {
       _cleanupCache();
     }
-    
+
     // Check cache first
-    if (_distanceCache.containsKey(cacheKey) && _distanceCacheTime.containsKey(cacheKey)) {
+    if (_distanceCache.containsKey(cacheKey) &&
+        _distanceCacheTime.containsKey(cacheKey)) {
       final cacheTime = _distanceCacheTime[cacheKey]!;
       if (DateTime.now().difference(cacheTime) < _cacheValidDuration) {
         return _distanceCache[cacheKey];
       }
     }
-    
+
     // Calculate distance using reference point
     final distance = DistanceService.calculateDistance(
       referencePoint.latitude,
@@ -238,117 +252,246 @@ class PlaceCard extends ConsumerWidget {
       place.location.lat,
       place.location.lng,
     );
-    
+
     final formattedDistance = DistanceService.formatDistance(distance);
-    
+
     // Only log once per cache refresh
     if (!_distanceCache.containsKey(cacheKey)) {
-      debugPrint('📏 Distance to ${place.name}: $formattedDistance (${distance.toStringAsFixed(2)}km) from ${referencePoint == userLocation ? "user location" : "city center"}');
+      debugPrint(
+          '📏 Distance to ${place.name}: $formattedDistance (${distance.toStringAsFixed(2)}km) from ${referencePoint == userLocation ? "user location" : "city center"}');
     }
-    
+
     // Cache the result
     _distanceCache[cacheKey] = formattedDistance;
     _distanceCacheTime[cacheKey] = DateTime.now();
-    
+
     return formattedDistance;
   }
 
   /// Extract city name from address
   String _extractCityName() {
     if (place.address.isEmpty) return '';
-    
+
     // Extract city from address patterns like "Street 123, 1234 AB City" or "Street 123, City"
     final addressParts = place.address.split(',');
     if (addressParts.length >= 2) {
-      String cityPart = addressParts.isNotEmpty 
-          ? addressParts.last.trim() 
-          : '';
-      
+      String cityPart = addressParts.isNotEmpty ? addressParts.last.trim() : '';
+
       // Remove postal code pattern (e.g., "1234 AB Amsterdam" -> "Amsterdam")
       final postcodePattern = RegExp(r'^\d{4}\s*[A-Z]{2}\s*');
       cityPart = cityPart.replaceFirst(postcodePattern, '').trim();
-      
+
       // Handle special cases and clean up
       cityPart = cityPart.replaceAll('Rotterdam', 'Rotterdam');
       cityPart = cityPart.replaceAll('Amsterdam', 'Amsterdam');
       cityPart = cityPart.replaceAll('The Hague', 'The Hague');
       cityPart = cityPart.replaceAll('Utrecht', 'Utrecht');
-      
+
       return cityPart;
     }
-    
+
     // Fallback: check if address contains common Dutch cities
     final addressLower = place.address.toLowerCase();
     if (addressLower.contains('rotterdam')) return 'Rotterdam';
     if (addressLower.contains('amsterdam')) return 'Amsterdam';
-    if (addressLower.contains('the hague') || addressLower.contains('den haag')) return 'The Hague';
+    if (addressLower.contains('the hague') || addressLower.contains('den haag'))
+      return 'The Hague';
     if (addressLower.contains('utrecht')) return 'Utrecht';
     if (addressLower.contains('eindhoven')) return 'Eindhoven';
     if (addressLower.contains('groningen')) return 'Groningen';
-    
+
     return '';
   }
 
   /// Get country flag emoji based on city or location
   String _getCountryFlag() {
     final city = _extractCityName().toLowerCase();
-    
+
     // Netherlands cities
-    if (['rotterdam', 'amsterdam', 'the hague', 'den haag', 'utrecht', 'eindhoven', 
-         'groningen', 'tilburg', 'almere', 'breda', 'nijmegen', 'haarlem', 'arnhem',
-         'zaanstad', 'haarlemmermeer', 'apeldoorn', 'enschede', 'leeuwarden'].contains(city)) {
+    if ([
+      'rotterdam',
+      'amsterdam',
+      'the hague',
+      'den haag',
+      'utrecht',
+      'eindhoven',
+      'groningen',
+      'tilburg',
+      'almere',
+      'breda',
+      'nijmegen',
+      'haarlem',
+      'arnhem',
+      'zaanstad',
+      'haarlemmermeer',
+      'apeldoorn',
+      'enschede',
+      'leeuwarden'
+    ].contains(city)) {
       return '🇳🇱';
     }
-    
-    // US cities  
-    if (['new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'philadelphia',
-         'san antonio', 'san diego', 'dallas', 'san jose', 'boston',
-         'seattle', 'denver', 'washington', 'nashville', 'oklahoma city', 'el paso',
-         'las vegas', 'detroit', 'memphis', 'louisville', 'baltimore', 'milwaukee'].contains(city)) {
+
+    // US cities
+    if ([
+      'new york',
+      'los angeles',
+      'chicago',
+      'houston',
+      'phoenix',
+      'philadelphia',
+      'san antonio',
+      'san diego',
+      'dallas',
+      'san jose',
+      'boston',
+      'seattle',
+      'denver',
+      'washington',
+      'nashville',
+      'oklahoma city',
+      'el paso',
+      'las vegas',
+      'detroit',
+      'memphis',
+      'louisville',
+      'baltimore',
+      'milwaukee'
+    ].contains(city)) {
       return '🇺🇸';
     }
-    
+
     // UK cities
-    if (['london', 'birmingham', 'manchester', 'glasgow', 'liverpool', 'leeds',
-         'sheffield', 'edinburgh', 'bristol', 'cardiff', 'belfast', 'nottingham',
-         'leicester', 'bradford', 'coventry', 'kingston upon hull', 'stoke-on-trent'].contains(city)) {
+    if ([
+      'london',
+      'birmingham',
+      'manchester',
+      'glasgow',
+      'liverpool',
+      'leeds',
+      'sheffield',
+      'edinburgh',
+      'bristol',
+      'cardiff',
+      'belfast',
+      'nottingham',
+      'leicester',
+      'bradford',
+      'coventry',
+      'kingston upon hull',
+      'stoke-on-trent'
+    ].contains(city)) {
       return '🇬🇧';
     }
-    
+
     // German cities
-    if (['berlin', 'hamburg', 'munich', 'cologne', 'frankfurt', 'stuttgart',
-         'düsseldorf', 'leipzig', 'dortmund', 'essen', 'bremen', 'dresden',
-         'hanover', 'nuremberg', 'duisburg', 'bochum', 'wuppertal'].contains(city)) {
+    if ([
+      'berlin',
+      'hamburg',
+      'munich',
+      'cologne',
+      'frankfurt',
+      'stuttgart',
+      'düsseldorf',
+      'leipzig',
+      'dortmund',
+      'essen',
+      'bremen',
+      'dresden',
+      'hanover',
+      'nuremberg',
+      'duisburg',
+      'bochum',
+      'wuppertal'
+    ].contains(city)) {
       return '🇩🇪';
     }
-    
+
     // French cities
-    if (['paris', 'marseille', 'lyon', 'toulouse', 'nice', 'nantes',
-         'strasbourg', 'montpellier', 'bordeaux', 'lille', 'rennes', 'reims',
-         'le havre', 'saint-étienne', 'toulon', 'grenoble', 'dijon'].contains(city)) {
+    if ([
+      'paris',
+      'marseille',
+      'lyon',
+      'toulouse',
+      'nice',
+      'nantes',
+      'strasbourg',
+      'montpellier',
+      'bordeaux',
+      'lille',
+      'rennes',
+      'reims',
+      'le havre',
+      'saint-étienne',
+      'toulon',
+      'grenoble',
+      'dijon'
+    ].contains(city)) {
       return '🇫🇷';
     }
-    
+
     // Spanish cities
-    if (['madrid', 'barcelona', 'valencia', 'seville', 'zaragoza', 'málaga',
-         'murcia', 'palma', 'las palmas', 'bilbao', 'alicante', 'córdoba',
-         'valladolid', 'vigo', 'gijón', 'hospitalet de llobregat'].contains(city)) {
+    if ([
+      'madrid',
+      'barcelona',
+      'valencia',
+      'seville',
+      'zaragoza',
+      'málaga',
+      'murcia',
+      'palma',
+      'las palmas',
+      'bilbao',
+      'alicante',
+      'córdoba',
+      'valladolid',
+      'vigo',
+      'gijón',
+      'hospitalet de llobregat'
+    ].contains(city)) {
       return '🇪🇸';
     }
-    
+
     // Italian cities
-    if (['rome', 'milan', 'naples', 'turin', 'palermo', 'genoa',
-         'bologna', 'florence', 'bari', 'catania', 'venice', 'verona',
-         'messina', 'padua', 'trieste', 'taranto', 'brescia'].contains(city)) {
+    if ([
+      'rome',
+      'milan',
+      'naples',
+      'turin',
+      'palermo',
+      'genoa',
+      'bologna',
+      'florence',
+      'bari',
+      'catania',
+      'venice',
+      'verona',
+      'messina',
+      'padua',
+      'trieste',
+      'taranto',
+      'brescia'
+    ].contains(city)) {
       return '🇮🇹';
     }
-    
+
     // Swiss cities (like in your reference image)
-    if (['zurich', 'geneva', 'basel', 'lausanne', 'bern', 'winterthur',
-         'lucerne', 'st. gallen', 'lugano', 'biel', 'thun', 'köniz'].contains(city)) {
+    if ([
+      'zurich',
+      'geneva',
+      'basel',
+      'lausanne',
+      'bern',
+      'winterthur',
+      'lucerne',
+      'st. gallen',
+      'lugano',
+      'biel',
+      'thun',
+      'köniz'
+    ].contains(city)) {
       return '🇨🇭';
     }
-    
+
     // Default to Netherlands flag (most places in app are in Netherlands)
     return '🇳🇱';
   }
@@ -356,78 +499,103 @@ class PlaceCard extends ConsumerWidget {
   /// Get emoji for activity tags based on activity type
   String _getActivityEmoji(String activity) {
     final activityLower = activity.toLowerCase();
-    
+
     // Food related
-    if (activityLower.contains('food') || activityLower.contains('dining') || 
-        activityLower.contains('restaurant') || activityLower.contains('cafe') ||
-        activityLower.contains('cooking') || activityLower.contains('culinary')) {
+    if (activityLower.contains('food') ||
+        activityLower.contains('dining') ||
+        activityLower.contains('restaurant') ||
+        activityLower.contains('cafe') ||
+        activityLower.contains('cooking') ||
+        activityLower.contains('culinary')) {
       return '🍽️';
     }
-    
+
     // Shopping related
-    if (activityLower.contains('shop') || activityLower.contains('market') || 
-        activityLower.contains('mall') || activityLower.contains('store')) {
+    if (activityLower.contains('shop') ||
+        activityLower.contains('market') ||
+        activityLower.contains('mall') ||
+        activityLower.contains('store')) {
       return '🛍️';
     }
-    
+
     // Culture/Art related
-    if (activityLower.contains('art') || activityLower.contains('culture') || 
-        activityLower.contains('museum') || activityLower.contains('gallery') ||
-        activityLower.contains('history') || activityLower.contains('heritage')) {
+    if (activityLower.contains('art') ||
+        activityLower.contains('culture') ||
+        activityLower.contains('museum') ||
+        activityLower.contains('gallery') ||
+        activityLower.contains('history') ||
+        activityLower.contains('heritage')) {
       return '🎨';
     }
-    
+
     // Architecture related
-    if (activityLower.contains('architect') || activityLower.contains('building') || 
-        activityLower.contains('design') || activityLower.contains('landmark')) {
+    if (activityLower.contains('architect') ||
+        activityLower.contains('building') ||
+        activityLower.contains('design') ||
+        activityLower.contains('landmark')) {
       return '🏛️';
     }
-    
+
     // Nature/Outdoor related
-    if (activityLower.contains('park') || activityLower.contains('nature') || 
-        activityLower.contains('outdoor') || activityLower.contains('garden') ||
-        activityLower.contains('walking') || activityLower.contains('cycling')) {
+    if (activityLower.contains('park') ||
+        activityLower.contains('nature') ||
+        activityLower.contains('outdoor') ||
+        activityLower.contains('garden') ||
+        activityLower.contains('walking') ||
+        activityLower.contains('cycling')) {
       return '🌳';
     }
-    
+
     // Entertainment/Fun related
-    if (activityLower.contains('entertainment') || activityLower.contains('fun') || 
-        activityLower.contains('game') || activityLower.contains('amusement') ||
-        activityLower.contains('music') || activityLower.contains('show')) {
+    if (activityLower.contains('entertainment') ||
+        activityLower.contains('fun') ||
+        activityLower.contains('game') ||
+        activityLower.contains('amusement') ||
+        activityLower.contains('music') ||
+        activityLower.contains('show')) {
       return '🎪';
     }
-    
+
     // Sightseeing/Tours/Photography related
-    if (activityLower.contains('sightseeing') || activityLower.contains('tour') || 
-        activityLower.contains('view') || activityLower.contains('observation') ||
+    if (activityLower.contains('sightseeing') ||
+        activityLower.contains('tour') ||
+        activityLower.contains('view') ||
+        activityLower.contains('observation') ||
         activityLower.contains('photo')) {
       return '📸';
     }
-    
+
     // Sports related
-    if (activityLower.contains('sport') || activityLower.contains('fitness') || 
-        activityLower.contains('gym') || activityLower.contains('climbing')) {
+    if (activityLower.contains('sport') ||
+        activityLower.contains('fitness') ||
+        activityLower.contains('gym') ||
+        activityLower.contains('climbing')) {
       return '⚽';
     }
-    
+
     // Spa/Wellness related
-    if (activityLower.contains('spa') || activityLower.contains('wellness') || 
-        activityLower.contains('massage') || activityLower.contains('relax')) {
+    if (activityLower.contains('spa') ||
+        activityLower.contains('wellness') ||
+        activityLower.contains('massage') ||
+        activityLower.contains('relax')) {
       return '💆';
     }
-    
+
     // Jazz/Music related
-    if (activityLower.contains('jazz') || activityLower.contains('concert') || 
+    if (activityLower.contains('jazz') ||
+        activityLower.contains('concert') ||
         activityLower.contains('musical')) {
       return '🎵';
     }
-    
+
     // Travel/Transportation related
-    if (activityLower.contains('bike') || activityLower.contains('harbor') || 
-        activityLower.contains('boat') || activityLower.contains('transport')) {
+    if (activityLower.contains('bike') ||
+        activityLower.contains('harbor') ||
+        activityLower.contains('boat') ||
+        activityLower.contains('transport')) {
       return '🚲';
     }
-    
+
     // Default emoji for other activities
     return '📍';
   }
@@ -435,54 +603,72 @@ class PlaceCard extends ConsumerWidget {
   /// Get color for activity tags based on activity type
   Color _getTagColor(String activity) {
     final activityLower = activity.toLowerCase();
-    
+
     // Food related
-    if (activityLower.contains('food') || activityLower.contains('dining') || 
-        activityLower.contains('restaurant') || activityLower.contains('cafe') ||
-        activityLower.contains('cooking') || activityLower.contains('culinary')) {
+    if (activityLower.contains('food') ||
+        activityLower.contains('dining') ||
+        activityLower.contains('restaurant') ||
+        activityLower.contains('cafe') ||
+        activityLower.contains('cooking') ||
+        activityLower.contains('culinary')) {
       return _wmSunset;
     }
-    
+
     // Shopping related
-    if (activityLower.contains('shop') || activityLower.contains('market') || 
-        activityLower.contains('mall') || activityLower.contains('store')) {
+    if (activityLower.contains('shop') ||
+        activityLower.contains('market') ||
+        activityLower.contains('mall') ||
+        activityLower.contains('store')) {
       return _wmForest;
     }
-    
+
     // Culture/Art related
-    if (activityLower.contains('art') || activityLower.contains('culture') || 
-        activityLower.contains('museum') || activityLower.contains('gallery') ||
-        activityLower.contains('history') || activityLower.contains('heritage')) {
+    if (activityLower.contains('art') ||
+        activityLower.contains('culture') ||
+        activityLower.contains('museum') ||
+        activityLower.contains('gallery') ||
+        activityLower.contains('history') ||
+        activityLower.contains('heritage')) {
       return _wmForest;
     }
-    
+
     // Architecture related
-    if (activityLower.contains('architect') || activityLower.contains('building') || 
-        activityLower.contains('design') || activityLower.contains('landmark')) {
+    if (activityLower.contains('architect') ||
+        activityLower.contains('building') ||
+        activityLower.contains('design') ||
+        activityLower.contains('landmark')) {
       return _wmForest;
     }
-    
+
     // Nature/Outdoor related
-    if (activityLower.contains('park') || activityLower.contains('nature') || 
-        activityLower.contains('outdoor') || activityLower.contains('garden') ||
-        activityLower.contains('walking') || activityLower.contains('cycling')) {
+    if (activityLower.contains('park') ||
+        activityLower.contains('nature') ||
+        activityLower.contains('outdoor') ||
+        activityLower.contains('garden') ||
+        activityLower.contains('walking') ||
+        activityLower.contains('cycling')) {
       return _wmForest;
     }
-    
+
     // Entertainment/Fun related
-    if (activityLower.contains('entertainment') || activityLower.contains('fun') || 
-        activityLower.contains('game') || activityLower.contains('amusement') ||
-        activityLower.contains('music') || activityLower.contains('show')) {
+    if (activityLower.contains('entertainment') ||
+        activityLower.contains('fun') ||
+        activityLower.contains('game') ||
+        activityLower.contains('amusement') ||
+        activityLower.contains('music') ||
+        activityLower.contains('show')) {
       return _wmSunset;
     }
-    
+
     // Sightseeing/Tours related
-    if (activityLower.contains('sightseeing') || activityLower.contains('tour') || 
-        activityLower.contains('view') || activityLower.contains('observation') ||
+    if (activityLower.contains('sightseeing') ||
+        activityLower.contains('tour') ||
+        activityLower.contains('view') ||
+        activityLower.contains('observation') ||
         activityLower.contains('photo')) {
       return _wmSunset;
     }
-    
+
     // Default color for other activities
     return _wmForest;
   }
@@ -513,7 +699,8 @@ class PlaceCard extends ConsumerWidget {
               Icon(Icons.image, size: 40, color: Colors.grey[500]),
               const SizedBox(height: 8),
               Text(
-                place.name.substring(0, place.name.length > 15 ? 15 : place.name.length),
+                place.name.substring(
+                    0, place.name.length > 15 ? 15 : place.name.length),
                 style: GoogleFonts.poppins(
                   color: Colors.grey[700],
                   fontSize: 14,
@@ -534,15 +721,15 @@ class PlaceCard extends ConsumerWidget {
         height: _kCardImageHeight,
       );
     }
-    
+
     // Return stack with image and badges
     return Stack(
       children: [
         // Main image
         mainImage,
-        
+
         // Removed incorrectly positioned price badge - will add to content section instead
-          
+
         // Duration badge if available
         if (place.tag != null && place.tag!.contains('hr'))
           Positioned(
@@ -581,23 +768,24 @@ class PlaceCard extends ConsumerWidget {
 
   Widget _buildFallbackImage() {
     // Use a category-specific placeholder based on place types - using real images
-    String imagePath = 'assets/images/philipp-kammerer-6Mxb_mZ_Q8E-unsplash.jpg';
+    String imagePath =
+        'assets/images/philipp-kammerer-6Mxb_mZ_Q8E-unsplash.jpg';
 
-    if (place.types.contains('restaurant') || 
-        place.types.contains('cafe') || 
+    if (place.types.contains('restaurant') ||
+        place.types.contains('cafe') ||
         place.types.contains('food')) {
       imagePath = 'assets/images/tom-podmore-3mEK924ZuTs-unsplash.jpg';
-    } else if (place.types.contains('museum') || 
-              place.types.contains('art_gallery')) {
+    } else if (place.types.contains('museum') ||
+        place.types.contains('art_gallery')) {
       imagePath = 'assets/images/pietro-de-grandi-T7K4aEPoGGk-unsplash.jpg';
-    } else if (place.types.contains('park') || 
-              place.types.contains('natural_feature')) {
+    } else if (place.types.contains('park') ||
+        place.types.contains('natural_feature')) {
       imagePath = 'assets/images/dino-reichmuth-A5rCN8626Ck-unsplash.jpg';
-    } else if (place.types.contains('bar') || 
-              place.types.contains('night_club')) {
+    } else if (place.types.contains('bar') ||
+        place.types.contains('night_club')) {
       imagePath = 'assets/images/pedro-lastra-Nyvq2juw4_o-unsplash.jpg';
-    } else if (place.types.contains('lodging') || 
-              place.types.contains('hotel')) {
+    } else if (place.types.contains('lodging') ||
+        place.types.contains('hotel')) {
       imagePath = 'assets/images/mesut-kaya-eOcyhe5-9sQ-unsplash.jpg';
     }
 
@@ -617,7 +805,8 @@ class PlaceCard extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.image_not_supported, size: 40, color: Colors.grey[500]),
+                  Icon(Icons.image_not_supported,
+                      size: 40, color: Colors.grey[500]),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -646,7 +835,8 @@ class PlaceCard extends ConsumerWidget {
         width: double.infinity,
         color: Colors.grey[300],
         child: Center(
-          child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey[500]),
+          child: Icon(Icons.image_not_supported,
+              size: 40, color: Colors.grey[500]),
         ),
       );
     }
@@ -657,7 +847,8 @@ class PlaceCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     // Check if place is saved using the new Supabase service
     final savedPlacesAsync = ref.watch(savedPlacesProvider);
-    final isFavorite = savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
+    final isFavorite =
+        savedPlacesAsync.value?.any((sp) => sp.place.id == place.id) ?? false;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -709,146 +900,159 @@ class PlaceCard extends ConsumerWidget {
                     child: Stack(
                       clipBehavior: Clip.hardEdge,
                       children: [
-                      // Main image
-                      FutureBuilder<List<String>>(
-                        future: _resolvePhotos(ref),
-                        initialData: place.photos,
-                        builder: (context, snapshot) {
-                          final photos = snapshot.data ?? place.photos;
-                          return _buildPlaceImage(
-                            photos,
-                            photoSeed: photoSelectionSeed,
-                          );
-                        },
-                      ),
-
-                      // Opening status only (top-left on image) — social pills hidden for calmer cards.
-                      if (place.openingHours != null)
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: place.openingHours!.isOpen
-                              ? _wmForest
-                              : _wmError.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                              spreadRadius: 0,
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                              spreadRadius: -1,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              place.openingHours!.isOpen
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              place.openingHours!.isOpen
-                                  ? l10n.dayPlanCardOpenNow
-                                  : l10n.dayPlanCardClosed,
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                      
-                  // Action icon column — unified frosted-glass circles
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _CardIconButton(
-                          icon: Icons.ios_share_rounded,
-                          onTap: () async {
-                            try {
-                              await SharingService.sharePlace(place, context: context);
-                            } catch (e) {
-                              showWanderMoodToast(
-                                context,
-                                message: l10n.placeCardFailedToShare('$e'),
-                                isError: true,
-                              );
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 9),
-                        _CardIconButton(
-                          icon: Icons.chat_bubble_outline_rounded,
-                          onTap: () {
-                            unawaited(
-                              showMoodyChatSheetWithSharedPlace(
-                                context,
-                                ref,
-                                sharedPlace:
-                                    moodySharedPlacePayloadForExplorePlace(place),
-                              ),
+                        // Main image
+                        FutureBuilder<List<String>>(
+                          future: _resolvePhotos(ref),
+                          initialData: place.photos,
+                          builder: (context, snapshot) {
+                            final photos = snapshot.data ?? place.photos;
+                            return _buildPlaceImage(
+                              photos,
+                              photoSeed: photoSelectionSeed,
                             );
                           },
                         ),
-                        const SizedBox(height: 9),
-                        _CardIconButton(
-                          icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          iconColor: isFavorite ? _wmSunset : null,
-                          onTap: () async {
-                            final savedPlacesService = ref.read(savedPlacesServiceProvider);
-                            try {
-                              if (isFavorite) {
-                                await savedPlacesService.unsavePlace(place.id);
-                                ref.invalidate(savedPlacesProvider);
-                                showWanderMoodToast(
-                                  context,
-                                  message: l10n.dayPlanCardRemovedFromSaved(place.name),
-                                  isWarning: true,
-                                );
-                              } else {
-                                await savedPlacesService.savePlace(place);
-                                ref.invalidate(savedPlacesProvider);
-                                onSavedTap?.call();
-                                showWanderMoodToast(
-                                  context,
-                                  message: l10n.placeCardSaved(place.name),
-                                );
-                              }
-                            } catch (e) {
-                              if (kDebugMode) debugPrint('❌ Error toggling favorite: $e');
-                              showWanderMoodToast(
-                                context,
-                                message: l10n.placeCardFailedToggleSave(place.name),
-                                isError: true,
-                              );
-                            }
-                          },
+
+                        // Opening status only (top-left on image) — social pills hidden for calmer cards.
+                        if (place.openingHours != null)
+                          Positioned(
+                            top: 12,
+                            left: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: place.openingHours!.isOpen
+                                    ? _wmForest
+                                    : _wmError.withValues(alpha: 0.92),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.25),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                    spreadRadius: 0,
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                    spreadRadius: -1,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    place.openingHours!.isOpen
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    place.openingHours!.isOpen
+                                        ? l10n.dayPlanCardOpenNow
+                                        : l10n.dayPlanCardClosed,
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // Action icon column — unified frosted-glass circles
+                        Positioned(
+                          top: 12,
+                          right: 12,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _CardIconButton(
+                                icon: Icons.ios_share_rounded,
+                                onTap: () async {
+                                  try {
+                                    await SharingService.sharePlace(place,
+                                        context: context);
+                                  } catch (e) {
+                                    showWanderMoodToast(
+                                      context,
+                                      message:
+                                          l10n.placeCardFailedToShare('$e'),
+                                      isError: true,
+                                    );
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 9),
+                              _CardIconButton(
+                                icon: Icons.chat_bubble_outline_rounded,
+                                onTap: () {
+                                  unawaited(
+                                    showMoodyChatSheetWithSharedPlace(
+                                      context,
+                                      ref,
+                                      sharedPlace:
+                                          moodySharedPlacePayloadForExplorePlace(
+                                              place),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 9),
+                              _CardIconButton(
+                                icon: isFavorite
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                iconColor: isFavorite ? _wmSunset : null,
+                                onTap: () async {
+                                  final savedPlacesService =
+                                      ref.read(savedPlacesServiceProvider);
+                                  try {
+                                    if (isFavorite) {
+                                      await savedPlacesService
+                                          .unsavePlace(place.id);
+                                      ref.invalidate(savedPlacesProvider);
+                                      showWanderMoodToast(
+                                        context,
+                                        message:
+                                            l10n.dayPlanCardRemovedFromSaved(
+                                                place.name),
+                                        isWarning: true,
+                                      );
+                                    } else {
+                                      await savedPlacesService.savePlace(place);
+                                      ref.invalidate(savedPlacesProvider);
+                                      onSavedTap?.call();
+                                      showWanderMoodToast(
+                                        context,
+                                        message:
+                                            l10n.placeCardSaved(place.name),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (kDebugMode)
+                                      debugPrint(
+                                          '❌ Error toggling favorite: $e');
+                                    showWanderMoodToast(
+                                      context,
+                                      message: l10n.placeCardFailedToggleSave(
+                                          place.name),
+                                      isError: true,
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                    ],
                     ),
                   ),
                 ],
@@ -929,9 +1133,12 @@ class PlaceCard extends ConsumerWidget {
                   // Moody hook + section title/body (matches place-detail style)
                   PlaceCardMoodyDescription(
                     place: place,
-                    maxLines: 8,
-                    paddingTop: 8,
-                    useCardStackLayout: true,
+                    // Compact cards should show only the quick Moody line
+                    // (hook + first section body) instead of the stacked
+                    // "What is ..." structure.
+                    maxLines: compactMoodCopy ? 2 : 8,
+                    paddingTop: compactMoodCopy ? 6 : 8,
+                    useCardStackLayout: !compactMoodCopy,
                     cacheOnly: !allowVisibilityEnrichment,
                     textStyle: GoogleFonts.poppins(
                       fontSize: 13,
@@ -952,11 +1159,13 @@ class PlaceCard extends ConsumerWidget {
                           ExplorePlaceCardCopy.shouldShowExplorePriceBadge(
                               place);
                       final hasDistancePill = distance != null;
-                      final bestTimeLabel = ExplorePlaceCardCopy
-                          .bestTimePillForExploreCard(place, l10n);
+                      final bestTimeLabel =
+                          ExplorePlaceCardCopy.bestTimePillForExploreCard(
+                              place, l10n);
                       final hasBestTimePill = bestTimeLabel != null;
-                      final durationLabel = ExplorePlaceCardCopy
-                          .exploreCardVisitDurationLabel(place, l10n);
+                      final durationLabel =
+                          ExplorePlaceCardCopy.exploreCardVisitDurationLabel(
+                              place, l10n);
                       final hasDurationPill = durationLabel.isNotEmpty;
                       final showAnything = hasPrimaryPill ||
                           hasPricePill ||
@@ -1043,12 +1252,12 @@ class PlaceCard extends ConsumerWidget {
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
                                       color: ExplorePlaceCardCopy
-                                          .explorePriceBadgeColor(place)
+                                              .explorePriceBadgeColor(place)
                                           .withValues(alpha: 0.10),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: ExplorePlaceCardCopy
-                                            .explorePriceBadgeColor(place)
+                                                .explorePriceBadgeColor(place)
                                             .withValues(alpha: 0.55),
                                         width: 1.25,
                                       ),
@@ -1124,7 +1333,8 @@ class PlaceCard extends ConsumerWidget {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(
                                       _kPlaceCardAddToMyDayCtaRadius),
-                                  onTap: onAddToMyDayTap ?? () => _addToMyDay(context, ref),
+                                  onTap: onAddToMyDayTap ??
+                                      () => _addToMyDay(context, ref),
                                   child: Ink(
                                     decoration: BoxDecoration(
                                       color: _wmForest,
@@ -1132,16 +1342,19 @@ class PlaceCard extends ConsumerWidget {
                                           _kPlaceCardAddToMyDayCtaRadius),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: _wmForest.withValues(alpha: 0.22),
+                                          color:
+                                              _wmForest.withValues(alpha: 0.22),
                                           blurRadius: 10,
                                           offset: const Offset(0, 4),
                                         ),
                                       ],
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        const Icon(Icons.add_rounded, color: Colors.white, size: 16),
+                                        const Icon(Icons.add_rounded,
+                                            color: Colors.white, size: 16),
                                         const SizedBox(width: 6),
                                         Text(
                                           l10n.dayPlanAddToMyDay,
@@ -1168,7 +1381,8 @@ class PlaceCard extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.visibility_outlined, size: 18, color: _wmForest),
+                        const Icon(Icons.visibility_outlined,
+                            size: 18, color: _wmForest),
                         const SizedBox(width: 6),
                         Text(
                           l10n.placeCardSeeActivity,
@@ -1191,60 +1405,66 @@ class PlaceCard extends ConsumerWidget {
       ),
     );
   }
-  
+
   // Build category pill with icon and label
   Widget _buildCategoryPill({
     required IconData icon,
     required String label,
     required Color color,
   }) {
-                        return Container(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
+      decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
+        border: Border.all(
           color: color.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Icon(
             icon,
             size: 14,
             color: color,
-                              ),
+          ),
           const SizedBox(width: 4),
-                              Text(
+          Text(
             label,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
               color: color,
               fontWeight: FontWeight.w500,
-                                ),
-                            ),
-                            ],
-                          ),
-                        );
+            ),
+          ),
+        ],
+      ),
+    );
   }
-  
+
   // Helper method to build type pill
   Widget _buildTypePill(String type) {
     String label = type.replaceAll('_', ' ');
     label = label[0].toUpperCase() + label.substring(1);
-    
+
     IconData icon;
     Color color;
-    
-    if (type.contains('restaurant') || type.contains('food') || type.contains('cafe')) {
+
+    if (type.contains('restaurant') ||
+        type.contains('food') ||
+        type.contains('cafe')) {
       icon = Icons.restaurant;
       color = Colors.orange;
-    } else if (type.contains('museum') || type.contains('culture') || type.contains('art')) {
+    } else if (type.contains('museum') ||
+        type.contains('culture') ||
+        type.contains('art')) {
       icon = Icons.museum;
       color = Colors.purple;
-    } else if (type.contains('park') || type.contains('outdoor') || type.contains('nature')) {
+    } else if (type.contains('park') ||
+        type.contains('outdoor') ||
+        type.contains('nature')) {
       icon = Icons.park;
       color = Colors.green;
     } else if (type.contains('hotel') || type.contains('lodging')) {
@@ -1254,7 +1474,7 @@ class PlaceCard extends ConsumerWidget {
       icon = Icons.place;
       color = Colors.grey;
     }
-    
+
     return _buildCategoryPill(
       icon: icon,
       label: label,
@@ -1266,21 +1486,36 @@ class PlaceCard extends ConsumerWidget {
   String _getCurrencySymbol() {
     final city = (cityName ?? _extractCityName()).toLowerCase();
     final countryFlag = _getCountryFlag();
-    
+
     // UK cities
-    if (countryFlag == '🇬🇧' || ['london', 'birmingham', 'manchester', 'glasgow', 'liverpool', 'leeds'].any((c) => city.contains(c))) {
+    if (countryFlag == '🇬🇧' ||
+        ['london', 'birmingham', 'manchester', 'glasgow', 'liverpool', 'leeds']
+            .any((c) => city.contains(c))) {
       return '£';
     }
-    
+
     // US cities
-    if (countryFlag == '🇺🇸' || ['new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'philadelphia', 'san antonio', 'san diego', 'dallas', 'boston', 'seattle'].any((c) => city.contains(c))) {
+    if (countryFlag == '🇺🇸' ||
+        [
+          'new york',
+          'los angeles',
+          'chicago',
+          'houston',
+          'phoenix',
+          'philadelphia',
+          'san antonio',
+          'san diego',
+          'dallas',
+          'boston',
+          'seattle'
+        ].any((c) => city.contains(c))) {
       return '\$';
     }
-    
+
     // Default to Euro for Netherlands and most European countries
     return '€';
   }
-  
+
   /// Get currency icon based on currency symbol
   IconData _getCurrencyIcon() {
     final currency = _getCurrencySymbol();
@@ -1303,30 +1538,30 @@ class PlaceCard extends ConsumerWidget {
         return true;
       }
     }
-    
+
     // Check activities for accessibility keywords
     for (final activity in place.activities) {
       final activityLower = activity.toLowerCase();
-      if (activityLower.contains('wheelchair') || 
-          activityLower.contains('accessible') || 
+      if (activityLower.contains('wheelchair') ||
+          activityLower.contains('accessible') ||
           activityLower.contains('accessibility')) {
         return true;
       }
     }
-    
+
     // Check description for accessibility mentions
     if (place.description != null) {
       final descLower = place.description!.toLowerCase();
-      if (descLower.contains('wheelchair') || 
-          descLower.contains('accessible') || 
+      if (descLower.contains('wheelchair') ||
+          descLower.contains('accessible') ||
           descLower.contains('accessibility')) {
         return true;
       }
     }
-    
+
     return false;
   }
-  
+
   // Add to My Day: saves to Supabase (scheduled_activities) so My Day shows it.
   Future<void> _addToMyDay(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
@@ -1380,7 +1615,8 @@ class PlaceCard extends ConsumerWidget {
         placeId: place.id,
       );
 
-      final scheduledActivityService = ref.read(scheduledActivityServiceProvider);
+      final scheduledActivityService =
+          ref.read(scheduledActivityServiceProvider);
       final inserted = await scheduledActivityService.saveScheduledActivities(
         [activity],
         isConfirmed: false,
@@ -1445,7 +1681,8 @@ class PlaceCard extends ConsumerWidget {
     // Estimate duration based on place type
     for (final type in place.types) {
       final typeLower = type.toLowerCase();
-      if (['museum', 'tourist_attraction', 'amusement_park'].contains(typeLower)) {
+      if (['museum', 'tourist_attraction', 'amusement_park']
+          .contains(typeLower)) {
         return 120; // 2 hours
       } else if (['restaurant', 'cafe'].contains(typeLower)) {
         return 60; // 1 hour
@@ -1459,14 +1696,15 @@ class PlaceCard extends ConsumerWidget {
   DateTime _getDefaultStartTime() {
     final now = DateTime.now();
     final hour = now.hour;
-    
+
     // Schedule for next appropriate time slot
     if (hour < 9) {
       return DateTime(now.year, now.month, now.day, 10, 0); // 10 AM
     } else if (hour < 14) {
       return DateTime(now.year, now.month, now.day, 15, 0); // 3 PM
     } else {
-      return DateTime(now.year, now.month, now.day + 1, 10, 0); // Tomorrow 10 AM
+      return DateTime(
+          now.year, now.month, now.day + 1, 10, 0); // Tomorrow 10 AM
     }
   }
 
@@ -1512,7 +1750,8 @@ class _CardIconButton extends StatelessWidget {
   final VoidCallback onTap;
   final Color? iconColor;
 
-  const _CardIconButton({required this.icon, required this.onTap, this.iconColor});
+  const _CardIconButton(
+      {required this.icon, required this.onTap, this.iconColor});
 
   @override
   Widget build(BuildContext context) {

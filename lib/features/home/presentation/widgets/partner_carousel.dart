@@ -84,6 +84,7 @@ class PartnerCarousel extends ConsumerWidget {
                   cityName: cityName,
                   photoSelectionSeed: photoSelectionSeed,
                   allowVisibilityEnrichment: true,
+                  compactMoodCopy: true,
                   cardMargin: const EdgeInsets.only(
                       left: 8, right: 8, top: 2, bottom: 12),
                   onTap: () => onOpenPlace(place),
