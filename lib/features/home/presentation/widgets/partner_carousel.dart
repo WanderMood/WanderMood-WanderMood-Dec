@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:math' as math;
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card.dart';
 
@@ -30,6 +31,11 @@ class PartnerCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (places.length < 2) return const SizedBox.shrink();
+
+    // PlaceCard is fairly tall (rich description + pills + CTA).
+    // If we keep the carousel height too small, Flutter paints a "bottom overflow".
+    final availableHeight = MediaQuery.sizeOf(context).height;
+    final carouselHeight = math.min(640.0, availableHeight * 0.78);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +69,7 @@ class PartnerCarousel extends ConsumerWidget {
           ),
         ),
         SizedBox(
-          height: 420,
+          height: carouselHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
