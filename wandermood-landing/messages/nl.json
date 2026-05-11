@@ -359,51 +359,78 @@
   },
   "partners": {
     "meta": {
-      "title": "WanderMood voor partners — groei met stemming",
-      "description": "Meld je aan om je zaak op WanderMood te tonen. Bereik gasten als hun stemming bij jouw ervaring past."
+      "title": "WanderMood voor partners — gevonden wanneer de stemming klopt",
+      "description": "Zet je zaak op WanderMood. Bereik mensen op het moment dat ze in de stemming zijn voor wat jij biedt — niet wanneer ze tabbladen vergelijken."
     },
     "hero": {
       "eyebrow": "WANDERMOOD VOOR PARTNERS",
-      "title": "Word ontdekt op het moment dat het telt.",
-      "sub": "Gebruikers die WanderMood openen weten al hoe ze zich voelen. Ze zoeken de perfecte plek. Jij kan die plek zijn.",
-      "ctaPrimary": "Aanvraag indienen →",
+      "title": "Jouw beste gasten\nzoeken niet.\nZe voelen.",
+      "sub": "WanderMood bereikt mensen op het moment dat ze in de stemming zijn — voor precies wat jij aanbiedt.\nNiet door te zoeken. Door te voelen.",
+      "ctaPrimary": "Start gratis proefperiode →",
       "ctaSecondary": "Hoe werkt het?"
+    },
+    "insight": {
+      "col1Num": "9 op 10",
+      "col1Label": "gebruikers hebben geen plan als ze de app openen",
+      "col2Num": "30 min",
+      "col2Label": "van gevoel naar beslissing — Moody overbrugt dat",
+      "col3Num": "0",
+      "col3Label": "concurrentie op biedingen — jij verschijnt op basis van match, niet budget"
     },
     "who": {
       "title": "Voor wie is WanderMood Business?",
       "card1Title": "Restaurants & cafés",
-      "card1Body": "Bereik gasten die op zoek zijn naar exact jouw sfeer en keuken.",
+      "card1Body": "Bereik gasten die al in de stemming zijn voor jouw sfeer. Niet mensen die vergelijken — mensen die klaar zijn.",
       "card2Title": "Musea & ervaringen",
-      "card2Body": "Verschijn in dagplannen van cultuurliefhebbers in jouw stad.",
+      "card2Body": "Verschijn in het dagplan van iemand die vandaag cultureel of nieuwsgierig voelt. Op het moment dat het telt.",
       "card3Title": "Boutique hotels & verblijven",
-      "card3Body": "Word aanbevolen aan reizigers die op zoek zijn naar een bijzonder verblijf.",
+      "card3Body": "Word aanbevolen aan reizigers die bewust kiezen — niet voor de goedkoopste optie, maar voor de juiste ervaring.",
       "card4Title": "Tours, workshops & events",
-      "card4Body": "Laat mensen jouw ervaring ontdekken op het moment dat ze iets willen beleven."
+      "card4Body": "Jouw ervaring past bij een specifieke stemming. Wij koppelen je aan de mensen die vandaag precies dat zoeken."
     },
     "how": {
-      "title": "Hoe werkt het?",
+      "title": "Van aanvraag tot gasten — zonder gedoe.",
       "step1Title": "Meld je aan",
-      "step1Body": "Vul het aanvraagformulier in. We reviewen je zaak handmatig — kwaliteit gaat voor kwantiteit.",
+      "step1Body": "Vul het formulier in. We reviewen je zaak persoonlijk — dit is geen automatisch systeem. Kwaliteit gaat voor kwantiteit.",
       "step2Title": "Wij regelen alles",
-      "step2Body": "We koppelen jouw plek aan de app, stellen je profiel in en starten je gratis proefperiode van 30 dagen.",
-      "step3Title": "Jij wordt ontdekt",
-      "step3Body": "Gebruikers met de juiste stemming zien jouw plek in Explore en Moody's dagplannen. Jij hoeft niks te doen."
+      "step2Body": "We koppelen jouw plek aan de app op basis van jouw stemmingen en stijl. Je hoeft zelf niets in te stellen. Wij doen het.",
+      "step3Title": "Jij wordt gevonden",
+      "step3Body": "Gebruikers met de juiste stemming zien jou in Explore, in Moody's dagplannen, en soms zelfs in een gesprek met Moody persoonlijk."
     },
     "what": {
       "title": "Wat krijg je?",
-      "f1": "Zichtbaar in Explore bij passende stemmingen",
-      "f2": "Opgenomen in Moody's gepersonaliseerde dagplannen",
-      "f3": "Stemming-targeting — kies welke vibes bij jou passen",
-      "f4": "Actieve aanbieding zichtbaar voor gebruikers",
-      "f5": "Maandelijks analytics rapport per e-mail",
-      "f6": "Inclusiviteitstags (halal, veganistisch, LHBTQ+, etc.)",
+      "card1Emoji": "🎭",
+      "card1Title": "Stemming-targeting",
+      "card1Body": "Jij kiest bij welke vibes je wilt verschijnen. Cozy, romantisch, avontuurlijk — jij bepaalt.",
+      "card2Emoji": "📅",
+      "card2Title": "In Moody's dagplannen",
+      "card2Body": "Niet alleen een zoekresultaat. Moody weeft jouw zaak in het volledige dagplan van een gebruiker.",
+      "card3Emoji": "📊",
+      "card3Title": "Maandelijks rapport",
+      "card3Body": "Op de 1e van elke maand krijg je automatisch je cijfers: weergaven, tikken, bezoeken, aanbiedingen.",
+      "card4Emoji": "🎯",
+      "card4Title": "Geen veilingen",
+      "card4Body": "Je verschijnt op basis van match — niet op basis van wie het meeste betaalt.",
+      "card5Emoji": "🆕",
+      "card5Title": "Founding partner badge",
+      "card5Body": "De eerste partners krijgen een 'Nieuw in Rotterdam' badge — extra zichtbaarheid in de eerste 30 dagen.",
+      "card6Emoji": "✋",
+      "card6Title": "Wij doen het werk",
+      "card6Body": "Geen dashboard te leren. Geen instellingen te beheren. Stuur ons een mail, wij passen het aan.",
+      "pricingPill": "Founding partner tarief",
+      "pricingLockIn": "Sluit je nu aan en betaal nooit meer dan dit — ook als we onze prijzen later verhogen.",
+      "p1": "Zichtbaar bij passende stemmingen in Explore",
+      "p2": "Opgenomen in Moody's persoonlijke dagplannen",
+      "p3": "Maandelijks analytics rapport — automatisch",
+      "p4": "Founding partner badge de eerste 30 dagen",
       "price": "€79",
       "perMonth": "per maand",
       "trialNote": "Na 30 dagen gratis proefperiode",
       "cancelNote": "Geen contract. Maandelijks opzegbaar.",
-      "pricingCta": "Start gratis proefperiode →"
+      "pricingCta": "Start gratis proefperiode →",
+      "priceTrust": "🔒 Veilig via Stripe · Geen kosten de eerste 30 dagen · Altijd opzegbaar voor die datum"
     },
-    "honest": "WanderMood is actief in Rotterdam en groeit naar andere Nederlandse steden. Meld je aan — ook als jouw stad er nog niet bij staat.",
+    "honest": "WanderMood is actief in Rotterdam en groeit. Je bent één van de eerste partners — dat betekent minder concurrentie, meer zichtbaarheid, en het founding partner tarief voor altijd.",
     "form": {
       "title": "Aanvraag indienen",
       "sub": "We nemen binnen 3 werkdagen contact op.",
@@ -451,26 +478,29 @@
     },
     "faq": {
       "title": "Veelgestelde vragen",
-      "q1": "In welke steden is WanderMood actief?",
-      "a1": "Rotterdam is onze thuisbasis. We groeien actief naar andere Nederlandse steden. Meld je aan — ook als jouw stad er nog niet bij staat.",
+      "q1": "Hoeveel gebruikers heeft WanderMood?",
+      "a1": "We groeien actief in Rotterdam. Je bent één van de eerste partners — dat betekent nu al zichtbaarheid opbouwen terwijl de concurrentie nog minimaal is. Early adopters winnen altijd.",
       "q2": "Hoe werkt de 30 dagen gratis proefperiode?",
       "a2": "Na goedkeuring van je aanvraag wordt je plek gekoppeld aan de app. De eerste 30 dagen zijn gratis. Daarna kies je zelf of je doorgaat voor €79 per maand.",
-      "q3": "Wat gebeurt er na mijn aanvraag?",
-      "a3": "We reviewen je aanvraag handmatig en nemen binnen 3 werkdagen contact op. Je ontvangt een e-mail met de volgende stappen.",
+      "q3": "Moet ik zelf dingen instellen of beheren?",
+      "a3": "Nee. Wij koppelen je zaak aan de app, stellen je stemmingen en profiel in, en sturen je elke maand je cijfers. Als je iets wilt aanpassen, stuur je een mail. Wij regelen het binnen 24 uur.",
       "q4": "Kan ik op elk moment opzeggen?",
       "a4": "Ja. Geen contract, geen opzegtermijn. Je stopt gewoon.",
-      "q5": "Hoe word ik getoond aan gebruikers?",
-      "a5": "Gebruikers kiezen in de app hoe ze zich voelen. Als hun stemming overeenkomt met jouw instellingen, verschijn jij in hun Explore-feed en dagplannen van Moody.",
+      "q5": "Hoe verschijn ik in Moody's aanbevelingen?",
+      "a5": "Gebruikers kiezen een stemming in de app — cozy, romantisch, avontuurlijk, etc. Als jouw zaak bij die stemming past, verschijnt Moody je in Explore en in het dagplan. Soms noemt Moody je ook persoonlijk in een gesprek met de gebruiker.",
       "q6": "Krijg ik analytics over mijn vermelding?",
       "a6": "Ja. Op de 1e van elke maand ontvang je automatisch een e-mail met jouw cijfers: weergaven, tikken, aanbiedingsinwisselingen en check-ins."
     },
     "final": {
-      "title": "Klaar om mee te doen?",
+      "title": "Klaar om gevonden te worden?",
+      "sub": "De eerste 30 dagen zijn gratis.\nJe hoeft nu alleen je naam en zaak op te geven.",
       "cta": "Start gratis proefperiode →"
     },
     "nav": {
       "home": "Home",
-      "apply": "Aanvragen"
+      "how": "Hoe werkt het?",
+      "apply": "Aanvragen",
+      "download": "Download"
     },
     "modal": {
       "stepOf": "Stap {current} van {total}",

@@ -29,10 +29,12 @@ export async function loadMergedMessages(locale: string): Promise<Record<string,
 
   const enFooter = (en.footer ?? {}) as Record<string, unknown>;
   const locFooter = (loc.footer ?? {}) as Record<string, unknown>;
+  const enPartners = (en.partners ?? {}) as Record<string, unknown>;
+  const locPartners = (loc.partners ?? {}) as Record<string, unknown>;
 
   return {
     ...loc,
-    partners: (loc.partners ?? en.partners) as unknown,
+    partners: deepMerge(enPartners, locPartners) as unknown,
     landing: deepMerge(enLanding, locLanding) as unknown,
     footer: { ...enFooter, ...locFooter },
   };

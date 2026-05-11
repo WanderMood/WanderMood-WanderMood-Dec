@@ -359,51 +359,78 @@
   },
   "partners": {
     "meta": {
-      "title": "WanderMood for partners — grow with mood-based discovery",
-      "description": "Apply to list your venue on WanderMood. Reach guests when their mood matches your experience."
+      "title": "WanderMood for partners — be found when the mood fits",
+      "description": "List your venue on WanderMood. Reach people when they're in the mood for what you offer — not when they're comparing tabs."
     },
     "hero": {
       "eyebrow": "WANDERMOOD FOR PARTNERS",
-      "title": "Get discovered at the moment that matters.",
-      "sub": "Users opening WanderMood already know how they feel. They're looking for the perfect place. You can be that place.",
-      "ctaPrimary": "Submit application →",
+      "title": "Your best guests\ndon't search.\nThey feel.",
+      "sub": "WanderMood reaches people at the moment they're in the mood — for exactly what you offer.\nNot by searching. By feeling.",
+      "ctaPrimary": "Start free trial →",
       "ctaSecondary": "How does it work?"
+    },
+    "insight": {
+      "col1Num": "9 in 10",
+      "col1Label": "users have no plan when they open the app",
+      "col2Num": "30 min",
+      "col2Label": "from feeling to decision — Moody bridges that",
+      "col3Num": "0",
+      "col3Label": "bidding competition — you appear based on match, not budget"
     },
     "who": {
       "title": "Who is WanderMood Business for?",
       "card1Title": "Restaurants & cafés",
-      "card1Body": "Reach guests looking for exactly your vibe and cuisine.",
+      "card1Body": "Reach guests already in the mood for your vibe. Not people comparing — people ready to go.",
       "card2Title": "Museums & experiences",
-      "card2Body": "Appear in day plans of culture lovers in your city.",
+      "card2Body": "Appear in the day plan of someone who feels cultural or curious today. At the moment it matters.",
       "card3Title": "Boutique hotels & stays",
-      "card3Body": "Get recommended to travelers looking for a unique stay.",
+      "card3Body": "Get recommended to travelers who choose deliberately — not the cheapest option, but the right experience.",
       "card4Title": "Tours, workshops & events",
-      "card4Body": "Let people discover your experience when they're ready to do something."
+      "card4Body": "Your experience fits a specific mood. We connect you with people looking for exactly that today."
     },
     "how": {
-      "title": "How does it work?",
+      "title": "From application to guests — without the hassle.",
       "step1Title": "Apply",
-      "step1Body": "Fill in the application form. We review your venue manually — quality over quantity.",
-      "step2Title": "We handle setup",
-      "step2Body": "We connect your venue to the app, set up your profile and start your 30-day free trial.",
-      "step3Title": "You get discovered",
-      "step3Body": "Users with the right mood see your venue in Explore and Moody's day plans. You don't have to do anything."
+      "step1Body": "Fill in the form. We review your venue personally — this isn't an automated system. Quality over quantity.",
+      "step2Title": "We set everything up",
+      "step2Body": "We connect your venue to the app based on your moods and style. You don't have to configure anything. We handle it.",
+      "step3Title": "You get found",
+      "step3Body": "Users with the right mood see you in Explore, in Moody's day plans, and sometimes even in a personal conversation with Moody."
     },
     "what": {
       "title": "What do you get?",
-      "f1": "Visible in Explore for matching moods",
-      "f2": "Featured in Moody's personalized day plans",
-      "f3": "Mood targeting — choose which vibes match your venue",
-      "f4": "Active offer visible to users",
-      "f5": "Monthly analytics report by email",
-      "f6": "Inclusion tags (halal, vegan, LGBTQ+, etc.)",
+      "card1Emoji": "🎭",
+      "card1Title": "Mood targeting",
+      "card1Body": "You choose which vibes you appear for. Cozy, romantic, adventurous — you decide.",
+      "card2Emoji": "📅",
+      "card2Title": "In Moody's day plans",
+      "card2Body": "Not just a search result. Moody weaves your venue into a user's complete day plan.",
+      "card3Emoji": "📊",
+      "card3Title": "Monthly report",
+      "card3Body": "On the 1st of every month you automatically get your numbers: views, taps, visits, offers used.",
+      "card4Emoji": "🎯",
+      "card4Title": "No bidding",
+      "card4Body": "You appear based on fit — not based on who pays the most.",
+      "card5Emoji": "🆕",
+      "card5Title": "Founding partner badge",
+      "card5Body": "First partners get a 'New in Rotterdam' badge — extra visibility in the first 30 days.",
+      "card6Emoji": "✋",
+      "card6Title": "We do the work",
+      "card6Body": "No dashboard to learn. No settings to manage. Email us, we make the change.",
+      "pricingPill": "Founding partner rate",
+      "pricingLockIn": "Join now and never pay more than this — even when we raise our prices later.",
+      "p1": "Visible for matching moods in Explore",
+      "p2": "Featured in Moody's personal day plans",
+      "p3": "Monthly analytics report — automatic",
+      "p4": "Founding partner badge for the first 30 days",
       "price": "€79",
       "perMonth": "per month",
       "trialNote": "After 30-day free trial",
       "cancelNote": "No contract. Cancel anytime.",
-      "pricingCta": "Start free trial →"
+      "pricingCta": "Start free trial →",
+      "priceTrust": "🔒 Secure via Stripe · No charges for 30 days · Cancel anytime before then"
     },
-    "honest": "WanderMood is active in Rotterdam and growing to other Dutch cities. Apply even if your city isn't listed yet.",
+    "honest": "WanderMood is active in Rotterdam and growing. You're one of the first partners — that means less competition, more visibility, and the founding partner rate forever.",
     "form": {
       "title": "Apply as a partner",
       "sub": "We'll be in touch within 3 business days.",
@@ -451,26 +478,29 @@
     },
     "faq": {
       "title": "Frequently asked questions",
-      "q1": "Which cities is WanderMood active in?",
-      "a1": "Rotterdam is our home base. We're actively growing to other Dutch cities. Apply even if your city isn't listed yet.",
+      "q1": "How many users does WanderMood have?",
+      "a1": "We're actively growing in Rotterdam. You're one of the first partners — that means building visibility now while competition is minimal. Early adopters always win.",
       "q2": "How does the 30-day free trial work?",
       "a2": "After your application is approved, your venue is connected to the app. The first 30 days are free. Then you decide whether to continue for €79 per month.",
-      "q3": "What happens after my application?",
-      "a3": "We manually review your application and get back to you within 3 business days. You'll receive an email with next steps.",
+      "q3": "Do I need to set things up myself?",
+      "a3": "No. We connect your venue to the app, set up your moods and profile, and send you your numbers every month. If you want something changed, send an email. We handle it within 24 hours.",
       "q4": "Can I cancel at any time?",
       "a4": "Yes. No contract, no notice period. You just stop.",
-      "q5": "How am I shown to users?",
-      "a5": "Users choose how they feel in the app. When their mood matches your settings, you appear in their Explore feed and Moody's day plans.",
+      "q5": "How do I appear in Moody's recommendations?",
+      "a5": "Users choose a mood in the app — cozy, romantic, adventurous, etc. When your venue fits that mood, Moody surfaces you in Explore and in the day plan. Sometimes Moody even mentions you personally in a conversation with the user.",
       "q6": "Do I get analytics about my listing?",
       "a6": "Yes. On the 1st of every month you automatically receive an email with your numbers: views, taps, offer redemptions and check-ins."
     },
     "final": {
-      "title": "Ready to join?",
+      "title": "Ready to be found?",
+      "sub": "The first 30 days are free.\nYou only need to give your name and venue now.",
       "cta": "Start free trial →"
     },
     "nav": {
       "home": "Home",
-      "apply": "Apply"
+      "how": "How does it work?",
+      "apply": "Apply",
+      "download": "Download"
     },
     "modal": {
       "stepOf": "Step {current} of {total}",

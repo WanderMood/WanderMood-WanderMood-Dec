@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { PartnerApplyModal } from "@/components/PartnerApplyModal";
@@ -14,6 +14,18 @@ const LOCALES = [
   { code: "fr", label: "FR" },
 ] as const;
 
+const APP_STORE_BY_LOCALE: Record<string, string> = {
+  en: "https://apps.apple.com/app/wandermood/id6760943488",
+  nl: "https://apps.apple.com/nl/app/wandermood/id6760943488",
+  de: "https://apps.apple.com/de/app/wandermood/id6760943488",
+  es: "https://apps.apple.com/es/app/wandermood/id6760943488",
+  fr: "https://apps.apple.com/fr/app/wandermood/id6760943488",
+};
+
+const WHAT_CARD_KEYS = [1, 2, 3, 4, 5, 6] as const;
+
+const WHO_EMOJI = ["🍽️", "🏛️", "🏨", "🗺️"] as const;
+
 export default function PartnersClient() {
   const t = useTranslations("partners");
   const tFooter = useTranslations("footer");
@@ -21,8 +33,10 @@ export default function PartnersClient() {
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale();
+  const rootRef = useRef<HTMLDivElement>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [navScrolled, setNavScrolled] = useState(false);
 
   const faqItems = useMemo(() => {
     const keys = [
@@ -39,12 +53,40 @@ export default function PartnersClient() {
     }));
   }, [t]);
 
+  const appStoreUrl = APP_STORE_BY_LOCALE[currentLocale] ?? APP_STORE_BY_LOCALE.en;
+
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const nodes = root.querySelectorAll(".reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("visible");
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
+    );
+    nodes.forEach((n) => observer.observe(n));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="landing-root">
+    <div ref={rootRef} className="landing-root landing-page--partners">
       <PartnerApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
 
-      <nav id="landing-nav">
-        <Link href="/" className="nav-logo">
+      <nav
+        id="landing-nav"
+        className={`partners-top-nav ${navScrolled ? "partners-top-nav--scrolled" : ""}`}
+      >
+        <Link href="/" className="nav-logo partners-top-nav__logo">
           <div className="nav-logo-icon nav-logo-icon--app">
             <Image
               src="/icon.png"
@@ -58,22 +100,19 @@ export default function PartnersClient() {
           </div>
           <span className="nav-logo-text">{tFooter("brand")}</span>
         </Link>
-        <ul className="nav-links">
+        <ul className="nav-links partners-top-nav__links">
           <li>
             <Link href="/">{t("nav.home")}</Link>
           </li>
           <li>
-            <a href="#hoe-werkt-het">{t("hero.ctaSecondary")}</a>
-          </li>
-          <li>
-            <a href="#wie">{t("who.title")}</a>
+            <a href="#hoe-werkt-het">{t("nav.how")}</a>
           </li>
           <li>
             <a href="#aanvragen">{t("nav.apply")}</a>
           </li>
         </ul>
-        <div className="nav-end">
-          <div className="nav-locales" role="group" aria-label="Language">
+        <div className="nav-end partners-top-nav__end">
+          <div className="nav-locales partners-top-nav__locales" role="group" aria-label="Language">
             {LOCALES.map(({ code, label }) => (
               <button
                 key={code}
@@ -87,164 +126,194 @@ export default function PartnersClient() {
               </button>
             ))}
           </div>
-          <button type="button" className="nav-cta" onClick={() => setApplyOpen(true)}>
-            {t("hero.ctaPrimary")}
-          </button>
+          <a
+            href={appStoreUrl}
+            className="partners-top-nav__download"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("nav.download")}
+          </a>
         </div>
       </nav>
 
-      <section className="partners-hero">
-        <p className="section-eyebrow">{t("hero.eyebrow")}</p>
-        <h1>{t("hero.title")}</h1>
-        <p className="hero-sub" style={{ marginBottom: 32 }}>
-          {t("hero.sub")}
-        </p>
-        <div className="hero-actions">
-          <button type="button" className="btn-primary" onClick={() => setApplyOpen(true)}>
-            {t("hero.ctaPrimary")}
-          </button>
-          <a href="#hoe-werkt-het" className="btn-secondary">
-            {t("hero.ctaSecondary")}
-          </a>
-        </div>
-      </section>
-
-      <div className="divider" aria-hidden />
-
-      <section id="wie" className="partners-section">
-        <h2>{t("who.title")}</h2>
-        <div className="partners-who-grid">
-          <div className="partners-who-card">
-            <h3>🍽️ {t("who.card1Title")}</h3>
-            <p>{t("who.card1Body")}</p>
-          </div>
-          <div className="partners-who-card">
-            <h3>🏛️ {t("who.card2Title")}</h3>
-            <p>{t("who.card2Body")}</p>
-          </div>
-          <div className="partners-who-card">
-            <h3>🏨 {t("who.card3Title")}</h3>
-            <p>{t("who.card3Body")}</p>
-          </div>
-          <div className="partners-who-card">
-            <h3>🗺️ {t("who.card4Title")}</h3>
-            <p>{t("who.card4Body")}</p>
+      <section className="partners-hero partners-surface partners-surface--dark">
+        <div className="partners-inner">
+          <p className="partners-label reveal">{t("hero.eyebrow")}</p>
+          <h1 className="partners-hero-title reveal">{t("hero.title")}</h1>
+          <p className="partners-hero-sub reveal">{t("hero.sub")}</p>
+          <div className="partners-hero-actions reveal">
+            <button type="button" className="partners-btn-primary" onClick={() => setApplyOpen(true)}>
+              {t("hero.ctaPrimary")}
+            </button>
+            <a href="#hoe-werkt-het" className="partners-btn-secondary">
+              {t("hero.ctaSecondary")}
+            </a>
           </div>
         </div>
       </section>
 
-      <section id="hoe-werkt-het" className="partners-section">
-        <h2>{t("how.title")}</h2>
-        <div className="partners-steps">
-          <div className="step-card">
-            <div className="step-number">01</div>
-            <h3>{t("how.step1Title")}</h3>
-            <p>{t("how.step1Body")}</p>
+      <section className="partners-insight partners-surface partners-surface--dark">
+        <div className="partners-inner partners-insight__inner">
+          <div className="partners-insight__col reveal">
+            <div className="partners-insight__num">{t("insight.col1Num")}</div>
+            <p className="partners-insight__label">{t("insight.col1Label")}</p>
           </div>
-          <div className="step-card">
-            <div className="step-number">02</div>
-            <h3>{t("how.step2Title")}</h3>
-            <p>{t("how.step2Body")}</p>
+          <div className="partners-insight__divider" aria-hidden />
+          <div className="partners-insight__col reveal">
+            <div className="partners-insight__num">{t("insight.col2Num")}</div>
+            <p className="partners-insight__label">{t("insight.col2Label")}</p>
           </div>
-          <div className="step-card">
-            <div className="step-number">03</div>
-            <h3>{t("how.step3Title")}</h3>
-            <p>{t("how.step3Body")}</p>
+          <div className="partners-insight__divider" aria-hidden />
+          <div className="partners-insight__col reveal">
+            <div className="partners-insight__num">{t("insight.col3Num")}</div>
+            <p className="partners-insight__label">{t("insight.col3Label")}</p>
           </div>
         </div>
       </section>
 
-      <section id="wat-krijg-je" className="partners-section">
-        <h2>{t("what.title")}</h2>
-        <div className="partners-what-grid">
-          <ul className="pricing-features" style={{ marginBottom: 0 }}>
-            {(["f1", "f2", "f3", "f4", "f5", "f6"] as const).map((k) => (
-              <li key={k}>
-                <div className="check-circle">
-                  <svg width="10" height="8" viewBox="0 0 10 8" aria-hidden>
-                    <polyline
-                      points="1,4 4,7 9,1"
-                      stroke="#2A6049"
-                      strokeWidth="1.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                {t(`what.${k}`)}
-              </li>
+      <section id="wie" className="partners-section partners-surface partners-surface--beige partners-shell-overlap">
+        <div className="partners-inner">
+          <h2 className="partners-section-title partners-section-title--ink reveal">{t("who.title")}</h2>
+          <div className="partners-who-grid">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="partners-who-card reveal">
+                <h3>
+                  <span className="partners-who-card__emoji" aria-hidden>
+                    {WHO_EMOJI[n - 1]}
+                  </span>{" "}
+                  {t(`who.card${n}Title` as "who.card1Title")}
+                </h3>
+                <p>{t(`who.card${n}Body` as "who.card1Body")}</p>
+              </div>
             ))}
-          </ul>
-          <div className="partners-pricing-dark">
-            <div className="partners-price-big">{t("what.price")}</div>
-            <div className="partners-price-sub">{t("what.perMonth")}</div>
-            <div className="partners-price-note">{t("what.trialNote")}</div>
-            <div className="partners-price-small">{t("what.cancelNote")}</div>
-            <button
-              type="button"
-              className="partners-btn-cream"
-              onClick={() => setApplyOpen(true)}
-            >
-              {t("what.pricingCta")}
+          </div>
+        </div>
+      </section>
+
+      <section id="hoe-werkt-het" className="partners-section partners-surface partners-surface--dark partners-shell-overlap">
+        <div className="partners-inner">
+          <h2 className="partners-section-title reveal">{t("how.title")}</h2>
+          <div className="partners-steps">
+            {([1, 2, 3] as const).map((n) => (
+              <div key={n} className="partners-step-card reveal">
+                <div className="partners-step-card__num">
+                  {n === 1 ? "01" : null}
+                  {n === 2 ? "02" : null}
+                  {n === 3 ? "03" : null}
+                </div>
+                <h3>{t(`how.step${n}Title` as "how.step1Title")}</h3>
+                <p>{t(`how.step${n}Body` as "how.step1Body")}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="wat-krijg-je" className="partners-section partners-surface partners-surface--beige partners-shell-overlap">
+        <div className="partners-inner">
+          <h2 className="partners-section-title partners-section-title--ink reveal">{t("what.title")}</h2>
+          <div className="partners-what-cards">
+            {WHAT_CARD_KEYS.map((n) => (
+              <div key={n} className="partners-what-card reveal">
+                <div className="partners-what-card__emoji" aria-hidden>
+                  {t(`what.card${n}Emoji` as "what.card1Emoji")}
+                </div>
+                <h3 className="partners-what-card__title">{t(`what.card${n}Title` as "what.card1Title")}</h3>
+                <p className="partners-what-card__body">{t(`what.card${n}Body` as "what.card1Body")}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="partners-pricing-wrap reveal">
+            <div className="partners-pricing-dark">
+              <span className="partners-pricing-pill">{t("what.pricingPill")}</span>
+              <div className="partners-price-big">{t("what.price")}</div>
+              <div className="partners-price-sub">{t("what.perMonth")}</div>
+              <div className="partners-price-note">{t("what.trialNote")}</div>
+              <p className="partners-pricing-lockin">{t("what.pricingLockIn")}</p>
+              <ul className="partners-pricing-bullets">
+                {(["p1", "p2", "p3", "p4"] as const).map((k) => (
+                  <li key={k}>
+                    <span className="partners-pricing-check" aria-hidden>
+                      <svg width="12" height="10" viewBox="0 0 12 10">
+                        <polyline
+                          points="1,5 4,9 11,1"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    {t(`what.${k}`)}
+                  </li>
+                ))}
+              </ul>
+              <div className="partners-price-small">{t("what.cancelNote")}</div>
+              <button type="button" className="partners-btn-cream" onClick={() => setApplyOpen(true)}>
+                {t("what.pricingCta")}
+              </button>
+              <p className="partners-pricing-trust">{t("what.priceTrust")}</p>
+            </div>
+          </div>
+
+          <p className="partners-honest reveal">{t("honest")}</p>
+        </div>
+      </section>
+
+      <section id="aanvragen" className="partners-section partners-surface partners-surface--dark partners-shell-overlap">
+        <div className="partners-inner">
+          <p className="partners-label reveal">{t("hero.eyebrow")}</p>
+          <h2 className="partners-section-title reveal">{t("form.title")}</h2>
+          <p className="partners-form-lead reveal">{t("form.sub")}</p>
+
+          <div className="partners-form-card reveal">
+            <button type="button" className="partners-btn-primary partners-btn-primary--wide" onClick={() => setApplyOpen(true)}>
+              {t("hero.ctaPrimary")}
             </button>
           </div>
+
+          <form hidden aria-hidden="true" tabIndex={-1} data-partner-form-legacy />
         </div>
       </section>
 
-      <p className="partners-honest">{t("honest")}</p>
+      <section className="partners-section partners-surface partners-surface--beige partners-shell-overlap partners-faq-section">
+        <div className="partners-inner">
+          <h2 className="partners-section-title partners-section-title--ink reveal">{t("faq.title")}</h2>
+          <div className="partners-faq-list">
+            {faqItems.map((item, i) => (
+              <div key={i} className="partners-faq-item reveal">
+                <button
+                  type="button"
+                  className="partners-faq-q"
+                  aria-expanded={openFaq === i}
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
+                  {item.q}
+                  <span aria-hidden className="partners-faq-toggle">
+                    {openFaq === i ? "−" : "+"}
+                  </span>
+                </button>
+                {openFaq === i ? <div className="partners-faq-a">{item.a}</div> : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <section id="aanvragen" className="partners-section">
-        <p className="section-eyebrow">{t("hero.eyebrow")}</p>
-        <h2>{t("form.title")}</h2>
-        <p className="section-sub" style={{ marginBottom: 28 }}>
-          {t("form.sub")}
-        </p>
-
-        <div className="partners-form-card">
-          <button type="button" className="btn-trial" onClick={() => setApplyOpen(true)}>
-            {t("hero.ctaPrimary")}
+      <section className="partners-final partners-surface partners-surface--dark partners-shell-overlap">
+        <div className="partners-inner partners-final__inner">
+          <h2 className="partners-final__title reveal">{t("final.title")}</h2>
+          <p className="partners-final__sub reveal">{t("final.sub")}</p>
+          <button type="button" className="partners-btn-primary" onClick={() => setApplyOpen(true)}>
+            {t("final.cta")}
           </button>
         </div>
-
-        <form hidden aria-hidden="true" tabIndex={-1} data-partner-form-legacy />
       </section>
 
-      <section className="partners-section">
-        <h2>{t("faq.title")}</h2>
-        <div>
-          {faqItems.map((item, i) => (
-            <div key={i} className="partners-faq-item">
-              <button
-                type="button"
-                className="partners-faq-q"
-                aria-expanded={openFaq === i}
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-              >
-                {item.q}
-                <span aria-hidden style={{ color: "var(--stone)" }}>
-                  {openFaq === i ? "−" : "+"}
-                </span>
-              </button>
-              {openFaq === i ? <div className="partners-faq-a">{item.a}</div> : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="partners-final">
-        <h2>{t("final.title")}</h2>
-        <button
-          type="button"
-          className="btn-primary"
-          style={{ justifyContent: "center" }}
-          onClick={() => setApplyOpen(true)}
-        >
-          {t("final.cta")}
-        </button>
-      </div>
-
-      <footer className="landing-footer">
+      <footer className="landing-footer partners-footer">
         <div className="footer-logo">{tFooter("brand")}</div>
         <ul className="footer-links">
           <li>
