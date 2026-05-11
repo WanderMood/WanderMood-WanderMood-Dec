@@ -30,13 +30,19 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
     required this.textStyle,
     this.maxLines,
     this.paddingTop = 10,
+
     /// Explore / My Day: show Moody's hook + first section title + body (like place detail).
     /// When false, very tight [maxLines] merges rich copy into one clipped paragraph.
     this.useCardStackLayout = false,
+
     /// Smaller section typography on compact grid cards (only with [useCardStackLayout] + rich).
     this.structuredTitleFontSize,
     this.structuredBodyFontSize,
     this.cacheOnly = false,
+
+    /// When true (e.g. partner carousel): show only the green Moody hook line —
+    /// no "Wat is dit?" / section blocks and no merged body paragraph.
+    this.hookLineOnly = false,
   });
 
   final Place place;
@@ -49,6 +55,7 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
   final double? structuredTitleFontSize;
   final double? structuredBodyFontSize;
   final bool cacheOnly;
+  final bool hookLineOnly;
 
   static const Color _wmForest = Color(0xFF2A6049);
 
@@ -161,13 +168,41 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
       final hookText = uiDesc.hook?.trim();
       final hasHook = hookText != null && hookText.isNotEmpty;
       String hookLineForStack() {
-        if (hasHook) return hookText;
+        if (hasHook) return hookText!;
         var line = ExplorePlaceCardCopy.editorialLineForExploreCard(fallback);
         if (line.trim().isEmpty) {
           final f = fallback.trim();
           line = f.length > 120 ? '${f.substring(0, 117)}…' : f;
         }
         return line;
+      }
+
+      if (hookLineOnly) {
+        final stackHook = hookLineForStack();
+        return Padding(
+          padding: EdgeInsets.only(top: paddingTop),
+          child: SizedBox(
+            height: _kRichHookSlotHeight,
+            width: double.infinity,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: stackHook.isNotEmpty
+                  ? Text(
+                      stackHook,
+                      style: GoogleFonts.poppins(
+                        fontSize: _kRichHookLineFontSize,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w500,
+                        color: _wmForest,
+                        height: _kRichHookLineHeight,
+                      ),
+                      maxLines: _kRichHookMaxLines,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+        );
       }
 
       if (useCardStackLayout) {
@@ -232,7 +267,7 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
           children: [
             if (hasHook) ...[
               Text(
-                hookText,
+                hookText!,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontStyle: FontStyle.italic,
@@ -256,6 +291,40 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
     }
 
     final plain = uiDesc.plainText ?? '';
+    if (hookLineOnly) {
+      final line = ExplorePlaceCardCopy.editorialLineForExploreCard(
+        displayPlain(plain),
+      );
+      final stackHook = line.trim().isEmpty
+          ? (plain.trim().length > 120
+              ? '${plain.trim().substring(0, 117)}…'
+              : plain.trim())
+          : line;
+      return Padding(
+        padding: EdgeInsets.only(top: paddingTop),
+        child: SizedBox(
+          height: _kRichHookSlotHeight,
+          width: double.infinity,
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: stackHook.isNotEmpty
+                ? Text(
+                    stackHook,
+                    style: GoogleFonts.poppins(
+                      fontSize: _kRichHookLineFontSize,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                      color: _wmForest,
+                      height: _kRichHookLineHeight,
+                    ),
+                    maxLines: _kRichHookMaxLines,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: EdgeInsets.only(top: paddingTop),
       child: Text(

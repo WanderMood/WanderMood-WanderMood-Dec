@@ -1124,7 +1124,7 @@ class PlaceCard extends ConsumerWidget {
                     ],
                   ),
 
-                  if (place.tag != null) ...[
+                  if (place.tag != null && !compactMoodCopy) ...[
                     const SizedBox(height: 2),
                     Text(
                       place.tag!,
@@ -1138,12 +1138,10 @@ class PlaceCard extends ConsumerWidget {
                   // Moody hook + section title/body (matches place-detail style)
                   PlaceCardMoodyDescription(
                     place: place,
-                    // Compact cards should show only the quick Moody line
-                    // (hook + first section body) instead of the stacked
-                    // "What is ..." structure.
                     maxLines: compactMoodCopy ? 2 : 8,
                     paddingTop: compactMoodCopy ? 6 : 8,
                     useCardStackLayout: !compactMoodCopy,
+                    hookLineOnly: compactMoodCopy,
                     cacheOnly: !allowVisibilityEnrichment,
                     textStyle: GoogleFonts.poppins(
                       fontSize: 13,
@@ -1179,6 +1177,297 @@ class PlaceCard extends ConsumerWidget {
                           hasDurationPill ||
                           showAddToMyDayButton;
                       if (!showAnything) return const SizedBox(height: 2);
+
+                      List<Widget> buildCompactPills() {
+                        final out = <Widget>[];
+                        void push(Widget w) {
+                          if (out.length >= 2) return;
+                          out.add(w);
+                        }
+
+                        if (hasPrimaryPill) {
+                          push(
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(20),
+                                border:
+                                    Border.all(color: _wmParchment, width: 1),
+                              ),
+                              child: Text(
+                                primaryLabel!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: _wmForest,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        if (hasDistancePill) {
+                          push(
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(20),
+                                border:
+                                    Border.all(color: _wmParchment, width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.directions_walk_rounded,
+                                    color: _wmForest,
+                                    size: 13,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    distance!,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: _wmForest,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        if (hasPricePill) {
+                          push(
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color:
+                                    ExplorePlaceCardCopy.explorePriceBadgeColor(
+                                            place)
+                                        .withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: ExplorePlaceCardCopy
+                                          .explorePriceBadgeColor(place)
+                                      .withValues(alpha: 0.55),
+                                  width: 1.25,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _getCurrencyIcon(),
+                                    color: ExplorePlaceCardCopy
+                                        .explorePriceBadgeColor(place),
+                                    size: 13,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    ExplorePlaceCardCopy.explorePriceBadgeText(
+                                      place,
+                                      l10n,
+                                      currency: _getCurrencySymbol(),
+                                    ),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: ExplorePlaceCardCopy
+                                          .explorePriceBadgeColor(place),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        if (hasBestTimePill) {
+                          push(
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(20),
+                                border:
+                                    Border.all(color: _wmParchment, width: 1),
+                              ),
+                              child: Text(
+                                bestTimeLabel!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: _wmForest,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        if (hasDurationPill) {
+                          push(
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(20),
+                                border:
+                                    Border.all(color: _wmParchment, width: 1),
+                              ),
+                              child: Text(
+                                durationLabel,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: _wmForest,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return out;
+                      }
+
+                      final pillChildren = compactMoodCopy
+                          ? buildCompactPills()
+                          : <Widget>[
+                              if (hasPrimaryPill)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: _wmForestTint,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: _wmParchment, width: 1),
+                                  ),
+                                  child: Text(
+                                    primaryLabel!,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: _wmForest,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              if (hasBestTimePill)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: _wmForestTint,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: _wmParchment, width: 1),
+                                  ),
+                                  child: Text(
+                                    bestTimeLabel!,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: _wmForest,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              if (hasDurationPill)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: _wmForestTint,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: _wmParchment, width: 1),
+                                  ),
+                                  child: Text(
+                                    durationLabel,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: _wmForest,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              if (hasPricePill)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: ExplorePlaceCardCopy
+                                            .explorePriceBadgeColor(place)
+                                        .withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: ExplorePlaceCardCopy
+                                              .explorePriceBadgeColor(place)
+                                          .withValues(alpha: 0.55),
+                                      width: 1.25,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _getCurrencyIcon(),
+                                        color: ExplorePlaceCardCopy
+                                            .explorePriceBadgeColor(place),
+                                        size: 13,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        ExplorePlaceCardCopy
+                                            .explorePriceBadgeText(
+                                          place,
+                                          l10n,
+                                          currency: _getCurrencySymbol(),
+                                        ),
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          color: ExplorePlaceCardCopy
+                                              .explorePriceBadgeColor(place),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (hasDistancePill)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: _wmForestTint,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: _wmParchment, width: 1),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.directions_walk_rounded,
+                                        color: _wmForest,
+                                        size: 13,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        distance!,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          color: _wmForest,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ];
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1193,138 +1482,7 @@ class PlaceCard extends ConsumerWidget {
                               spacing: 10,
                               runSpacing: 10,
                               crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                if (hasPrimaryPill)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _wmForestTint,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                          color: _wmParchment, width: 1),
-                                    ),
-                                    child: Text(
-                                      primaryLabel,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: _wmForest,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                if (hasBestTimePill)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _wmForestTint,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                          color: _wmParchment, width: 1),
-                                    ),
-                                    child: Text(
-                                      bestTimeLabel,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: _wmForest,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                if (hasDurationPill)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _wmForestTint,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                          color: _wmParchment, width: 1),
-                                    ),
-                                    child: Text(
-                                      durationLabel,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: _wmForest,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                if (hasPricePill)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: ExplorePlaceCardCopy
-                                              .explorePriceBadgeColor(place)
-                                          .withValues(alpha: 0.10),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: ExplorePlaceCardCopy
-                                                .explorePriceBadgeColor(place)
-                                            .withValues(alpha: 0.55),
-                                        width: 1.25,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          _getCurrencyIcon(),
-                                          color: ExplorePlaceCardCopy
-                                              .explorePriceBadgeColor(place),
-                                          size: 13,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          ExplorePlaceCardCopy
-                                              .explorePriceBadgeText(
-                                            place,
-                                            l10n,
-                                            currency: _getCurrencySymbol(),
-                                          ),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: ExplorePlaceCardCopy
-                                                .explorePriceBadgeColor(place),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                if (hasDistancePill)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _wmForestTint,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                          color: _wmParchment, width: 1),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.directions_walk_rounded,
-                                          color: _wmForest,
-                                          size: 13,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          distance,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: _wmForest,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
+                              children: pillChildren,
                             ),
                           ],
                           // Full-width CTA (no overflow risk)
