@@ -138,6 +138,25 @@
     backdrop-filter 0.25s ease;
 }
 
+@media (max-width: 899px) {
+  .landing-page--home .home-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 220;
+    box-sizing: border-box;
+  }
+
+  .landing-page--home .home-hero {
+    padding-top: calc(68px + clamp(32px, 5vw, 56px));
+  }
+
+  .landing-page--home section[id] {
+    scroll-margin-top: 76px;
+  }
+}
+
 @media (min-width: 768px) {
   .landing-page--home .home-nav {
     padding: 0 48px;
@@ -354,7 +373,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 14px;
+  padding: 10px 14px 8px;
   border-bottom: 1px solid rgba(245, 240, 232, 0.08);
   flex-shrink: 0;
   background-color: #1a1714;
@@ -362,7 +381,7 @@
 
 .landing-page--home .home-sheet-title {
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--home-cream);
   letter-spacing: -0.02em;
@@ -392,8 +411,8 @@
 .landing-page--home .home-sheet nav.home-sheet-nav {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 10px 16px 12px;
+  gap: 2px;
+  padding: 4px 12px 6px;
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -406,16 +425,16 @@
   color: var(--home-cream);
   -webkit-text-fill-color: var(--home-cream);
   text-decoration: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  padding: 11px 14px;
-  min-height: 44px;
+  padding: 7px 10px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   box-sizing: border-box;
-  border-radius: 10px;
+  border-radius: 8px;
   transition:
     background 0.15s ease,
     color 0.15s ease;
@@ -447,7 +466,7 @@
 }
 
 .landing-page--home .home-sheet-footer {
-  padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0));
+  padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0));
   border-top: 1px solid rgba(245, 240, 232, 0.08);
   flex-shrink: 0;
   background-color: #16120f;
@@ -457,8 +476,8 @@
 .landing-page--home .home-sheet-locales {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 4px;
+  margin-bottom: 6px;
   justify-content: center;
 }
 
@@ -507,7 +526,7 @@
   display: flex;
   justify-content: center;
   line-height: 0;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .landing-page--home .home-sheet-app-badge-img {
@@ -1182,20 +1201,25 @@
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   font-size: clamp(28px, 3.5vw, 48px);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.12;
   color: var(--home-cream);
   margin-top: 12px;
-  white-space: pre-line;
+  white-space: normal;
+}
+
+.landing-page--home .home-feat-h2-line {
+  display: block;
 }
 
 .landing-page--home .home-story-intro .home-feat-h2 {
-  font-size: clamp(32px, 4vw, 52px);
+  font-size: clamp(22px, 3.15vw, 44px);
   margin-top: 0;
+  line-height: 1.14;
 }
 
-@supports (text-wrap: balance) {
+@media (max-width: 380px) {
   .landing-page--home .home-story-intro .home-feat-h2 {
-    text-wrap: balance;
+    font-size: clamp(20px, 5.4vw, 26px);
   }
 }
 
@@ -1389,7 +1413,7 @@
 .landing-page--home .home-story-intro .home-feat-body {
   margin: 12px 0 0;
   max-width: min(44rem, 100%);
-  font-size: clamp(16px, 3.5vw, 18px);
+  font-size: clamp(15px, 3.1vw, 17px);
   line-height: 1.62;
   white-space: normal;
 }

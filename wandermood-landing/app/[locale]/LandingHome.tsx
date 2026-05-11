@@ -122,21 +122,24 @@ export default function LandingHome() {
     () => [
       {
         label: th("featMoodyLabel"),
-        title: th("featMoodyH"),
+        titleLine1: th("featMoodyH1"),
+        titleLine2: th("featMoodyH2"),
         body: th("featMoodyB"),
         src: screens.moodyChat,
         alt: th("imgChat"),
       },
       {
         label: th("featDayLabel"),
-        title: th("featDayH"),
+        titleLine1: th("featDayH1"),
+        titleLine2: th("featDayH2"),
         body: th("featDayB"),
         src: screens.myDay,
         alt: th("imgMyDay"),
       },
       {
         label: th("featExploreLabel"),
-        title: th("featExploreH"),
+        titleLine1: th("featExploreH1"),
+        titleLine2: th("featExploreH2"),
         body: th("featExploreB"),
         src: screens.explore,
         alt: th("imgExplore"),
@@ -567,7 +570,11 @@ export default function LandingHome() {
               >
                 <div className="home-feature-copy home-story-intro">
                   <p className="home-label reveal">{slide.label}</p>
-                  <h2 className="home-feat-h2 reveal">{slide.title}</h2>
+                  <h2 className="home-feat-h2 reveal">
+                    <span className="home-feat-h2-line">{slide.titleLine1}</span>
+                    <br />
+                    <span className="home-feat-h2-line">{slide.titleLine2}</span>
+                  </h2>
                   <p className="home-feat-body reveal">{slide.body}</p>
                 </div>
                 <div className="home-sticky-mobile-visual">
