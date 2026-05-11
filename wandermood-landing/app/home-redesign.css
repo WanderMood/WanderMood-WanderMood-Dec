@@ -150,8 +150,9 @@
   border-bottom-color: var(--home-border);
 }
 
-.landing-page--home .home-nav .nav-logo-icon {
-  background: #3a322c;
+.landing-page--home .home-nav .nav-logo-icon--app {
+  background: transparent;
+  box-shadow: 0 0 0 1px rgba(245, 240, 232, 0.14);
 }
 
 .landing-page--home .home-nav .nav-logo-text {

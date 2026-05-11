@@ -305,17 +305,16 @@ export default function LandingHome() {
         id="landing-nav"
       >
         <Link href="/" className="nav-logo">
-          <div className="nav-logo-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-              <circle cx="10" cy="10" r="4.5" fill="white" opacity="0.9" />
-              <path
-                d="M10 3C10 3 16 6 16 10C16 14 10 17 10 17C10 17 4 14 4 10C4 6 10 3 10 3Z"
-                stroke="white"
-                strokeWidth="1.2"
-                fill="none"
-                opacity="0.45"
-              />
-            </svg>
+          <div className="nav-logo-icon nav-logo-icon--app">
+            <Image
+              src="/icon.png"
+              alt=""
+              width={34}
+              height={34}
+              sizes="34px"
+              priority
+              className="nav-logo-app-img"
+            />
           </div>
           <span className="nav-logo-text">{tFooter("brand")}</span>
         </Link>

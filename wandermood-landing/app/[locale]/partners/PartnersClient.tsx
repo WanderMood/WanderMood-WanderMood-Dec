@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Image from "next/image";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { PartnerApplyModal } from "@/components/PartnerApplyModal";
@@ -45,13 +45,15 @@ export default function PartnersClient() {
 
       <nav id="landing-nav">
         <Link href="/" className="nav-logo">
-          <div className="nav-logo-icon">
+          <div className="nav-logo-icon nav-logo-icon--app">
             <Image
               src="/icon.png"
               alt=""
-              width={68}
-              height={68}
+              width={34}
+              height={34}
               sizes="34px"
+              priority
+              className="nav-logo-app-img"
             />
           </div>
           <span className="nav-logo-text">{tFooter("brand")}</span>
