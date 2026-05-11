@@ -12,11 +12,12 @@
  * action for each city × mode × section combination using the service-role
  * key (bypasses RLS; no real user session needed).
  *
- * Environment variables required:
+ * Environment variables:
+ *   PREWARM_ENABLED           – set to `true` to run; otherwise the handler exits immediately
+ *                               (no Places calls). Default / unset = off.
  *   SUPABASE_URL              – your Supabase project URL
  *   SUPABASE_SERVICE_ROLE_KEY – service-role key (backend only, never exposed to clients)
- *   MOODY_FUNCTION_URL        – full URL of the deployed moody function
- *                               e.g. https://<project>.supabase.co/functions/v1/moody
+ *   PREWARM_SECRET            – shared secret for moody `_prewarm` auth (see moody/index.ts)
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
@@ -49,6 +50,18 @@ Deno.serve(async (req: Request) => {
   // Allow manual HTTP trigger for testing (e.g. from Supabase dashboard).
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204 })
+  }
+
+  if (Deno.env.get('PREWARM_ENABLED') !== 'true') {
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        disabled: true,
+        message:
+          'moody-prewarm is off. Set Edge secret PREWARM_ENABLED=true to enable scheduled/manual prewarm.',
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    )
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:wandermood/core/presentation/widgets/moody_avatar_compact.dart';
@@ -37,6 +38,7 @@ import 'package:wandermood/core/utils/google_place_photo_device_url.dart';
 import 'package:wandermood/core/utils/place_gallery_merge.dart';
 import 'package:wandermood/core/utils/places_new_photo_resolver.dart';
 import 'package:wandermood/core/utils/place_type_formatter.dart';
+import 'package:wandermood/core/services/business_listing_tracker.dart';
 
 /// Set `--dart-define=WM_PLACE_DETAIL_HERO_DEBUG=true` on IPA/TestFlight builds to
 /// overlay the first hero URL + resolver flags (remove when finished debugging).
@@ -197,6 +199,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   @override
   void initState() {
     super.initState();
+    unawaited(BusinessListingTracker.trackTap(widget.placeId));
     _tabController = TabController(length: 3, vsync: this);
     _isInitialized = true;
     final seed = widget.seedPlace;

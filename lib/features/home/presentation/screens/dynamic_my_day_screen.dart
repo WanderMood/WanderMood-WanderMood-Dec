@@ -34,6 +34,7 @@ import 'package:wandermood/features/home/presentation/widgets/moody_character.da
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
+import 'package:wandermood/core/services/business_listing_tracker.dart';
 import '../widgets/travel_time_connector.dart';
 import 'package:wandermood/features/home/presentation/utils/my_day_status_l10n.dart';
 import 'package:wandermood/features/home/presentation/utils/my_day_display_title.dart';
@@ -2245,6 +2246,12 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
     HapticFeedback.mediumImpact();
     final day = ref.read(selectedMyDayDateProvider);
     ref.read(activityManagerProvider.notifier).checkInActivity(activityId, day);
+    final placeIdRaw =
+        activity.rawData['placeId'] ?? activity.rawData['place_id'];
+    final placeId = placeIdRaw?.toString().trim();
+    if (placeId != null && placeId.isNotEmpty) {
+      unawaited(BusinessListingTracker.trackCheckin(placeId));
+    }
     ref.invalidate(currentActivityStatusProvider);
     ref.invalidate(todayActivitiesProvider);
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/providers/supabase_provider.dart';
@@ -13,6 +15,7 @@ import 'package:wandermood/features/mood/services/check_in_service.dart';
 import 'package:wandermood/features/mood/services/profile_mood_streak_from_schedule.dart';
 import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
 import 'package:wandermood/features/mood/domain/providers/effective_mood_streak_provider.dart';
+import 'package:wandermood/core/services/business_listing_tracker.dart';
 
 /// Provider for the ScheduledActivityService
 final scheduledActivityServiceProvider = Provider<ScheduledActivityService>((ref) {
@@ -473,6 +476,24 @@ class ScheduledActivityService {
         throw Exception('User not logged in');
       }
 
+      String? partnerPlaceId;
+      if (visitStatus == 'arrived') {
+        try {
+          final row = await _client
+              .from('scheduled_activities')
+              .select('place_id')
+              .eq('user_id', userId)
+              .eq('activity_id', activityId)
+              .maybeSingle();
+          final raw = row?['place_id'] as String?;
+          if (raw != null && raw.trim().isNotEmpty) {
+            partnerPlaceId = raw.trim();
+          }
+        } catch (e) {
+          debugPrint('ScheduledActivityService: place_id prefetch for check-in: $e');
+        }
+      }
+
       final patch = <String, dynamic>{
         'status': visitStatus,
         if (checkInTime != null) 'arrived_at': checkInTime.toIso8601String(),
@@ -484,6 +505,10 @@ class ScheduledActivityService {
           .update(patch)
           .eq('user_id', userId)
           .eq('activity_id', activityId);
+
+      if (partnerPlaceId != null) {
+        unawaited(BusinessListingTracker.trackCheckin(partnerPlaceId));
+      }
     } catch (e) {
       debugPrint('ScheduledActivityService: updateVisitTracking failed: $e');
       rethrow;

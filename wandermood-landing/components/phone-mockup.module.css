@@ -9,17 +9,17 @@
  */
 .root {
   position: relative;
-  width: min(calc(var(--phone-mockup-rail-max, 268px) + 26px), 100%);
+  width: fit-content;
   max-width: 100%;
   margin-inline: auto;
-  padding: 0 13px;
+  padding: 0 10px;
   box-sizing: border-box;
 }
 
 .body {
   position: relative;
   z-index: 1;
-  width: min(var(--phone-mockup-rail-max, 268px), calc(100% - 26px));
+  width: min(var(--phone-mockup-rail-max, 268px), calc(100% - 20px));
   margin: 0 auto;
   box-sizing: border-box;
   border-radius: 54px;
@@ -43,6 +43,7 @@
 
 .bezel {
   position: relative;
+  z-index: 2;
   border-radius: 51px;
   padding: 2px;
   background: linear-gradient(180deg, #1a1a1c 0%, #0a0a0b 100%);
@@ -81,7 +82,7 @@
 
 .sideBtn {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   background: linear-gradient(
     90deg,
@@ -95,7 +96,7 @@
 }
 
 .sideBtnVolUp {
-  left: 4px;
+  left: -3px;
   top: 22%;
   width: 5px;
   height: 44px;
@@ -103,7 +104,7 @@
 }
 
 .sideBtnVolDown {
-  left: 4px;
+  left: -3px;
   top: calc(22% + 52px);
   width: 5px;
   height: 44px;
@@ -111,7 +112,7 @@
 }
 
 .sideBtnPower {
-  right: 4px;
+  right: -3px;
   top: 19%;
   width: 5px;
   height: 86px;
@@ -125,7 +126,7 @@
 }
 
 .sideBtnCamera {
-  right: 4px;
+  right: -3px;
   top: calc(19% + 98px);
   width: 5px;
   height: 56px;

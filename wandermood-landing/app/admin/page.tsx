@@ -325,7 +325,7 @@ export default function AdminPage() {
         <div className="border-b border-[var(--wm-border)] p-4">
           <div className="text-xl font-bold tracking-tight text-[var(--wm-cream)]">WanderMood</div>
           <p className="mt-1 text-xs text-[var(--wm-muted)]">Operator console</p>
-        </div>
+          </div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
           {navSections.map(({ id, label }) => (
             <button
@@ -380,8 +380,8 @@ export default function AdminPage() {
                 </>
               ) : null}
             </div>
-          </div>
-        </header>
+        </div>
+      </header>
 
         <main className="flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8">
           <div
@@ -389,8 +389,8 @@ export default function AdminPage() {
             className="rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)] p-6 shadow-lg shadow-black/20"
           >
             <label htmlFor="admin-secret" className="block text-sm font-medium text-[var(--wm-cream)]">
-              Admin secret
-            </label>
+            Admin secret
+          </label>
             <p className="mt-1 text-xs text-[var(--wm-muted)]">
               Set{" "}
               <code className="rounded bg-[var(--wm-elevated)] px-1.5 py-0.5 text-[var(--wm-green)]">
@@ -400,35 +400,35 @@ export default function AdminPage() {
               your own API.
             </p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <input
-                id="admin-secret"
-                type="password"
-                autoComplete="off"
-                value={secret}
-                onChange={(e) => setSecret(e.target.value)}
+            <input
+              id="admin-secret"
+              type="password"
+              autoComplete="off"
+              value={secret}
+              onChange={(e) => setSecret(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && secret.trim() && !loading) void loadStats();
                 }}
                 className="flex-1 rounded-xl border border-[var(--wm-border)] bg-[var(--wm-bg)] px-4 py-3 text-sm text-[var(--wm-cream)] outline-none ring-[var(--wm-green)]/30 placeholder:text-[var(--wm-muted)] focus:border-[var(--wm-green)] focus:ring-2"
-                placeholder="Paste admin secret"
-              />
-              <button
-                type="button"
+              placeholder="Paste admin secret"
+            />
+            <button
+              type="button"
                 onClick={() => void loadStats()}
-                disabled={loading || !secret.trim()}
+              disabled={loading || !secret.trim()}
                 className="rounded-xl bg-[var(--wm-forest)] px-6 py-3 text-sm font-semibold text-[var(--wm-cream)] transition-opacity hover:opacity-90 disabled:opacity-40"
-              >
-                {loading ? "Loading…" : "Load stats"}
-              </button>
-            </div>
-            {error ? (
+            >
+              {loading ? "Loading…" : "Load stats"}
+            </button>
+          </div>
+          {error ? (
               <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
                 {error}
               </p>
-            ) : null}
-          </div>
+          ) : null}
+        </div>
 
-          {stats ? (
+        {stats ? (
             <div className="mt-10 space-y-12">
               <section id="overview" className="scroll-mt-24">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
@@ -454,30 +454,30 @@ export default function AdminPage() {
 
               <section id="users" className="scroll-mt-24">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
-                  Users
-                </h2>
+                Users
+              </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <StatCard label="Registered (auth)" value={stats.users.totalAuthUsers} />
-                  <StatCard label="New — last 7 days" value={stats.users.newLast7Days} />
-                  <StatCard label="New — last 30 days" value={stats.users.newLast30Days} />
-                  <StatCard label="Profiles row count" value={stats.users.profilesInDb} />
-                </div>
-              </section>
+                <StatCard label="Registered (auth)" value={stats.users.totalAuthUsers} />
+                <StatCard label="New — last 7 days" value={stats.users.newLast7Days} />
+                <StatCard label="New — last 30 days" value={stats.users.newLast30Days} />
+                <StatCard label="Profiles row count" value={stats.users.profilesInDb} />
+              </div>
+            </section>
 
               <section id="subscriptions" className="scroll-mt-24">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
-                  Subscriptions
-                </h2>
+                Subscriptions
+              </h2>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <StatCard label="Subscription rows" value={stats.subscriptions.totalRows} />
-                  <StatCard label="Active premium" value={stats.subscriptions.activePremium} />
-                </div>
-              </section>
+                <StatCard label="Subscription rows" value={stats.subscriptions.totalRows} />
+                <StatCard label="Active premium" value={stats.subscriptions.activePremium} />
+              </div>
+            </section>
 
               <section id="edge-api" className="scroll-mt-24">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
                   Edge API
-                </h2>
+              </h2>
                 <details className="mb-4 rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)] px-4 py-3 text-xs text-[var(--wm-muted)] open:pb-4">
                   <summary className="cursor-pointer select-none text-[var(--wm-cream)]">
                     Setup & env hints
@@ -498,7 +498,7 @@ export default function AdminPage() {
                     (60).
                   </p>
                 </details>
-                {!stats.edgeApi.available ? (
+              {!stats.edgeApi.available ? (
                   <p className="text-sm text-[var(--wm-muted)]">
                     No{" "}
                     <code className="rounded bg-[var(--wm-elevated)] px-1 text-[var(--wm-green)]">
@@ -509,77 +509,77 @@ export default function AdminPage() {
                       20260404200000_edge_api_rate_limit_and_logs.sql
                     </code>
                     .
-                  </p>
-                ) : (
-                  <>
+                </p>
+              ) : (
+                <>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <StatCard label="Logged calls — last 24h" value={stats.edgeApi.totalLast24h} />
+                    <StatCard label="Logged calls — last 24h" value={stats.edgeApi.totalLast24h} />
                       <StatCard
                         label="Rate limited (429) — last 24h"
                         value={stats.edgeApi.rateLimited429Last24h}
                         accent="sunset"
                       />
-                    </div>
-                    {stats.edgeApi.byFunction && Object.keys(stats.edgeApi.byFunction).length > 0 ? (
+                  </div>
+                  {stats.edgeApi.byFunction && Object.keys(stats.edgeApi.byFunction).length > 0 ? (
                       <div className="mt-4 rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)] p-5">
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--wm-muted)]">
-                          By function (24h)
-                        </p>
+                        By function (24h)
+                      </p>
                         <ul className="mt-3 space-y-2 text-sm">
-                          {Object.entries(stats.edgeApi.byFunction)
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([name, count]) => {
-                              const med =
-                                stats.edgeApi.medianDurationMsByFunction?.[name] ?? null;
-                              const medLabel =
-                                med != null ? ` · median ${med.toLocaleString()} ms` : "";
-                              return (
+                        {Object.entries(stats.edgeApi.byFunction)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([name, count]) => {
+                            const med =
+                              stats.edgeApi.medianDurationMsByFunction?.[name] ?? null;
+                            const medLabel =
+                              med != null ? ` · median ${med.toLocaleString()} ms` : "";
+                            return (
                                 <li
                                   key={name}
                                   className="flex justify-between gap-4 border-b border-[var(--wm-border)] border-opacity-50 py-2 last:border-0 tabular-nums"
                                 >
                                   <span className="font-medium text-[var(--wm-cream)]">{name}</span>
                                   <span className="text-[var(--wm-muted)]">
-                                    {count.toLocaleString()}
-                                    {medLabel}
-                                  </span>
-                                </li>
-                              );
-                            })}
-                        </ul>
-                      </div>
-                    ) : (
+                                  {count.toLocaleString()}
+                                  {medLabel}
+                                </span>
+                              </li>
+                            );
+                          })}
+                      </ul>
+                    </div>
+                  ) : (
                       <p className="mt-4 text-sm text-[var(--wm-muted)]">No calls logged in the last 24 hours.</p>
                     )}
                     {stats.edgeApi.moodyByAction &&
                     Object.keys(stats.edgeApi.moodyByAction).length > 0 ? (
                       <div className="mt-4 rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)] p-5">
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
-                          Moody — by action (24h)
-                        </p>
+                        Moody — by action (24h)
+                      </p>
                         <ul className="mt-3 space-y-2 text-sm">
-                          {Object.entries(stats.edgeApi.moodyByAction)
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([action, count]) => (
+                        {Object.entries(stats.edgeApi.moodyByAction)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([action, count]) => (
                               <li
                                 key={action}
                                 className="flex justify-between gap-4 border-b border-[var(--wm-border)] py-2 last:border-0 tabular-nums"
                               >
                                 <span className="text-[var(--wm-cream)]">{action}</span>
                                 <span className="text-[var(--wm-muted)]">{count.toLocaleString()}</span>
-                              </li>
-                            ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </section>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </section>
 
               <section id="billing" className="scroll-mt-24">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
-                  Billing (Stripe)
-                </h2>
+                Billing (Stripe)
+              </h2>
                 <details className="mb-4 rounded-xl border border-[var(--wm-border)] bg-[var(--wm-card)] px-4 py-3 text-xs text-[var(--wm-muted)] open:pb-4">
                   <summary className="cursor-pointer select-none text-[var(--wm-cream)]">
                     Webhook setup
@@ -598,34 +598,34 @@ export default function AdminPage() {
                 </details>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <StatCard label="Paid invoices — last 30 days" value={stats.billing.paymentsLast30Days} />
-                  <StatCard
-                    label="Revenue — last 30 days (largest currency)"
-                    value={formatMoneyCents(
-                      stats.billing.revenueLast30DaysCents,
-                      stats.billing.revenueCurrency
-                    )}
+                <StatCard
+                  label="Revenue — last 30 days (largest currency)"
+                  value={formatMoneyCents(
+                    stats.billing.revenueLast30DaysCents,
+                    stats.billing.revenueCurrency
+                  )}
                     accent="cream"
-                  />
-                  <StatCard
-                    label="Stripe webhook events (all time)"
-                    value={stats.billing.stripeWebhookEventsTotal}
-                  />
-                </div>
-                {stats.billing.note ? (
+                />
+                <StatCard
+                  label="Stripe webhook events (all time)"
+                  value={stats.billing.stripeWebhookEventsTotal}
+                />
+              </div>
+              {stats.billing.note ? (
                   <p className="mt-3 text-xs text-[var(--wm-sunset)]">{stats.billing.note}</p>
-                ) : null}
-              </section>
+              ) : null}
+            </section>
 
               <section id="activity" className="scroll-mt-24">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--wm-muted)]">
                   Product activity
-                </h2>
+              </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <StatCard label="Scheduled activities" value={stats.activity.scheduledActivitiesTotal} />
-                  <StatCard label="Mood check-ins" value={stats.activity.userCheckInsTotal} />
-                  <StatCard label="Places cache rows" value={stats.activity.placesCacheRows} />
-                </div>
-              </section>
+                <StatCard label="Scheduled activities" value={stats.activity.scheduledActivitiesTotal} />
+                <StatCard label="Mood check-ins" value={stats.activity.userCheckInsTotal} />
+                <StatCard label="Places cache rows" value={stats.activity.placesCacheRows} />
+              </div>
+            </section>
 
               <div
                 id="partner-b2b"
@@ -823,9 +823,9 @@ export default function AdminPage() {
               <p className="border-t border-[var(--wm-border)] pt-8 text-xs leading-relaxed text-[var(--wm-muted)]">
                 {stats.note}
               </p>
-            </div>
-          ) : null}
-        </main>
+          </div>
+        ) : null}
+      </main>
       </div>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around border-t border-[var(--wm-border)] bg-[var(--wm-card)] py-2 md:hidden">

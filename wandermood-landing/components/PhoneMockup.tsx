@@ -31,16 +31,19 @@ export function PhoneMockup({
   } as CSSProperties;
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(" ")}>
-      {sideButtons ? (
-        <>
-          <span className={`${styles.sideBtn} ${styles.sideBtnVolUp}`} aria-hidden />
-          <span className={`${styles.sideBtn} ${styles.sideBtnVolDown}`} aria-hidden />
-          <span className={`${styles.sideBtn} ${styles.sideBtnPower}`} aria-hidden />
-          <span className={`${styles.sideBtn} ${styles.sideBtnCamera}`} aria-hidden />
-        </>
-      ) : null}
-      <div className={styles.body} style={railStyle}>
+    <div
+      className={[styles.root, className].filter(Boolean).join(" ")}
+      style={railStyle}
+    >
+      <div className={styles.body}>
+        {sideButtons ? (
+          <>
+            <span className={`${styles.sideBtn} ${styles.sideBtnVolUp}`} aria-hidden />
+            <span className={`${styles.sideBtn} ${styles.sideBtnVolDown}`} aria-hidden />
+            <span className={`${styles.sideBtn} ${styles.sideBtnPower}`} aria-hidden />
+            <span className={`${styles.sideBtn} ${styles.sideBtnCamera}`} aria-hidden />
+          </>
+        ) : null}
         <div className={styles.bezel}>
           {showIsland ? <div className={styles.island} aria-hidden /> : null}
           <div className={styles.screen}>{children}</div>

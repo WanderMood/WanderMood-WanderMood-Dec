@@ -51,6 +51,7 @@ import 'package:wandermood/core/config/explore_launch_config.dart';
 import 'package:wandermood/features/location/services/location_service.dart';
 import 'package:wandermood/features/home/presentation/providers/explore_intent_provider.dart';
 import 'package:wandermood/features/places/providers/moody_place_card_blurb_provider.dart';
+import 'package:wandermood/core/services/business_listing_tracker.dart';
 
 part 'explore_screen_data.dart';
 part 'explore_screen_map_view.part.dart';
@@ -115,6 +116,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   bool _exploreBulkSeedInFlight = false;
   String? _exploreBulkSeedGateCity;
   bool _exploreBulkSeedRanForGateCity = false;
+
+  /// Dedupes partner listing view RPCs for the same visible Explore slice.
+  String? _partnerListingViewsTrackedSig;
 
   /// Incremented on pull-to-refresh so the feed re-shuffles within open/closed tiers
   /// (opening-only sort alone kept the same place on top every time).
@@ -279,6 +283,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     if (_exploreRichPrewarmRunning) return;
     _exploreRichPrewarmRunning = true;
     unawaited(_runExploreRichPrewarmQueue());
+  }
+
+  /// Partner analytics: first visible cards only, once per distinct slice.
+  void _trackPartnerListingViewsForVisibleSlice(List<Place> visiblePlaces) {
+    final sample = visiblePlaces.take(6).toList();
+    if (sample.isEmpty) return;
+    final sig =
+        '${_searchResults != null ? 'q' : 'e'}|$_explorePullRefreshGeneration|${sample.map((p) => p.id).join('|')}';
+    if (_partnerListingViewsTrackedSig == sig) return;
+    _partnerListingViewsTrackedSig = sig;
+    for (final card in sample) {
+      final id = card.id.trim();
+      if (id.isEmpty) continue;
+      unawaited(BusinessListingTracker.trackView(id));
+    }
   }
 
   Future<void> _runExploreRichPrewarmQueue() async {
@@ -3055,6 +3074,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         math.min(_exploreVisiblePlaceCount, filteredPlaces.length);
     final visiblePlaces = filteredPlaces.sublist(0, visibleCount);
     _enqueueVisibleRichPrewarm(visiblePlaces);
+    _trackPartnerListingViewsForVisibleSlice(visiblePlaces);
     final hasMoreLocally = visibleCount < filteredPlaces.length;
     final canFetchMoreExplore = _searchResults == null &&
         filteredPlaces.length >= _kExplorePageSize &&
