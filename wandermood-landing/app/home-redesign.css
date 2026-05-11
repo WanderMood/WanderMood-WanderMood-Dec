@@ -957,9 +957,39 @@
   }
 }
 
-/* Mood match */
-.landing-page--home .home-mm {
-  background: #1a1714;
+/* Mood match (beige band — espresso typography) */
+.landing-page--home .home-mm.section-beige .home-label {
+  color: rgba(26, 23, 20, 0.5);
+}
+
+.landing-page--home .home-mm.section-beige .home-h2 {
+  color: #1a1714;
+}
+
+.landing-page--home .home-mm.section-beige .home-b2b-sub {
+  color: rgba(26, 23, 20, 0.55);
+}
+
+.landing-page--home .home-mm-phones-wrap {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .landing-page--home .home-mm-phones-wrap {
+    transform: scale(1.14);
+    transform-origin: center bottom;
+    margin-top: 48px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .landing-page--home .home-mm-phones-wrap {
+    transform: scale(1.2);
+  }
 }
 
 .landing-page--home .home-mm-phones {
@@ -967,7 +997,6 @@
   justify-content: center;
   align-items: flex-end;
   gap: 0;
-  margin-top: 48px;
   flex-wrap: wrap;
 }
 
@@ -1028,7 +1057,11 @@
   text-align: center;
 }
 
-/* Moods grid */
+/* Moods grid (dark band) */
+.landing-page--home .home-moods-section .home-moods-head .home-h2 {
+  color: #f5f0e8;
+}
+
 .landing-page--home .home-moods-head {
   text-align: center;
   margin-bottom: 40px;
@@ -1081,6 +1114,41 @@
   transform: translateY(0);
 }
 
+.landing-page--home .home-moods-section .home-mood-chip {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  color: #f5f0e8;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+@keyframes home-mood-chip-float {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 18px rgba(0, 0, 0, 0.35),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+  50% {
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.45),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  }
+}
+
+.landing-page--home .home-moods-section .home-moods-grid.home-moods-animate .home-mood-chip {
+  animation: home-mood-chip-float 4.5s ease-in-out infinite;
+}
+
+.landing-page--home .home-moods-section .home-moods-grid.home-moods-animate .home-mood-chip:nth-child(2n) {
+  animation-delay: 0.35s;
+}
+
+.landing-page--home .home-moods-section .home-moods-grid.home-moods-animate .home-mood-chip:nth-child(3n) {
+  animation-delay: 0.7s;
+}
+
 .landing-page--home .home-moods-grid.home-moods-animate .home-mood-chip:nth-child(1) {
   transition-delay: 0ms;
 }
@@ -1119,10 +1187,13 @@
 }
 
 .landing-page--home .home-moods-grid.home-moods-animate .home-mood-chip:hover {
-  transform: scale(1.06) translateY(-2px);
-  border-color: rgba(26, 23, 20, 0.22);
-  background: rgba(26, 23, 20, 0.04);
-  box-shadow: 0 6px 20px rgba(26, 23, 20, 0.06);
+  transform: scale(1.06) translateY(-4px);
+  animation: none;
+  border-color: rgba(245, 240, 232, 0.22);
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
 }
 
 /* B2B */

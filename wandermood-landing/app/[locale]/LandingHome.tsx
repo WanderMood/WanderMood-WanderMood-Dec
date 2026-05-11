@@ -529,7 +529,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="mood-match" className="home-section home-mm section-dark">
+      <section id="mood-match" className="home-section home-mm section-beige">
         <div className="home-section-inner">
           <p className="home-label reveal" style={{ textAlign: "center" }}>
             {th("mmLabel")}
@@ -549,17 +549,19 @@ export default function LandingHome() {
             <br />
             {th("mmSubL3")}
           </p>
-          <div className="home-mm-phones">
-            <PhoneFrame
-              src={screens.moodMatchLeft}
-              alt={th("imgMoodMatch")}
-              className="home-mm-phone1"
-            />
-            <PhoneFrame
-              src={screens.placeDetail}
-              alt={th("imgPlace")}
-              className="home-mm-phone2"
-            />
+          <div className="home-mm-phones-wrap">
+            <div className="home-mm-phones">
+              <PhoneFrame
+                src={screens.moodMatchLeft}
+                alt={th("imgMoodMatch")}
+                className="home-mm-phone1"
+              />
+              <PhoneFrame
+                src={screens.placeDetail}
+                alt={th("imgPlace")}
+                className="home-mm-phone2"
+              />
+            </div>
           </div>
           <div className="home-mm-cta-wrap">
             <a {...APP_STORE_LINK_PROPS} className="home-mm-cta reveal">
@@ -572,7 +574,7 @@ export default function LandingHome() {
       <section
         id="moods"
         ref={moodsSectionRef}
-        className="home-section section-beige"
+        className="home-section section-dark home-moods-section"
       >
         <div className="home-section-inner">
           <div className="home-moods-head">
