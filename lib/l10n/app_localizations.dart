@@ -11810,6 +11810,18 @@ abstract class AppLocalizations {
   /// **'See all'**
   String get exploreSeeAll;
 
+  /// Heading for the horizontal carousel of Moody-matched partner places on Explore.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for you'**
+  String get explorePartnerRecommendedForYou;
+
+  /// Title for the horizontal trending stories row on Explore.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending on WanderMood'**
+  String get explorePartnerTrendingHeadline;
+
   /// No description provided for @exploreLoadMore.
   ///
   /// In en, this message translates to:

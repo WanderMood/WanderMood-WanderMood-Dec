@@ -6638,6 +6638,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exploreSeeAll => 'Ver todo';
 
   @override
+  String get explorePartnerRecommendedForYou => 'Recomendado para ti';
+
+  @override
+  String get explorePartnerTrendingHeadline => 'Tendencias en WanderMood';
+
+  @override
   String get exploreLoadMore => 'Cargar más →';
 
   @override

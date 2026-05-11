@@ -112,6 +112,6 @@ final myDayFreeTimeActivitiesProvider =
     l10n: l10n,
     userLat: lat,
     userLng: lng,
-    maxItems: 36,
+    maxItems: 10,
   );
 });

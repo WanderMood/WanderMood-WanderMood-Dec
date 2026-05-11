@@ -2708,9 +2708,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   /// Browsing vs search vs filters — editorial line above the feed (list + map).
   /// Omits total place count so the feed feels open-ended.
+  /// Default “Discovering {city}” strip is hidden — users already know they are on Explore.
   Widget _buildExploreModeContextCard() {
     final l10n = AppLocalizations.of(context)!;
-    final city = ref.read(locationNotifierProvider).valueOrNull?.trim() ?? '';
     final IconData icon;
     final String title;
     if (_searchQuery.trim().isNotEmpty && _searchResults == null) {
@@ -2723,10 +2723,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       icon = Icons.tune_rounded;
       title = l10n.exploreContextStripFiltered(_activeFiltersCount);
     } else {
-      icon = Icons.explore_rounded;
-      title = city.isNotEmpty
-          ? l10n.exploreContextStripDiscovering(city)
-          : l10n.exploreContextStripDiscovering(l10n.navExplore);
+      return const SizedBox.shrink();
     }
 
     return Padding(
@@ -2863,7 +2860,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 ],
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             ConversationalExploreHeader(
               onSearchChanged: _onConversationalSearchChanged,
               onFilterTap: _showAdvancedFilters,
@@ -2979,9 +2976,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       floating: true,
       pinned: true,
       snap: false,
-      // Tight fit: extra height becomes empty parchment above the first card.
-      // Slightly taller when the inline filter row is visible.
-      expandedHeight: _activeFiltersCount > 0 ? 332 : 296,
+      // Tight fit: extra [expandedHeight] becomes empty parchment between the
+      // header (incl. list/grid/map toggles) and the first body sliver (e.g. Trending).
+      // Keep in sync with [_buildExploreHeaderColumn] + [ConversationalExploreHeader] height.
+      expandedHeight: _activeFiltersCount > 0 ? 246 : 210,
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -3197,10 +3195,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     var carouselPlaces = filteredPlaces
         .where((p) => partnerIds.contains(_normalizePartnerPlaceId(p.id)))
-        .take(8)
+        .take(10)
         .toList();
     if (partnerUiTestMode) {
-      carouselPlaces = filteredPlaces.take(8).toList();
+      carouselPlaces = filteredPlaces.take(10).toList();
     }
     final storiesPartnersForUi = partnerUiTestMode
         ? _mockPartnerListingsForUi(
@@ -3353,6 +3351,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       );
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     final exploreFooterSliver = SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
@@ -3379,7 +3379,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   ),
                 )
               : Text(
-                  AppLocalizations.of(context)!.exploreLoadMoreIdeas,
+                  l10n.exploreLoadMoreIdeas,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -3431,14 +3431,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 final injectAt = math.min(4, visiblePlaces.length);
                 if (showCarousel && index == injectAt) {
                   return PartnerCarousel(
-                    label: 'Aanbevolen voor jou',
+                    label: l10n.explorePartnerRecommendedForYou,
                     places: carouselPlaces,
                     userLocation: ul,
                     cityName: currentCity,
                     photoSelectionSeed: _explorePlacePhotoRefreshSeed,
                     onOpenPlace: _openPlaceFromExplore,
                     onAddToMyDay: _showAddToMyDaySheet,
-                    onMoreTap: () {},
                   ).animate().fadeIn(
                         duration: 300.ms,
                         delay: Duration(milliseconds: index * 50),
@@ -3510,7 +3509,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           SliverToBoxAdapter(
             child: PartnerStoriesRow(
               partners: storiesPartnersForUi,
-              label: 'Trending op WanderMood',
+              headline: l10n.explorePartnerTrendingHeadline,
               onTapPartnerPlace: _openPlaceFromExplore,
             ),
           ),

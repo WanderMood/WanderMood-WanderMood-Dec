@@ -68,16 +68,16 @@ class _ConversationalExploreHeaderState extends State<ConversationalExploreHeade
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 2),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildSearchBar(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           if (_hasCategoryRow) ...[
             _buildCategoryChipsRow(),
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
           ],
           _buildActivitiesHeader(),
         ],

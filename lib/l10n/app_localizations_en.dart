@@ -6574,6 +6574,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreSeeAll => 'See all';
 
   @override
+  String get explorePartnerRecommendedForYou => 'Recommended for you';
+
+  @override
+  String get explorePartnerTrendingHeadline => 'Trending on WanderMood';
+
+  @override
   String get exploreLoadMore => 'Load more →';
 
   @override

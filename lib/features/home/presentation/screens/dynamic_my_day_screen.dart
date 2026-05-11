@@ -31,7 +31,6 @@ import 'package:wandermood/core/theme/time_based_theme.dart';
 import '../../providers/time_suggestion_provider.dart';
 import 'package:wandermood/core/presentation/painters/circle_pattern_painter.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
-import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
 import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
 import 'package:wandermood/features/plans/data/services/scheduled_activity_service.dart';
 import 'package:wandermood/core/services/business_listing_tracker.dart';
@@ -3161,32 +3160,19 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
         activities: activities,
         onActivityTap: _showActivityDetails,
         onSaveTap: _addFreeTimeCarouselToMyDay,
-        onDirectionsTap: _openDirections,
-        onAskMoodyTap: _onAskMoodyFromFreeTime,
       ),
       loading: () => MyDayFreeTimeCarousel(
         activities: const [],
         isLoading: true,
         onActivityTap: (_) {},
         onSaveTap: (_) {},
-        onDirectionsTap: (_) {},
       ),
       error: (_, __) => MyDayFreeTimeCarousel(
         activities: const [],
         loadFailed: true,
         onActivityTap: (_) {},
         onSaveTap: (_) {},
-        onDirectionsTap: (_) {},
       ),
-    );
-  }
-
-  void _onAskMoodyFromFreeTime(Map<String, dynamic> activity) {
-    if (!mounted) return;
-    showMoodyChatSheetWithSharedPlace(
-      context,
-      ref,
-      sharedPlace: moodySharedPlacePayloadForFreeTimeActivity(activity),
     );
   }
 

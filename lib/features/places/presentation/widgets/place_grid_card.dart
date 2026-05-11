@@ -462,9 +462,8 @@ class PlaceGridCard extends ConsumerWidget {
                             const SizedBox(height: 3),
                             Builder(
                               builder: (context) {
-                                final primaryLbl =
-                                    ExplorePlaceCardCopy
-                                        .primaryTypeLabelForCard(
+                                final bestTime =
+                                    ExplorePlaceCardCopy.bestTimePillForExploreCard(
                                   place,
                                   l10n,
                                 );
@@ -474,7 +473,7 @@ class PlaceGridCard extends ConsumerWidget {
                                   crossAxisAlignment:
                                       WrapCrossAlignment.center,
                                   children: [
-                                    if (primaryLbl != null)
+                                    if (bestTime != null)
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 6,
@@ -490,7 +489,7 @@ class PlaceGridCard extends ConsumerWidget {
                                           ),
                                         ),
                                         child: Text(
-                                          primaryLbl,
+                                          bestTime,
                                           style: GoogleFonts.poppins(
                                             fontSize: 9,
                                             color: _wmForest,
@@ -557,54 +556,6 @@ class PlaceGridCard extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  // Helper function to capitalize first letter
-  String _capitalize(String text) {
-    if (text.isEmpty) return text;
-    return "${text[0].toUpperCase()}${text.substring(1)}";
-  }
-
-  // Helper method to get icon for category
-  IconData _getCategoryIcon(String type) {
-    if (type.contains('restaurant') ||
-        type.contains('food') ||
-        type.contains('cafe')) {
-      return Icons.restaurant;
-    } else if (type.contains('museum') ||
-        type.contains('culture') ||
-        type.contains('art')) {
-      return Icons.museum;
-    } else if (type.contains('park') ||
-        type.contains('outdoor') ||
-        type.contains('nature')) {
-      return Icons.park;
-    } else if (type.contains('hotel') || type.contains('lodging')) {
-      return Icons.hotel;
-    } else {
-      return Icons.place;
-    }
-  }
-
-  // Helper method to get color for category
-  Color _getCategoryColor(String type) {
-    if (type.contains('restaurant') ||
-        type.contains('food') ||
-        type.contains('cafe')) {
-      return Colors.orange;
-    } else if (type.contains('museum') ||
-        type.contains('culture') ||
-        type.contains('art')) {
-      return Colors.purple;
-    } else if (type.contains('park') ||
-        type.contains('outdoor') ||
-        type.contains('nature')) {
-      return Colors.green;
-    } else if (type.contains('hotel') || type.contains('lodging')) {
-      return Colors.blue;
-    } else {
-      return Colors.grey;
-    }
   }
 
   // Build category pill with icon and optional label - overflow protected

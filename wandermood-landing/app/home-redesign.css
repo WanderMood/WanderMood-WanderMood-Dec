@@ -1376,7 +1376,7 @@
   font-size: 16px;
   line-height: 1.7;
   color: var(--home-muted);
-  margin-top: 20px;
+  margin-top: 14px;
   max-width: 520px;
 }
 
@@ -1433,11 +1433,11 @@
 }
 
 .landing-page--home .home-feature-panel {
-  min-height: 70vh;
+  min-height: 62vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 60px 0;
+  padding: 44px 0 22px;
   border-bottom: 1px solid rgba(245, 240, 232, 0.07);
   box-sizing: border-box;
 }
@@ -1503,7 +1503,7 @@
     justify-content: flex-start;
     min-height: 0;
     opacity: 1;
-    padding: 48px 0;
+    padding: 32px 0 18px;
   }
 
   .landing-page--home .home-feature-panel .home-sticky-mobile-visual {
@@ -1547,7 +1547,7 @@
 }
 
 .landing-page--home .home-story-intro > .home-label {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 /* .section-beige .home-label is muted for “how” etc.; story-stack eyebrows stay accent. */

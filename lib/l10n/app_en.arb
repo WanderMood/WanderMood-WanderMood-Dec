@@ -3072,6 +3072,14 @@
   "exploreSectionPerfectGroups": "Perfect for groups 👥",
   "exploreSectionSomethingDifferent": "Something different 🎲",
   "exploreSeeAll": "See all",
+  "explorePartnerRecommendedForYou": "Recommended for you",
+  "@explorePartnerRecommendedForYou": {
+    "description": "Heading for the horizontal carousel of Moody-matched partner places on Explore."
+  },
+  "explorePartnerTrendingHeadline": "Trending on WanderMood",
+  "@explorePartnerTrendingHeadline": {
+    "description": "Title for the horizontal trending stories row on Explore."
+  },
   "exploreLoadMore": "Load more →",
   "exploreEndOfCachedPool": "You have seen all ideas saved for this area. Pull down to refresh for new suggestions.",
   "@exploreEndOfCachedPool": {

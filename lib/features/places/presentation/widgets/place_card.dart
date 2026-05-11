@@ -45,6 +45,13 @@ const double _kPlaceCardTopAccentWidth = 3;
 const double _kPlaceCardAddToMyDayCtaHeight = 48;
 const double _kPlaceCardAddToMyDayCtaRadius = 24;
 
+/// [compactMoodCopy]: reserve two title lines so pills + CTA align across carousel cards.
+const double _kPlaceCardCompactTitleSlotHeight = 16.0 * 1.3 * 2;
+
+/// Matches [PlaceCardMoodyDescription] hook-only slot: paddingTop 6 + (13 * 1.35 * 2 + 8).
+const double _kPlaceCardCompactMoodBlockOuterHeight =
+    6.0 + (13.0 * 1.35 * 2.0 + 8.0);
+
 class PlaceCard extends ConsumerWidget {
   final Place place;
   final VoidCallback onTap;
@@ -1071,57 +1078,69 @@ class PlaceCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Place name and rating (price lives in pills row below).
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          place.name,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            height: 1.3,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (place.rating > 0)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, color: _wmSunset, size: 18),
-                            const SizedBox(width: 3),
-                            Text(
-                              place.rating.toStringAsFixed(1),
+                  Builder(
+                    builder: (context) {
+                      final titleRatingRow = Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              place.name,
                               style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                height: 1.3,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            if (place.reviewCount > 0) ...[
-                              Text(
-                                ' · ',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: _wmStone,
+                          ),
+                          if (place.rating > 0)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star, color: _wmSunset, size: 18),
+                                const SizedBox(width: 3),
+                                Text(
+                                  place.rating.toStringAsFixed(1),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                ExplorePlaceCardCopy.formatReviewCount(
-                                    place.reviewCount),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: _wmStone,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                    ],
+                                if (place.reviewCount > 0) ...[
+                                  Text(
+                                    ' · ',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: _wmStone,
+                                    ),
+                                  ),
+                                  Text(
+                                    ExplorePlaceCardCopy.formatReviewCount(
+                                        place.reviewCount),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: _wmStone,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                        ],
+                      );
+                      if (compactMoodCopy) {
+                        return SizedBox(
+                          height: _kPlaceCardCompactTitleSlotHeight,
+                          width: double.infinity,
+                          child: titleRatingRow,
+                        );
+                      }
+                      return titleRatingRow;
+                    },
                   ),
 
                   if (place.tag != null && !compactMoodCopy) ...[
@@ -1135,29 +1154,47 @@ class PlaceCard extends ConsumerWidget {
                     ),
                   ],
 
-                  // Moody hook + section title/body (matches place-detail style)
-                  PlaceCardMoodyDescription(
-                    place: place,
-                    maxLines: compactMoodCopy ? 2 : 8,
-                    paddingTop: compactMoodCopy ? 6 : 8,
-                    useCardStackLayout: !compactMoodCopy,
-                    hookLineOnly: compactMoodCopy,
-                    cacheOnly: !allowVisibilityEnrichment,
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 13,
-                      height: 1.4,
-                      color: _wmDusk,
+                  // Moody hook — fixed vertical slot in compact mode so pills/CTA line up.
+                  if (compactMoodCopy)
+                    SizedBox(
+                      height: _kPlaceCardCompactMoodBlockOuterHeight,
+                      width: double.infinity,
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: PlaceCardMoodyDescription(
+                          place: place,
+                          maxLines: 2,
+                          paddingTop: 6,
+                          useCardStackLayout: false,
+                          hookLineOnly: true,
+                          cacheOnly: !allowVisibilityEnrichment,
+                          textStyle: GoogleFonts.poppins(
+                            fontSize: 13,
+                            height: 1.4,
+                            color: _wmDusk,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    PlaceCardMoodyDescription(
+                      place: place,
+                      maxLines: 8,
+                      paddingTop: 8,
+                      useCardStackLayout: true,
+                      hookLineOnly: false,
+                      cacheOnly: !allowVisibilityEnrichment,
+                      textStyle: GoogleFonts.poppins(
+                        fontSize: 13,
+                        height: 1.4,
+                        color: _wmDusk,
+                      ),
                     ),
-                  ),
 
                   // Bottom metadata: pills row + full-width CTA (no overflow)
                   Builder(
                     builder: (context) {
                       final distance = _calculateDistance();
-                      final primaryLabel =
-                          ExplorePlaceCardCopy.primaryTypeLabelForCard(
-                              place, l10n);
-                      final hasPrimaryPill = primaryLabel != null;
                       final hasPricePill =
                           ExplorePlaceCardCopy.shouldShowExplorePriceBadge(
                               place);
@@ -1170,14 +1207,15 @@ class PlaceCard extends ConsumerWidget {
                           ExplorePlaceCardCopy.exploreCardVisitDurationLabel(
                               place, l10n);
                       final hasDurationPill = durationLabel.isNotEmpty;
-                      final showAnything = hasPrimaryPill ||
-                          hasPricePill ||
+                      final showAnything = hasPricePill ||
                           hasDistancePill ||
                           hasBestTimePill ||
                           hasDurationPill ||
                           showAddToMyDayButton;
                       if (!showAnything) return const SizedBox(height: 2);
 
+                      /// Partner carousel: price + best time first (max 2), then
+                      /// distance / duration as fill — no Google type labels.
                       List<Widget> buildCompactPills() {
                         final out = <Widget>[];
                         void push(Widget w) {
@@ -1185,61 +1223,6 @@ class PlaceCard extends ConsumerWidget {
                           out.add(w);
                         }
 
-                        if (hasPrimaryPill) {
-                          push(
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: _wmForestTint,
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: _wmParchment, width: 1),
-                              ),
-                              child: Text(
-                                primaryLabel!,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: _wmForest,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        if (hasDistancePill) {
-                          push(
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: _wmForestTint,
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: _wmParchment, width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.directions_walk_rounded,
-                                    color: _wmForest,
-                                    size: 13,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    distance!,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: _wmForest,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
                         if (hasPricePill) {
                           push(
                             Container(
@@ -1308,6 +1291,39 @@ class PlaceCard extends ConsumerWidget {
                             ),
                           );
                         }
+                        if (hasDistancePill) {
+                          push(
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _wmForestTint,
+                                borderRadius: BorderRadius.circular(20),
+                                border:
+                                    Border.all(color: _wmParchment, width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.directions_walk_rounded,
+                                    color: _wmForest,
+                                    size: 13,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    distance!,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: _wmForest,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
                         if (hasDurationPill) {
                           push(
                             Container(
@@ -1336,25 +1352,6 @@ class PlaceCard extends ConsumerWidget {
                       final pillChildren = compactMoodCopy
                           ? buildCompactPills()
                           : <Widget>[
-                              if (hasPrimaryPill)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: _wmForestTint,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: _wmParchment, width: 1),
-                                  ),
-                                  child: Text(
-                                    primaryLabel!,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: _wmForest,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
                               if (hasBestTimePill)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -1367,25 +1364,6 @@ class PlaceCard extends ConsumerWidget {
                                   ),
                                   child: Text(
                                     bestTimeLabel!,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: _wmForest,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              if (hasDurationPill)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: _wmForestTint,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: _wmParchment, width: 1),
-                                  ),
-                                  child: Text(
-                                    durationLabel,
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
                                       color: _wmForest,
@@ -1436,6 +1414,25 @@ class PlaceCard extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
+                              if (hasDurationPill)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: _wmForestTint,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: _wmParchment, width: 1),
+                                  ),
+                                  child: Text(
+                                    durationLabel,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: _wmForest,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               if (hasDistancePill)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -1471,9 +1468,8 @@ class PlaceCard extends ConsumerWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Pills row (category with duration + distance)
-                          if (hasPrimaryPill ||
-                              hasPricePill ||
+                          // Pills: best time, visit length, price, distance — no Google type label.
+                          if (hasPricePill ||
                               hasDistancePill ||
                               hasBestTimePill ||
                               hasDurationPill) ...[
@@ -1566,82 +1562,6 @@ class PlaceCard extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  // Build category pill with icon and label
-  Widget _buildCategoryPill({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper method to build type pill
-  Widget _buildTypePill(String type) {
-    String label = type.replaceAll('_', ' ');
-    label = label[0].toUpperCase() + label.substring(1);
-
-    IconData icon;
-    Color color;
-
-    if (type.contains('restaurant') ||
-        type.contains('food') ||
-        type.contains('cafe')) {
-      icon = Icons.restaurant;
-      color = Colors.orange;
-    } else if (type.contains('museum') ||
-        type.contains('culture') ||
-        type.contains('art')) {
-      icon = Icons.museum;
-      color = Colors.purple;
-    } else if (type.contains('park') ||
-        type.contains('outdoor') ||
-        type.contains('nature')) {
-      icon = Icons.park;
-      color = Colors.green;
-    } else if (type.contains('hotel') || type.contains('lodging')) {
-      icon = Icons.hotel;
-      color = Colors.blue;
-    } else {
-      icon = Icons.place;
-      color = Colors.grey;
-    }
-
-    return _buildCategoryPill(
-      icon: icon,
-      label: label,
-      color: color,
     );
   }
 

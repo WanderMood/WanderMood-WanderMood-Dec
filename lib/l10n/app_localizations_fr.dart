@@ -6664,6 +6664,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exploreSeeAll => 'Tout voir';
 
   @override
+  String get explorePartnerRecommendedForYou => 'Recommandé pour vous';
+
+  @override
+  String get explorePartnerTrendingHeadline => 'Tendances sur WanderMood';
+
+  @override
   String get exploreLoadMore => 'Charger plus →';
 
   @override

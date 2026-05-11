@@ -6606,6 +6606,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get exploreSeeAll => 'Alles tonen';
 
   @override
+  String get explorePartnerRecommendedForYou => 'Aanbevolen voor jou';
+
+  @override
+  String get explorePartnerTrendingHeadline => 'Trending op WanderMood';
+
+  @override
   String get exploreLoadMore => 'Meer laden →';
 
   @override
