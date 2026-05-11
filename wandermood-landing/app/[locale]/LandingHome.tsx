@@ -579,7 +579,7 @@ export default function LandingHome() {
                 </div>
                 <div className="home-sticky-mobile-visual">
                   <div className="home-feature-mobile-phone-wrap home-phone-elevated home-phone-elevated--band">
-                    <PhoneFrame variant="band" src={slide.src} alt={slide.alt} />
+                    <PhoneFrame src={slide.src} alt={slide.alt} />
                   </div>
                 </div>
               </div>
@@ -591,7 +591,6 @@ export default function LandingHome() {
             >
               <div className="home-phone-elevated home-phone-elevated--band">
                 <PhoneFrame
-                  variant="band"
                   src={featureSlides[featurePhoneIdx]?.src ?? featureSlides[0].src}
                   alt={featureSlides[featurePhoneIdx]?.alt ?? featureSlides[0].alt}
                 />
@@ -722,18 +721,6 @@ export default function LandingHome() {
           </a>
         </div>
       </section>
-
-      <div className="home-strip section-dark home-strip--end">
-        <div className="home-strip-inner">
-          <span>
-            {th("stripAppStore")} {th("stripStars")}
-          </span>
-          <span className="home-strip-div" aria-hidden />
-          <span>{th("stripGeo")}</span>
-          <span className="home-strip-div" aria-hidden />
-          <span>{th("stripTagline")}</span>
-        </div>
-      </div>
 
       <footer className="landing-footer">
         <div className="footer-logo">{tFooter("brand")}</div>
