@@ -399,61 +399,63 @@ export default function LandingHome() {
             ×
           </button>
         </div>
-        <nav className="home-sheet-nav">
-          <a
-            href="#how"
-            className="home-sheet-nav-link"
-            onClick={() => setMenuOpen(false)}
-          >
-            {th("navHow")}
-          </a>
-          <a
-            href="#features"
-            className="home-sheet-nav-link"
-            onClick={() => setMenuOpen(false)}
-          >
-            {th("navFeatures")}
-          </a>
-          <Link
-            href="/partners"
-            className="home-sheet-nav-link"
-            onClick={() => setMenuOpen(false)}
-          >
-            {th("navPartners")}
-          </Link>
-        </nav>
-        <div className="home-sheet-footer">
-          <div className="home-sheet-locales" role="group" aria-label="Language">
-            {LOCALES.map(({ code, label }) => (
-              <button
-                key={code}
-                type="button"
-                className={`home-nav-locale-btn ${currentLocale === code ? "active" : ""}`}
-                onClick={() => {
-                  router.replace(pathname, { locale: code });
-                  setMenuOpen(false);
-                }}
-                aria-pressed={currentLocale === code}
-                aria-label={label}
-              >
-                {label}
-              </button>
-            ))}
+        <div className="home-sheet-main">
+          <nav className="home-sheet-nav">
+            <a
+              href="#how"
+              className="home-sheet-nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {th("navHow")}
+            </a>
+            <a
+              href="#features"
+              className="home-sheet-nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {th("navFeatures")}
+            </a>
+            <Link
+              href="/partners"
+              className="home-sheet-nav-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {th("navPartners")}
+            </Link>
+          </nav>
+          <div className="home-sheet-footer">
+            <div className="home-sheet-locales" role="group" aria-label="Language">
+              {LOCALES.map(({ code, label }) => (
+                <button
+                  key={code}
+                  type="button"
+                  className={`home-nav-locale-btn home-sheet-locale-btn ${currentLocale === code ? "active" : ""}`}
+                  onClick={() => {
+                    router.replace(pathname, { locale: code });
+                    setMenuOpen(false);
+                  }}
+                  aria-pressed={currentLocale === code}
+                  aria-label={label}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <a
+              {...APP_STORE_LINK_PROPS}
+              className="home-sheet-app-badge"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Download on the App Store"
+            >
+              <Image
+                src="/app-store-badge-white.svg"
+                alt=""
+                width={220}
+                height={70}
+                className="home-sheet-app-badge-img"
+              />
+            </a>
           </div>
-          <a
-            {...APP_STORE_LINK_PROPS}
-            className="home-sheet-app-badge"
-            onClick={() => setMenuOpen(false)}
-            aria-label="Download on the App Store"
-          >
-            <Image
-              src="/app-store-badge-white.svg"
-              alt=""
-              width={220}
-              height={70}
-              className="home-sheet-app-badge-img"
-            />
-          </a>
         </div>
       </aside>
 
