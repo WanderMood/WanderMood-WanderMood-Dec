@@ -199,6 +199,30 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
   String? _enrichedWebsite;
   String? _enrichedPhone;
 
+  /// Partner lookup cache to avoid re-running Supabase queries on every rebuild.
+  Future<PartnerListing?>? _partnerListingFuture;
+  String? _partnerListingFutureForPlaceId;
+
+  String _partnerLookupPlaceId(Place place) {
+    final raw = place.id.trim();
+    if (raw.startsWith('google_')) {
+      return raw.substring('google_'.length);
+    }
+    return raw;
+  }
+
+  Future<PartnerListing?> _partnerListingFutureForPlace(Place place) {
+    final lookupId = _partnerLookupPlaceId(place);
+    if (_partnerListingFuture != null &&
+        _partnerListingFutureForPlaceId == lookupId) {
+      return _partnerListingFuture!;
+    }
+
+    _partnerListingFutureForPlaceId = lookupId;
+    _partnerListingFuture = PartnerListingService.findByPlaceId(lookupId);
+    return _partnerListingFuture!;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -214,6 +238,18 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
         if (!mounted) return;
         _syncResolvedPlace(seed);
       });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PlaceDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.placeId.trim() != widget.placeId.trim()) {
+      _partnerListingFutureForPlaceId = null;
+      _partnerListingFuture = null;
+      _descriptionEnrichAttempted.clear();
+      _enrichedWebsite = null;
+      _enrichedPhone = null;
     }
   }
 
@@ -2734,11 +2770,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
             const SizedBox(height: 12),
           ],
           FutureBuilder<PartnerListing?>(
-            future: PartnerListingService.findByPlaceId(
-              place.id.startsWith('google_')
-                  ? place.id.substring('google_'.length)
-                  : place.id,
-            ),
+            future: _partnerListingFutureForPlace(place),
             builder: (context, snap) {
               final partner = snap.data;
               final hasOffer = partner != null &&
