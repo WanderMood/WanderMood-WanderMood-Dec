@@ -376,26 +376,87 @@ export default function LandingHome() {
         aria-hidden
         onClick={() => setMenuOpen(false)}
       />
-      <aside className={`home-sheet ${menuOpen ? "open" : ""}`} aria-hidden={!menuOpen}>
-        <nav>
-          <a href="#how" onClick={() => setMenuOpen(false)}>
+      <aside
+        className={`home-sheet ${menuOpen ? "open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!menuOpen}
+        aria-labelledby="home-sheet-title"
+      >
+        <div className="home-sheet-header">
+          <span id="home-sheet-title" className="home-sheet-title">
+            {tFooter("brand")}
+          </span>
+          <button
+            type="button"
+            className="home-sheet-close"
+            aria-label={th("navMenuClose")}
+            onClick={() => setMenuOpen(false)}
+          >
+            ×
+          </button>
+        </div>
+        <nav className="home-sheet-nav">
+          <a
+            href="#how"
+            className="home-sheet-nav-link"
+            onClick={() => setMenuOpen(false)}
+          >
             {th("navHow")}
           </a>
-          <a href="#features" onClick={() => setMenuOpen(false)}>
+          <a
+            href="#features"
+            className="home-sheet-nav-link"
+            onClick={() => setMenuOpen(false)}
+          >
             {th("navFeatures")}
           </a>
-          <Link href="/partners" onClick={() => setMenuOpen(false)}>
+          <Link
+            href="/partners"
+            className="home-sheet-nav-link"
+            onClick={() => setMenuOpen(false)}
+          >
             {th("navPartners")}
           </Link>
-          <a {...APP_STORE_LINK_PROPS} className="home-nav-download" onClick={() => setMenuOpen(false)}>
-            {th("navDownload")}
-          </a>
         </nav>
+        <div className="home-sheet-footer">
+          <div className="home-sheet-locales" role="group" aria-label="Language">
+            {LOCALES.map(({ code, label }) => (
+              <button
+                key={code}
+                type="button"
+                className={`home-nav-locale-btn ${currentLocale === code ? "active" : ""}`}
+                onClick={() => {
+                  router.replace(pathname, { locale: code });
+                  setMenuOpen(false);
+                }}
+                aria-pressed={currentLocale === code}
+                aria-label={label}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <a
+            {...APP_STORE_LINK_PROPS}
+            className="home-sheet-app-badge"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Download on the App Store"
+          >
+            <Image
+              src="/app-store-badge-white.svg"
+              alt=""
+              width={220}
+              height={70}
+              className="home-sheet-app-badge-img"
+            />
+          </a>
+        </div>
       </aside>
 
       <section id="hero" className="home-hero section-dark">
         <div className="home-hero-inner">
-          <div>
+          <div className="home-hero-copy">
             <h1 className="home-hero-h1">
               <span className="block">
                 {th("heroL1a")}
@@ -417,15 +478,15 @@ export default function LandingHome() {
                   className="home-app-badge"
                   aria-label="Download on the App Store"
                 >
-                  <Image
-                    src="/app-store-badge-white.svg"
-                    alt=""
-                    width={157}
-                    height={52}
-                    priority
-                  />
+            <Image
+              src="/app-store-badge-white.svg"
+              alt=""
+              width={220}
+              height={70}
+              priority
+              className="home-app-badge-img"
+            />
                 </a>
-                <p className="home-badge-sub">{th("dlFoot")}</p>
               </div>
               <a href="#how" className="home-hero-seehow">
                 {th("heroSeeHow")}
@@ -433,12 +494,14 @@ export default function LandingHome() {
             </div>
           </div>
           <div className="home-hero-visual">
-            <PhoneFrame
-              src={screens.hero}
-              alt={th("imgHero")}
-              priority
-              className="home-hero-phone"
-            />
+            <div className="home-hero-phone-wrap home-phone-elevated">
+              <PhoneFrame
+                src={screens.hero}
+                alt={th("imgHero")}
+                priority
+                className="home-hero-phone"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -469,10 +532,9 @@ export default function LandingHome() {
       <section id="how" className="home-section section-beige">
         <div className="home-section-inner">
           <p className="home-label reveal">{th("howLabel")}</p>
-          <h2 className="home-h2 reveal">
-            {th("howTitleLine1")}
-            <br />
-            {th("howTitleLine2")}
+          <h2 className="home-h2 home-split-h2 home-how-h2 reveal">
+            <span className="home-split-h2-line">{th("howTitleLine1")}</span>{" "}
+            <span className="home-split-h2-line">{th("howTitleLine2")}</span>
           </h2>
           <div className="home-how-grid">
             {howSteps.map((step, i) => (
@@ -503,13 +565,15 @@ export default function LandingHome() {
                 className="home-feature-panel"
                 data-index={i}
               >
-                <div className="home-sticky-mobile-visual">
-                  <PhoneFrame variant="band" src={slide.src} alt={slide.alt} />
-                </div>
-                <div className="home-feature-copy">
+                <div className="home-feature-copy home-story-intro">
                   <p className="home-label reveal">{slide.label}</p>
                   <h2 className="home-feat-h2 reveal">{slide.title}</h2>
                   <p className="home-feat-body reveal">{slide.body}</p>
+                </div>
+                <div className="home-sticky-mobile-visual">
+                  <div className="home-feature-mobile-phone-wrap home-phone-elevated home-phone-elevated--band">
+                    <PhoneFrame variant="band" src={slide.src} alt={slide.alt} />
+                  </div>
                 </div>
               </div>
             ))}
@@ -518,11 +582,13 @@ export default function LandingHome() {
             <div
               className={`home-sticky-phone-slot ${featurePhoneFade ? "is-dim" : ""}`}
             >
-              <PhoneFrame
-                variant="band"
-                src={featureSlides[featurePhoneIdx]?.src ?? featureSlides[0].src}
-                alt={featureSlides[featurePhoneIdx]?.alt ?? featureSlides[0].alt}
-              />
+              <div className="home-phone-elevated home-phone-elevated--band">
+                <PhoneFrame
+                  variant="band"
+                  src={featureSlides[featurePhoneIdx]?.src ?? featureSlides[0].src}
+                  alt={featureSlides[featurePhoneIdx]?.alt ?? featureSlides[0].alt}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -530,36 +596,23 @@ export default function LandingHome() {
 
       <section id="mood-match" className="home-section home-mm section-beige">
         <div className="home-section-inner">
-          <p className="home-label reveal" style={{ textAlign: "center" }}>
-            {th("mmLabel")}
-          </p>
-          <h2 className="home-h2 reveal" style={{ textAlign: "center" }}>
-            {th("mmH1")}
-            <br />
-            {th("mmH2")}
-          </h2>
-          <p
-            className="home-b2b-sub reveal"
-            style={{ marginTop: 20, maxWidth: 480 }}
-          >
-            {th("mmSubL1")}
-            <br />
-            {th("mmSubL2")}
-            <br />
-            {th("mmSubL3")}
-          </p>
+          <div className="home-mm-intro home-story-intro">
+            <p className="home-label reveal">{th("mmLabel")}</p>
+            <h2 className="home-h2 reveal">
+              {th("mmH1")}
+              <br />
+              {th("mmH2")}
+            </h2>
+            <p className="home-mm-body reveal">{th("mmSub")}</p>
+          </div>
           <div className="home-mm-phones-wrap">
             <div className="home-mm-phones">
-              <PhoneFrame
-                src={screens.moodMatchLeft}
-                alt={th("imgMoodMatch")}
-                className="home-mm-phone1"
-              />
-              <PhoneFrame
-                src={screens.placeDetail}
-                alt={th("imgPlace")}
-                className="home-mm-phone2"
-              />
+              <div className="home-mm-phone1 home-phone-elevated">
+                <PhoneFrame src={screens.moodMatchLeft} alt={th("imgMoodMatch")} />
+              </div>
+              <div className="home-mm-phone2 home-phone-elevated">
+                <PhoneFrame src={screens.placeDetail} alt={th("imgPlace")} />
+              </div>
             </div>
           </div>
           <div className="home-mm-cta-wrap">
@@ -577,16 +630,19 @@ export default function LandingHome() {
       >
         <div className="home-section-inner">
           <div className="home-moods-head">
-            <h2 className="home-h2 reveal">
-              {th("moodsH1")}
-              <br />
-              {th("moodsH2")}
+            <h2 className="home-h2 home-split-h2 reveal">
+              <span className="home-split-h2-line">{th("moodsH1")}</span>{" "}
+              <span className="home-split-h2-line">{th("moodsH2")}</span>
             </h2>
+            <p className="home-moods-intro reveal">{th("moodsIntro")}</p>
           </div>
           <div className="home-moods-grid">
             {MOOD_GRID.map(({ key, emoji }) => (
               <div key={key} className="home-mood-chip">
-                {emoji} {tMoods(key)}
+                <span className="home-mood-emoji" aria-hidden>
+                  {emoji}
+                </span>
+                <span className="home-mood-label">{tMoods(key)}</span>
               </div>
             ))}
           </div>
@@ -596,10 +652,9 @@ export default function LandingHome() {
       <section id="business" className="home-section home-b2b section-beige">
         <div className="home-section-inner">
           <p className="home-label reveal">{th("b2bLabel")}</p>
-          <h2 className="home-h2 reveal">
-            {th("b2bH1")}
-            <br />
-            {th("b2bH2")}
+          <h2 className="home-h2 home-split-h2 reveal">
+            <span className="home-split-h2-line">{th("b2bH1")}</span>{" "}
+            <span className="home-split-h2-line">{th("b2bH2")}</span>
           </h2>
           <p className="home-b2b-sub reveal">{th("b2bSub")}</p>
 
@@ -636,12 +691,14 @@ export default function LandingHome() {
       </section>
 
       <section id="download" className="home-download section-dark">
-        <h2 className="home-download-h2 reveal">{th("dlH")}</h2>
-        <p className="home-download-sub reveal">
-          {th("dlSubL1")}
-          <br />
-          {th("dlSubL2")}
-        </p>
+        <div className="home-download-copy reveal">
+          <p className="home-download-sub">
+            {th("dlSubL1")}
+            <br />
+            {th("dlSubL2")}
+          </p>
+          <h2 className="home-download-h2">{th("dlH")}</h2>
+        </div>
         <div className="home-download-badge-wrap reveal">
           <a
             {...APP_STORE_LINK_PROPS}
@@ -651,11 +708,11 @@ export default function LandingHome() {
             <Image
               src="/app-store-badge-white.svg"
               alt=""
-              width={157}
-              height={52}
+              width={220}
+              height={70}
+              className="home-download-badge-img"
             />
           </a>
-          <p className="home-download-note">{th("dlFoot")}</p>
         </div>
       </section>
 
@@ -685,9 +742,6 @@ export default function LandingHome() {
           </li>
           <li>
             <Link href="/partners">{tFooter("partners")}</Link>
-          </li>
-          <li>
-            <a href="#business">{tFooter("forBusiness")}</a>
           </li>
         </ul>
         <div className="footer-copy">

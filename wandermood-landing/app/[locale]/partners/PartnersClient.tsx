@@ -259,9 +259,6 @@ export default function PartnersClient() {
           <li>
             <Link href="/partners">{tFooter("partners")}</Link>
           </li>
-          <li>
-            <a href={`/${currentLocale}#business`}>{tFooter("forBusiness")}</a>
-          </li>
         </ul>
         <div className="footer-copy">
           © {new Date().getFullYear()} {tFooter("brand")}

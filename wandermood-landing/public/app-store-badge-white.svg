@@ -1,23 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="157" height="52" viewBox="0 0 157 52" role="img" aria-label="Download on the App Store">
-  <rect width="157" height="52" rx="8" fill="#F5F0E8"/>
-  <path
-    fill="#0F0E0C"
-    d="M34.8 17.2c-1.9 0-3.4 1-4.3 2.6-.9-1.5-2.5-2.6-4.3-2.6-2.8 0-5 2.3-5 5.2 0 4.2 4.5 7.6 7.3 10.4.4.4 1 .4 1.4 0 2.8-2.8 7.3-6.2 7.3-10.4 0-2.9-2.2-5.2-5-5.2z"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="70" viewBox="0 0 220 70" role="img" aria-label="Download on the App Store">
+  <rect width="220" height="70" rx="11" fill="#F5F0E8"/>
+  <!-- Apple mark: left column with padding; path ~24×30 logical units -->
+  <g transform="translate(16, 11)">
+    <path
+      fill="#0F0E0C"
+      d="M22.2 17.2c-.1 1.7-.8 3.4-2 4.9-1.1 1.4-2.3 2.4-3.5 2.5-.6 0-1.3-.2-2.1-.5-.8-.3-1.5-.5-2.2-.5-.7 0-1.5.2-2.3.5-.9.3-1.6.5-2.2.5-1.3 0-2.5-1.2-3.6-3.4-1.2-2.3-1.8-4.9-1.8-7.7 0-2.2.4-4 1.3-5.5 1-1.8 2.4-2.7 4-2.7.7 0 1.6.2 2.6.6.9.4 1.6.6 2.1.6s1.3-.2 2.2-.6c.9-.4 1.8-.6 2.7-.6 1.4 0 2.6.6 3.6 1.8-1.6.9-2.4 2.2-2.3 3.9zm-3.4-11.4c0 1.3-.5 2.7-1.4 3.9-.9 1.1-2.2 1.9-3.5 1.8-.1-1.2.5-2.5 1.3-3.7.9-1.2 2.1-2.1 3.6-2.5 0 .2.1.3.1.5z"
+    />
+  </g>
   <text
-    x="52"
-    y="22"
+    x="56"
+    y="31"
     fill="#0F0E0C"
     font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-    font-size="9"
+    font-size="11"
     font-weight="600"
   >Download on the</text>
   <text
-    x="52"
-    y="36"
+    x="56"
+    y="51"
     fill="#0F0E0C"
     font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-    font-size="14"
+    font-size="17"
     font-weight="700"
   >App Store</text>
 </svg>

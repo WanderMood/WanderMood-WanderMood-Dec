@@ -33,8 +33,8 @@ export function PhoneFrame({ src, alt, priority, className, variant = "hero" }: 
               fill
               sizes={
               variant === "band"
-                ? "(max-width: 767px) 180px, 260px"
-                : "(max-width: 767px) 200px, 260px"
+                ? "(max-width: 767px) 74vw, 260px"
+                : "(max-width: 767px) 78vw, (max-width: 1099px) 300px, 380px"
             }
               priority={priority}
               className={styles.img}
