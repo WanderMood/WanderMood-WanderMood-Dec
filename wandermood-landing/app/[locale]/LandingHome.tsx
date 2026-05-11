@@ -37,6 +37,8 @@ const LEGACY_HASH_TARGETS: Record<string, string> = {
   download: "download",
 };
 
+const HOW_STEP_ICONS = ["🎭", "💬", "📅", "🗺️"] as const;
+
 const MOOD_GRID = [
   { key: "relaxed", emoji: "😌" },
   { key: "foodie", emoji: "🍽️" },
@@ -104,11 +106,44 @@ export default function LandingHome() {
   const pathname = usePathname();
   const currentLocale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
+  const featurePanelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const featureActiveRef = useRef(0);
+  const featureFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const moodsSectionRef = useRef<HTMLElement | null>(null);
+  const [featurePhoneIdx, setFeaturePhoneIdx] = useState(0);
+  const [featurePhoneFade, setFeaturePhoneFade] = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   const screens = useMemo(() => getHomepageScreens(currentLocale), [currentLocale]);
+
+  const featureSlides = useMemo(
+    () => [
+      {
+        label: th("featMoodyLabel"),
+        title: th("featMoodyH"),
+        body: th("featMoodyB"),
+        src: screens.moodyChat,
+        alt: th("imgChat"),
+      },
+      {
+        label: th("featDayLabel"),
+        title: th("featDayH"),
+        body: th("featDayB"),
+        src: screens.myDay,
+        alt: th("imgMyDay"),
+      },
+      {
+        label: th("featExploreLabel"),
+        title: th("featExploreH"),
+        body: th("featExploreB"),
+        src: screens.explore,
+        alt: th("imgExplore"),
+      },
+    ],
+    [currentLocale, screens, th],
+  );
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 20);
@@ -122,6 +157,91 @@ export default function LandingHome() {
       .then((r) => r.json())
       .then((data: PublicStats) => setStats(data))
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const panels = featurePanelRefs.current.filter(
+      (p): p is HTMLDivElement => p != null,
+    );
+    if (panels.length === 0) return;
+
+    const mq = window.matchMedia("(min-width: 900px)");
+
+    const updateStickyFeatures = () => {
+      if (!mq.matches) {
+        panels.forEach((p) => p.classList.remove("home-feature-panel--active"));
+        return;
+      }
+      const mid = window.innerHeight * 0.45;
+      let best = 0;
+      let bestDist = Infinity;
+      panels.forEach((p, i) => {
+        const r = p.getBoundingClientRect();
+        if (r.bottom < 72 || r.top > window.innerHeight - 72) return;
+        const c = r.top + r.height / 2;
+        const d = Math.abs(c - mid);
+        if (d < bestDist) {
+          bestDist = d;
+          best = i;
+        }
+      });
+      panels.forEach((p, i) => {
+        p.classList.toggle("home-feature-panel--active", i === best);
+      });
+      if (best !== featureActiveRef.current) {
+        featureActiveRef.current = best;
+        if (featureFadeTimerRef.current) {
+          clearTimeout(featureFadeTimerRef.current);
+        }
+        setFeaturePhoneFade(true);
+        featureFadeTimerRef.current = setTimeout(() => {
+          setFeaturePhoneIdx(best);
+          setFeaturePhoneFade(false);
+          featureFadeTimerRef.current = null;
+        }, 200);
+      }
+    };
+
+    panels[0]?.classList.add("home-feature-panel--active");
+    featureActiveRef.current = 0;
+    setFeaturePhoneIdx(0);
+
+    const onScroll = () => {
+      window.requestAnimationFrame(updateStickyFeatures);
+    };
+
+    const tInit = window.setTimeout(updateStickyFeatures, 0);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    mq.addEventListener("change", onScroll);
+
+    return () => {
+      clearTimeout(tInit);
+      if (featureFadeTimerRef.current) {
+        clearTimeout(featureFadeTimerRef.current);
+      }
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      mq.removeEventListener("change", onScroll);
+    };
+  }, [featureSlides, currentLocale]);
+
+  useEffect(() => {
+    const section = moodsSectionRef.current;
+    if (!section) return;
+    const grid = section.querySelector(".home-moods-grid");
+    if (!grid) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting) {
+          grid.classList.add("home-moods-animate");
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+    obs.observe(section);
+    return () => obs.disconnect();
   }, []);
 
   useEffect(() => {
@@ -319,7 +439,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <div className="home-strip">
+      <div className="home-strip section-dark">
         <div className="home-strip-inner">
           <span>
             {th("stripAppStore")} {th("stripStars")}
@@ -332,7 +452,7 @@ export default function LandingHome() {
       </div>
 
       {stats?.show ? (
-        <section className="home-stats">
+        <section className="home-stats section-beige">
           <div className="home-stats-grid">
             {stats.users != null ? (
               <div className="home-stat-item">
@@ -364,11 +484,14 @@ export default function LandingHome() {
           </h2>
           <div className="home-how-grid">
             {howSteps.map((step, i) => (
-              <div key={step.h} className="home-step-card reveal">
-                <div className="home-step-num">{i + 1}</div>
-                <h3 className="home-step-h">
-                  {step.h.replace(/^\d+\s*·\s*/, "").trim()}
-                </h3>
+              <div key={step.h} className="home-step-card home-step-card--rich reveal">
+                <span className="home-step-num-bg" aria-hidden>
+                  {i + 1}
+                </span>
+                <span className="home-step-icon" aria-hidden>
+                  {HOW_STEP_ICONS[i]}
+                </span>
+                <h3 className="home-step-h">{step.h}</h3>
                 <p className="home-step-p">{step.p}</p>
               </div>
             ))}
@@ -376,42 +499,38 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="features" className="section-beige">
-        <div className="home-band">
-          <div className="home-band-inner">
-            <div className="home-band-visual reveal">
-              <PhoneFrame variant="band" src={screens.moodyChat} alt={th("imgChat")} />
-            </div>
-            <div className="home-band-copy">
-              <p className="home-label reveal">{th("featMoodyLabel")}</p>
-              <h2 className="home-feat-h2 reveal">{th("featMoodyH")}</h2>
-              <p className="home-feat-body reveal">{th("featMoodyB")}</p>
-            </div>
+      <section id="features" className="section-beige home-sticky-features">
+        <div className="home-sticky-inner">
+          <div className="home-sticky-left">
+            {featureSlides.map((slide, i) => (
+              <div
+                key={slide.label}
+                ref={(el) => {
+                  featurePanelRefs.current[i] = el;
+                }}
+                className="home-feature-panel"
+                data-index={i}
+              >
+                <div className="home-sticky-mobile-visual">
+                  <PhoneFrame variant="band" src={slide.src} alt={slide.alt} />
+                </div>
+                <div className="home-feature-copy">
+                  <p className="home-label reveal">{slide.label}</p>
+                  <h2 className="home-feat-h2 reveal">{slide.title}</h2>
+                  <p className="home-feat-body reveal">{slide.body}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        <div className="home-band home-band--reverse">
-          <div className="home-band-inner">
-            <div className="home-band-visual reveal">
-              <PhoneFrame variant="band" src={screens.myDay} alt={th("imgMyDay")} />
-            </div>
-            <div className="home-band-copy">
-              <p className="home-label reveal">{th("featDayLabel")}</p>
-              <h2 className="home-feat-h2 reveal">{th("featDayH")}</h2>
-              <p className="home-feat-body reveal">{th("featDayB")}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="home-band">
-          <div className="home-band-inner">
-            <div className="home-band-visual reveal">
-              <PhoneFrame variant="band" src={screens.explore} alt={th("imgExplore")} />
-            </div>
-            <div className="home-band-copy">
-              <p className="home-label reveal">{th("featExploreLabel")}</p>
-              <h2 className="home-feat-h2 reveal">{th("featExploreH")}</h2>
-              <p className="home-feat-body reveal">{th("featExploreB")}</p>
+          <div className="home-sticky-right">
+            <div
+              className={`home-sticky-phone-slot ${featurePhoneFade ? "is-dim" : ""}`}
+            >
+              <PhoneFrame
+                variant="band"
+                src={featureSlides[featurePhoneIdx]?.src ?? featureSlides[0].src}
+                alt={featureSlides[featurePhoneIdx]?.alt ?? featureSlides[0].alt}
+              />
             </div>
           </div>
         </div>
@@ -457,7 +576,11 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="moods" className="home-section section-beige">
+      <section
+        id="moods"
+        ref={moodsSectionRef}
+        className="home-section section-beige"
+      >
         <div className="home-section-inner">
           <div className="home-moods-head">
             <h2 className="home-h2 reveal">
@@ -468,7 +591,7 @@ export default function LandingHome() {
           </div>
           <div className="home-moods-grid">
             {MOOD_GRID.map(({ key, emoji }) => (
-              <div key={key} className="home-mood-chip reveal">
+              <div key={key} className="home-mood-chip">
                 {emoji} {tMoods(key)}
               </div>
             ))}
