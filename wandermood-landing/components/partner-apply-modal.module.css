@@ -193,6 +193,74 @@
   margin-top: 4px;
 }
 
+.priceFieldWrap {
+  position: relative;
+}
+
+.priceLabelRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: 6px;
+}
+
+.priceLabelRow .label {
+  margin-bottom: 0;
+}
+
+.priceTipAnchor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0;
+}
+
+.priceInfoBtn {
+  margin-left: 6px;
+  padding: 0 2px;
+  border: none;
+  background: none;
+  color: rgba(245, 240, 232, 0.35);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.priceInfoBtn:hover,
+.priceInfoBtn:focus-visible {
+  color: rgba(245, 240, 232, 0.7);
+  outline: none;
+}
+
+.priceTooltip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 100;
+  max-width: 240px;
+  padding: 12px 14px;
+  background: #1a1916;
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-family: "DM Sans", var(--font-dm-sans, system-ui, sans-serif);
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.7);
+  line-height: 1.45;
+  text-align: left;
+  white-space: pre-line;
+}
+
+.priceTooltip p {
+  margin: 0 0 8px;
+}
+
+.priceTooltip p:last-child {
+  margin-bottom: 0;
+}
+
 .priceRow {
   display: flex;
   flex-wrap: wrap;
@@ -236,6 +304,103 @@
 .moodChipSelected {
   border-color: #2a6049;
   background: rgba(42, 96, 73, 0.35);
+}
+
+.openingRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  background: rgba(245, 240, 232, 0.03);
+  border: 1px solid rgba(245, 240, 232, 0.06);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.dayLabel {
+  flex: 1;
+  min-width: 28px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(245, 240, 232, 0.75);
+}
+
+.timeSep {
+  color: rgba(245, 240, 232, 0.35);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.timeSelect {
+  width: 90px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: rgba(245, 240, 232, 0.04);
+  border: 1px solid rgba(245, 240, 232, 0.12);
+  border-radius: 8px;
+  padding: 8px 6px;
+  color: #f5f0e8;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.timeSelect:focus {
+  border-color: #2a6049;
+}
+
+.timeSelect:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.toggleTrack {
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease;
+  background: rgba(245, 240, 232, 0.15);
+}
+
+.toggleTrackOn {
+  background: #2a6049;
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f5f0e8;
+  transition: transform 0.15s ease;
+}
+
+.toggleKnobOn {
+  transform: translateX(16px);
+}
+
+.inclusionChip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 240, 232, 0.15);
+  background: rgba(245, 240, 232, 0.04);
+  color: rgba(245, 240, 232, 0.85);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.inclusionChipSelected {
+  border-color: #2a6049;
+  background: rgba(42, 96, 73, 0.2);
+  color: #5dcaa5;
 }
 
 .checkRow {

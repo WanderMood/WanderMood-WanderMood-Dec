@@ -4,6 +4,19 @@ import Stripe from "stripe";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const ALLOWED_INCLUSION_TAGS = new Set([
+  "specialty_coffee",
+  "vegan",
+  "halal",
+  "vegetarian",
+  "family_friendly",
+  "kids_friendly",
+  "wheelchair_accessible",
+  "dog_friendly",
+  "terrace_outdoor",
+  "live_music",
+]);
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -81,11 +94,18 @@ export async function POST(req: NextRequest) {
         ? body.vat_number.trim()
         : null;
 
-    const whatOffer = String(body.what_they_offer ?? "").trim();
-    const whyWandermood = String(body.why_wandermood ?? "").trim();
     const targetMoods = Array.isArray(body.target_moods)
       ? (body.target_moods as unknown[]).filter((m) => typeof m === "string")
       : [];
+
+    const inclusionRaw = Array.isArray(body.inclusion_tags)
+      ? (body.inclusion_tags as unknown[]).filter((x) => typeof x === "string")
+      : [];
+    const inclusionTags = [
+      ...new Set(
+        inclusionRaw.filter((x): x is string => ALLOWED_INCLUSION_TAGS.has(x)),
+      ),
+    ];
 
     const gdprOk = body.gdpr_consent === true;
     const pricingOk = body.pricing_consent === true;
@@ -121,10 +141,6 @@ export async function POST(req: NextRequest) {
         { error: "KvK-nummer moet 8 cijfers bevatten" },
         { status: 400 },
       );
-    }
-
-    if (!whatOffer || !whyWandermood) {
-      return NextResponse.json({ error: "Vul beide beschrijvingen in." }, { status: 400 });
     }
 
     if (targetMoods.length < 1) {
@@ -170,8 +186,9 @@ export async function POST(req: NextRequest) {
         billing_name: billingName,
         billing_address: billingAddress,
         vat_number: vatNumber,
-        what_they_offer: whatOffer.slice(0, 400),
-        why_wandermood: whyWandermood.slice(0, 400),
+        what_they_offer: null,
+        why_wandermood: null,
+        inclusion_tags: inclusionTags,
         target_moods: targetMoods,
         gdpr_consent: true,
         pricing_consent: true,
@@ -218,9 +235,11 @@ export async function POST(req: NextRequest) {
                 <p><strong>Website:</strong> ${website ? escapeHtml(website) : "—"}</p>
                 <p><strong>Instagram:</strong> ${instagram ? escapeHtml(instagram) : "—"}</p>
                 <p><strong>Google Maps:</strong> ${escapeHtml(googlePlaceUrl)}</p>
+                <p><strong>Openingstijden:</strong> ${openingHours ? escapeHtml(openingHours) : "—"}</p>
                 <p><strong>Stemmingen:</strong> ${targetMoods.length ? escapeHtml(targetMoods.join(", ")) : "—"}</p>
-                <p><strong>Aanbod:</strong><br>${escapeHtml(whatOffer)}</p>
-                <p><strong>Waarom WanderMood:</strong><br>${escapeHtml(whyWandermood)}</p>
+                <p><strong>Filters / inclusie:</strong> ${inclusionTags.length ? escapeHtml(inclusionTags.join(", ")) : "—"}</p>
+                <p><strong>Aanbod (vrij):</strong> —</p>
+                <p><strong>Waarom WanderMood (vrij):</strong> —</p>
                 <hr style="margin:24px 0;border:1px solid #eee;">
                 <p style="color:#6B6560;font-size:13px;">Lead id: ${escapeHtml(leadId)}</p>
               </div>

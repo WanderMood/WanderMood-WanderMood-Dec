@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import {
   useCallback,
   useEffect,
@@ -33,12 +32,57 @@ const PRICE_SYMBOLS = ["€", "€€", "€€€", "€€€€"] as const;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const DAY_IDS = ["ma", "di", "wo", "do", "vr", "za", "zo"] as const;
+type DayId = (typeof DAY_IDS)[number];
+
+const INCLUSION_KEYS = [
+  { key: "specialty_coffee", emoji: "☕" },
+  { key: "vegan", emoji: "🥗" },
+  { key: "halal", emoji: "🥩" },
+  { key: "vegetarian", emoji: "🌱" },
+  { key: "family_friendly", emoji: "👨‍👩‍👧" },
+  { key: "kids_friendly", emoji: "👶" },
+  { key: "wheelchair_accessible", emoji: "♿" },
+  { key: "dog_friendly", emoji: "🐕" },
+  { key: "terrace_outdoor", emoji: "🌿" },
+  { key: "live_music", emoji: "🎵" },
+] as const;
+
+type InclusionKey = (typeof INCLUSION_KEYS)[number]["key"];
+
+function buildHalfHourTimes(): string[] {
+  const out: string[] = [];
+  for (let h = 0; h < 24; h += 1) {
+    out.push(`${String(h).padStart(2, "0")}:00`);
+    out.push(`${String(h).padStart(2, "0")}:30`);
+  }
+  return out;
+}
+
+const OPEN_TIME_OPTIONS = buildHalfHourTimes();
+
+type OpeningDayRow = {
+  id: DayId;
+  open: boolean;
+  openTime: string;
+  closeTime: string;
+};
+
 type Props = {
   open: boolean;
   onClose: () => void;
 };
 
 type FormState = ReturnType<typeof initialForm>;
+
+function initialOpeningDays(): OpeningDayRow[] {
+  return DAY_IDS.map((id) => ({
+    id,
+    open: false,
+    openTime: "09:00",
+    closeTime: "17:00",
+  }));
+}
 
 function initialForm() {
   return {
@@ -48,7 +92,7 @@ function initialForm() {
     city: "",
     google_place_url: "",
     price_range: "",
-    opening_hours: "",
+    opening_days: initialOpeningDays(),
     website: "",
     instagram_handle: "",
     contact_name: "",
@@ -58,16 +102,30 @@ function initialForm() {
     billing_name: "",
     billing_address: "",
     vat_number: "",
-    what_they_offer: "",
-    why_wandermood: "",
+    inclusion_tags: [] as InclusionKey[],
     target_moods: [] as MoodKey[],
     gdpr_consent: false,
     pricing_consent: false,
   };
 }
 
+function serializeOpeningHours(
+  rows: OpeningDayRow[],
+  dayLabels: Record<DayId, string>,
+  midnightLabel: string,
+): string | null {
+  const parts: string[] = [];
+  for (const r of rows) {
+    if (!r.open) continue;
+    const close = r.closeTime === "24:00" ? midnightLabel : r.closeTime;
+    parts.push(`${dayLabels[r.id]} ${r.openTime}\u2013${close}`);
+  }
+  return parts.length > 0 ? parts.join(", ") : null;
+}
+
 export function PartnerApplyModal({ open, onClose }: Props) {
   const t = useTranslations("partners.modal");
+  const tInclusionTags = useTranslations("partners.modal.inclusion.tags");
   const tForm = useTranslations("partners.form");
   const tMoods = useTranslations("landing.moods");
   const locale = useLocale();
@@ -78,6 +136,23 @@ export function PartnerApplyModal({ open, onClose }: Props) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [priceTipOpen, setPriceTipOpen] = useState(false);
+
+  const dayLabels = useMemo(
+    () =>
+      ({
+        ma: t("openingDays.ma"),
+        di: t("openingDays.di"),
+        wo: t("openingDays.wo"),
+        do: t("openingDays.do"),
+        vr: t("openingDays.vr"),
+        za: t("openingDays.za"),
+        zo: t("openingDays.zo"),
+      }) as Record<DayId, string>,
+    [t],
+  );
+
+  const midnightLabel = t("midnightOption");
 
   const businessTypeOptions = useMemo(() => {
     try {
@@ -100,7 +175,7 @@ export function PartnerApplyModal({ open, onClose }: Props) {
       month: "long",
       year: "numeric",
     }).format(d);
-  }, [locale, open]);
+  }, [locale]);
 
   const reset = useCallback(() => {
     setStep(1);
@@ -108,6 +183,7 @@ export function PartnerApplyModal({ open, onClose }: Props) {
     setFieldErrors({});
     setSubmitError(null);
     setLoading(false);
+    setPriceTipOpen(false);
   }, []);
 
   useEffect(() => {
@@ -134,6 +210,15 @@ export function PartnerApplyModal({ open, onClose }: Props) {
       delete next[key as string];
       return next;
     });
+  }, []);
+
+  const patchOpeningDay = useCallback((id: DayId, patch: Partial<Omit<OpeningDayRow, "id">>) => {
+    setForm((f) => ({
+      ...f,
+      opening_days: f.opening_days.map((row) =>
+        row.id === id ? { ...row, ...patch } : row,
+      ),
+    }));
   }, []);
 
   const validateStep1b = (): boolean => {
@@ -180,8 +265,6 @@ export function PartnerApplyModal({ open, onClose }: Props) {
 
   const validateStep3 = (): boolean => {
     const err: Record<string, string> = {};
-    if (!form.what_they_offer.trim()) err.what_they_offer = tForm("errorRequired");
-    if (!form.why_wandermood.trim()) err.why_wandermood = tForm("errorRequired");
     if (form.target_moods.length < 1) err.target_moods = t("errorMoods");
     if (!form.gdpr_consent) err.gdpr_consent = tForm("errorGdpr");
     if (!form.pricing_consent) err.pricing_consent = tForm("errorRequired");
@@ -214,17 +297,32 @@ export function PartnerApplyModal({ open, onClose }: Props) {
       return;
     }
 
+    const opening_hours = serializeOpeningHours(form.opening_days, dayLabels, midnightLabel);
+
     setLoading(true);
     try {
       const res = await fetch("/api/partners/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          business_name: form.business_name,
+          business_type: form.business_type,
+          street_address: form.street_address,
+          city: form.city,
+          google_place_url: form.google_place_url,
+          price_range: form.price_range,
+          opening_hours,
+          website: form.website,
           instagram_handle: form.instagram_handle.replace(/^@+/, ""),
+          contact_name: form.contact_name,
+          contact_email: form.contact_email,
+          contact_phone: form.contact_phone,
           kvk_number: form.kvk_number.replace(/\s/g, ""),
-          what_they_offer: form.what_they_offer.slice(0, 400),
-          why_wandermood: form.why_wandermood.slice(0, 400),
+          billing_name: form.billing_name,
+          billing_address: form.billing_address,
+          vat_number: form.vat_number,
+          inclusion_tags: form.inclusion_tags,
+          target_moods: form.target_moods,
           gdpr_consent: true,
           pricing_consent: true,
           locale,
@@ -272,6 +370,15 @@ export function PartnerApplyModal({ open, onClose }: Props) {
     });
   };
 
+  const toggleInclusion = (key: InclusionKey) => {
+    setForm((f) => ({
+      ...f,
+      inclusion_tags: f.inclusion_tags.includes(key)
+        ? f.inclusion_tags.filter((k) => k !== key)
+        : [...f.inclusion_tags, key],
+    }));
+  };
+
   if (!open) return null;
 
   const labels = [t("step1"), t("step2"), t("step3")];
@@ -285,6 +392,8 @@ export function PartnerApplyModal({ open, onClose }: Props) {
       {children} <span className={styles.req}>*</span>
     </>
   );
+
+  const privacyHref = `/${locale}/privacy`;
 
   return (
     <div
@@ -462,8 +571,35 @@ export function PartnerApplyModal({ open, onClose }: Props) {
               ) : null}
             </div>
 
-            <div className={styles.field}>
-              <span className={styles.label}>{req(t("venue.priceRange"))}</span>
+            <div className={`${styles.field} ${styles.priceFieldWrap}`}>
+              <div
+                className={styles.priceLabelRow}
+                onMouseLeave={() => setPriceTipOpen(false)}
+              >
+                <span className={styles.label}>{req(t("venue.priceRange"))}</span>
+                <div
+                  className={styles.priceTipAnchor}
+                  onMouseEnter={() => setPriceTipOpen(true)}
+                >
+                  <button
+                    type="button"
+                    className={styles.priceInfoBtn}
+                    aria-label={t("priceInfoAria")}
+                    aria-expanded={priceTipOpen}
+                    onClick={() => setPriceTipOpen((v) => !v)}
+                  >
+                    ⓘ
+                  </button>
+                  {priceTipOpen ? (
+                    <div className={styles.priceTooltip} role="tooltip">
+                      <p>{t("priceTooltip.e1")}</p>
+                      <p>{t("priceTooltip.e2")}</p>
+                      <p>{t("priceTooltip.e3")}</p>
+                      <p>{t("priceTooltip.e4")}</p>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
               <div className={styles.priceRow}>
                 {PRICE_SYMBOLS.map((sym) => (
                   <button
@@ -482,16 +618,52 @@ export function PartnerApplyModal({ open, onClose }: Props) {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="pm-hours">
-                {t("venue.openingHours")}
-              </label>
-              <input
-                id="pm-hours"
-                className={styles.input}
-                value={form.opening_hours}
-                onChange={(e) => setField("opening_hours", e.target.value)}
-                placeholder={t("venue.openingHoursPh")}
-              />
+              <span className={styles.label}>{t("venue.openingHours")}</span>
+              <p className={styles.help}>{t("venue.openingHoursHelp")}</p>
+              {form.opening_days.map((row) => (
+                <div key={row.id} className={styles.openingRow}>
+                  <button
+                    type="button"
+                    className={`${styles.toggleTrack} ${row.open ? styles.toggleTrackOn : ""}`}
+                    aria-pressed={row.open}
+                    aria-label={t("openingToggleAria", { day: dayLabels[row.id] })}
+                    onClick={() => patchOpeningDay(row.id, { open: !row.open })}
+                  >
+                    <span
+                      className={`${styles.toggleKnob} ${row.open ? styles.toggleKnobOn : ""}`}
+                    />
+                  </button>
+                  <span className={styles.dayLabel}>{dayLabels[row.id]}</span>
+                  <select
+                    className={styles.timeSelect}
+                    value={row.openTime}
+                    disabled={!row.open}
+                    aria-label={t("openTimeAria", { day: dayLabels[row.id] })}
+                    onChange={(e) => patchOpeningDay(row.id, { openTime: e.target.value })}
+                  >
+                    {OPEN_TIME_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <span className={styles.timeSep}>—</span>
+                  <select
+                    className={styles.timeSelect}
+                    value={row.closeTime}
+                    disabled={!row.open}
+                    aria-label={t("closeTimeAria", { day: dayLabels[row.id] })}
+                    onChange={(e) => patchOpeningDay(row.id, { closeTime: e.target.value })}
+                  >
+                    {OPEN_TIME_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                    <option value="24:00">{midnightLabel}</option>
+                  </select>
+                </div>
+              ))}
             </div>
 
             <div className={styles.field}>
@@ -643,50 +815,20 @@ export function PartnerApplyModal({ open, onClose }: Props) {
         {step === 3 ? (
           <>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="pm-offer">
-                {req(t("final.offer"))}
-              </label>
-              <textarea
-                id="pm-offer"
-                className={styles.textarea}
-                value={form.what_they_offer}
-                maxLength={400}
-                onChange={(e) => setField("what_they_offer", e.target.value)}
-                placeholder={t("final.offerPh")}
-              />
-              <p className={styles.counter}>
-                {t("chars", {
-                  count: form.what_they_offer.length,
-                  max: 400,
-                })}
-              </p>
-              {fieldErrors.what_they_offer ? (
-                <p className={styles.err}>{fieldErrors.what_they_offer}</p>
-              ) : null}
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="pm-why">
-                {req(t("final.why"))}
-              </label>
-              <textarea
-                id="pm-why"
-                className={styles.textarea}
-                value={form.why_wandermood}
-                maxLength={400}
-                onChange={(e) => setField("why_wandermood", e.target.value)}
-                placeholder={t("final.whyPh")}
-              />
-              <p className={styles.help}>{t("final.whyHelp")}</p>
-              <p className={styles.counter}>
-                {t("chars", {
-                  count: form.why_wandermood.length,
-                  max: 400,
-                })}
-              </p>
-              {fieldErrors.why_wandermood ? (
-                <p className={styles.err}>{fieldErrors.why_wandermood}</p>
-              ) : null}
+              <span className={styles.label}>{t("inclusion.title")}</span>
+              <p className={styles.help}>{t("inclusion.help")}</p>
+              <div className={styles.moodRow}>
+                {INCLUSION_KEYS.map(({ key, emoji }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`${styles.inclusionChip} ${form.inclusion_tags.includes(key) ? styles.inclusionChipSelected : ""}`}
+                    onClick={() => toggleInclusion(key)}
+                  >
+                    {emoji} {tInclusionTags(key)}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className={styles.field}>
@@ -717,7 +859,14 @@ export function PartnerApplyModal({ open, onClose }: Props) {
               />
               <span className={styles.checkText}>
                 {t("final.gdprBefore")}
-                <Link href="/privacy">{t("final.gdprLink")}</Link>
+                <a
+                  href={privacyHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#5DCAA5" }}
+                >
+                  {t("final.gdprLink")}
+                </a>
                 {t("final.gdprAfter")}
               </span>
             </label>

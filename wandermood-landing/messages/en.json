@@ -480,6 +480,42 @@
       "errorMoods": "Select at least 1 mood",
       "errorKvK": "KvK number must be 8 digits",
       "chars": "{count} / {max}",
+      "priceInfoAria": "Price level explanation",
+      "midnightOption": "Midnight",
+      "openingDays": {
+        "ma": "Mon",
+        "di": "Tue",
+        "wo": "Wed",
+        "do": "Thu",
+        "vr": "Fri",
+        "za": "Sat",
+        "zo": "Sun"
+      },
+      "openingToggleAria": "Open on {day}",
+      "openTimeAria": "Opening time {day}",
+      "closeTimeAria": "Closing time {day}",
+      "priceTooltip": {
+        "e1": "€ — Under €15 per person (coffee, snacks, lunch)",
+        "e2": "€€ — €15–€30 per person (casual dining, cocktail bar)",
+        "e3": "€€€ — €30–€60 per person (fine dining, wine bar)",
+        "e4": "€€€€ — Over €60 per person (exclusive, high-end)"
+      },
+      "inclusion": {
+        "title": "Filters & inclusivity",
+        "help": "Users can filter on these in the app. Select everything that applies.",
+        "tags": {
+          "specialty_coffee": "Specialty coffee",
+          "vegan": "Vegan",
+          "halal": "Halal",
+          "vegetarian": "Vegetarian",
+          "family_friendly": "Family-friendly",
+          "kids_friendly": "Kid-friendly",
+          "wheelchair_accessible": "Wheelchair accessible",
+          "dog_friendly": "Dog-friendly",
+          "terrace_outdoor": "Terrace / outdoor",
+          "live_music": "Live music"
+        }
+      },
       "businessTypePlaceholder": "— Select —",
       "businessTypeOptions": [
         "Restaurant / Café",
@@ -506,6 +542,7 @@
         "googleMapsHelp": "Open Google Maps → find your venue → share link. This helps us connect your place.",
         "priceRange": "Price level",
         "openingHours": "Opening hours (optional)",
+        "openingHoursHelp": "Set open days and times. Leave all off if you prefer not to share.",
         "openingHoursPh": "Tue–Sun 10:00 – 18:00",
         "website": "Website (optional)",
         "websitePh": "https://yourvenue.com",

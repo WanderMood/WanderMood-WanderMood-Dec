@@ -480,6 +480,42 @@
       "errorMoods": "Selecteer minimaal 1 stemming",
       "errorKvK": "KvK-nummer moet 8 cijfers bevatten",
       "chars": "{count} / {max}",
+      "priceInfoAria": "Uitleg prijsniveau",
+      "midnightOption": "Middernacht",
+      "openingDays": {
+        "ma": "Ma",
+        "di": "Di",
+        "wo": "Wo",
+        "do": "Do",
+        "vr": "Vr",
+        "za": "Za",
+        "zo": "Zo"
+      },
+      "openingToggleAria": "Open op {day}",
+      "openTimeAria": "Openingstijd {day}",
+      "closeTimeAria": "Sluitingstijd {day}",
+      "priceTooltip": {
+        "e1": "€ — Onder €15 per persoon (koffie, snacks, lunch)",
+        "e2": "€€ — €15 – €30 per persoon (casual dining, cocktailbar)",
+        "e3": "€€€ — €30 – €60 per persoon (fine dining, wijnbar)",
+        "e4": "€€€€ — Boven €60 per persoon (exclusief, high-end)"
+      },
+      "inclusion": {
+        "title": "Filters & inclusiviteit",
+        "help": "Gebruikers kunnen hierop filteren in de app. Selecteer alles wat van toepassing is.",
+        "tags": {
+          "specialty_coffee": "Specialty coffee",
+          "vegan": "Veganistisch",
+          "halal": "Halal",
+          "vegetarian": "Vegetarisch",
+          "family_friendly": "Gezinsvriendelijk",
+          "kids_friendly": "Kindvriendelijk",
+          "wheelchair_accessible": "Rolstoeltoegankelijk",
+          "dog_friendly": "Hondvriendelijk",
+          "terrace_outdoor": "Terras / buiten",
+          "live_music": "Live muziek"
+        }
+      },
       "businessTypePlaceholder": "— Kies —",
       "businessTypeOptions": [
         "Restaurant / Café",
@@ -506,6 +542,7 @@
         "googleMapsHelp": "Open Google Maps → zoek je zaak → deel link. Dit helpt ons je plek te koppelen.",
         "priceRange": "Prijsniveau",
         "openingHours": "Openingstijden (optioneel)",
+        "openingHoursHelp": "Stel open dagen en tijden in. Zet alles uit als je ze niet wilt delen.",
         "openingHoursPh": "Di t/m zo 10:00 – 18:00",
         "website": "Website (optioneel)",
         "websitePh": "https://jouwzaak.nl",
