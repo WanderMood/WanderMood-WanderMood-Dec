@@ -324,6 +324,33 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return t;
   }
 
+  /// UI test fallback: when partner listings are empty, still render the partner
+  /// row/carousel using normal Explore places (so we can verify layout/insertion).
+  List<PartnerListing> _mockPartnerListingsForUi({
+    required List<Place> places,
+    required String city,
+    required int limit,
+  }) {
+    final src = places.take(limit).toList();
+    return src
+        .map((p) => PartnerListing(
+              id: 'ui_test_${p.id}',
+              businessName: p.name,
+              placeId: p.id,
+              city: city,
+              targetMoods: const [],
+              activeOffer: null,
+              customDescription: null,
+              isFeaturedThisWeek: false,
+              showNewBadge: false,
+              hasActiveOffer: false,
+              totalViews: 0,
+              totalTaps: 0,
+              totalCheckins: 0,
+            ))
+        .toList();
+  }
+
   Future<void> _refreshPartnerDataForCity(String city) async {
     if (_partnerLoading) return;
     _partnerLoading = true;
@@ -3165,10 +3192,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         .whereType<String>()
         .map(_normalizePartnerPlaceId)
         .toSet();
-    final carouselPlaces = filteredPlaces
+    final partnerUiTestMode =
+        kDebugMode && _partnerTrending.isEmpty && _partnerMoodMatches.isEmpty;
+
+    var carouselPlaces = filteredPlaces
         .where((p) => partnerIds.contains(_normalizePartnerPlaceId(p.id)))
         .take(8)
         .toList();
+    if (partnerUiTestMode) {
+      carouselPlaces = filteredPlaces.take(8).toList();
+    }
+    final storiesPartnersForUi = partnerUiTestMode
+        ? _mockPartnerListingsForUi(
+            places: filteredPlaces,
+            city: currentCity,
+            limit: 6,
+          )
+        : _partnerTrending;
     _enqueueVisibleRichPrewarm(visiblePlaces);
     _trackPartnerListingViewsForVisibleSlice(visiblePlaces);
     final hasMoreLocally = visibleCount < filteredPlaces.length;
@@ -3466,10 +3506,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
           ),
         if (explanationSliver != null) explanationSliver,
-        if (_partnerTrending.length >= 3)
+        if (storiesPartnersForUi.length >= 3)
           SliverToBoxAdapter(
             child: PartnerStoriesRow(
-              partners: _partnerTrending,
+              partners: storiesPartnersForUi,
               label: 'Trending op WanderMood',
               onTapPartnerPlace: _openPlaceFromExplore,
             ),
