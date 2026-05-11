@@ -82,7 +82,7 @@ function AnimatedCounter({ value, locale }: { value: number; locale: string }) {
         };
         requestAnimationFrame(step);
       },
-      { threshold: 0.15 },
+      { threshold: 0.3 },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -173,11 +173,12 @@ export default function LandingHome() {
         return;
       }
       const mid = window.innerHeight * 0.45;
+      const edge = 100;
       let best = 0;
       let bestDist = Infinity;
       panels.forEach((p, i) => {
         const r = p.getBoundingClientRect();
-        if (r.bottom < 72 || r.top > window.innerHeight - 72) return;
+        if (r.bottom < edge || r.top > window.innerHeight - edge) return;
         const c = r.top + r.height / 2;
         const d = Math.abs(c - mid);
         if (d < bestDist) {
@@ -238,7 +239,7 @@ export default function LandingHome() {
           obs.disconnect();
         }
       },
-      { threshold: 0.12 },
+      { threshold: 0.3 },
     );
     obs.observe(section);
     return () => obs.disconnect();
@@ -260,7 +261,7 @@ export default function LandingHome() {
           }
         });
       },
-      { threshold: 0.12 },
+      { threshold: 0.3 },
     );
     nodes.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -305,14 +306,16 @@ export default function LandingHome() {
       >
         <Link href="/" className="nav-logo">
           <div className="nav-logo-icon">
-            <Image
-              src="/icon.png"
-              alt=""
-              width={72}
-              height={72}
-              sizes="36px"
-              priority
-            />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+              <circle cx="10" cy="10" r="4.5" fill="white" opacity="0.9" />
+              <path
+                d="M10 3C10 3 16 6 16 10C16 14 10 17 10 17C10 17 4 14 4 10C4 6 10 3 10 3Z"
+                stroke="white"
+                strokeWidth="1.2"
+                fill="none"
+                opacity="0.45"
+              />
+            </svg>
           </div>
           <span className="nav-logo-text">{tFooter("brand")}</span>
         </Link>
@@ -412,10 +415,10 @@ export default function LandingHome() {
               <div className="home-hero-badge-block">
                 <a {...APP_STORE_LINK_PROPS} className="home-app-badge">
                   <Image
-                    src="/app-store-badge-black.svg"
+                    src="/app-store-badge-white.svg"
                     alt="Download on the App Store"
-                    width={135}
-                    height={40}
+                    width={157}
+                    height={44}
                     priority
                   />
                 </a>
@@ -497,7 +500,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="features" className="section-beige home-sticky-features">
+      <section id="features" className="section-dark home-sticky-features">
         <div className="home-sticky-inner">
           <div className="home-sticky-left">
             {featureSlides.map((slide, i) => (
@@ -577,7 +580,7 @@ export default function LandingHome() {
       <section
         id="moods"
         ref={moodsSectionRef}
-        className="home-section section-dark home-moods-band"
+        className="home-section section-beige"
       >
         <div className="home-section-inner">
           <div className="home-moods-head">
@@ -597,7 +600,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="business" className="home-section home-b2b section-b2b">
+      <section id="business" className="home-section home-b2b section-beige">
         <div className="home-section-inner">
           <p className="home-label reveal">{th("b2bLabel")}</p>
           <h2 className="home-h2 reveal">
@@ -649,10 +652,10 @@ export default function LandingHome() {
         <div className="home-download-badge-wrap reveal">
           <a {...APP_STORE_LINK_PROPS} className="home-download-badge">
             <Image
-              src="/app-store-badge-black.svg"
+              src="/app-store-badge-white.svg"
               alt="Download on the App Store"
-              width={135}
-              height={40}
+              width={157}
+              height={44}
             />
           </a>
           <p className="home-download-note">{th("dlFoot")}</p>
