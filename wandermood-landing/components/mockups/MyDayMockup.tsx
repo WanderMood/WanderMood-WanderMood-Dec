@@ -8,8 +8,9 @@ export function MyDayMockup() {
   const inView = useRef(false);
   const [on, setOn] = useState(false);
   const [step, setStep] = useState(0);
-  const [pKick, setPKick] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const [bright, setBright] = useState(false);
+  const [scrollSim, setScrollSim] = useState(false);
 
   const clearT = () => {
     timers.current.forEach((id) => clearTimeout(id));
@@ -24,29 +25,32 @@ export function MyDayMockup() {
 
   const runCycle = useCallback(() => {
     clearT();
-    setPKick(false);
     setPulse(false);
+    setBright(false);
+    setScrollSim(false);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 380);
-    q(() => setStep(3), 720);
-    q(() => {
-      setStep(4);
-      setPKick(true);
-    }, 1620);
-    q(() => setPKick(false), 2360);
-    q(() => setStep(5), 1840);
-    q(() => setStep(6), 2060);
+    q(() => setStep(2), 500);
+    q(() => setStep(3), 1200);
+    q(() => setStep(4), 1800);
+    q(() => setStep(5), 2800);
+    q(() => setStep(6), 3500);
     q(() => {
       setStep(7);
       setPulse(true);
-    }, 5060);
-    q(() => setPulse(false), 6320);
+      setBright(true);
+    }, 5000);
+    q(() => {
+      setPulse(false);
+      setBright(false);
+    }, 6200);
+    q(() => setScrollSim(true), 7000);
+    q(() => setScrollSim(false), 9000);
     q(() => {
       setOn(false);
       setStep(0);
-    }, 8560);
-    q(() => runRef.current?.(), 8560 + 5000);
+    }, 10500);
+    q(() => runRef.current?.(), 10500 + 1500 + 500);
   }, []);
 
   useEffect(() => {
@@ -91,53 +95,95 @@ export function MyDayMockup() {
     "wm-day",
     `wm-day--s${step}`,
     on ? "wm-mock--on" : "",
-    pKick ? "wm-day--pKick" : "",
-    pulse ? "wm-day--pulse" : "",
+    pulse ? "wm-day--pulseHero" : "",
+    bright ? "wm-day--brightCheck" : "",
+    scrollSim ? "wm-day--scrollSim" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
     <div ref={root} role="presentation" aria-hidden className={cls}>
-      <div className="wm-day__bar">
-        <span>9:41</span>
-        <span aria-hidden>🔔</span>
+      <div className="wm-statusBar">
+        <span className="wm-statusBar__time">9:41</span>
+        <div className="wm-statusBar__icons" aria-hidden>
+          <span className="wm-statusBar__signal">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="wm-statusBar__wifi" />
+          <span className="wm-statusBar__bat">
+            <span className="wm-statusBar__batTerm" />
+          </span>
+        </div>
       </div>
-      <div className="wm-mock__scroll">
+
+      <div className="wm-mock__scroll wm-day__outer">
         <header className="wm-day__head">
-          <div className="wm-day__date">Zaterdag, 11 mei</div>
-          <div className="wm-day__title">Jouw dag</div>
+          <div className="wm-day__headInner">
+            <div>
+              <div className="wm-day__date">Zaterdag, 11 mei</div>
+              <div className="wm-day__title">Jouw dag</div>
+            </div>
+            <span className="wm-day__bell" aria-hidden>
+              🔔
+            </span>
+          </div>
         </header>
+
         <div className="wm-day__wx">☀️ 18°C · Rotterdam · Lekker dagje uit</div>
-        <div className="wm-day__timeline">
-          <div className="wm-day__line" aria-hidden />
-          <div className="wm-day__slot">
-            <div className="wm-day__time">09:00</div>
-            <div className="wm-day__dot" aria-hidden />
-            <div className="wm-day__card wm-day__card--here">
-              <div className="wm-day__row">
-                <div className="wm-day__name">Hopper Espresso Bar</div>
-                <span className="wm-day__check" aria-hidden>
-                  ✓
+
+        <div className="wm-day__track">
+          <div className="wm-day__timeline">
+            <div className="wm-day__line" aria-hidden />
+
+            <div className="wm-day__slot wm-day__slot--hero">
+              <div className="wm-day__time">09:00</div>
+              <div className="wm-day__dot" aria-hidden />
+              <div className="wm-day__hero">
+                <div className="wm-day__heroAccent" aria-hidden />
+                <div className="wm-day__heroDeco" aria-hidden>
+                  ☕
+                </div>
+                <div className="wm-day__heroTop">
+                  <span className="wm-day__heroTime">09:00</span>
+                  <span className="wm-day__heroHere">
+                    <span className="wm-day__hereDot" aria-hidden />
+                    ✓ Je bent er
+                  </span>
+                </div>
+                <div className="wm-day__heroName">Hopper Espresso Bar</div>
+                <div className="wm-day__heroBadge">☕ Met Sarah</div>
+              </div>
+            </div>
+
+            <div className="wm-day__slot wm-day__slot--compact">
+              <div className="wm-day__time">13:00</div>
+              <div className="wm-day__dot" aria-hidden />
+              <div className="wm-day__smallCard">
+                <div className="wm-day__smallMain">
+                  <div className="wm-day__smallName">DEPOT Boijmans Van Beuningen</div>
+                  <div className="wm-day__smallBadge">🎭 Met Sarah</div>
+                </div>
+                <span className="wm-day__chev" aria-hidden>
+                  ›
                 </span>
               </div>
-              <div className="wm-day__sub">☕ Met Sarah · Je bent er!</div>
             </div>
-          </div>
-          <div className="wm-day__slot">
-            <div className="wm-day__time">13:00</div>
-            <div className="wm-day__dot" aria-hidden />
-            <div className="wm-day__card">
-              <div className="wm-day__name">DEPOT Boijmans Van Beuningen</div>
-              <div className="wm-day__sub">🎭 Met Sarah</div>
-            </div>
-          </div>
-          <div className="wm-day__slot">
-            <div className="wm-day__time">19:00</div>
-            <div className="wm-day__dot" aria-hidden />
-            <div className="wm-day__card">
-              <div className="wm-day__name">Wijnbar Sobre</div>
-              <div className="wm-day__sub">🍷 Met Sarah</div>
+
+            <div className="wm-day__slot wm-day__slot--compact">
+              <div className="wm-day__time">19:00</div>
+              <div className="wm-day__dot" aria-hidden />
+              <div className="wm-day__smallCard">
+                <div className="wm-day__smallMain">
+                  <div className="wm-day__smallName">Wijnbar Sobre</div>
+                  <div className="wm-day__smallBadge">🍷 Met Sarah</div>
+                </div>
+                <span className="wm-day__chev" aria-hidden>
+                  ›
+                </span>
+              </div>
             </div>
           </div>
         </div>
