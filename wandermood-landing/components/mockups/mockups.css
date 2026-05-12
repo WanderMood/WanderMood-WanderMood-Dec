@@ -132,6 +132,30 @@
   background: rgba(26, 23, 20, 0.4);
 }
 
+.wm-mock__status--dark .wm-mock__time {
+  color: rgba(245, 240, 232, 0.45);
+}
+
+.wm-mock__status--dark .wm-mock__signal span {
+  background: rgba(245, 240, 232, 0.38);
+}
+
+.wm-mock__status--dark .wm-mock__wifi::before {
+  border-top-color: rgba(245, 240, 232, 0.38);
+}
+
+.wm-mock__status--dark .wm-mock__battery {
+  border-color: rgba(245, 240, 232, 0.28);
+}
+
+.wm-mock__status--dark .wm-mock__battery::after {
+  background: rgba(245, 240, 232, 0.28);
+}
+
+.wm-mock__status--dark .wm-mock__battery-fill {
+  background: rgba(245, 240, 232, 0.4);
+}
+
 /* Top app bar — 44px */
 .wm-topbar {
   flex-shrink: 0;
@@ -166,6 +190,20 @@
   font-size: 16px;
   font-weight: 700;
   color: var(--wm-ink);
+}
+
+.wm-topbar__headlines {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.wm-topbar__sub {
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(26, 23, 20, 0.42);
+  line-height: 1.2;
 }
 
 .wm-topbar__right {
@@ -241,6 +279,19 @@
   font-weight: 500;
 }
 
+.wm-nav--dark {
+  background: #1a1916;
+  border-top-color: rgba(245, 240, 232, 0.08);
+}
+
+.wm-nav--dark .wm-nav__tab {
+  color: rgba(245, 240, 232, 0.3);
+}
+
+.wm-nav--dark .wm-nav__tab--on {
+  color: #5dcaa5;
+}
+
 /* ----- Shared square cards ----- */
 .wm-card {
   display: flex;
@@ -287,6 +338,15 @@
 
 .wm-card__photo--bar {
   background: linear-gradient(135deg, #2a1a3a, #3d2a5a);
+}
+
+.wm-card__photoImg {
+  width: 80px;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+  border-radius: 14px 0 0 14px;
 }
 
 .wm-card__body {
@@ -489,6 +549,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.wm-explore__storyImg {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(26, 23, 20, 0.12);
+  display: block;
 }
 
 .wm-explore__cardsViewport {
@@ -852,6 +922,44 @@
   transform: translateY(0);
 }
 
+.wm-moody__placeCard .wm-card__body {
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.wm-moody__placeMeta {
+  font-size: 9px;
+  color: rgba(26, 23, 20, 0.45);
+  line-height: 1.3;
+}
+
+.wm-moody__placeBtns {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.wm-moody__btn {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: default;
+  font-family: inherit;
+}
+
+.wm-moody__btn--pri {
+  background: var(--wm-forest);
+  color: #fff;
+}
+
+.wm-moody__btn--sec {
+  background: rgba(26, 23, 20, 0.06);
+  color: rgba(26, 23, 20, 0.55);
+}
+
 .wm-moody__typing span {
   width: 5px;
   height: 5px;
@@ -923,7 +1031,115 @@
   color: rgba(26, 23, 20, 0.35);
 }
 
-/* ----- Mood Match ----- */
+/* ----- Mood Match (espresso shell) ----- */
+.wm-mm.wm-mock {
+  background: #1a1714;
+  color: #f5f0e8;
+}
+
+.wm-mm .wm-topbar__title {
+  color: #f5f0e8;
+}
+
+.wm-mm .wm-mm__userLbl {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm .wm-mm__dash {
+  border-top-color: rgba(245, 240, 232, 0.1);
+}
+
+.wm-mm .wm-mm__av--e {
+  background: rgba(232, 120, 74, 0.2);
+  color: #e8784a;
+}
+
+.wm-mm .wm-mm__av--s {
+  background: rgba(93, 202, 165, 0.2);
+  color: #5dcaa5;
+}
+
+.wm-mm .wm-mm__balance {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm .wm-mm__pill {
+  background: rgba(42, 96, 73, 0.2);
+  color: #5dcaa5;
+  border-color: rgba(93, 202, 165, 0.25);
+}
+
+.wm-mm .wm-mm__moody {
+  background: rgba(42, 96, 73, 0.15);
+  border-color: rgba(42, 96, 73, 0.25);
+  box-shadow: none;
+}
+
+.wm-mm .wm-mm__mtext {
+  color: rgba(245, 240, 232, 0.65);
+}
+
+.wm-mm .wm-mm__mav {
+  background: #2a6049;
+}
+
+.wm-mm .wm-card {
+  background: #2a2420;
+  border-color: rgba(245, 240, 232, 0.07);
+  box-shadow: none;
+}
+
+.wm-mm .wm-card__name {
+  color: #f5f0e8;
+}
+
+.wm-mm .wm-card__dist {
+  color: rgba(245, 240, 232, 0.65);
+}
+
+.wm-mm .wm-card__badge {
+  background: rgba(93, 202, 165, 0.12);
+  color: #5dcaa5;
+}
+
+.wm-mm .wm-card__add {
+  background: #5dcaa5;
+  color: #1a1714;
+}
+
+.wm-mm .wm-mm__planHead {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm .wm-mm__score {
+  fill: #f5f0e8;
+}
+
+.wm-mm .wm-mm__subring {
+  fill: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm .wm-mm__miniAv--e.wm-mm__miniAv--fill {
+  background: rgba(232, 120, 74, 0.35);
+  color: #e8784a;
+  border-color: rgba(232, 120, 74, 0.45);
+}
+
+.wm-mm .wm-mm__miniAv--e.wm-mm__miniAv--empty {
+  color: rgba(245, 240, 232, 0.35);
+  border-color: rgba(245, 240, 232, 0.22);
+}
+
+.wm-mm .wm-mm__miniAv--s.wm-mm__miniAv--empty {
+  color: rgba(245, 240, 232, 0.3);
+  border-color: rgba(245, 240, 232, 0.25);
+}
+
+.wm-mm .wm-mm__cta {
+  background: #5dcaa5;
+  color: #1a1714;
+}
+
 .wm-mm__users {
   display: flex;
   align-items: center;
@@ -1118,19 +1334,20 @@
 }
 
 .wm-mm__track {
-  stroke: rgba(42, 96, 73, 0.12);
+  stroke: rgba(93, 202, 165, 0.15);
   fill: none;
 }
 
 .wm-mm__prog {
   fill: none;
+  stroke: #5dcaa5;
   stroke-linecap: round;
   stroke-dasharray: 314;
   stroke-dashoffset: 314;
-  transition: stroke-dashoffset 2s ease-out;
+  transition: stroke-dashoffset 1.5s ease-out;
 }
 
-.wm-mm--ring .wm-mm__prog {
+.wm-mm__prog.wm-mm__prog--draw {
   stroke-dashoffset: 69;
 }
 

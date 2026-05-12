@@ -1,8 +1,10 @@
 "use client";
 
-export function WmStatusBar() {
+export function WmStatusBar({ dark }: { dark?: boolean }) {
   return (
-    <div className="wm-mock__status">
+    <div
+      className={`wm-mock__status${dark ? " wm-mock__status--dark" : ""}`}
+    >
       <span className="wm-mock__time">9:41</span>
       <div className="wm-mock__sys">
         <span className="wm-mock__signal" aria-hidden>
@@ -21,7 +23,23 @@ export function WmStatusBar() {
 
 export type WmNavTab = "explore" | "day" | "moody" | "plans" | "profile";
 
-export function WmBottomNav({ active }: { active: WmNavTab }) {
+export type WmNavLabels = {
+  day: string;
+  explore: string;
+  moody: string;
+  plans: string;
+  profile: string;
+};
+
+export function WmBottomNav({
+  active,
+  variant = "light",
+  labels,
+}: {
+  active: WmNavTab;
+  variant?: "light" | "dark";
+  labels: WmNavLabels;
+}) {
   const tab = (id: WmNavTab, icon: string, label: string) => (
     <div
       className={`wm-nav__tab ${active === id ? "wm-nav__tab--on" : ""}`}
@@ -34,13 +52,16 @@ export function WmBottomNav({ active }: { active: WmNavTab }) {
     </div>
   );
 
+  const navClass =
+    variant === "dark" ? "wm-nav wm-nav--dark" : "wm-nav";
+
   return (
-    <nav className="wm-nav" aria-hidden>
-      {tab("explore", "🔍", "Explore")}
-      {tab("day", "📅", "Mijn Dag")}
-      {tab("moody", "✨", "Moody")}
-      {tab("plans", "👥", "Plans")}
-      {tab("profile", "👤", "Profiel")}
+    <nav className={navClass} aria-hidden>
+      {tab("day", "📅", labels.day)}
+      {tab("explore", "🔍", labels.explore)}
+      {tab("moody", "✨", labels.moody)}
+      {tab("plans", "👥", labels.plans)}
+      {tab("profile", "👤", labels.profile)}
     </nav>
   );
 }

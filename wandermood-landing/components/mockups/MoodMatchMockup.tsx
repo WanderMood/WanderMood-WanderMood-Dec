@@ -1,22 +1,185 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { WmBottomNav, WmStatusBar } from "./mockup_chrome";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { WmBottomNav, WmStatusBar, type WmNavLabels } from "./mockup_chrome";
 
-const MOODY_LINE =
-  "Ik heb plekken gevonden die voor jullie allebei werken 💚";
+type MockLocale = "nl" | "en" | "de" | "es" | "fr";
 
-export function MoodMatchMockup() {
+function mockLocale(locale: string): MockLocale {
+  const l = locale?.toLowerCase() ?? "nl";
+  if (l === "en" || l === "de" || l === "es" || l === "fr") return l;
+  return "nl";
+}
+
+const IMG = {
+  coffee:
+    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=160&h=200&fit=crop&q=70",
+  museum:
+    "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=160&h=200&fit=crop&q=70",
+  bar: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=160&h=200&fit=crop&q=70",
+} as const;
+
+type MM = {
+  nav: WmNavLabels;
+  title: string;
+  you: string;
+  match: string;
+  balance: string;
+  moodyMsg: string;
+  morning: string;
+  afternoon: string;
+  evening: string;
+  confirm: string;
+  moods: string;
+  typeCoffee: string;
+  typeMuseum: string;
+  typeWine: string;
+  meta1: string;
+  meta2: string;
+  meta3: string;
+};
+
+const MM_I18N: Record<MockLocale, MM> = {
+  nl: {
+    nav: {
+      day: "Mijn Dag",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profiel",
+    },
+    title: "Mood Match",
+    you: "Jij",
+    match: "match",
+    balance: "Goede balans",
+    moodyMsg: "Ik heb plekken gevonden die voor jullie allebei werken 💚",
+    morning: "Ochtend",
+    afternoon: "Middag",
+    evening: "Avond",
+    confirm: "Plan bevestigen →",
+    moods: "🎭 Cultureel · 💕 Romantisch",
+    typeCoffee: "Specialty coffee",
+    typeMuseum: "Museum",
+    typeWine: "Wijnbar",
+    meta1: "09:00 · Specialty coffee · 📍 0.8km",
+    meta2: "13:00 · Museum · 📍 2.1km",
+    meta3: "19:00 · Wijnbar · 📍 1.2km",
+  },
+  en: {
+    nav: {
+      day: "My Day",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profile",
+    },
+    title: "Mood Match",
+    you: "You",
+    match: "match",
+    balance: "Good balance",
+    moodyMsg: "I found places that work for both of you 💚",
+    morning: "Morning",
+    afternoon: "Afternoon",
+    evening: "Evening",
+    confirm: "Confirm plan →",
+    moods: "🎭 Cultural · 💕 Romantic",
+    typeCoffee: "Specialty coffee",
+    typeMuseum: "Museum",
+    typeWine: "Wine bar",
+    meta1: "09:00 · Specialty coffee · 📍 0.8km",
+    meta2: "13:00 · Museum · 📍 2.1km",
+    meta3: "19:00 · Wine bar · 📍 1.2km",
+  },
+  de: {
+    nav: {
+      day: "Mein Tag",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profil",
+    },
+    title: "Mood Match",
+    you: "Du",
+    match: "Match",
+    balance: "Gute Balance",
+    moodyMsg: "Ich habe Orte gefunden, die für euch beide passen 💚",
+    morning: "Morgen",
+    afternoon: "Mittag",
+    evening: "Abend",
+    confirm: "Plan bestätigen →",
+    moods: "🎭 Kulturell · 💕 Romantisch",
+    typeCoffee: "Specialty coffee",
+    typeMuseum: "Museum",
+    typeWine: "Weinbar",
+    meta1: "09:00 · Specialty coffee · 📍 0.8km",
+    meta2: "13:00 · Museum · 📍 2.1km",
+    meta3: "19:00 · Weinbar · 📍 1.2km",
+  },
+  es: {
+    nav: {
+      day: "Mi Día",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Perfil",
+    },
+    title: "Mood Match",
+    you: "Tú",
+    match: "match",
+    balance: "Buen equilibrio",
+    moodyMsg: "Encontré lugares que funcionan para ambos 💚",
+    morning: "Mañana",
+    afternoon: "Tarde",
+    evening: "Noche",
+    confirm: "Confirmar plan →",
+    moods: "🎭 Cultural · 💕 Romántico",
+    typeCoffee: "Specialty coffee",
+    typeMuseum: "Museo",
+    typeWine: "Bar de vinos",
+    meta1: "09:00 · Specialty coffee · 📍 0.8km",
+    meta2: "13:00 · Museo · 📍 2.1km",
+    meta3: "19:00 · Bar de vinos · 📍 1.2km",
+  },
+  fr: {
+    nav: {
+      day: "Ma Journée",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profil",
+    },
+    title: "Mood Match",
+    you: "Toi",
+    match: "match",
+    balance: "Bon équilibre",
+    moodyMsg: "J'ai trouvé des endroits qui conviennent à vous deux 💚",
+    morning: "Matin",
+    afternoon: "Après-midi",
+    evening: "Soir",
+    confirm: "Confirmer le plan →",
+    moods: "🎭 Culturel · 💕 Romantique",
+    typeCoffee: "Specialty coffee",
+    typeMuseum: "Musée",
+    typeWine: "Bar à vin",
+    meta1: "09:00 · Specialty coffee · 📍 0.8km",
+    meta2: "13:00 · Musée · 📍 2.1km",
+    meta3: "19:00 · Bar à vin · 📍 1.2km",
+  },
+};
+
+export function MoodMatchMockup({ locale }: { locale: string }) {
+  const t = MM_I18N[mockLocale(locale)];
+  const moodyLineRef = useRef(t.moodyMsg);
+  moodyLineRef.current = t.moodyMsg;
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
-  const raf = useRef<number>(0);
-  const gradId = useId().replace(/:/g, "");
+  const rafRef = useRef<number>(0);
   const [on, setOn] = useState(false);
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [typed, setTyped] = useState("");
-  const [svgKey, setSvgKey] = useState(0);
+  const [ringDraw, setRingDraw] = useState(false);
   const [exiting, setExiting] = useState(false);
 
   const clearT = () => {
@@ -32,13 +195,13 @@ export function MoodMatchMockup() {
 
   const runCycle = useCallback(() => {
     clearT();
-    if (typeof cancelAnimationFrame === "function" && raf.current) {
-      cancelAnimationFrame(raf.current);
-      raf.current = 0;
+    if (typeof cancelAnimationFrame === "function" && rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
     }
     setTyped("");
     setScore(0);
-    setSvgKey((k) => k + 1);
+    setRingDraw(false);
     setExiting(false);
     setOn(true);
     setStep(1);
@@ -61,6 +224,7 @@ export function MoodMatchMockup() {
       setStep(0);
       setTyped("");
       setScore(0);
+      setRingDraw(false);
       setExiting(false);
     }, 17000);
     q(() => runRef.current?.(), 17000);
@@ -104,29 +268,43 @@ export function MoodMatchMockup() {
   }, [runCycle]);
 
   useEffect(() => {
-    if (step < 4) return;
-    const t0 = performance.now();
+    if (step !== 4) return;
+    setRingDraw(false);
+    const tmr = window.setTimeout(() => {
+      setRingDraw(true);
+    }, 50);
+    return () => clearTimeout(tmr);
+  }, [step]);
+
+  useEffect(() => {
+    if (!ringDraw) return;
+    const TARGET = 78;
+    const DURATION = 1500;
+    const startTime = performance.now();
     const tick = (now: number) => {
-      const u = Math.min(1, (now - t0) / 2000);
-      setScore(Math.round(78 * u));
-      if (u < 1) raf.current = requestAnimationFrame(tick);
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / DURATION, 1);
+      const current = Math.round(progress * TARGET);
+      setScore(current);
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
     };
-    raf.current = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(tick);
     return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-      raf.current = 0;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
     };
-  }, [step, svgKey]);
+  }, [ringDraw]);
 
   useEffect(() => {
     if (step !== 7) return;
+    const line = moodyLineRef.current;
     let i = 0;
     const id = window.setInterval(() => {
       i += 1;
-      setTyped(MOODY_LINE.slice(0, i));
-      if (i >= MOODY_LINE.length) {
-        clearInterval(id);
-      }
+      setTyped(line.slice(0, i));
+      if (i >= line.length) clearInterval(id);
     }, 30);
     return () => clearInterval(id);
   }, [step]);
@@ -139,7 +317,6 @@ export function MoodMatchMockup() {
     "wm-mm",
     `wm-mm--s${Math.min(step, 14)}`,
     step >= 3 ? "wm-mm--heart" : "",
-    step >= 4 ? "wm-mm--ring" : "",
     on ? "wm-mock--on" : "",
     exiting ? "wm-mock--exiting" : "",
   ]
@@ -148,18 +325,18 @@ export function MoodMatchMockup() {
 
   return (
     <div ref={root} role="presentation" aria-hidden className={rootCls}>
-      <WmStatusBar />
+      <WmStatusBar dark />
       <div className="wm-mock__scroll">
         <header className="wm-topbar">
           <div className="wm-topbar__left">
-            <span className="wm-topbar__title">Mood Match</span>
+            <span className="wm-topbar__title">{t.title}</span>
           </div>
         </header>
 
         <div className="wm-mm__users">
           <div className="wm-mm__user">
             <div className="wm-mm__av wm-mm__av--e">E</div>
-            <span className="wm-mm__userLbl">Jij</span>
+            <span className="wm-mm__userLbl">{t.you}</span>
           </div>
           <div className="wm-mm__dash" aria-hidden />
           <div className="wm-mm__heart" aria-hidden>
@@ -174,19 +351,12 @@ export function MoodMatchMockup() {
 
         <div className="wm-mm__ringWrap">
           <svg
-            key={svgKey}
             className="wm-mm__ring"
             viewBox="0 0 120 120"
             width={110}
             height={110}
             aria-hidden
           >
-            <defs>
-              <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#2A6049" />
-                <stop offset="100%" stopColor="#5DCAA5" />
-              </linearGradient>
-            </defs>
             <circle
               className="wm-mm__track"
               cx={60}
@@ -196,12 +366,11 @@ export function MoodMatchMockup() {
               strokeWidth={8}
             />
             <circle
-              className="wm-mm__prog"
+              className={`wm-mm__prog ${ringDraw ? "wm-mm__prog--draw" : ""}`}
               cx={60}
               cy={60}
               r={50}
               fill="none"
-              stroke={`url(#${gradId})`}
               strokeWidth={8}
               strokeDasharray={314}
               strokeDashoffset={314}
@@ -212,15 +381,14 @@ export function MoodMatchMockup() {
               {score}
             </text>
             <text x={60} y={74} textAnchor="middle" className="wm-mm__subring">
-              match
+              {t.match}
             </text>
           </svg>
         </div>
 
-        <div className="wm-mm__balance">Goede balans</div>
+        <div className="wm-mm__balance">{t.balance}</div>
         <div className="wm-mm__pills">
-          <span className="wm-mm__pill">🎭 Cultureel</span>
-          <span className="wm-mm__pill">💕 Romantisch</span>
+          <span className="wm-mm__pill">{t.moods}</span>
         </div>
 
         <div className="wm-mm__moody">
@@ -231,21 +399,23 @@ export function MoodMatchMockup() {
         <div
           className={`wm-mm__planRow ${step >= 8 ? "wm-mm__planRow--in" : ""}`}
         >
-          <div className="wm-mm__planHead">🌅 Ochtend</div>
+          <div className="wm-mm__planHead">🌅 {t.morning}</div>
           <div className="wm-card wm-card--sm">
-            <div className="wm-card__photo wm-card__photo--coffee" aria-hidden>
-              ☕
-            </div>
+            <img
+              src={IMG.coffee}
+              alt=""
+              className="wm-card__photoImg"
+              width={80}
+              height={72}
+            />
             <div className="wm-card__body">
               <div className="wm-card__top">
                 <span className="wm-card__name">Hopper Espresso Bar</span>
                 <span className="wm-card__rating">★ 4.6</span>
               </div>
-              <span className="wm-card__badge">Specialty coffee</span>
+              <span className="wm-card__badge">{t.typeCoffee}</span>
               <div className="wm-card__bottom">
-                <span className="wm-card__dist">
-                  09:00 · Specialty coffee · 📍 0.8km
-                </span>
+                <span className="wm-card__dist">{t.meta1}</span>
                 <div className="wm-mm__planAv">
                   <span className="wm-mm__miniAv wm-mm__miniAv--e wm-mm__miniAv--fill">
                     E
@@ -262,21 +432,23 @@ export function MoodMatchMockup() {
         <div
           className={`wm-mm__planRow ${step >= 9 ? "wm-mm__planRow--in" : ""}`}
         >
-          <div className="wm-mm__planHead">☀️ Middag</div>
+          <div className="wm-mm__planHead">☀️ {t.afternoon}</div>
           <div className="wm-card wm-card--sm">
-            <div className="wm-card__photo wm-card__photo--museum" aria-hidden>
-              🏛️
-            </div>
+            <img
+              src={IMG.museum}
+              alt=""
+              className="wm-card__photoImg"
+              width={80}
+              height={72}
+            />
             <div className="wm-card__body">
               <div className="wm-card__top">
                 <span className="wm-card__name">DEPOT Boijmans</span>
                 <span className="wm-card__rating">★ 4.4</span>
               </div>
-              <span className="wm-card__badge">Museum</span>
+              <span className="wm-card__badge">{t.typeMuseum}</span>
               <div className="wm-card__bottom">
-                <span className="wm-card__dist">
-                  13:00 · Museum · 📍 2.1km
-                </span>
+                <span className="wm-card__dist">{t.meta2}</span>
                 <div className="wm-mm__planAv">
                   <span className="wm-mm__miniAv wm-mm__miniAv--e wm-mm__miniAv--fill">
                     E
@@ -295,21 +467,23 @@ export function MoodMatchMockup() {
         <div
           className={`wm-mm__planRow ${step >= 10 ? "wm-mm__planRow--in" : ""}`}
         >
-          <div className="wm-mm__planHead">🌆 Avond</div>
+          <div className="wm-mm__planHead">🌆 {t.evening}</div>
           <div className="wm-card wm-card--sm">
-            <div className="wm-card__photo wm-card__photo--bar" aria-hidden>
-              🍷
-            </div>
+            <img
+              src={IMG.bar}
+              alt=""
+              className="wm-card__photoImg"
+              width={80}
+              height={72}
+            />
             <div className="wm-card__body">
               <div className="wm-card__top">
                 <span className="wm-card__name">Wijnbar Sobre</span>
                 <span className="wm-card__rating">★ 4.6</span>
               </div>
-              <span className="wm-card__badge">Wijnbar</span>
+              <span className="wm-card__badge">{t.typeWine}</span>
               <div className="wm-card__bottom">
-                <span className="wm-card__dist">
-                  19:00 · Wijnbar · 📍 1.2km
-                </span>
+                <span className="wm-card__dist">{t.meta3}</span>
                 <div className="wm-mm__planAv">
                   <span className="wm-mm__miniAv wm-mm__miniAv--e wm-mm__miniAv--empty">
                     E
@@ -325,11 +499,11 @@ export function MoodMatchMockup() {
             type="button"
             className={`wm-mm__cta ${step >= 11 ? "wm-mm__cta--in" : ""}`}
           >
-            Plan bevestigen →
+            {t.confirm}
           </button>
         </div>
       </div>
-      <WmBottomNav active="plans" />
+      <WmBottomNav active="plans" variant="dark" labels={t.nav} />
     </div>
   );
 }

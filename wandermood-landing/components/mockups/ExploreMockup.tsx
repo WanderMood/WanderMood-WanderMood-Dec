@@ -1,146 +1,329 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WmBottomNav, WmStatusBar } from "./mockup_chrome";
+import { WmBottomNav, WmStatusBar, type WmNavLabels } from "./mockup_chrome";
 
-type PhotoGrad = "coffee" | "museum" | "park" | "rest" | "bar";
+type MockLocale = "nl" | "en" | "de" | "es" | "fr";
+
+function mockLocale(locale: string): MockLocale {
+  const l = locale?.toLowerCase() ?? "nl";
+  if (l === "en" || l === "de" || l === "es" || l === "fr") return l;
+  return "nl";
+}
+
+const U = {
+  coffee:
+    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=160&h=200&fit=crop&q=70",
+  museum:
+    "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=160&h=200&fit=crop&q=70",
+  park: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=160&h=200&fit=crop&q=70",
+  bar: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=160&h=200&fit=crop&q=70",
+  restaurant:
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=160&h=200&fit=crop&q=70",
+  foodMarket:
+    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=160&h=200&fit=crop&q=70",
+} as const;
+
+const STORY = {
+  a: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=80&h=80&fit=crop&q=70",
+  b: "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=80&h=80&fit=crop&q=70",
+  c: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=80&h=80&fit=crop&q=70",
+} as const;
+
+type Phase = "geo" | "food" | "halal";
 
 type Row = {
   name: string;
   rating: string;
   badge: string;
   dist: string;
-  emoji: string;
-  grad: PhotoGrad;
+  src: string;
   trending?: boolean;
 };
 
-type Phase = "geo" | "food" | "halal";
-
-const PHASE_ROWS: Record<Phase, [Row, Row, Row]> = {
-  geo: [
-    {
-      name: "Hopper Espresso Bar",
-      rating: "★ 4.6",
-      badge: "Specialty coffee",
-      dist: "📍 8 min lopen",
-      emoji: "☕",
-      grad: "coffee",
-    },
-    {
-      name: "DEPOT Boijmans",
-      rating: "★ 4.4",
-      badge: "Museum",
-      dist: "🚲 12 min fietsen",
-      emoji: "🏛️",
-      grad: "museum",
-      trending: true,
-    },
-    {
-      name: "Kralingse Bos",
-      rating: "★ 4.7",
-      badge: "Park",
-      dist: "📍 15 min lopen",
-      emoji: "🌿",
-      grad: "park",
-    },
-  ],
-  food: [
-    {
-      name: "Bazar Rotterdam",
-      rating: "★ 4.5",
-      badge: "Wereldkeuken",
-      dist: "📍 10 min lopen",
-      emoji: "🍽️",
-      grad: "rest",
-    },
-    {
-      name: "Fenix Food Factory",
-      rating: "★ 4.6",
-      badge: "Foodhall",
-      dist: "📍 6 min lopen",
-      emoji: "🍽️",
-      grad: "rest",
-      trending: true,
-    },
-    {
-      name: "De Biertuin",
-      rating: "★ 4.5",
-      badge: "Bar & bites",
-      dist: "🚶 12 min lopen",
-      emoji: "🍺",
-      grad: "bar",
-    },
-  ],
-  halal: [
-    {
-      name: "Sultan Döner",
-      rating: "★ 4.7",
-      badge: "Halal",
-      dist: "📍 5 min lopen",
-      emoji: "🥙",
-      grad: "rest",
-    },
-    {
-      name: "Merhaba Grill",
-      rating: "★ 4.6",
-      badge: "Halal",
-      dist: "📍 8 min lopen",
-      emoji: "🍖",
-      grad: "rest",
-      trending: true,
-    },
-    {
-      name: "De Halal Kitchen",
-      rating: "★ 4.5",
-      badge: "Halal",
-      dist: "🚲 9 min fietsen",
-      emoji: "🍽️",
-      grad: "rest",
-    },
-  ],
+type ExploreT = {
+  nav: WmNavLabels;
+  screenTitle: string;
+  trending: string;
+  addDay: string;
+  trendingPill: string;
+  more: string;
+  moods: [string, string, string, string];
+  filters: [string, string, string];
+  places: [string, string, string];
+  distances: [string, string, string];
+  ratings: [string, string, string];
+  types: [string, string, string];
+  foodNames: [string, string, string];
+  foodDist: [string, string, string];
+  foodTypes: [string, string, string];
+  foodRatings: [string, string, string];
+  halalNames: [string, string, string];
+  halalDist: [string, string, string];
+  halalRatings: [string, string, string];
+  halalBadge: string;
+  peekName: string;
+  peekBadge: string;
+  storyLbl: [string, string, string];
 };
 
-const PEEK_ROW: Row = {
-  name: "Hotel New York",
-  rating: "★ 4.5",
-  badge: "Restaurant",
-  dist: "📍 20 min lopen",
-  emoji: "🍽️",
-  grad: "rest",
+const EXPLORE: Record<MockLocale, ExploreT> = {
+  nl: {
+    nav: {
+      day: "Mijn Dag",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profiel",
+    },
+    screenTitle: "Explore",
+    trending: "Trending op WanderMood",
+    addDay: "+ Dag",
+    trendingPill: "🔥 Trending",
+    more: "Meer →",
+    moods: ["Gezellig", "Foodie", "Cultureel", "Avontuurlijk"],
+    filters: ["Halal", "Gezinsvriendelijk", "🐕 Honden"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    distances: ["📍 8 min lopen", "🚲 12 min fietsen", "📍 15 min lopen"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    types: ["Specialty coffee", "Museum", "Park"],
+    foodNames: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    foodDist: ["📍 10 min lopen", "📍 6 min lopen", "🚶 12 min lopen"],
+    foodTypes: ["Wereldkeuken", "Foodhall", "Bar & bites"],
+    foodRatings: ["★ 4.5", "★ 4.6", "★ 4.5"],
+    halalNames: ["Sultan Döner", "Merhaba Grill", "De Halal Kitchen"],
+    halalDist: ["📍 5 min lopen", "📍 8 min lopen", "🚲 9 min fietsen"],
+    halalRatings: ["★ 4.7", "★ 4.6", "★ 4.5"],
+    halalBadge: "Halal",
+    peekName: "Hotel New York",
+    peekBadge: "Hotel",
+    storyLbl: ["Hopper", "DEPOT", "Kralingen"],
+  },
+  en: {
+    nav: {
+      day: "My Day",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profile",
+    },
+    screenTitle: "Explore",
+    trending: "Trending on WanderMood",
+    addDay: "+ Day",
+    trendingPill: "🔥 Trending",
+    more: "More →",
+    moods: ["Cozy", "Foodie", "Cultural", "Adventurous"],
+    filters: ["Halal", "Family friendly", "🐕 Dogs"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    distances: ["📍 8 min walk", "🚲 12 min bike", "📍 15 min walk"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    types: ["Specialty coffee", "Museum", "Park"],
+    foodNames: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    foodDist: ["📍 10 min walk", "📍 6 min walk", "🚶 12 min walk"],
+    foodTypes: ["World kitchen", "Food hall", "Bar & bites"],
+    foodRatings: ["★ 4.5", "★ 4.6", "★ 4.5"],
+    halalNames: ["Sultan Döner", "Merhaba Grill", "De Halal Kitchen"],
+    halalDist: ["📍 5 min walk", "📍 8 min walk", "🚲 9 min bike"],
+    halalRatings: ["★ 4.7", "★ 4.6", "★ 4.5"],
+    halalBadge: "Halal",
+    peekName: "Hotel New York",
+    peekBadge: "Hotel",
+    storyLbl: ["Hopper", "DEPOT", "Kralingen"],
+  },
+  de: {
+    nav: {
+      day: "Mein Tag",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profil",
+    },
+    screenTitle: "Explore",
+    trending: "Trending auf WanderMood",
+    addDay: "+ Tag",
+    trendingPill: "🔥 Trending",
+    more: "Mehr →",
+    moods: ["Gemütlich", "Foodie", "Kulturell", "Abenteuerlich"],
+    filters: ["Halal", "Familienfreundlich", "🐕 Hunde"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    distances: ["📍 8 Min. Fußweg", "🚲 12 Min. Fahrrad", "📍 15 Min. Fußweg"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    types: ["Specialty coffee", "Museum", "Park"],
+    foodNames: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    foodDist: ["📍 10 Min. Fußweg", "📍 6 Min. Fußweg", "🚶 12 Min. Fußweg"],
+    foodTypes: ["Weltküche", "Foodhall", "Bar & Snacks"],
+    foodRatings: ["★ 4.5", "★ 4.6", "★ 4.5"],
+    halalNames: ["Sultan Döner", "Merhaba Grill", "De Halal Kitchen"],
+    halalDist: ["📍 5 Min. Fußweg", "📍 8 Min. Fußweg", "🚲 9 Min. Fahrrad"],
+    halalRatings: ["★ 4.7", "★ 4.6", "★ 4.5"],
+    halalBadge: "Halal",
+    peekName: "Hotel New York",
+    peekBadge: "Hotel",
+    storyLbl: ["Hopper", "DEPOT", "Kralingen"],
+  },
+  es: {
+    nav: {
+      day: "Mi Día",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Perfil",
+    },
+    screenTitle: "Explore",
+    trending: "Tendencias en WanderMood",
+    addDay: "+ Día",
+    trendingPill: "🔥 Trending",
+    more: "Más →",
+    moods: ["Acogedor", "Foodie", "Cultural", "Aventurero"],
+    filters: ["Halal", "Familiar", "🐕 Perros"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    distances: ["📍 8 min andando", "🚲 12 min bici", "📍 15 min andando"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    types: ["Specialty coffee", "Museum", "Parque"],
+    foodNames: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    foodDist: ["📍 10 min andando", "📍 6 min andando", "🚶 12 min andando"],
+    foodTypes: ["Cocina del mundo", "Mercado gastronómico", "Bar"],
+    foodRatings: ["★ 4.5", "★ 4.6", "★ 4.5"],
+    halalNames: ["Sultan Döner", "Merhaba Grill", "De Halal Kitchen"],
+    halalDist: ["📍 5 min andando", "📍 8 min andando", "🚲 9 min bici"],
+    halalRatings: ["★ 4.7", "★ 4.6", "★ 4.5"],
+    halalBadge: "Halal",
+    peekName: "Hotel New York",
+    peekBadge: "Hotel",
+    storyLbl: ["Hopper", "DEPOT", "Kralingen"],
+  },
+  fr: {
+    nav: {
+      day: "Ma Journée",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profil",
+    },
+    screenTitle: "Explore",
+    trending: "Tendances sur WanderMood",
+    addDay: "+ Jour",
+    trendingPill: "🔥 Trending",
+    more: "Plus →",
+    moods: ["Cosy", "Foodie", "Culturel", "Aventurier"],
+    filters: ["Halal", "Famille", "🐕 Chiens"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    distances: ["📍 8 min à pied", "🚲 12 min vélo", "📍 15 min à pied"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    types: ["Specialty coffee", "Musée", "Parc"],
+    foodNames: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    foodDist: ["📍 10 min à pied", "📍 6 min à pied", "🚶 12 min à pied"],
+    foodTypes: ["Cuisine du monde", "Food hall", "Bar"],
+    foodRatings: ["★ 4.5", "★ 4.6", "★ 4.5"],
+    halalNames: ["Sultan Döner", "Merhaba Grill", "De Halal Kitchen"],
+    halalDist: ["📍 5 min à pied", "📍 8 min à pied", "🚲 9 min vélo"],
+    halalRatings: ["★ 4.7", "★ 4.6", "★ 4.5"],
+    halalBadge: "Halal",
+    peekName: "Hotel New York",
+    peekBadge: "Hôtel",
+    storyLbl: ["Hopper", "DEPOT", "Kralingen"],
+  },
 };
 
-const MOOD_CHIPS = [
-  "✨ Gezellig",
-  "🍽️ Foodie",
-  "🎭 Cultureel",
-  "🚀 Avontuurlijk",
-  "Meer →",
-];
-
-function photoClass(g: PhotoGrad) {
-  const map: Record<PhotoGrad, string> = {
-    coffee: "wm-card__photo--coffee",
-    museum: "wm-card__photo--museum",
-    park: "wm-card__photo--park",
-    rest: "wm-card__photo--rest",
-    bar: "wm-card__photo--bar",
-  };
-  return map[g];
+function rowsForPhase(t: ExploreT, phase: Phase): [Row, Row, Row] {
+  if (phase === "geo") {
+    return [
+      {
+        name: t.places[0],
+        rating: t.ratings[0],
+        badge: t.types[0],
+        dist: t.distances[0],
+        src: U.coffee,
+      },
+      {
+        name: t.places[1],
+        rating: t.ratings[1],
+        badge: t.types[1],
+        dist: t.distances[1],
+        src: U.museum,
+        trending: true,
+      },
+      {
+        name: t.places[2],
+        rating: t.ratings[2],
+        badge: t.types[2],
+        dist: t.distances[2],
+        src: U.park,
+      },
+    ];
+  }
+  if (phase === "food") {
+    return [
+      {
+        name: t.foodNames[0],
+        rating: t.foodRatings[0],
+        badge: t.foodTypes[0],
+        dist: t.foodDist[0],
+        src: U.restaurant,
+      },
+      {
+        name: t.foodNames[1],
+        rating: t.foodRatings[1],
+        badge: t.foodTypes[1],
+        dist: t.foodDist[1],
+        src: U.foodMarket,
+        trending: true,
+      },
+      {
+        name: t.foodNames[2],
+        rating: t.foodRatings[2],
+        badge: t.foodTypes[2],
+        dist: t.foodDist[2],
+        src: U.bar,
+      },
+    ];
+  }
+  return [
+    {
+      name: t.halalNames[0],
+      rating: t.halalRatings[0],
+      badge: t.halalBadge,
+      dist: t.halalDist[0],
+      src: U.restaurant,
+    },
+    {
+      name: t.halalNames[1],
+      rating: t.halalRatings[1],
+      badge: t.halalBadge,
+      dist: t.halalDist[1],
+      src: U.restaurant,
+      trending: true,
+    },
+    {
+      name: t.halalNames[2],
+      rating: t.halalRatings[2],
+      badge: t.halalBadge,
+      dist: t.halalDist[2],
+      src: U.foodMarket,
+    },
+  ];
 }
 
 function PlaceCard({
   row,
+  trendingPill,
+  addLabel,
   trending,
 }: {
   row: Row;
+  trendingPill: string;
+  addLabel: string;
   trending?: boolean;
 }) {
   return (
     <div className="wm-card">
-      <div className={`wm-card__photo ${photoClass(row.grad)}`} aria-hidden>
-        {row.emoji}
-      </div>
+      <img
+        src={row.src}
+        alt=""
+        className="wm-card__photoImg"
+        width={80}
+        height={100}
+      />
       <div className="wm-card__body">
         <div className="wm-card__top">
           <span className="wm-card__name">{row.name}</span>
@@ -149,19 +332,22 @@ function PlaceCard({
         <span className="wm-card__badge">{row.badge}</span>
         <div className="wm-card__bottom">
           <span className="wm-card__dist">{row.dist}</span>
-          <span className="wm-card__add">+ Dag</span>
+          <span className="wm-card__add">{addLabel}</span>
         </div>
       </div>
       {trending ? (
         <span className="wm-explore__trending" aria-hidden>
-          🔥 Trending
+          {trendingPill}
         </span>
       ) : null}
     </div>
   );
 }
 
-export function ExploreMockup() {
+const MOOD_EMOJI = ["✨", "🍽️", "🎭", "🚀"] as const;
+
+export function ExploreMockup({ locale }: { locale: string }) {
+  const t = EXPLORE[mockLocale(locale)];
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -271,13 +457,28 @@ export function ExploreMockup() {
     };
   }, [runCycle]);
 
-  const rows = PHASE_ROWS[phase];
+  const rows = rowsForPhase(t, phase);
+  const peekRow: Row = {
+    name: t.peekName,
+    rating: "★ 4.5",
+    badge: t.peekBadge,
+    dist: t.foodDist[0],
+    src: U.restaurant,
+  };
 
   const chipCls = (i: number) => {
     const base = "wm-explore__chip";
     if (moodIdx === i) return `${base} wm-explore__chip--on`;
     return base;
   };
+
+  const moodLabels = [
+    `${MOOD_EMOJI[0]} ${t.moods[0]}`,
+    `${MOOD_EMOJI[1]} ${t.moods[1]}`,
+    `${MOOD_EMOJI[2]} ${t.moods[2]}`,
+    `${MOOD_EMOJI[3]} ${t.moods[3]}`,
+    t.more,
+  ];
 
   return (
     <div
@@ -290,7 +491,7 @@ export function ExploreMockup() {
       <div className="wm-mock__scroll">
         <header className="wm-topbar">
           <div className="wm-topbar__left">
-            <span className="wm-topbar__title">Explore</span>
+            <span className="wm-topbar__title">{t.screenTitle}</span>
           </div>
           <div className="wm-topbar__right" aria-hidden>
             ⚙️
@@ -298,7 +499,7 @@ export function ExploreMockup() {
         </header>
 
         <div className="wm-explore__chipsRow">
-          {MOOD_CHIPS.map((label, i) => (
+          {moodLabels.map((label, i) => (
             <span key={label} className={chipCls(i)}>
               {moodIdx === i && i < 4 ? `${label} ✓` : label}
             </span>
@@ -309,27 +510,45 @@ export function ExploreMockup() {
           <span
             className={`wm-explore__filter ${halalOn ? "wm-explore__filter--on" : ""}`}
           >
-            Halal
+            {t.filters[0]}
           </span>
-          <span className="wm-explore__filter">Gezinsvriendelijk</span>
-          <span className="wm-explore__filter">🐕 Honden</span>
+          <span className="wm-explore__filter">{t.filters[1]}</span>
+          <span className="wm-explore__filter">{t.filters[2]}</span>
         </div>
 
-        <div className="wm-explore__secLabel">TRENDING OP WANDERMOOD</div>
+        <div className="wm-explore__secLabel">{t.trending}</div>
 
         <div className="wm-explore__storiesBlock">
           <div className="wm-explore__stories">
             <div className="wm-explore__storyItem">
-              <div className="wm-explore__storyDot" />
-              <span className="wm-explore__storyLbl">Hopper</span>
+              <img
+                src={STORY.a}
+                alt=""
+                className="wm-explore__storyImg"
+                width={38}
+                height={38}
+              />
+              <span className="wm-explore__storyLbl">{t.storyLbl[0]}</span>
             </div>
             <div className="wm-explore__storyItem">
-              <div className="wm-explore__storyDot" />
-              <span className="wm-explore__storyLbl">DEPOT</span>
+              <img
+                src={STORY.b}
+                alt=""
+                className="wm-explore__storyImg"
+                width={38}
+                height={38}
+              />
+              <span className="wm-explore__storyLbl">{t.storyLbl[1]}</span>
             </div>
             <div className="wm-explore__storyItem">
-              <div className="wm-explore__storyDot" />
-              <span className="wm-explore__storyLbl">Kralingen</span>
+              <img
+                src={STORY.c}
+                alt=""
+                className="wm-explore__storyImg"
+                width={38}
+                height={38}
+              />
+              <span className="wm-explore__storyLbl">{t.storyLbl[2]}</span>
             </div>
           </div>
         </div>
@@ -337,23 +556,42 @@ export function ExploreMockup() {
         <div className="wm-explore__cardsViewport">
           <div className="wm-explore__cards">
             <div className="wm-explore__cardWrap wm-explore__cardWrap--1">
-              <PlaceCard row={rows[0]} trending={rows[0].trending === true} />
+              <PlaceCard
+                row={rows[0]}
+                trendingPill={t.trendingPill}
+                addLabel={t.addDay}
+                trending={rows[0].trending === true}
+              />
             </div>
             <div className="wm-explore__cardWrap wm-explore__cardWrap--2">
-              <PlaceCard row={rows[1]} trending={rows[1].trending === true} />
+              <PlaceCard
+                row={rows[1]}
+                trendingPill={t.trendingPill}
+                addLabel={t.addDay}
+                trending={rows[1].trending === true}
+              />
             </div>
             <div className="wm-explore__cardWrap wm-explore__cardWrap--3">
-              <PlaceCard row={rows[2]} trending={rows[2].trending === true} />
+              <PlaceCard
+                row={rows[2]}
+                trendingPill={t.trendingPill}
+                addLabel={t.addDay}
+                trending={rows[2].trending === true}
+              />
             </div>
             <div className="wm-explore__peekClip">
               <div className="wm-explore__cardWrap wm-explore__cardWrap--4">
-                <PlaceCard row={PEEK_ROW} />
+                <PlaceCard
+                  row={peekRow}
+                  trendingPill={t.trendingPill}
+                  addLabel={t.addDay}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-      <WmBottomNav active="explore" />
+      <WmBottomNav active="explore" labels={t.nav} />
     </div>
   );
 }

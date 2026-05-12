@@ -1,9 +1,141 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WmBottomNav, WmStatusBar } from "./mockup_chrome";
+import { WmBottomNav, WmStatusBar, type WmNavLabels } from "./mockup_chrome";
 
-export function MoodyChatMockup() {
+type MockLocale = "nl" | "en" | "de" | "es" | "fr";
+
+function mockLocale(locale: string): MockLocale {
+  const l = locale?.toLowerCase() ?? "nl";
+  if (l === "en" || l === "de" || l === "es" || l === "fr") return l;
+  return "nl";
+}
+
+const IMG_COFFEE =
+  "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=160&h=200&fit=crop&q=70";
+
+type MoodyT = {
+  nav: WmNavLabels;
+  title: string;
+  subtitle: string;
+  msg1: string;
+  userMsg: string;
+  msg2: string;
+  placeMeta: string;
+  addBtn: string;
+  moreBtn: string;
+  msg3: string;
+  typeCoffee: string;
+  inputPh: string;
+};
+
+const MOODY: Record<MockLocale, MoodyT> = {
+  nl: {
+    nav: {
+      day: "Mijn Dag",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profiel",
+    },
+    title: "Moody",
+    subtitle: "Je stadskenner",
+    msg1: "Goedemorgen ☀️ Luie vibe vandaag of wil je echt iets doen?",
+    userMsg: "Iets gezelligs, niet te ver",
+    msg2: "Dan weet ik precies waar ik je heen stuur 💚",
+    placeMeta: "★ 4.6 · 8 min lopen",
+    addBtn: "Voeg toe",
+    moreBtn: "Meer",
+    msg3: "Flat white, goed licht, geen haast.",
+    typeCoffee: "Specialty coffee",
+    inputPh: "Bericht aan Moody…",
+  },
+  en: {
+    nav: {
+      day: "My Day",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profile",
+    },
+    title: "Moody",
+    subtitle: "Your city expert",
+    msg1:
+      "Good morning ☀️ Lazy day or do you want to actually do something?",
+    userMsg: "Something cozy, not too far",
+    msg2: "Then I know exactly where to send you 💚",
+    placeMeta: "★ 4.6 · 8 min walk",
+    addBtn: "Add",
+    moreBtn: "More",
+    msg3: "Flat white, good light, no rush.",
+    typeCoffee: "Specialty coffee",
+    inputPh: "Message Moody…",
+  },
+  de: {
+    nav: {
+      day: "Mein Tag",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profil",
+    },
+    title: "Moody",
+    subtitle: "Dein Stadtexperte",
+    msg1: "Guten Morgen ☀️ Fauler Tag oder willst du was unternehmen?",
+    userMsg: "Etwas Gemütliches, nicht zu weit",
+    msg2: "Dann weiß ich genau wohin 💚",
+    placeMeta: "★ 4.6 · 8 Min. Fußweg",
+    addBtn: "Hinzufügen",
+    moreBtn: "Mehr",
+    msg3: "Flat White, gutes Licht, kein Stress.",
+    typeCoffee: "Specialty coffee",
+    inputPh: "Nachricht an Moody…",
+  },
+  es: {
+    nav: {
+      day: "Mi Día",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Perfil",
+    },
+    title: "Moody",
+    subtitle: "Tu experto de la ciudad",
+    msg1: "Buenos días ☀️ ¿Día tranquilo o quieres hacer algo?",
+    userMsg: "Algo acogedor, no muy lejos",
+    msg2: "Entonces sé exactamente adónde enviarte 💚",
+    placeMeta: "★ 4.6 · 8 min andando",
+    addBtn: "Añadir",
+    moreBtn: "Más",
+    msg3: "Flat white, buena luz, sin prisas.",
+    typeCoffee: "Specialty coffee",
+    inputPh: "Mensaje a Moody…",
+  },
+  fr: {
+    nav: {
+      day: "Ma Journée",
+      explore: "Explore",
+      moody: "Moody",
+      plans: "Plans",
+      profile: "Profil",
+    },
+    title: "Moody",
+    subtitle: "Ton expert de la ville",
+    msg1:
+      "Bonjour ☀️ Journée tranquille ou tu veux faire quelque chose?",
+    userMsg: "Quelque chose de cosy, pas trop loin",
+    msg2: "Alors je sais exactement où t'envoyer 💚",
+    placeMeta: "★ 4.6 · 8 min à pied",
+    addBtn: "Ajouter",
+    moreBtn: "Plus",
+    msg3: "Flat white, bonne lumière, sans pression.",
+    typeCoffee: "Specialty coffee",
+    inputPh: "Message à Moody…",
+  },
+};
+
+export function MoodyChatMockup({ locale }: { locale: string }) {
+  const t = MOODY[mockLocale(locale)];
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -103,7 +235,10 @@ export function MoodyChatMockup() {
             <div className="wm-topbar__avatar" aria-hidden>
               M
             </div>
-            <span className="wm-topbar__title">Moody</span>
+            <div className="wm-topbar__headlines">
+              <span className="wm-topbar__title">{t.title}</span>
+              <span className="wm-topbar__sub">{t.subtitle}</span>
+            </div>
           </div>
         </header>
 
@@ -118,13 +253,13 @@ export function MoodyChatMockup() {
 
           {showMsg1 ? (
             <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--in">
-              Goedemorgen ☀️ Luie vibe vandaag of wil je echt iets doen?
+              {t.msg1}
             </div>
           ) : null}
 
           {showUser ? (
             <div className="wm-moody__bubble wm-moody__bubble--u wm-moody__bubble--in">
-              Iets gezelligs, niet te ver
+              {t.userMsg}
             </div>
           ) : null}
 
@@ -138,24 +273,33 @@ export function MoodyChatMockup() {
 
           {showMsg2 ? (
             <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--in">
-              Dan weet ik precies waar ik je heen stuur 💚
+              {t.msg2}
             </div>
           ) : null}
 
           {showCard ? (
             <div className="wm-card wm-moody__placeCard wm-moody__placeCard--in">
-              <div className="wm-card__photo wm-card__photo--coffee" aria-hidden>
-                ☕
-              </div>
+              <img
+                src={IMG_COFFEE}
+                alt=""
+                className="wm-card__photoImg"
+                width={80}
+                height={100}
+              />
               <div className="wm-card__body">
                 <div className="wm-card__top">
                   <span className="wm-card__name">Hopper Espresso Bar</span>
                   <span className="wm-card__rating">★ 4.6</span>
                 </div>
-                <span className="wm-card__badge">Specialty coffee</span>
-                <div className="wm-card__bottom">
-                  <span className="wm-card__dist">📍 8 min lopen</span>
-                  <span className="wm-card__add">+ Dag</span>
+                <span className="wm-card__badge">{t.typeCoffee}</span>
+                <div className="wm-moody__placeMeta">{t.placeMeta}</div>
+                <div className="wm-moody__placeBtns">
+                  <button type="button" className="wm-moody__btn wm-moody__btn--pri">
+                    {t.addBtn}
+                  </button>
+                  <button type="button" className="wm-moody__btn wm-moody__btn--sec">
+                    {t.moreBtn}
+                  </button>
                 </div>
               </div>
             </div>
@@ -163,14 +307,14 @@ export function MoodyChatMockup() {
 
           {showMsg3 ? (
             <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--soft wm-moody__bubble--in">
-              Flat white, goed licht, geen haast.
+              {t.msg3}
             </div>
           ) : null}
         </div>
 
-        <div className="wm-moody__inputBar">Bericht aan Moody…</div>
+        <div className="wm-moody__inputBar">{t.inputPh}</div>
       </div>
-      <WmBottomNav active="moody" />
+      <WmBottomNav active="moody" labels={t.nav} />
     </div>
   );
 }
