@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { WmBottomNav, WmStatusBar, type WmNavLabels } from "./mockup_chrome";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { WmBottomNav, type WmNavLabels } from "./mockup_chrome";
 
 type MockLocale = "nl" | "en" | "de" | "es" | "fr";
 
@@ -11,33 +11,16 @@ function mockLocale(locale: string): MockLocale {
   return "nl";
 }
 
-const IMG = {
-  coffee:
-    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=160&h=200&fit=crop&q=70",
-  museum:
-    "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=160&h=200&fit=crop&q=70",
-  bar: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=160&h=200&fit=crop&q=70",
-} as const;
-
 type MM = {
   nav: WmNavLabels;
   title: string;
-  you: string;
-  partner: string;
   match: string;
   balance: string;
   moodyMsg: string;
   morning: string;
   afternoon: string;
   evening: string;
-  confirm: string;
   moods: string;
-  typeCoffee: string;
-  typeMuseum: string;
-  typeWine: string;
-  meta1: string;
-  meta2: string;
-  meta3: string;
   placeCoffee: string;
   placeMuseum: string;
   placeWine: string;
@@ -53,22 +36,13 @@ const MM_I18N: Record<MockLocale, MM> = {
       profile: "Profiel",
     },
     title: "Mood Match",
-    you: "Jij",
-    partner: "Sarah",
     match: "match",
     balance: "Goede balans",
     moodyMsg: "Ik heb plekken gevonden die voor jullie allebei werken 💚",
     morning: "Ochtend",
     afternoon: "Middag",
     evening: "Avond",
-    confirm: "Plan bevestigen →",
     moods: "🎭 Cultureel · 💕 Romantisch",
-    typeCoffee: "Specialty coffee",
-    typeMuseum: "Museum",
-    typeWine: "Wijnbar",
-    meta1: "09:00 · Specialty coffee · 📍 0.8km",
-    meta2: "13:00 · Museum · 📍 2.1km",
-    meta3: "19:00 · Wijnbar · 📍 1.2km",
     placeCoffee: "Hopper Espresso Bar",
     placeMuseum: "DEPOT Boijmans",
     placeWine: "Wijnbar Sobre",
@@ -82,22 +56,13 @@ const MM_I18N: Record<MockLocale, MM> = {
       profile: "Profile",
     },
     title: "Mood Match",
-    you: "You",
-    partner: "Sarah",
     match: "match",
     balance: "Good balance",
     moodyMsg: "I found places that work for both of you 💚",
     morning: "Morning",
     afternoon: "Afternoon",
     evening: "Evening",
-    confirm: "Confirm plan →",
     moods: "🎭 Cultural · 💕 Romantic",
-    typeCoffee: "Specialty coffee",
-    typeMuseum: "Museum",
-    typeWine: "Wine bar",
-    meta1: "09:00 · Specialty coffee · 📍 0.8km",
-    meta2: "13:00 · Museum · 📍 2.1km",
-    meta3: "19:00 · Wine bar · 📍 1.2km",
     placeCoffee: "Hopper Espresso Bar",
     placeMuseum: "DEPOT Boijmans",
     placeWine: "Wijnbar Sobre",
@@ -111,22 +76,13 @@ const MM_I18N: Record<MockLocale, MM> = {
       profile: "Profil",
     },
     title: "Mood Match",
-    you: "Du",
-    partner: "Sarah",
     match: "Match",
     balance: "Gute Balance",
     moodyMsg: "Ich habe Orte gefunden, die für euch beide passen 💚",
     morning: "Morgen",
     afternoon: "Mittag",
     evening: "Abend",
-    confirm: "Plan bestätigen →",
     moods: "🎭 Kulturell · 💕 Romantisch",
-    typeCoffee: "Specialty coffee",
-    typeMuseum: "Museum",
-    typeWine: "Weinbar",
-    meta1: "09:00 · Specialty coffee · 📍 0.8km",
-    meta2: "13:00 · Museum · 📍 2.1km",
-    meta3: "19:00 · Weinbar · 📍 1.2km",
     placeCoffee: "Hopper Espresso Bar",
     placeMuseum: "DEPOT Boijmans",
     placeWine: "Wijnbar Sobre",
@@ -140,22 +96,13 @@ const MM_I18N: Record<MockLocale, MM> = {
       profile: "Perfil",
     },
     title: "Mood Match",
-    you: "Tú",
-    partner: "Sarah",
     match: "match",
     balance: "Buen equilibrio",
     moodyMsg: "Encontré lugares que funcionan para ambos 💚",
     morning: "Mañana",
     afternoon: "Tarde",
     evening: "Noche",
-    confirm: "Confirmar plan →",
     moods: "🎭 Cultural · 💕 Romántico",
-    typeCoffee: "Specialty coffee",
-    typeMuseum: "Museo",
-    typeWine: "Bar de vinos",
-    meta1: "09:00 · Specialty coffee · 📍 0.8km",
-    meta2: "13:00 · Museo · 📍 2.1km",
-    meta3: "19:00 · Bar de vinos · 📍 1.2km",
     placeCoffee: "Hopper Espresso Bar",
     placeMuseum: "DEPOT Boijmans",
     placeWine: "Wijnbar Sobre",
@@ -169,43 +116,43 @@ const MM_I18N: Record<MockLocale, MM> = {
       profile: "Profil",
     },
     title: "Mood Match",
-    you: "Toi",
-    partner: "Sarah",
     match: "match",
     balance: "Bon équilibre",
     moodyMsg: "J'ai trouvé des endroits qui conviennent à vous deux 💚",
     morning: "Matin",
     afternoon: "Après-midi",
     evening: "Soir",
-    confirm: "Confirmer le plan →",
     moods: "🎭 Culturel · 💕 Romantique",
-    typeCoffee: "Specialty coffee",
-    typeMuseum: "Musée",
-    typeWine: "Bar à vin",
-    meta1: "09:00 · Specialty coffee · 📍 0.8km",
-    meta2: "13:00 · Musée · 📍 2.1km",
-    meta3: "19:00 · Bar à vin · 📍 1.2km",
     placeCoffee: "Hopper Espresso Bar",
     placeMuseum: "DEPOT Boijmans",
     placeWine: "Wijnbar Sobre",
   },
 };
 
+function moodPills(moods: string): string[] {
+  const parts = moods.split(" · ").map((s) => s.trim()).filter(Boolean);
+  return parts.length >= 2 ? parts : [moods, ""];
+}
+
 export function MoodMatchMockup({ locale }: { locale: string }) {
   const t = MM_I18N[mockLocale(locale)];
   const moodyLineRef = useRef(t.moodyMsg);
   moodyLineRef.current = t.moodyMsg;
+
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
-  const rafRef = useRef<number>(0);
+  const raf = useRef<number>(0);
+  const gradId = useId().replace(/:/g, "");
   const [on, setOn] = useState(false);
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [typed, setTyped] = useState("");
-  const [ringSession, setRingSession] = useState(0);
-  const [ringAnimate, setRingAnimate] = useState(false);
-  const [exiting, setExiting] = useState(false);
+  const [svgKey, setSvgKey] = useState(0);
+
+  const [pillA, pillB] = moodPills(t.moods);
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
   const clearT = () => {
     timers.current.forEach((id) => clearTimeout(id));
@@ -220,40 +167,29 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
 
   const runCycle = useCallback(() => {
     clearT();
-    if (typeof cancelAnimationFrame === "function" && rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = 0;
+    if (typeof cancelAnimationFrame === "function" && raf.current) {
+      cancelAnimationFrame(raf.current);
+      raf.current = 0;
     }
     setTyped("");
     setScore(0);
-    setRingSession((s) => s + 1);
-    setRingAnimate(false);
-    setExiting(false);
+    setSvgKey((k) => k + 1);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 400);
-    q(() => setStep(3), 800);
-    q(() => setStep(4), 1200);
-    q(() => setStep(5), 3400);
-    q(() => setStep(6), 3800);
-    q(() => setStep(7), 4400);
-    q(() => setStep(8), 6800);
-    q(() => setStep(9), 7200);
-    q(() => setStep(10), 7600);
-    q(() => setStep(11), 8200);
-    q(() => setStep(12), 10000);
-    q(() => setStep(13), 12000);
-    q(() => setStep(14), 14000);
-    q(() => setExiting(true), 15500);
+    q(() => setStep(2), 420);
+    q(() => setStep(3), 820);
+    q(() => setStep(4), 1180);
+    q(() => setStep(5), 1520);
+    q(() => setStep(7), 3120);
+    q(() => setStep(8), 3480);
+    q(() => setStep(9), 3820);
     q(() => {
       setOn(false);
       setStep(0);
       setTyped("");
       setScore(0);
-      setRingAnimate(false);
-      setExiting(false);
-    }, 17000);
-    q(() => runRef.current?.(), 17000);
+    }, 8480);
+    q(() => runRef.current?.(), 8480 + 5000);
   }, []);
 
   useEffect(() => {
@@ -294,97 +230,90 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
   }, [runCycle]);
 
   useEffect(() => {
-    if (step !== 4) return;
-    setRingAnimate(false);
-    const tmr = window.setTimeout(() => {
-      setRingAnimate(true);
-    }, 50);
-    return () => clearTimeout(tmr);
-  }, [step]);
-
-  useEffect(() => {
-    if (!ringAnimate) return;
     let cancelled = false;
-    const TARGET = 78;
     const DURATION = 1500;
-    const startTime = performance.now();
+    const TARGET = 78;
+    let t0 = 0;
+    let started = false;
     const tick = (now: number) => {
       if (cancelled) return;
-      const elapsed = now - startTime;
+      if (!started) {
+        if (stepRef.current < 5) {
+          raf.current = requestAnimationFrame(tick);
+          return;
+        }
+        started = true;
+        t0 = now;
+      }
+      const elapsed = now - t0;
       const progress = Math.min(elapsed / DURATION, 1);
       setScore(progress >= 1 ? TARGET : Math.round(progress * TARGET));
       if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick);
+        raf.current = requestAnimationFrame(tick);
+      } else {
+        raf.current = 0;
       }
     };
-    rafRef.current = requestAnimationFrame(tick);
+    raf.current = requestAnimationFrame(tick);
     return () => {
       cancelled = true;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = 0;
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = 0;
     };
-  }, [ringAnimate]);
+  }, [svgKey]);
 
   useEffect(() => {
-    if (step !== 7) return;
-    const line = moodyLineRef.current;
+    if (step !== 9) return;
     let i = 0;
+    const line = moodyLineRef.current;
     const id = window.setInterval(() => {
       i += 1;
       setTyped(line.slice(0, i));
-      if (i >= line.length) clearInterval(id);
+      if (i >= line.length) {
+        clearInterval(id);
+        setStep(10);
+      }
     }, 30);
     return () => clearInterval(id);
   }, [step]);
 
-  const sConfirm = step >= 12;
-  const sPulse = step >= 13;
-
-  const rootCls = [
-    "wm-mock",
-    "wm-mm",
-    `wm-mm--s${Math.min(step, 14)}`,
-    step >= 3 ? "wm-mm--heart" : "",
-    on ? "wm-mock--on" : "",
-    exiting ? "wm-mock--exiting" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const displayStep = step >= 10 ? 10 : step;
 
   return (
-    <div ref={root} role="presentation" aria-hidden className={rootCls}>
-      <WmStatusBar dark />
+    <div
+      ref={root}
+      role="presentation"
+      aria-hidden
+      className={`wm-mock wm-mm wm-mm--s${displayStep} ${on ? "wm-mock--on" : ""}`}
+    >
+      <div className="wm-mock__status">
+        <span>9:41</span>
+        <span>●●●●</span>
+      </div>
       <div className="wm-mock__scroll">
-        <header className="wm-topbar">
-          <div className="wm-topbar__left">
-            <span className="wm-topbar__title">{t.title}</span>
-          </div>
-        </header>
-
-        <div className="wm-mm__users">
-          <div className="wm-mm__user">
-            <div className="wm-mm__av wm-mm__av--e">E</div>
-            <span className="wm-mm__userLbl">{t.you}</span>
-          </div>
-          <div className="wm-mm__dash" aria-hidden />
+        <div className="wm-mm__label">{t.title}</div>
+        <div className="wm-mm__avatars">
+          <div className="wm-mm__av wm-mm__av--e">E</div>
           <div className="wm-mm__heart" aria-hidden>
             💚
           </div>
-          <div className="wm-mm__dash" aria-hidden />
-          <div className="wm-mm__user">
-            <div className="wm-mm__av wm-mm__av--s">S</div>
-            <span className="wm-mm__userLbl">{t.partner}</span>
-          </div>
+          <div className="wm-mm__av wm-mm__av--s">S</div>
         </div>
-
         <div className="wm-mm__ringWrap">
           <svg
+            key={svgKey}
             className="wm-mm__ring"
             viewBox="0 0 120 120"
-            width={110}
-            height={110}
+            width={100}
+            height={100}
             aria-hidden
           >
+            <defs>
+              <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#2A6049" />
+                <stop offset="100%" stopColor="#5DCAA5" />
+              </linearGradient>
+            </defs>
             <circle
               className="wm-mm__track"
               cx={60}
@@ -394,162 +323,51 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
               strokeWidth={8}
             />
             <circle
-              key={ringSession}
-              className={`wm-mm__prog ${ringAnimate ? "wm-mm__prog--draw" : ""}`}
+              className="wm-mm__prog"
               cx={60}
               cy={60}
               r={50}
               fill="none"
+              stroke={`url(#${gradId})`}
               strokeWidth={8}
               strokeDasharray={314}
+              strokeDashoffset={314}
               strokeLinecap="round"
               transform="rotate(-90 60 60)"
             />
-            <text x={60} y={58} textAnchor="middle" className="wm-mm__score">
+            <text x={60} y={57} textAnchor="middle" className="wm-mm__score">
               {score}
             </text>
-            <text x={60} y={74} textAnchor="middle" className="wm-mm__subring">
+            <text x={60} y={72} textAnchor="middle" className="wm-mm__subring">
               {t.match}
             </text>
           </svg>
         </div>
-
         <div className="wm-mm__balance">{t.balance}</div>
         <div className="wm-mm__pills">
-          <span className="wm-mm__pill">{t.moods}</span>
+          {pillB ? (
+            <>
+              <span className="wm-mm__pill">{pillA}</span>
+              <span className="wm-mm__pill">{pillB}</span>
+            </>
+          ) : (
+            <span className="wm-mm__pill">{pillA}</span>
+          )}
         </div>
-
         <div className="wm-mm__moody">
           <div className="wm-mm__mav">M</div>
           <div className="wm-mm__mtext">{typed}</div>
         </div>
-
-        <div
-          className={`wm-mm__planRow ${step >= 8 ? "wm-mm__planRow--in" : ""}`}
-        >
-          <div className="wm-mm__planHead">🌅 {t.morning}</div>
-          <div className="wm-card wm-card--sm">
-            <img
-              src={IMG.coffee}
-              alt=""
-              width={80}
-              height={72}
-              style={{
-                width: "80px",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-                flexShrink: 0,
-                borderRadius: "14px 0 0 14px",
-              }}
-            />
-            <div className="wm-card__body">
-              <div className="wm-card__top">
-                <span className="wm-card__name">{t.placeCoffee}</span>
-                <span className="wm-card__rating">★ 4.6</span>
-              </div>
-              <span className="wm-card__badge">{t.typeCoffee}</span>
-              <div className="wm-card__bottom">
-                <span className="wm-card__dist">{t.meta1}</span>
-                <div className="wm-mm__planAv">
-                  <span className="wm-mm__miniAv wm-mm__miniAv--e wm-mm__miniAv--fill">
-                    E
-                  </span>
-                  <span className="wm-mm__miniAv wm-mm__miniAv--s wm-mm__miniAv--fill">
-                    S
-                  </span>
-                </div>
-              </div>
-            </div>
+        <div className="wm-mm__plans">
+          <div className="wm-mm__plan">
+            🌅 {t.placeCoffee} · {t.morning}
           </div>
-        </div>
-
-        <div
-          className={`wm-mm__planRow ${step >= 9 ? "wm-mm__planRow--in" : ""}`}
-        >
-          <div className="wm-mm__planHead">☀️ {t.afternoon}</div>
-          <div className="wm-card wm-card--sm">
-            <img
-              src={IMG.museum}
-              alt=""
-              width={80}
-              height={72}
-              style={{
-                width: "80px",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-                flexShrink: 0,
-                borderRadius: "14px 0 0 14px",
-              }}
-            />
-            <div className="wm-card__body">
-              <div className="wm-card__top">
-                <span className="wm-card__name">{t.placeMuseum}</span>
-                <span className="wm-card__rating">★ 4.4</span>
-              </div>
-              <span className="wm-card__badge">{t.typeMuseum}</span>
-              <div className="wm-card__bottom">
-                <span className="wm-card__dist">{t.meta2}</span>
-                <div className="wm-mm__planAv">
-                  <span className="wm-mm__miniAv wm-mm__miniAv--e wm-mm__miniAv--fill">
-                    E
-                  </span>
-                  <span
-                    className={`wm-mm__miniAv wm-mm__miniAv--s ${sConfirm ? "wm-mm__miniAv--fill" : "wm-mm__miniAv--empty"} ${sPulse && sConfirm ? "wm-mm__miniAv--pulse" : ""}`}
-                  >
-                    S
-                  </span>
-                </div>
-              </div>
-            </div>
+          <div className="wm-mm__plan">
+            ☀️ {t.placeMuseum} · {t.afternoon}
           </div>
-        </div>
-
-        <div
-          className={`wm-mm__planRow ${step >= 10 ? "wm-mm__planRow--in" : ""}`}
-        >
-          <div className="wm-mm__planHead">🌆 {t.evening}</div>
-          <div className="wm-card wm-card--sm">
-            <img
-              src={IMG.bar}
-              alt=""
-              width={80}
-              height={72}
-              style={{
-                width: "80px",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-                flexShrink: 0,
-                borderRadius: "14px 0 0 14px",
-              }}
-            />
-            <div className="wm-card__body">
-              <div className="wm-card__top">
-                <span className="wm-card__name">{t.placeWine}</span>
-                <span className="wm-card__rating">★ 4.6</span>
-              </div>
-              <span className="wm-card__badge">{t.typeWine}</span>
-              <div className="wm-card__bottom">
-                <span className="wm-card__dist">{t.meta3}</span>
-                <div className="wm-mm__planAv">
-                  <span className="wm-mm__miniAv wm-mm__miniAv--e wm-mm__miniAv--empty">
-                    E
-                  </span>
-                  <span className="wm-mm__miniAv wm-mm__miniAv--s wm-mm__miniAv--empty">
-                    S
-                  </span>
-                </div>
-              </div>
-            </div>
+          <div className="wm-mm__plan">
+            🌆 {t.placeWine} · {t.evening}
           </div>
-          <button
-            type="button"
-            className={`wm-mm__cta ${step >= 11 ? "wm-mm__cta--in" : ""}`}
-          >
-            {t.confirm}
-          </button>
         </div>
       </div>
       <WmBottomNav active="plans" variant="dark" labels={t.nav} />

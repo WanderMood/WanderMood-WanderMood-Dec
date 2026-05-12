@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WmBottomNav, WmStatusBar, type WmNavLabels } from "./mockup_chrome";
+import { WmBottomNav, type WmNavLabels } from "./mockup_chrome";
 
 type MockLocale = "nl" | "en" | "de" | "es" | "fr";
 
@@ -16,32 +16,21 @@ const U = {
     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=160&h=200&fit=crop&q=70",
   museum:
     "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=160&h=200&fit=crop&q=70",
-  park: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=160&h=200&fit=crop&q=70",
-  bar: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=160&h=200&fit=crop&q=70",
+  wine: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=160&h=200&fit=crop&q=70",
 } as const;
 
-type DayT = {
+type DayV1 = {
   nav: WmNavLabels;
-  title: string;
   date: string;
+  title: string;
   weather: string;
-  arrived: string;
-  withSarah: string;
-  freeTime: string;
-  chips: [string, string, string, string];
-  bike1: string;
-  bike2: string;
-  walk: string;
-  route: string;
-  typePark: string;
-  addDay: string;
-  heroPlace: string;
-  tlDepot: string;
-  tlPark: string;
-  tlWine: string;
+  depotLong: string;
+  slot1Sub: string;
+  slot2Sub: string;
+  slot3Sub: string;
 };
 
-const DAY: Record<MockLocale, DayT> = {
+const DAY_V1: Record<MockLocale, DayV1> = {
   nl: {
     nav: {
       day: "Mijn Dag",
@@ -50,23 +39,13 @@ const DAY: Record<MockLocale, DayT> = {
       plans: "Plans",
       profile: "Profiel",
     },
-    title: "Mijn Dag",
     date: "Zaterdag, 11 mei",
+    title: "Jouw dag",
     weather: "☀️ 18°C · Rotterdam · Lekker dagje uit",
-    arrived: "✓ Je bent er",
-    withSarah: "Met Sarah",
-    freeTime: "Misschien leuk in je vrije tijd",
-    chips: ["☕ Koffie halen", "🛍️ Winkelen", "🌳 Wandelen", "🎨 Museum"],
-    bike1: "🚲 12 min fietsen",
-    bike2: "🚴 18 min fietsen",
-    walk: "🚶 10 min lopen",
-    route: "Routebeschrijving",
-    typePark: "Park",
-    addDay: "+ Dag",
-    heroPlace: "Hopper Espresso Bar",
-    tlDepot: "DEPOT Boijmans",
-    tlPark: "Kralingse Bos",
-    tlWine: "Wijnbar Sobre",
+    depotLong: "DEPOT Boijmans Van Beuningen",
+    slot1Sub: "☕ Met Sarah · Je bent er!",
+    slot2Sub: "🎭 Met Sarah",
+    slot3Sub: "🍷 Met Sarah",
   },
   en: {
     nav: {
@@ -76,23 +55,13 @@ const DAY: Record<MockLocale, DayT> = {
       plans: "Plans",
       profile: "Profile",
     },
-    title: "My Day",
     date: "Saturday, 11 May",
+    title: "Your day",
     weather: "☀️ 18°C · Rotterdam · Great day out",
-    arrived: "✓ You're here",
-    withSarah: "With Sarah",
-    freeTime: "Maybe fun in your free time",
-    chips: ["☕ Get coffee", "🛍️ Shopping", "🌳 Walking", "🎨 Museum"],
-    bike1: "🚲 12 min bike",
-    bike2: "🚴 18 min bike",
-    walk: "🚶 10 min walk",
-    route: "Directions",
-    typePark: "Park",
-    addDay: "+ Day",
-    heroPlace: "Hopper Espresso Bar",
-    tlDepot: "DEPOT Boijmans",
-    tlPark: "Kralingse Bos",
-    tlWine: "Wijnbar Sobre",
+    depotLong: "DEPOT Boijmans Van Beuningen",
+    slot1Sub: "☕ With Sarah · You're here!",
+    slot2Sub: "🎭 With Sarah",
+    slot3Sub: "🍷 With Sarah",
   },
   de: {
     nav: {
@@ -102,23 +71,13 @@ const DAY: Record<MockLocale, DayT> = {
       plans: "Plans",
       profile: "Profil",
     },
-    title: "Mein Tag",
     date: "Samstag, 11. Mai",
+    title: "Dein Tag",
     weather: "☀️ 18°C · Rotterdam · Schöner Tag",
-    arrived: "✓ Du bist da",
-    withSarah: "Mit Sarah",
-    freeTime: "Vielleicht interessant",
-    chips: ["☕ Kaffee", "🛍️ Einkaufen", "🌳 Spazieren", "🎨 Museum"],
-    bike1: "🚲 12 Min. Fahrrad",
-    bike2: "🚴 18 Min. Fahrrad",
-    walk: "🚶 10 Min. Fußweg",
-    route: "Route",
-    typePark: "Park",
-    addDay: "+ Tag",
-    heroPlace: "Hopper Espresso Bar",
-    tlDepot: "DEPOT Boijmans",
-    tlPark: "Kralingse Bos",
-    tlWine: "Wijnbar Sobre",
+    depotLong: "DEPOT Boijmans Van Beuningen",
+    slot1Sub: "☕ Mit Sarah · Du bist da!",
+    slot2Sub: "🎭 Mit Sarah",
+    slot3Sub: "🍷 Mit Sarah",
   },
   es: {
     nav: {
@@ -128,23 +87,13 @@ const DAY: Record<MockLocale, DayT> = {
       plans: "Plans",
       profile: "Perfil",
     },
-    title: "Mi Día",
     date: "Sábado, 11 mayo",
+    title: "Tu día",
     weather: "☀️ 18°C · Rotterdam · Buen día",
-    arrived: "✓ Ya estás",
-    withSarah: "Con Sarah",
-    freeTime: "Quizás te guste",
-    chips: ["☕ Café", "🛍️ Compras", "🌳 Pasear", "🎨 Museo"],
-    bike1: "🚲 12 min bici",
-    bike2: "🚴 18 min bici",
-    walk: "🚶 10 min andando",
-    route: "Ruta",
-    typePark: "Parque",
-    addDay: "+ Día",
-    heroPlace: "Hopper Espresso Bar",
-    tlDepot: "DEPOT Boijmans",
-    tlPark: "Kralingse Bos",
-    tlWine: "Wijnbar Sobre",
+    depotLong: "DEPOT Boijmans Van Beuningen",
+    slot1Sub: "☕ Con Sarah · ¡Ya estás!",
+    slot2Sub: "🎭 Con Sarah",
+    slot3Sub: "🍷 Con Sarah",
   },
   fr: {
     nav: {
@@ -154,80 +103,18 @@ const DAY: Record<MockLocale, DayT> = {
       plans: "Plans",
       profile: "Profil",
     },
-    title: "Ma Journée",
     date: "Samedi, 11 mai",
+    title: "Ta journée",
     weather: "☀️ 18°C · Rotterdam · Belle journée",
-    arrived: "✓ Tu y es",
-    withSarah: "Avec Sarah",
-    freeTime: "Peut-être sympa",
-    chips: ["☕ Café", "🛍️ Shopping", "🌳 Promenade", "🎨 Musée"],
-    bike1: "🚲 12 min vélo",
-    bike2: "🚴 18 min vélo",
-    walk: "🚶 10 min à pied",
-    route: "Itinéraire",
-    typePark: "Parc",
-    addDay: "+ Jour",
-    heroPlace: "Hopper Espresso Bar",
-    tlDepot: "DEPOT Boijmans",
-    tlPark: "Kralingse Bos",
-    tlWine: "Wijnbar Sobre",
+    depotLong: "DEPOT Boijmans Van Beuningen",
+    slot1Sub: "☕ Avec Sarah · Tu y es !",
+    slot2Sub: "🎭 Avec Sarah",
+    slot3Sub: "🍷 Avec Sarah",
   },
 };
 
-function chipParts(chip: string) {
-  const i = chip.indexOf(" ");
-  if (i <= 0) return { emoji: chip, text: "" };
-  return { emoji: chip.slice(0, i), text: chip.slice(i + 1).trim() };
-}
-
-function DayCardSm({
-  src,
-  name,
-  rating,
-  badge,
-  dist,
-  addLabel,
-}: {
-  src: string;
-  name: string;
-  rating: string;
-  badge: string;
-  dist: string;
-  addLabel: string;
-}) {
-  return (
-    <div className="wm-card wm-card--sm">
-      <img
-        src={src}
-        alt=""
-        width={80}
-        height={72}
-        style={{
-          width: "80px",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-          flexShrink: 0,
-          borderRadius: "14px 0 0 14px",
-        }}
-      />
-      <div className="wm-card__body">
-        <div className="wm-card__top">
-          <span className="wm-card__name">{name}</span>
-          <span className="wm-card__rating">{rating}</span>
-        </div>
-        <span className="wm-card__badge">{badge}</span>
-        <div className="wm-card__bottom">
-          <span className="wm-card__dist">{dist}</span>
-          <span className="wm-card__add">{addLabel}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function MyDayMockup({ locale }: { locale: string }) {
-  const t = DAY[mockLocale(locale)];
+  const t = DAY_V1[mockLocale(locale)];
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -235,9 +122,6 @@ export function MyDayMockup({ locale }: { locale: string }) {
   const [step, setStep] = useState(0);
   const [pKick, setPKick] = useState(false);
   const [pulse, setPulse] = useState(false);
-  const [bright, setBright] = useState(false);
-  const [scrollSim, setScrollSim] = useState(false);
-  const [exiting, setExiting] = useState(false);
 
   const clearT = () => {
     timers.current.forEach((id) => clearTimeout(id));
@@ -254,46 +138,27 @@ export function MyDayMockup({ locale }: { locale: string }) {
     clearT();
     setPKick(false);
     setPulse(false);
-    setBright(false);
-    setScrollSim(false);
-    setExiting(false);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 400);
+    q(() => setStep(2), 380);
+    q(() => setStep(3), 720);
     q(() => {
-      setStep(3);
+      setStep(4);
       setPKick(true);
-    }, 900);
-    q(() => setPKick(false), 1480);
-    q(() => setStep(4), 1800);
-    q(() => setStep(5), 2400);
-    q(() => setStep(6), 2800);
-    q(() => setStep(7), 3200);
-    q(() => setStep(8), 3600);
-    q(() => setStep(9), 3800);
-    q(() => setStep(10), 4000);
-    q(() => setStep(11), 5000);
-    q(() => setStep(12), 5500);
-    q(() => setStep(13), 5700);
-    q(() => setStep(14), 5900);
-    q(() => setStep(15), 6100);
+    }, 1620);
+    q(() => setPKick(false), 2360);
+    q(() => setStep(5), 1840);
+    q(() => setStep(6), 2060);
     q(() => {
+      setStep(7);
       setPulse(true);
-      setBright(true);
-    }, 7500);
+    }, 5060);
+    q(() => setPulse(false), 6320);
     q(() => {
-      setPulse(false);
-      setBright(false);
-    }, 8300);
-    q(() => setScrollSim(true), 9000);
-    q(() => setScrollSim(false), 11000);
-    q(() => setExiting(true), 14500);
-    q(() => {
-      setExiting(false);
       setOn(false);
       setStep(0);
-    }, 16000);
-    q(() => runRef.current?.(), 16000);
+    }, 8560);
+    q(() => runRef.current?.(), 8560 + 5000);
   }, []);
 
   useEffect(() => {
@@ -340,127 +205,79 @@ export function MyDayMockup({ locale }: { locale: string }) {
     on ? "wm-mock--on" : "",
     pKick ? "wm-day--pKick" : "",
     pulse ? "wm-day--pulse" : "",
-    bright ? "wm-day--bright" : "",
-    scrollSim ? "wm-day--scroll" : "",
-    exiting ? "wm-mock--exiting" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
-  const sarahMuseum = `🎭 ${t.withSarah}`;
-  const sarahWine = `🍷 ${t.withSarah}`;
-
   return (
     <div ref={root} role="presentation" aria-hidden className={cls}>
-      <WmStatusBar />
+      <div className="wm-day__bar">
+        <span>9:41</span>
+        <span aria-hidden>🔔</span>
+      </div>
       <div className="wm-mock__scroll">
-        <header className="wm-topbar">
-          <div className="wm-topbar__left">
-            <span className="wm-topbar__title">{t.title}</span>
-          </div>
-          <div className="wm-topbar__bell" aria-hidden>
-            🔔
-            <span className="wm-topbar__bellDot" />
-          </div>
+        <header className="wm-day__head">
+          <div className="wm-day__date">{t.date}</div>
+          <div className="wm-day__title">{t.title}</div>
         </header>
-
-        <div className="wm-day__panorama">
-          <div className="wm-day__dateWx">
-            <div className="wm-day__dateLine">{t.date}</div>
-            <div className="wm-day__wxInline">{t.weather}</div>
-          </div>
-
-          <div className="wm-day__hero">
-            <span className="wm-day__heroEmoji" aria-hidden>
-              ☕
-            </span>
-            <div className="wm-day__heroTop">
-              <span className="wm-day__heroTime">09:00</span>
-              <span className="wm-day__heroStatus">{t.arrived}</span>
-            </div>
-            <div className="wm-day__heroName">{t.heroPlace}</div>
-            <div className="wm-day__heroBot">
-              <span className="wm-day__heroBadge">
-                ☕ {t.withSarah}
-              </span>
-              <span className="wm-day__heroLink">{t.route}</span>
-            </div>
-          </div>
-
-          <div className="wm-day__timeline">
-            <div className="wm-day__line" aria-hidden />
-
-            <div className="wm-day__between wm-day__between--1">
-              <span className="wm-day__betweenPill">{t.bike1}</span>
-            </div>
-
-            <div className="wm-day__tlItem">
-              <div className="wm-day__timeLbl">13:00</div>
-              <div className="wm-day__dot wm-day__dot--out" aria-hidden />
-              <div className="wm-day__tlCard wm-day__tlCard--1">
-                <DayCardSm
-                  src={U.museum}
-                  name={t.tlDepot}
-                  rating="★ 4.4"
-                  badge={sarahMuseum}
-                  dist="📍 1.2 km"
-                  addLabel={t.addDay}
-                />
-              </div>
-            </div>
-
-            <div className="wm-day__between wm-day__between--2">
-              <span className="wm-day__betweenPill">{t.bike2}</span>
-            </div>
-
-            <div className="wm-day__tlItem">
-              <div className="wm-day__timeLbl">15:30</div>
-              <div className="wm-day__dot wm-day__dot--out" aria-hidden />
-              <div className="wm-day__tlCard wm-day__tlCard--2">
-                <DayCardSm
-                  src={U.park}
-                  name={t.tlPark}
-                  rating="★ 4.7"
-                  badge={t.typePark}
-                  dist="📍 3.4 km"
-                  addLabel={t.addDay}
-                />
-              </div>
-            </div>
-
-            <div className="wm-day__between wm-day__between--3">
-              <span className="wm-day__betweenPill">{t.walk}</span>
-            </div>
-
-            <div className="wm-day__tlItem">
-              <div className="wm-day__timeLbl">19:00</div>
-              <div className="wm-day__dot wm-day__dot--out" aria-hidden />
-              <div className="wm-day__tlCard wm-day__tlCard--3">
-                <DayCardSm
-                  src={U.bar}
-                  name={t.tlWine}
-                  rating="★ 4.6"
-                  badge={sarahWine}
-                  dist="📍 0.8 km"
-                  addLabel={t.addDay}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="wm-day__freeLabel">{t.freeTime}</div>
-          <div className="wm-day__freeRow">
-            {t.chips.map((chip) => {
-              const { emoji, text } = chipParts(chip);
-              return (
-                <div key={chip} className="wm-day__freeChip">
-                  <span className="wm-day__freeEmoji" aria-hidden>
-                    {emoji}
+        <div className="wm-day__wx">{t.weather}</div>
+        <div className="wm-day__timeline">
+          <div className="wm-day__line" aria-hidden />
+          <div className="wm-day__slot">
+            <div className="wm-day__time">09:00</div>
+            <div className="wm-day__dot" aria-hidden />
+            <div className="wm-day__card wm-day__card--here">
+              <img
+                className="wm-day__cardImg"
+                src={U.coffee}
+                alt=""
+                width={160}
+                height={200}
+              />
+              <div className="wm-day__cardMain">
+                <div className="wm-day__row">
+                  <div className="wm-day__name">Hopper Espresso Bar</div>
+                  <span className="wm-day__check" aria-hidden>
+                    ✓
                   </span>
-                  <span className="wm-day__freeTxt">{text}</span>
                 </div>
-              );
-            })}
+                <div className="wm-day__sub">{t.slot1Sub}</div>
+              </div>
+            </div>
+          </div>
+          <div className="wm-day__slot">
+            <div className="wm-day__time">13:00</div>
+            <div className="wm-day__dot" aria-hidden />
+            <div className="wm-day__card">
+              <img
+                className="wm-day__cardImg"
+                src={U.museum}
+                alt=""
+                width={160}
+                height={200}
+              />
+              <div className="wm-day__cardMain">
+                <div className="wm-day__name">{t.depotLong}</div>
+                <div className="wm-day__sub">{t.slot2Sub}</div>
+              </div>
+            </div>
+          </div>
+          <div className="wm-day__slot">
+            <div className="wm-day__time">19:00</div>
+            <div className="wm-day__dot" aria-hidden />
+            <div className="wm-day__card">
+              <img
+                className="wm-day__cardImg"
+                src={U.wine}
+                alt=""
+                width={160}
+                height={200}
+              />
+              <div className="wm-day__cardMain">
+                <div className="wm-day__name">Wijnbar Sobre</div>
+                <div className="wm-day__sub">{t.slot3Sub}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
