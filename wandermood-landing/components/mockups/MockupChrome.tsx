@@ -1,6 +1,65 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, SVGProps, JSX } from "react";
+
+/* ---------- SVG Tab Icons ---------- */
+function IconMyDay(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...p}>
+      <rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="3" y="4" width="18" height="5.5" rx="2" fill="currentColor" opacity="0.15" />
+      <path d="M3 9.5h18" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 2.5v3M16 2.5v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <text x="12" y="19" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="currentColor" fontFamily="system-ui,sans-serif">17</text>
+    </svg>
+  );
+}
+
+function IconExplore(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...p}>
+      <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M15.5 15.5L20 20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconMoody(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...p}>
+      <path d="M12 2L13.5 8.5L20 7L15 11.5L18 18L12 14L6 18L9 11.5L4 7L10.5 8.5L12 2Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" fill="currentColor" fillOpacity="0.12" />
+      <circle cx="12" cy="11.5" r="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconPlans(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...p}>
+      <circle cx="9" cy="7" r="3.2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M2 20c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="17" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M20 20c0-2.761-1.5-5-3.5-5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconProfile(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...p}>
+      <circle cx="12" cy="7.5" r="3.8" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M4 20.5c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const TAB_ICONS: Record<string, (p: SVGProps<SVGSVGElement>) => JSX.Element> = {
+  myDay: IconMyDay,
+  explore: IconExplore,
+  moody: IconMoody,
+  plans: IconPlans,
+  profile: IconProfile,
+};
 
 export type MockupNavActive = "explore" | "myDay" | "moody" | "plans" | "profile";
 
@@ -102,12 +161,12 @@ export function MockupBottomNav({ active, locale, variant = "default" }: BottomN
   const loc = normalizeLocale(locale);
   const lab = NAV_LABELS[loc];
   /** Order: My Day, Explore, Moody, Plans, Profile */
-  const tabs: { id: MockupNavActive; icon: string; label: string }[] = [
-    { id: "myDay", icon: "📅", label: lab.myDay },
-    { id: "explore", icon: "🔍", label: lab.explore },
-    { id: "moody", icon: "✨", label: lab.moody },
-    { id: "plans", icon: "👥", label: lab.plans },
-    { id: "profile", icon: "👤", label: lab.profile },
+  const tabs: { id: MockupNavActive; label: string }[] = [
+    { id: "myDay", label: lab.myDay },
+    { id: "explore", label: lab.explore },
+    { id: "moody", label: lab.moody },
+    { id: "plans", label: lab.plans },
+    { id: "profile", label: lab.profile },
   ];
 
   const navClass =
@@ -117,17 +176,25 @@ export function MockupBottomNav({ active, locale, variant = "default" }: BottomN
 
   return (
     <nav className={navClass} aria-hidden>
-      {tabs.map((tab) => (
-        <div
-          key={tab.id}
-          className={`wm-appNav__tab ${active === tab.id ? "wm-appNav__tab--active" : ""}`}
-        >
-          <span className="wm-appNav__icon" aria-hidden>
-            {tab.icon}
-          </span>
-          <span className="wm-appNav__label">{tab.label}</span>
-        </div>
-      ))}
+      {tabs.map((tab) => {
+        const isActive = active === tab.id;
+        const Icon = TAB_ICONS[tab.id];
+        return (
+          <div
+            key={tab.id}
+            className={`wm-appNav__tab ${isActive ? "wm-appNav__tab--active" : ""}`}
+          >
+            <span className="wm-appNav__icon" aria-hidden>
+              <Icon
+                width={20}
+                height={20}
+                className="wm-appNav__svg"
+              />
+            </span>
+            <span className="wm-appNav__label">{tab.label}</span>
+          </div>
+        );
+      })}
     </nav>
   );
 }

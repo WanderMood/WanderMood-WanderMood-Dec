@@ -239,11 +239,13 @@
 /* ----- Bottom nav ----- */
 .wm-appNav {
   flex-shrink: 0;
-  height: 52px;
+  height: 54px;
   display: flex;
   align-items: stretch;
-  background: #ffffff;
-  border-top: 1px solid rgba(26, 23, 20, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid rgba(26, 23, 20, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .wm-appNav__tab {
@@ -254,49 +256,64 @@
   justify-content: center;
   gap: 3px;
   min-width: 0;
-  padding-inline: 4px;
+  padding: 4px 0 2px;
 }
 
 .wm-appNav__icon {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
 }
 
+.wm-appNav__svg {
+  color: rgba(26, 23, 20, 0.28);
+  display: block;
+  transition: color 0.18s ease;
+}
+
+.wm-appNav__tab--active .wm-appNav__svg {
+  color: var(--wm-forest);
+}
+
 .wm-appNav__label {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 600;
-  color: rgba(26, 23, 20, 0.3);
+  color: rgba(26, 23, 20, 0.28);
   letter-spacing: 0.01em;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  padding: 0 2px;
+  transition: color 0.18s ease;
 }
 
 .wm-appNav__tab--active .wm-appNav__label {
   color: var(--wm-forest);
 }
 
-.wm-appNav__tab--active .wm-appNav__icon {
-  filter: none;
-  opacity: 1;
-}
-
+/* espresso variant */
 .wm-appNav--espresso {
-  background: #1a1916;
+  background: rgba(26, 25, 22, 0.97);
   border-top-color: rgba(245, 240, 232, 0.08);
 }
 
+.wm-appNav--espresso .wm-appNav__svg {
+  color: rgba(245, 240, 232, 0.28);
+}
+
+.wm-appNav--espresso .wm-appNav__tab--active .wm-appNav__svg {
+  color: #5dcaa5;
+}
+
 .wm-appNav--espresso .wm-appNav__label {
-  color: rgba(245, 240, 232, 0.3);
+  color: rgba(245, 240, 232, 0.28);
 }
 
 .wm-appNav--espresso .wm-appNav__tab--active .wm-appNav__label {
   color: #5dcaa5;
-}
-
-.wm-appNav--espresso .wm-appNav__tab--active .wm-appNav__icon {
-  opacity: 1;
 }
 
 /* ----- Shared place cards ----- */
@@ -305,7 +322,7 @@
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 90px;
+  height: 100px;
   background: var(--wm-card);
   border-radius: 14px;
   border: 1px solid var(--wm-border);
@@ -566,7 +583,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   position: relative;
 }
 
@@ -616,8 +633,8 @@
 }
 
 .wm-explore__peekCard {
-  height: 90px;
-  transform: translateY(-72px);
+  height: 100px;
+  transform: translateY(-82px);
 }
 
 /* Explore steps */
@@ -768,7 +785,7 @@
 
 .wm-explore--s8 .wm-explore__peekWrap .wm-explore__peekCard {
   opacity: 1;
-  transform: translateY(-72px);
+  transform: translateY(-82px);
 }
 
 .wm-explore__peekWrap .wm-explore__peekCard {
@@ -781,7 +798,7 @@
 
 /* ----- My Day ----- */
 .wm-day__outer {
-  gap: 4px;
+  gap: 5px;
   padding-bottom: 56px;
 }
 
@@ -806,8 +823,8 @@
 
 .wm-day__hero {
   position: relative;
-  height: 82px;
-  padding: 8px 12px 8px 16px;
+  height: 90px;
+  padding: 10px 12px 10px 16px;
   border-radius: 14px;
   background: linear-gradient(135deg, #2a4a35, #3d6e4a);
   overflow: hidden;
@@ -907,11 +924,11 @@
 }
 
 .wm-day--scrollSim .wm-day__track {
-  transform: translateY(-14px);
+  transform: translateY(-10px);
 }
 
 .wm-day__timeline {
-  margin-top: 2px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -934,7 +951,7 @@
 
 .wm-day__bridge {
   align-self: center;
-  margin: 3px 0;
+  margin: 5px 0;
   padding: 2px 8px;
   border-radius: 50px;
   font-size: 7px;
@@ -956,7 +973,7 @@
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   opacity: 0;
   transform: translateX(12px);
   transition:
@@ -995,7 +1012,7 @@
 }
 
 .wm-dayCard {
-  height: 68px;
+  height: 72px;
 }
 
 .wm-dayCard .wm-placeCard__photo {
