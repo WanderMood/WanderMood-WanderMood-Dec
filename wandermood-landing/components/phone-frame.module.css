@@ -77,15 +77,17 @@
   overflow: hidden;
 }
 
-/*
- * Desktop / tablet (landing site): inset the live HTML so it clears the painted
- * Dynamic Island, side curves, and home-indicator corner — without changing the
- * real-phone layout (max-width: 767px) where the frame is full-bleed inside.
- */
+/* Desktop / tablet: thinner inner black bezel (Pro Max look); full-bleed slot */
 @media (min-width: 768px) {
-  .screenSlot {
-    inset: 14px 5px 17px 5px;
-    border-radius: 36px;
+  .phoneInner {
+    padding: 3px;
+  }
+
+  .phoneInner::before {
+    top: 7px;
+    width: 100px;
+    height: 26px;
+    border-radius: 13px;
   }
 }
 

@@ -1543,8 +1543,7 @@
 
 @media (min-width: 900px) {
   .landing-page--home .home-sticky-phone-slot .home-phone-elevated--band {
-    /* Keep mockup readable without magnifying bezel / corner clipping */
-    transform: scale(1.04);
+    transform: scale(1.07);
     transform-origin: center top;
   }
 }
