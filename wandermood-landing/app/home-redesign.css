@@ -138,67 +138,6 @@
     backdrop-filter 0.25s ease;
 }
 
-/* Desktop: calmer nav — more padding, lighter type, less visual noise */
-@media (min-width: 900px) {
-  .landing-page--home .home-nav {
-    min-height: 72px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    gap: 20px;
-    border-bottom-color: rgba(245, 240, 232, 0.08);
-  }
-
-  .landing-page--home .home-nav-links {
-    gap: 32px;
-  }
-
-  .landing-page--home .home-nav-links a {
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    opacity: 0.88;
-  }
-
-  .landing-page--home .home-nav-end {
-    gap: 14px;
-  }
-
-  .landing-page--home .home-nav-locales {
-    padding: 4px;
-    gap: 2px;
-    border-color: rgba(245, 240, 232, 0.1);
-    background: rgba(245, 240, 232, 0.035);
-  }
-
-  .landing-page--home .home-nav-locale-btn {
-    font-size: 11px;
-    padding: 7px 11px;
-  }
-
-  .landing-page--home .home-nav-download {
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 999px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
-  }
-
-  .landing-page--home .home-nav .nav-logo {
-    gap: 9px;
-  }
-
-  .landing-page--home .home-nav .nav-logo-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-  }
-
-  .landing-page--home .home-nav .nav-logo-text {
-    font-size: 17px;
-    letter-spacing: -0.018em;
-  }
-}
-
 @media (max-width: 899px) {
   .landing-page--home .home-nav {
     position: fixed;
@@ -786,16 +725,6 @@
   padding: clamp(48px, 5vw, 72px) 24px;
 }
 
-@media (min-width: 900px) {
-  .landing-page--home .home-hero {
-    align-items: center;
-    padding-top: clamp(40px, 5vw, 72px);
-    padding-bottom: clamp(48px, 7vw, 96px);
-    /* Shorter than full viewport so type + mockup feel balanced on large screens */
-    min-height: min(92dvh, 900px);
-  }
-}
-
 .landing-page--home .home-hero-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -858,23 +787,6 @@
   letter-spacing: -0.02em;
 }
 
-@media (min-width: 900px) {
-  .landing-page--home .home-hero-h1 {
-    font-size: clamp(38px, 3.6vw, 54px);
-    line-height: 1.08;
-    letter-spacing: -0.018em;
-  }
-}
-
-/* Tablet / small laptop: avoid the 48–88px hero clamp that only applies ≥768px */
-@media (min-width: 768px) and (max-width: 899px) {
-  .landing-page--home .home-hero-h1 {
-    font-size: clamp(38px, 5.5vw, 56px);
-    line-height: 1.1;
-    letter-spacing: -0.018em;
-  }
-}
-
 @media (max-width: 899px) {
   .landing-page--home .home-hero-h1 {
     line-height: 1.12;
@@ -904,16 +816,6 @@
   line-height: 1.6;
   color: rgba(232, 223, 210, 0.76);
   max-width: 28rem;
-}
-
-@media (min-width: 900px) {
-  .landing-page--home .home-hero-sub {
-    margin-top: 20px;
-    font-size: 16px;
-    line-height: 1.65;
-    max-width: 26rem;
-    color: rgba(232, 223, 210, 0.8);
-  }
 }
 
 .landing-page--home .home-hero-cta {
@@ -1007,7 +909,7 @@
 @media (min-width: 768px) {
   .landing-page--home .home-hero-phone-wrap {
     max-width: none;
-    transform: scale(1.02);
+    transform: scale(1.06);
     transform-origin: center center;
     margin-top: clamp(20px, 4vw, 52px);
   }
@@ -1015,13 +917,13 @@
 
 @media (min-width: 1100px) {
   .landing-page--home .home-hero-phone-wrap {
-    transform: scale(1.04);
+    transform: scale(1.12);
   }
 }
 
 @media (min-width: 1280px) {
   .landing-page--home .home-hero-phone-wrap {
-    transform: scale(1.06);
+    transform: scale(1.16);
   }
 }
 
@@ -1156,13 +1058,6 @@
   line-height: 1.1;
   color: var(--home-cream);
   margin-bottom: 0;
-}
-
-@media (min-width: 900px) {
-  .landing-page--home .home-h2 {
-    font-size: clamp(28px, 2.8vw, 42px);
-    line-height: 1.12;
-  }
 }
 
 .landing-page--home .home-body {
@@ -1451,13 +1346,6 @@
   white-space: normal;
 }
 
-@media (min-width: 900px) {
-  .landing-page--home .home-feat-h2 {
-    font-size: clamp(26px, 2.9vw, 40px);
-    line-height: 1.08;
-  }
-}
-
 .landing-page--home .home-feat-h2-line {
   display: block;
   margin: 0;
@@ -1492,14 +1380,6 @@
   max-width: 520px;
 }
 
-@media (min-width: 900px) {
-  .landing-page--home .home-feat-body {
-    font-size: 15px;
-    line-height: 1.68;
-    max-width: 480px;
-  }
-}
-
 /* Sticky scroll feature tour (desktop) */
 .landing-page--home .home-sticky-features {
   padding: 0;
@@ -1528,7 +1408,7 @@
 .landing-page--home .home-sticky-right {
   flex: 0 0 min(308px, 36vw);
   position: sticky;
-  top: 88px;
+  top: 92px;
   align-self: flex-start;
   height: fit-content;
   display: flex;
@@ -1543,7 +1423,7 @@
 
 @media (min-width: 900px) {
   .landing-page--home .home-sticky-phone-slot .home-phone-elevated--band {
-    transform: scale(1.07);
+    transform: scale(1.12);
     transform-origin: center top;
   }
 }

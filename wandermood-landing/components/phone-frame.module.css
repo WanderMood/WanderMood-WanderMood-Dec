@@ -77,20 +77,6 @@
   overflow: hidden;
 }
 
-/* Desktop / tablet: thinner inner black bezel (Pro Max look); full-bleed slot */
-@media (min-width: 768px) {
-  .phoneInner {
-    padding: 3px;
-  }
-
-  .phoneInner::before {
-    top: 7px;
-    width: 100px;
-    height: 26px;
-    border-radius: 13px;
-  }
-}
-
 .img {
   object-fit: cover;
   object-position: top center;

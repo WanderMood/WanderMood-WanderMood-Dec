@@ -1,100 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WmBottomNav, type WmNavLabels } from "./mockup_chrome";
 
-type MockLocale = "nl" | "en" | "de" | "es" | "fr";
-
-function mockLocale(locale: string): MockLocale {
-  const l = locale?.toLowerCase() ?? "nl";
-  if (l === "en" || l === "de" || l === "es" || l === "fr") return l;
-  return "nl";
-}
-
-type MoodyV1 = {
-  nav: WmNavLabels;
-  title: string;
-  bubble1: string;
-  bubbleUser: string;
-  bubble2: string;
-  hint: string;
-};
-
-const MOODY_V1: Record<MockLocale, MoodyV1> = {
-  nl: {
-    nav: {
-      day: "Mijn Dag",
-      explore: "Explore",
-      moody: "Moody",
-      plans: "Plans",
-      profile: "Profiel",
-    },
-    title: "Moody",
-    bubble1: "Waar heb je zin in vandaag?",
-    bubbleUser: "Gezellig koffie in Rotterdam",
-    bubble2: "Top — ik zoek plekken voor je.",
-    hint: "Tip: stel gerust een vervolgvraag.",
-  },
-  en: {
-    nav: {
-      day: "My Day",
-      explore: "Explore",
-      moody: "Moody",
-      plans: "Plans",
-      profile: "Profile",
-    },
-    title: "Moody",
-    bubble1: "What are you in the mood for today?",
-    bubbleUser: "Cozy coffee in Rotterdam",
-    bubble2: "Nice — I'll find places for you.",
-    hint: "Tip: feel free to ask a follow-up.",
-  },
-  de: {
-    nav: {
-      day: "Mein Tag",
-      explore: "Explore",
-      moody: "Moody",
-      plans: "Plans",
-      profile: "Profil",
-    },
-    title: "Moody",
-    bubble1: "Worauf hast du heute Lust?",
-    bubbleUser: "Gemütlicher Kaffee in Rotterdam",
-    bubble2: "Super — ich suche Orte für dich.",
-    hint: "Tipp: stell ruhig eine Nachfrage.",
-  },
-  es: {
-    nav: {
-      day: "Mi Día",
-      explore: "Explore",
-      moody: "Moody",
-      plans: "Plans",
-      profile: "Perfil",
-    },
-    title: "Moody",
-    bubble1: "¿Qué te apetece hoy?",
-    bubbleUser: "Café acogedor en Rotterdam",
-    bubble2: "Genial — busco sitios para ti.",
-    hint: "Tip: puedes hacer una pregunta de seguimiento.",
-  },
-  fr: {
-    nav: {
-      day: "Ma Journée",
-      explore: "Explore",
-      moody: "Moody",
-      plans: "Plans",
-      profile: "Profil",
-    },
-    title: "Moody",
-    bubble1: "Tu as envie de quoi aujourd'hui ?",
-    bubbleUser: "Un café cosy à Rotterdam",
-    bubble2: "Top — je te trouve des adresses.",
-    hint: "Astuce : pose une question de suite.",
-  },
-};
-
-export function MoodyChatMockup({ locale }: { locale: string }) {
-  const t = MOODY_V1[mockLocale(locale)];
+export function MoodyChatMockup() {
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -176,17 +84,20 @@ export function MoodyChatMockup({ locale }: { locale: string }) {
         <span>●●●●</span>
       </div>
       <div className="wm-mock__scroll">
-        <div className="wm-moody__title">{t.title}</div>
+        <div className="wm-moody__title">Moody</div>
         <div className="wm-moody__thread">
-          <div className="wm-moody__bubble wm-moody__bubble--m">{t.bubble1}</div>
-          <div className="wm-moody__bubble wm-moody__bubble--u">
-            {t.bubbleUser}
+          <div className="wm-moody__bubble wm-moody__bubble--m">
+            Waar heb je zin in vandaag?
           </div>
-          <div className="wm-moody__bubble wm-moody__bubble--m">{t.bubble2}</div>
+          <div className="wm-moody__bubble wm-moody__bubble--u">
+            Gezellig koffie in Rotterdam
+          </div>
+          <div className="wm-moody__bubble wm-moody__bubble--m">
+            Top — ik zoek plekken voor je.
+          </div>
         </div>
-        <div className="wm-moody__hint">{t.hint}</div>
+        <div className="wm-moody__hint">Tip: stel gerust een vervolgvraag.</div>
       </div>
-      <WmBottomNav active="moody" labels={t.nav} />
     </div>
   );
 }
