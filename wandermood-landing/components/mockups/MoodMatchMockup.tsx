@@ -1,11 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  MockupBottomNav,
-  MockupStatusBar,
-  MockupTopBar,
-} from "./MockupChrome";
+import { MockupStatusBar, MockupTopBar } from "./MockupChrome";
 import type { MockupLocale } from "./MockupChrome";
 import {
   MOCK_IMG_COFFEE,
@@ -18,7 +14,7 @@ const SCORE_DURATION_MS = 1500;
 const RING_R = 50;
 
 function normalizeLocale(locale?: string): MockupLocale {
-  const l = (locale ?? "nl").toLowerCase();
+  const l = (locale ?? "en").toLowerCase();
   if (l === "nl" || l === "en" || l === "de" || l === "es" || l === "fr") return l;
   return "en";
 }
@@ -464,7 +460,6 @@ export function MoodMatchMockup({ locale }: { locale?: string }) {
           </div>
         </div>
       </div>
-      <MockupBottomNav active="plans" locale={locale} variant="espresso" />
     </div>
   );
 }

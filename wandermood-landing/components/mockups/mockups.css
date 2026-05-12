@@ -428,6 +428,7 @@
 .wm-explore__scroll {
   gap: 5px;
   overflow: hidden;
+  padding-bottom: 56px;
 }
 
 .wm-explore__chips {
@@ -513,8 +514,16 @@
 
 .wm-explore__stories {
   display: flex;
-  gap: 12px;
+  gap: 6px;
   justify-content: flex-start;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wm-explore__stories::-webkit-scrollbar {
+  display: none;
 }
 
 .wm-explore__story {
@@ -713,6 +722,24 @@
   transform: scale(1);
 }
 
+.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(4) .wm-explore__storyImg,
+.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(4) .wm-explore__storyImg,
+.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(4) .wm-explore__storyImg,
+.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(4) .wm-explore__storyImg,
+.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(4) .wm-explore__storyImg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(5) .wm-explore__storyImg,
+.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(5) .wm-explore__storyImg,
+.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(5) .wm-explore__storyImg,
+.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(5) .wm-explore__storyImg,
+.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(5) .wm-explore__storyImg {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .wm-explore--s5 .wm-explore__cardRow--a,
 .wm-explore--s6 .wm-explore__cardRow--a,
 .wm-explore--s7 .wm-explore__cardRow--a,
@@ -750,6 +777,7 @@
 /* ----- My Day ----- */
 .wm-day__outer {
   gap: 5px;
+  padding-bottom: 56px;
 }
 
 .wm-day__intro {
@@ -1380,6 +1408,7 @@
 .wm-mm__scroll {
   gap: 5px;
   overflow-y: auto;
+  padding-bottom: 12px;
 }
 
 .wm-mm__avatarsRow {

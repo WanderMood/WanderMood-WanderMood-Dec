@@ -21,7 +21,7 @@ import {
 type MoodPhase = 0 | 1 | 2;
 
 function normalizeLocale(locale?: string): MockupLocale {
-  const l = (locale ?? "nl").toLowerCase();
+  const l = (locale ?? "en").toLowerCase();
   if (l === "nl" || l === "en" || l === "de" || l === "es" || l === "fr") return l;
   return "en";
 }
@@ -42,7 +42,7 @@ type ExploreCopy = {
   typesDefault: [string, string, string];
   typesFoodie: [string, string, string];
   typesHalal: [string, string, string];
-  stories: [string, string, string];
+  stories: [string, string, string, string, string];
 };
 
 const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
@@ -62,7 +62,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Park"],
     typesFoodie: ["Foodhal", "Streetfood", "Wijnbar"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha bar", "Sportschool"],
   },
   en: {
     topTitle: "Explore",
@@ -80,7 +80,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Park"],
     typesFoodie: ["Food hall", "Streetfood", "Wine bar"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha bar", "Training floor"],
   },
   de: {
     topTitle: "Entdecken",
@@ -98,7 +98,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Park"],
     typesFoodie: ["Food-Halle", "Streetfood", "Weinbar"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha-Bar", "Gym"],
   },
   es: {
     topTitle: "Explorar",
@@ -116,7 +116,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Parque"],
     typesFoodie: ["Mercado", "Street food", "Bar de vinos"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Gimnasio"],
   },
   fr: {
     topTitle: "Explorer",
@@ -134,7 +134,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Musée", "Parc"],
     typesFoodie: ["Hall gastronomique", "Street food", "Bar à vin"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Salle de sport"],
   },
 };
 
@@ -347,18 +347,12 @@ export function ExploreMockup({ locale }: { locale?: string }) {
           <div className="wm-explore__trend">
             <div className="wm-explore__storiesLabel">{t.trending}</div>
             <div className="wm-explore__stories">
-              <div className="wm-explore__story">
-                <StoryCircleImg src={MOCK_STORY_IMGS[0]} />
-                <span className="wm-explore__storyCap">{t.stories[0]}</span>
-              </div>
-              <div className="wm-explore__story">
-                <StoryCircleImg src={MOCK_STORY_IMGS[1]} />
-                <span className="wm-explore__storyCap">{t.stories[1]}</span>
-              </div>
-              <div className="wm-explore__story">
-                <StoryCircleImg src={MOCK_STORY_IMGS[2]} />
-                <span className="wm-explore__storyCap">{t.stories[2]}</span>
-              </div>
+              {MOCK_STORY_IMGS.map((src, i) => (
+                <div key={src} className="wm-explore__story">
+                  <StoryCircleImg src={src} />
+                  <span className="wm-explore__storyCap">{t.stories[i]}</span>
+                </div>
+              ))}
             </div>
           </div>
 

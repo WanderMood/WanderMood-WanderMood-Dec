@@ -48,7 +48,7 @@ const NAV_LABELS: Record<
 };
 
 function normalizeLocale(locale?: string): MockupLocale {
-  const l = (locale ?? "nl").toLowerCase();
+  const l = (locale ?? "en").toLowerCase();
   if (l === "nl" || l === "en" || l === "de" || l === "es" || l === "fr") return l;
   return "en";
 }
