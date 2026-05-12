@@ -62,7 +62,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Park"],
     typesFoodie: ["Foodhal", "Streetfood", "Wijnbar"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre", "Matcha bar", "Sportschool"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Boulderen"],
   },
   en: {
     topTitle: "Explore",
@@ -80,7 +80,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Park"],
     typesFoodie: ["Food hall", "Streetfood", "Wine bar"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre", "Matcha bar", "Training floor"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Bouldering"],
   },
   de: {
     topTitle: "Entdecken",
@@ -98,7 +98,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Park"],
     typesFoodie: ["Food-Halle", "Streetfood", "Weinbar"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre", "Matcha-Bar", "Gym"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Bouldern"],
   },
   es: {
     topTitle: "Explorar",
@@ -116,7 +116,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Museum", "Parque"],
     typesFoodie: ["Mercado", "Street food", "Bar de vinos"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Gimnasio"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Búlder"],
   },
   fr: {
     topTitle: "Explorer",
@@ -134,7 +134,7 @@ const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
     typesDefault: ["Specialty coffee", "Musée", "Parc"],
     typesFoodie: ["Hall gastronomique", "Street food", "Bar à vin"],
     typesHalal: ["Halal", "Halal", "Halal"],
-    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Salle de sport"],
+    stories: ["Hopper", "DEPOT", "Sobre", "Matcha", "Escalade"],
   },
 };
 

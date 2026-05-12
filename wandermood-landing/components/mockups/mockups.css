@@ -252,20 +252,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
+  padding-inline: 4px;
 }
 
 .wm-appNav__icon {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
 }
 
 .wm-appNav__label {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
   color: rgba(26, 23, 20, 0.3);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .wm-appNav__tab--active .wm-appNav__label {
@@ -300,7 +305,7 @@
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100px;
+  height: 90px;
   background: var(--wm-card);
   border-radius: 14px;
   border: 1px solid var(--wm-border);
@@ -561,7 +566,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   position: relative;
 }
 
@@ -611,8 +616,8 @@
 }
 
 .wm-explore__peekCard {
-  height: 100px;
-  transform: translateY(-82px);
+  height: 90px;
+  transform: translateY(-72px);
 }
 
 /* Explore steps */
@@ -763,7 +768,7 @@
 
 .wm-explore--s8 .wm-explore__peekWrap .wm-explore__peekCard {
   opacity: 1;
-  transform: translateY(-82px);
+  transform: translateY(-72px);
 }
 
 .wm-explore__peekWrap .wm-explore__peekCard {
@@ -776,7 +781,7 @@
 
 /* ----- My Day ----- */
 .wm-day__outer {
-  gap: 5px;
+  gap: 4px;
   padding-bottom: 56px;
 }
 
@@ -801,8 +806,8 @@
 
 .wm-day__hero {
   position: relative;
-  height: 90px;
-  padding: 10px 12px 10px 16px;
+  height: 82px;
+  padding: 8px 12px 8px 16px;
   border-radius: 14px;
   background: linear-gradient(135deg, #2a4a35, #3d6e4a);
   overflow: hidden;
@@ -902,11 +907,11 @@
 }
 
 .wm-day--scrollSim .wm-day__track {
-  transform: translateY(-10px);
+  transform: translateY(-14px);
 }
 
 .wm-day__timeline {
-  margin-top: 4px;
+  margin-top: 2px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -929,7 +934,7 @@
 
 .wm-day__bridge {
   align-self: center;
-  margin: 5px 0;
+  margin: 3px 0;
   padding: 2px 8px;
   border-radius: 50px;
   font-size: 7px;
@@ -951,7 +956,7 @@
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   opacity: 0;
   transform: translateX(12px);
   transition:
@@ -990,7 +995,7 @@
 }
 
 .wm-dayCard {
-  height: 72px;
+  height: 68px;
 }
 
 .wm-dayCard .wm-placeCard__photo {
