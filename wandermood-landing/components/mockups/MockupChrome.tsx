@@ -1,13 +1,63 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslations } from "next-intl";
 
 export type MockupNavActive = "explore" | "myDay" | "moody" | "plans" | "profile";
 
-export function MockupStatusBar() {
+export type MockupLocale = "nl" | "en" | "de" | "es" | "fr";
+
+const NAV_LABELS: Record<
+  MockupLocale,
+  { myDay: string; explore: string; moody: string; plans: string; profile: string }
+> = {
+  nl: {
+    myDay: "Mijn Dag",
+    explore: "Explore",
+    moody: "Moody",
+    plans: "Plans",
+    profile: "Profiel",
+  },
+  en: {
+    myDay: "My Day",
+    explore: "Explore",
+    moody: "Moody",
+    plans: "Plans",
+    profile: "Profile",
+  },
+  de: {
+    myDay: "Mein Tag",
+    explore: "Entdecken",
+    moody: "Moody",
+    plans: "Pläne",
+    profile: "Profil",
+  },
+  es: {
+    myDay: "Mi día",
+    explore: "Explorar",
+    moody: "Moody",
+    plans: "Planes",
+    profile: "Perfil",
+  },
+  fr: {
+    myDay: "Ma journée",
+    explore: "Explorer",
+    moody: "Moody",
+    plans: "Plans",
+    profile: "Profil",
+  },
+};
+
+function normalizeLocale(locale?: string): MockupLocale {
+  const l = (locale ?? "nl").toLowerCase();
+  if (l === "nl" || l === "en" || l === "de" || l === "es" || l === "fr") return l;
+  return "en";
+}
+
+type StatusVariant = "light" | "dark";
+
+export function MockupStatusBar({ variant = "light" }: { variant?: StatusVariant }) {
   return (
-    <div className="wm-statusBar wm-statusBar--light">
+    <div className={`wm-statusBar wm-statusBar--${variant}`}>
       <span className="wm-statusBar__time">9:41</span>
       <div className="wm-statusBar__icons" aria-hidden>
         <span className="wm-statusBar__signal">
@@ -44,21 +94,29 @@ export function MockupTopBar({ title, leftExtra, right }: TopBarProps) {
 
 type BottomNavProps = {
   active: MockupNavActive;
+  locale?: string;
+  variant?: "default" | "espresso";
 };
 
-export function MockupBottomNav({ active }: BottomNavProps) {
-  const t = useTranslations("landing.mockups");
-  const tabs: { id: MockupNavActive; icon: string; labelKey: "navExplore" | "navMyDay" | "navMoody" | "navPlans" | "navProfile" }[] =
-    [
-      { id: "explore", icon: "🔍", labelKey: "navExplore" },
-      { id: "myDay", icon: "📅", labelKey: "navMyDay" },
-      { id: "moody", icon: "✨", labelKey: "navMoody" },
-      { id: "plans", icon: "👥", labelKey: "navPlans" },
-      { id: "profile", icon: "👤", labelKey: "navProfile" },
-    ];
+export function MockupBottomNav({ active, locale, variant = "default" }: BottomNavProps) {
+  const loc = normalizeLocale(locale);
+  const lab = NAV_LABELS[loc];
+  /** Order: My Day, Explore, Moody, Plans, Profile */
+  const tabs: { id: MockupNavActive; icon: string; label: string }[] = [
+    { id: "myDay", icon: "📅", label: lab.myDay },
+    { id: "explore", icon: "🔍", label: lab.explore },
+    { id: "moody", icon: "✨", label: lab.moody },
+    { id: "plans", icon: "👥", label: lab.plans },
+    { id: "profile", icon: "👤", label: lab.profile },
+  ];
+
+  const navClass =
+    variant === "espresso"
+      ? "wm-appNav wm-appNav--espresso"
+      : "wm-appNav";
 
   return (
-    <nav className="wm-appNav" aria-hidden>
+    <nav className={navClass} aria-hidden>
       {tabs.map((tab) => (
         <div
           key={tab.id}
@@ -67,7 +125,7 @@ export function MockupBottomNav({ active }: BottomNavProps) {
           <span className="wm-appNav__icon" aria-hidden>
             {tab.icon}
           </span>
-          <span className="wm-appNav__label">{t(tab.labelKey)}</span>
+          <span className="wm-appNav__label">{tab.label}</span>
         </div>
       ))}
     </nav>

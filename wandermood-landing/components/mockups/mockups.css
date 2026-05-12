@@ -12,8 +12,6 @@
   --wm-muted: rgba(26, 23, 20, 0.45);
   --wm-border: rgba(26, 23, 20, 0.07);
   --wm-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --wm-ring-c: 295.31;
-  --wm-ring-off: 64.97;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -71,6 +69,30 @@
 
 .wm-statusBar--light .wm-statusBar__batTerm {
   background: rgba(26, 23, 20, 0.42);
+}
+
+.wm-statusBar--dark {
+  color: rgba(245, 240, 232, 0.38);
+}
+
+.wm-statusBar--dark .wm-statusBar__signal span {
+  background: rgba(245, 240, 232, 0.42);
+}
+
+.wm-statusBar--dark .wm-statusBar__wifi {
+  border-color: rgba(245, 240, 232, 0.38);
+}
+
+.wm-statusBar--dark .wm-statusBar__bat {
+  border-color: rgba(245, 240, 232, 0.32);
+}
+
+.wm-statusBar--dark .wm-statusBar__bat::after {
+  background: rgba(245, 240, 232, 0.32);
+}
+
+.wm-statusBar--dark .wm-statusBar__batTerm {
+  background: rgba(245, 240, 232, 0.42);
 }
 
 .wm-statusBar__time {
@@ -255,6 +277,23 @@
   opacity: 1;
 }
 
+.wm-appNav--espresso {
+  background: #1a1916;
+  border-top-color: rgba(245, 240, 232, 0.08);
+}
+
+.wm-appNav--espresso .wm-appNav__label {
+  color: rgba(245, 240, 232, 0.3);
+}
+
+.wm-appNav--espresso .wm-appNav__tab--active .wm-appNav__label {
+  color: #5dcaa5;
+}
+
+.wm-appNav--espresso .wm-appNav__tab--active .wm-appNav__icon {
+  opacity: 1;
+}
+
 /* ----- Shared place cards ----- */
 .wm-placeCard {
   position: relative;
@@ -298,6 +337,11 @@
 
 .wm-placeCard--bar .wm-placeCard__photo {
   background: linear-gradient(135deg, #2a1a3a, #3d2a5a);
+}
+
+.wm-placeCard__photo:has(img) {
+  background: transparent !important;
+  padding: 0;
 }
 
 .wm-placeCard__body {
@@ -480,20 +524,9 @@
   gap: 3px;
 }
 
-.wm-explore__storyDot {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+.wm-explore__storyImg {
   border: 2px solid #fff;
-  background: linear-gradient(145deg, #2a6049, #e8784a);
-}
-
-.wm-explore__storyDot--b {
-  background: linear-gradient(145deg, #3a2d28, #c96d4a);
-}
-
-.wm-explore__storyDot--c {
-  background: linear-gradient(145deg, #1e3a4f, #5dcaa5);
+  box-sizing: border-box;
 }
 
 .wm-explore__storyCap {
@@ -505,7 +538,7 @@
   white-space: nowrap;
 }
 
-.wm-explore__story .wm-explore__storyDot {
+.wm-explore__story .wm-explore__storyImg {
   opacity: 0;
   transform: scale(0.85);
   transition:
@@ -653,29 +686,29 @@
   transform: translateY(0);
 }
 
-.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyDot,
-.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyDot,
-.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyDot,
-.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyDot,
-.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyDot {
+.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyImg,
+.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyImg,
+.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyImg,
+.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyImg,
+.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(1) .wm-explore__storyImg {
   opacity: 1;
   transform: scale(1);
 }
 
-.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyDot,
-.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyDot,
-.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyDot,
-.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyDot,
-.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyDot {
+.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyImg,
+.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyImg,
+.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyImg,
+.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyImg,
+.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(2) .wm-explore__storyImg {
   opacity: 1;
   transform: scale(1);
 }
 
-.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyDot,
-.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyDot,
-.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyDot,
-.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyDot,
-.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyDot {
+.wm-explore--s4 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyImg,
+.wm-explore--s5 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyImg,
+.wm-explore--s6 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyImg,
+.wm-explore--s7 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyImg,
+.wm-explore--s8 .wm-explore__stories .wm-explore__story:nth-child(3) .wm-explore__storyImg {
   opacity: 1;
   transform: scale(1);
 }
@@ -1447,26 +1480,19 @@
 }
 
 .wm-mm__ring .wm-mm__track {
-  stroke: rgba(42, 96, 73, 0.12);
+  stroke: rgba(93, 202, 165, 0.15);
 }
 
 .wm-mm__ring .wm-mm__prog {
+  stroke: #5dcaa5;
   stroke-linecap: round;
-  stroke-dasharray: var(--wm-ring-c);
-  stroke-dashoffset: var(--wm-ring-c);
-  transition: stroke-dashoffset 2s ease-out;
+  stroke-dasharray: 314;
+  stroke-dashoffset: 314;
+  transition: stroke-dashoffset 1.5s ease-out;
 }
 
-.wm-mm--s4 .wm-mm__prog,
-.wm-mm--s5 .wm-mm__prog,
-.wm-mm--s6 .wm-mm__prog,
-.wm-mm--s7 .wm-mm__prog,
-.wm-mm--s8 .wm-mm__prog,
-.wm-mm--s9 .wm-mm__prog,
-.wm-mm--s10 .wm-mm__prog,
-.wm-mm--s11 .wm-mm__prog,
-.wm-mm--s12 .wm-mm__prog {
-  stroke-dashoffset: var(--wm-ring-off);
+.wm-mm__ring .wm-mm__prog.wm-mm__prog--animate {
+  stroke-dashoffset: 69;
 }
 
 .wm-mm__score {
@@ -1675,4 +1701,102 @@
 
 .wm-mm--s12 .wm-mm__confirm {
   opacity: 1;
+}
+
+/* ----- Mood Match — espresso (matches in-app Mood Match) ----- */
+.wm-mm--espresso.wm-mock {
+  --wm-bg: #1a1714;
+  --wm-ink: #f5f0e8;
+  --wm-card: #2a2420;
+  --wm-muted: rgba(245, 240, 232, 0.5);
+  --wm-border: rgba(245, 240, 232, 0.07);
+  background: #1a1714;
+  color: #f5f0e8;
+}
+
+.wm-mm--espresso .wm-appTopBar__title,
+.wm-mm--espresso .wm-appTopBar__iconBtn {
+  color: #f5f0e8;
+}
+
+.wm-mm--espresso .wm-mm__avLabel {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm--espresso .wm-mm__av--e {
+  background: rgba(232, 120, 74, 0.2);
+  border-color: rgba(232, 120, 74, 0.25);
+  color: #e8784a;
+}
+
+.wm-mm--espresso .wm-mm__av--s {
+  background: rgba(93, 202, 165, 0.2);
+  border-color: rgba(93, 202, 165, 0.25);
+  color: #5dcaa5;
+}
+
+.wm-mm--espresso .wm-mm__balance {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm--espresso .wm-mm__score {
+  fill: #f5f0e8;
+}
+
+.wm-mm--espresso .wm-mm__subring {
+  fill: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm--espresso .wm-mm__pills {
+  background: rgba(93, 202, 165, 0.12);
+  color: #f5f0e8;
+}
+
+.wm-mm--espresso .wm-mm__moody {
+  background: rgba(42, 96, 73, 0.15);
+  border-color: rgba(42, 96, 73, 0.25);
+}
+
+.wm-mm--espresso .wm-mm__mtext {
+  color: rgba(245, 240, 232, 0.65);
+}
+
+.wm-mm--espresso .wm-mm__mav {
+  background: #5dcaa5;
+  color: #1a1714;
+}
+
+.wm-mm--espresso .wm-placeCard {
+  background: #2a2420;
+  border-color: rgba(245, 240, 232, 0.07);
+}
+
+.wm-mm--espresso .wm-placeCard__name,
+.wm-mm--espresso .wm-placeCard__metaLine {
+  color: #f5f0e8;
+}
+
+.wm-mm--espresso .wm-placeCard__badge {
+  background: rgba(93, 202, 165, 0.12);
+  color: #5dcaa5;
+}
+
+.wm-mm--espresso .wm-mmPlan__hdr {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.wm-mm--espresso .wm-mmPlan__dot--fill {
+  background: #5dcaa5;
+  color: #1a1714;
+}
+
+.wm-mm--espresso .wm-mmPlan__dot--out {
+  border-color: rgba(245, 240, 232, 0.15);
+  color: rgba(245, 240, 232, 0.35);
+  background: #2a2420;
+}
+
+.wm-mm--espresso .wm-mm__confirm {
+  background: #5dcaa5;
+  color: #1a1714;
 }

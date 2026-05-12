@@ -67,10 +67,10 @@ type PublicStats = {
   show: boolean;
 };
 
-function FeatureBandPhoneMock({ index }: { index: number }) {
-  if (index === 0) return <MoodyChatMockup />;
-  if (index === 1) return <MyDayMockup />;
-  return <ExploreMockup />;
+function FeatureBandPhoneMock({ index, locale }: { index: number; locale: string }) {
+  if (index === 0) return <MoodyChatMockup locale={locale} />;
+  if (index === 1) return <MyDayMockup locale={locale} />;
+  return <ExploreMockup locale={locale} />;
 }
 
 function AnimatedCounter({ value, locale }: { value: number; locale: string }) {
@@ -508,7 +508,7 @@ export default function LandingHome() {
                 <div className="home-sticky-mobile-visual">
                   <div className="home-feature-mobile-phone-wrap home-phone-elevated home-phone-elevated--band">
                     <PhoneFrame variant="band">
-                      <FeatureBandPhoneMock index={i} />
+                      <FeatureBandPhoneMock index={i} locale={currentLocale} />
                     </PhoneFrame>
                   </div>
                 </div>
@@ -521,7 +521,7 @@ export default function LandingHome() {
             >
               <div className="home-phone-elevated home-phone-elevated--band">
                 <PhoneFrame variant="band">
-                  <FeatureBandPhoneMock index={featurePhoneIdx} />
+                  <FeatureBandPhoneMock index={featurePhoneIdx} locale={currentLocale} />
                 </PhoneFrame>
               </div>
             </div>
@@ -544,7 +544,7 @@ export default function LandingHome() {
             <div className="home-mm-phones">
               <div className="home-mm-phone1 home-phone-elevated">
                 <PhoneFrame variant="band">
-                  <MoodMatchMockup />
+                  <MoodMatchMockup locale={currentLocale} />
                 </PhoneFrame>
               </div>
               <div className="home-mm-phone2 home-phone-elevated">

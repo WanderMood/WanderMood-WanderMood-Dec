@@ -1,58 +1,201 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MockupBottomNav,
   MockupStatusBar,
   MockupTopBar,
 } from "./MockupChrome";
-
-import type { TranslationValues } from "next-intl";
+import type { MockupLocale } from "./MockupChrome";
+import {
+  MOCK_IMG_COFFEE,
+  MOCK_IMG_FOOD_MARKET,
+  MOCK_IMG_MUSEUM,
+  MOCK_IMG_PARK,
+  MOCK_IMG_RESTAURANT,
+  MOCK_IMG_WINE,
+  MOCK_STORY_IMGS,
+} from "./mockup-place-images";
 
 /** 0 default, 1 foodie swap, 2 halal swap */
 type MoodPhase = 0 | 1 | 2;
 
-type MockupT = (key: string, values?: TranslationValues) => string;
-
-function cardTriple(phase: MoodPhase, t: MockupT): [string, string, string] {
-  if (phase === 1)
-    return [
-      t("exploreCard1b"),
-      t("exploreCard2b"),
-      t("exploreCard3b"),
-    ];
-  if (phase === 2)
-    return [
-      t("exploreCard1c"),
-      t("exploreCard2c"),
-      t("exploreCard3c"),
-    ];
-  return [t("exploreCard1a"), t("exploreCard2a"), t("exploreCard3a")];
+function normalizeLocale(locale?: string): MockupLocale {
+  const l = (locale ?? "nl").toLowerCase();
+  if (l === "nl" || l === "en" || l === "de" || l === "es" || l === "fr") return l;
+  return "en";
 }
 
-function typeTriple(phase: MoodPhase, t: MockupT): [string, string, string] {
-  if (phase === 1)
-    return [
-      t("typeFoodHall"),
-      t("typeStreetfood"),
-      t("typeNature"),
-    ];
-  if (phase === 2)
-    return [
-      t("exploreFilterHalal"),
-      t("exploreFilterHalal"),
-      t("exploreFilterHalal"),
-    ];
-  return [
-    t("typeSpecialtyCoffee"),
-    t("typeMuseum"),
-    t("typeNature"),
-  ];
+type ExploreCopy = {
+  topTitle: string;
+  chipMore: string;
+  trending: string;
+  trendingPill: string;
+  addDay: string;
+  moods: [string, string, string, string];
+  filters: [string, string, string];
+  places: [string, string, string];
+  foodie: [string, string, string];
+  halal: [string, string, string];
+  distances: [string, string, string];
+  ratings: [string, string, string];
+  typesDefault: [string, string, string];
+  typesFoodie: [string, string, string];
+  typesHalal: [string, string, string];
+  stories: [string, string, string];
+};
+
+const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
+  nl: {
+    topTitle: "Explore",
+    chipMore: "Meer →",
+    trending: "Trending op WanderMood",
+    trendingPill: "🔥 Trending",
+    addDay: "+ Dag",
+    moods: ["Gezellig", "Foodie", "Cultureel", "Avontuurlijk"],
+    filters: ["Halal", "Gezinsvriendelijk", "🐕 Honden"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    foodie: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    halal: ["Sultan Falafel", "MADO Rotterdam", "Meraki Greek Grill"],
+    distances: ["📍 8 min lopen", "🚲 12 min fietsen", "📍 15 min lopen"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    typesDefault: ["Specialty coffee", "Museum", "Park"],
+    typesFoodie: ["Foodhal", "Streetfood", "Wijnbar"],
+    typesHalal: ["Halal", "Halal", "Halal"],
+    stories: ["Hopper", "DEPOT", "Sobre"],
+  },
+  en: {
+    topTitle: "Explore",
+    chipMore: "More →",
+    trending: "Trending on WanderMood",
+    trendingPill: "🔥 Trending",
+    addDay: "+ Day",
+    moods: ["Cozy", "Foodie", "Cultural", "Adventurous"],
+    filters: ["Halal", "Family friendly", "🐕 Dogs"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    foodie: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    halal: ["Sultan Falafel", "MADO Rotterdam", "Meraki Greek Grill"],
+    distances: ["📍 8 min walk", "🚲 12 min bike", "📍 15 min walk"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    typesDefault: ["Specialty coffee", "Museum", "Park"],
+    typesFoodie: ["Food hall", "Streetfood", "Wine bar"],
+    typesHalal: ["Halal", "Halal", "Halal"],
+    stories: ["Hopper", "DEPOT", "Sobre"],
+  },
+  de: {
+    topTitle: "Entdecken",
+    chipMore: "Mehr →",
+    trending: "Trending auf WanderMood",
+    trendingPill: "🔥 Trending",
+    addDay: "+ Tag",
+    moods: ["Gemütlich", "Foodie", "Kulturell", "Abenteuerlich"],
+    filters: ["Halal", "Familienfreundlich", "🐕 Hunde"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    foodie: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    halal: ["Sultan Falafel", "MADO Rotterdam", "Meraki Greek Grill"],
+    distances: ["📍 8 Min. Fußweg", "🚲 12 Min. Fahrrad", "📍 15 Min. Fußweg"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    typesDefault: ["Specialty coffee", "Museum", "Park"],
+    typesFoodie: ["Food-Halle", "Streetfood", "Weinbar"],
+    typesHalal: ["Halal", "Halal", "Halal"],
+    stories: ["Hopper", "DEPOT", "Sobre"],
+  },
+  es: {
+    topTitle: "Explorar",
+    chipMore: "Más →",
+    trending: "Tendencias en WanderMood",
+    trendingPill: "🔥 Tendencia",
+    addDay: "+ Día",
+    moods: ["Acogedor", "Foodie", "Cultural", "Aventurero"],
+    filters: ["Halal", "Familiar", "🐕 Perros"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    foodie: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    halal: ["Sultan Falafel", "MADO Rotterdam", "Meraki Greek Grill"],
+    distances: ["📍 8 min andando", "🚲 12 min bici", "📍 15 min andando"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    typesDefault: ["Specialty coffee", "Museum", "Parque"],
+    typesFoodie: ["Mercado", "Street food", "Bar de vinos"],
+    typesHalal: ["Halal", "Halal", "Halal"],
+    stories: ["Hopper", "DEPOT", "Sobre"],
+  },
+  fr: {
+    topTitle: "Explorer",
+    chipMore: "Plus →",
+    trending: "Tendances sur WanderMood",
+    trendingPill: "🔥 Tendance",
+    addDay: "+ Jour",
+    moods: ["Cosy", "Foodie", "Culturel", "Aventurier"],
+    filters: ["Halal", "Famille", "🐕 Chiens"],
+    places: ["Hopper Espresso Bar", "DEPOT Boijmans", "Kralingse Bos"],
+    foodie: ["Bazar Rotterdam", "Fenix Food Factory", "De Biertuin"],
+    halal: ["Sultan Falafel", "MADO Rotterdam", "Meraki Greek Grill"],
+    distances: ["📍 8 min à pied", "🚲 12 min vélo", "📍 15 min à pied"],
+    ratings: ["★ 4.6", "★ 4.4", "★ 4.3"],
+    typesDefault: ["Specialty coffee", "Musée", "Parc"],
+    typesFoodie: ["Hall gastronomique", "Street food", "Bar à vin"],
+    typesHalal: ["Halal", "Halal", "Halal"],
+    stories: ["Hopper", "DEPOT", "Sobre"],
+  },
+};
+
+function namesForPhase(phase: MoodPhase, x: ExploreCopy): [string, string, string] {
+  if (phase === 1) return x.foodie;
+  if (phase === 2) return x.halal;
+  return x.places;
 }
 
-export function ExploreMockup() {
-  const t = useTranslations("landing.mockups");
+function typesForPhase(phase: MoodPhase, x: ExploreCopy): [string, string, string] {
+  if (phase === 1) return x.typesFoodie;
+  if (phase === 2) return x.typesHalal;
+  return x.typesDefault;
+}
+
+function imgsForPhase(phase: MoodPhase): [string, string, string] {
+  if (phase === 1)
+    return [MOCK_IMG_RESTAURANT, MOCK_IMG_FOOD_MARKET, MOCK_IMG_WINE];
+  if (phase === 2)
+    return [MOCK_IMG_RESTAURANT, MOCK_IMG_FOOD_MARKET, MOCK_IMG_RESTAURANT];
+  return [MOCK_IMG_COFFEE, MOCK_IMG_MUSEUM, MOCK_IMG_PARK];
+}
+
+function PlacePhotoImg({ src }: { src: string }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      style={{
+        width: "80px",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        flexShrink: 0,
+        borderRadius: "14px 0 0 14px",
+      }}
+    />
+  );
+}
+
+function StoryCircleImg({ src }: { src: string }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      className="wm-explore__storyImg"
+      style={{
+        width: "38px",
+        height: "38px",
+        objectFit: "cover",
+        display: "block",
+        borderRadius: "50%",
+      }}
+    />
+  );
+}
+
+export function ExploreMockup({ locale }: { locale?: string }) {
+  const loc = normalizeLocale(locale);
+  const t = EXPLORE_TR[loc] ?? EXPLORE_TR.en;
+
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -148,8 +291,9 @@ export function ExploreMockup() {
     };
   }, [runCycle]);
 
-  const names = cardTriple(moodPhase, t);
-  const types = typeTriple(moodPhase, t);
+  const names = useMemo(() => namesForPhase(moodPhase, t), [moodPhase, t]);
+  const types = useMemo(() => typesForPhase(moodPhase, t), [moodPhase, t]);
+  const cardImgs = useMemo(() => imgsForPhase(moodPhase), [moodPhase]);
 
   return (
     <div
@@ -166,7 +310,7 @@ export function ExploreMockup() {
       <div className="wm-app__main">
         <div className="wm-mock__scroll wm-explore__scroll">
           <MockupTopBar
-            title={t("topExplore")}
+            title={t.topTitle}
             right={
               <span className="wm-appTopBar__iconBtn" aria-hidden>
                 ≡
@@ -178,45 +322,42 @@ export function ExploreMockup() {
             <span
               className={`wm-explore__chip ${chipIdx === 0 ? "wm-explore__chip--active" : ""}`}
             >
-              ✨ {chipIdx === 0 ? `${t("exploreChipCozy")} ✓` : t("exploreChipCozy")}
+              ✨ {chipIdx === 0 ? `${t.moods[0]} ✓` : t.moods[0]}
             </span>
             <span
               className={`wm-explore__chip ${chipIdx === 1 ? "wm-explore__chip--activeFood" : ""}`}
             >
-              🍽️{" "}
-              {chipIdx === 1 ? `${t("exploreChipFoodie")} ✓` : t("exploreChipFoodie")}
+              🍽️ {chipIdx === 1 ? `${t.moods[1]} ✓` : t.moods[1]}
             </span>
-            <span className="wm-explore__chip">🎭 {t("exploreChipCulture")}</span>
-            <span className="wm-explore__chip">
-              🚀 {t("exploreChipAdventure")}
-            </span>
-            <span className="wm-explore__chip">{t("exploreChipMore")}</span>
+            <span className="wm-explore__chip">🎭 {t.moods[2]}</span>
+            <span className="wm-explore__chip">🚀 {t.moods[3]}</span>
+            <span className="wm-explore__chip">{t.chipMore}</span>
           </div>
 
           <div className="wm-explore__filters">
             <span
               className={`wm-explore__filter ${filterHalal ? "wm-explore__filter--active" : ""}`}
             >
-              {t("exploreFilterHalal")}
+              {t.filters[0]}
             </span>
-            <span className="wm-explore__filter">{t("exploreFilterFamily")}</span>
-            <span className="wm-explore__filter">{t("exploreFilterDogs")}</span>
+            <span className="wm-explore__filter">{t.filters[1]}</span>
+            <span className="wm-explore__filter">{t.filters[2]}</span>
           </div>
 
           <div className="wm-explore__trend">
-            <div className="wm-explore__storiesLabel">{t("exploreTrending")}</div>
+            <div className="wm-explore__storiesLabel">{t.trending}</div>
             <div className="wm-explore__stories">
               <div className="wm-explore__story">
-                <div className="wm-explore__storyDot" />
-                <span className="wm-explore__storyCap">{t("exploreStory1")}</span>
+                <StoryCircleImg src={MOCK_STORY_IMGS[0]} />
+                <span className="wm-explore__storyCap">{t.stories[0]}</span>
               </div>
               <div className="wm-explore__story">
-                <div className="wm-explore__storyDot wm-explore__storyDot--b" />
-                <span className="wm-explore__storyCap">{t("exploreStory2")}</span>
+                <StoryCircleImg src={MOCK_STORY_IMGS[1]} />
+                <span className="wm-explore__storyCap">{t.stories[1]}</span>
               </div>
               <div className="wm-explore__story">
-                <div className="wm-explore__storyDot wm-explore__storyDot--c" />
-                <span className="wm-explore__storyCap">{t("exploreStory3")}</span>
+                <StoryCircleImg src={MOCK_STORY_IMGS[2]} />
+                <span className="wm-explore__storyCap">{t.stories[2]}</span>
               </div>
             </div>
           </div>
@@ -226,64 +367,52 @@ export function ExploreMockup() {
           >
             <div className="wm-placeCard wm-placeCard--coffee wm-explore__cardRow wm-explore__cardRow--a">
               <div className="wm-placeCard__photo">
-                <span>☕</span>
+                <PlacePhotoImg src={cardImgs[0]} />
               </div>
               <div className="wm-placeCard__body">
                 <div className="wm-placeCard__top">
                   <span className="wm-placeCard__name">{names[0]}</span>
-                  <span className="wm-placeCard__rating">
-                    {t("ratingFmt", { rating: "4.6" })}
-                  </span>
+                  <span className="wm-placeCard__rating">{t.ratings[0]}</span>
                 </div>
                 <div className="wm-placeCard__badge">{types[0]}</div>
                 <div className="wm-placeCard__bottom">
-                  <span className="wm-placeCard__dist">
-                    📍 {t("distWalk", { minutes: 8 })}
-                  </span>
-                  <span className="wm-placeCard__add">{t("addDay")}</span>
+                  <span className="wm-placeCard__dist">{t.distances[0]}</span>
+                  <span className="wm-placeCard__add">{t.addDay}</span>
                 </div>
               </div>
             </div>
 
             <div className="wm-placeCard wm-placeCard--museum wm-explore__cardRow wm-explore__cardRow--b">
               <div className="wm-placeCard__photo">
-                <span>🏛️</span>
+                <PlacePhotoImg src={cardImgs[1]} />
               </div>
               <div className="wm-placeCard__body">
                 <div className="wm-placeCard__top">
                   <span className="wm-placeCard__name">{names[1]}</span>
-                  <span className="wm-placeCard__rating">
-                    {t("ratingFmt", { rating: "4.4" })}
-                  </span>
+                  <span className="wm-placeCard__rating">{t.ratings[1]}</span>
                 </div>
                 <div className="wm-placeCard__badge">{types[1]}</div>
                 <div className="wm-placeCard__bottom">
-                  <span className="wm-placeCard__dist">
-                    🚲 {t("distBike", { minutes: 12 })}
-                  </span>
-                  <span className="wm-placeCard__add">{t("addDay")}</span>
+                  <span className="wm-placeCard__dist">{t.distances[1]}</span>
+                  <span className="wm-placeCard__add">{t.addDay}</span>
                 </div>
               </div>
-              <span className="wm-placeCard__trending">{t("trendingPill")}</span>
+              <span className="wm-placeCard__trending">{t.trendingPill}</span>
             </div>
 
             <div className="wm-placeCard wm-placeCard--park wm-explore__cardRow wm-explore__cardRow--c">
               <div className="wm-placeCard__photo">
-                <span>🌿</span>
+                <PlacePhotoImg src={cardImgs[2]} />
               </div>
               <div className="wm-placeCard__body">
                 <div className="wm-placeCard__top">
                   <span className="wm-placeCard__name">{names[2]}</span>
-                  <span className="wm-placeCard__rating">
-                    {t("ratingFmt", { rating: "4.7" })}
-                  </span>
+                  <span className="wm-placeCard__rating">{t.ratings[2]}</span>
                 </div>
                 <div className="wm-placeCard__badge">{types[2]}</div>
                 <div className="wm-placeCard__bottom">
-                  <span className="wm-placeCard__dist">
-                    📍 {t("distWalk", { minutes: 15 })}
-                  </span>
-                  <span className="wm-placeCard__add">{t("addDay")}</span>
+                  <span className="wm-placeCard__dist">{t.distances[2]}</span>
+                  <span className="wm-placeCard__add">{t.addDay}</span>
                 </div>
               </div>
             </div>
@@ -291,7 +420,7 @@ export function ExploreMockup() {
             <div className="wm-explore__peekWrap">
               <div className="wm-placeCard wm-placeCard--bar wm-explore__peekCard">
                 <div className="wm-placeCard__photo">
-                  <span>🍸</span>
+                  <PlacePhotoImg src={MOCK_IMG_WINE} />
                 </div>
                 <div className="wm-placeCard__body">
                   <div className="wm-placeCard__top">
@@ -303,7 +432,7 @@ export function ExploreMockup() {
           </div>
         </div>
       </div>
-      <MockupBottomNav active="explore" />
+      <MockupBottomNav active="explore" locale={locale} />
     </div>
   );
 }

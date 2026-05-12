@@ -1,15 +1,212 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MockupBottomNav,
   MockupStatusBar,
   MockupTopBar,
 } from "./MockupChrome";
+import type { MockupLocale } from "./MockupChrome";
+import {
+  MOCK_IMG_COFFEE,
+  MOCK_IMG_MUSEUM,
+  MOCK_IMG_PARK,
+  MOCK_IMG_WINE,
+} from "./mockup-place-images";
 
-export function MyDayMockup() {
-  const t = useTranslations("landing.mockups");
+function normalizeLocale(locale?: string): MockupLocale {
+  const l = (locale ?? "nl").toLowerCase();
+  if (l === "nl" || l === "en" || l === "de" || l === "es" || l === "fr") return l;
+  return "en";
+}
+
+type DayCopy = {
+  title: string;
+  date: string;
+  weather: string;
+  arrived: string;
+  heroPlace: string;
+  withSarah: string;
+  routeLink: string;
+  freeTime: string;
+  chips: [string, string, string, string];
+  bike1: string;
+  bike2: string;
+  walk: string;
+  act1: string;
+  act2: string;
+  act3: string;
+  act1Meta: string;
+  act3Meta: string;
+  dist1: string;
+  dist2: string;
+  dist3: string;
+  typeMuseum: string;
+  typePark: string;
+  typeWine: string;
+  ratings: [string, string, string];
+  addDay: string;
+};
+
+const MY_DAY_TR: Record<MockupLocale, DayCopy> = {
+  nl: {
+    title: "Mijn Dag",
+    date: "Zaterdag, 11 mei",
+    weather: "☀️ 18°C · Rotterdam · Lekker dagje uit",
+    arrived: "✓ Je bent er",
+    heroPlace: "Hopper Espresso Bar",
+    withSarah: "Met Sarah",
+    routeLink: "Routebeschrijving",
+    freeTime: "Misschien leuk in je vrije tijd",
+    chips: ["☕ Koffie halen", "🛍️ Winkelen", "🌳 Wandelen", "🎨 Museum"],
+    bike1: "🚲 12 min fietsen",
+    bike2: "🚴 18 min fietsen",
+    walk: "🚶 10 min lopen",
+    act1: "DEPOT Boijmans",
+    act2: "Kralingse Bos",
+    act3: "Wijnbar Sobre",
+    act1Meta: "🎭 Met Sarah",
+    act3Meta: "🍷 Met Sarah",
+    dist1: "📍 1,2 km",
+    dist2: "📍 3,4 km",
+    dist3: "📍 0,8 km",
+    typeMuseum: "Museum",
+    typePark: "Park",
+    typeWine: "Wijnbar",
+    ratings: ["★ 4.4", "★ 4.7", "★ 4.5"],
+    addDay: "+ Dag",
+  },
+  en: {
+    title: "My Day",
+    date: "Saturday, 11 May",
+    weather: "☀️ 18°C · Rotterdam · Great day out",
+    arrived: "✓ You're here",
+    heroPlace: "Hopper Espresso Bar",
+    withSarah: "With Sarah",
+    routeLink: "Directions",
+    freeTime: "Maybe fun in your free time",
+    chips: ["☕ Get coffee", "🛍️ Shopping", "🌳 Walking", "🎨 Museum"],
+    bike1: "🚲 12 min bike",
+    bike2: "🚴 18 min bike",
+    walk: "🚶 10 min walk",
+    act1: "DEPOT Boijmans",
+    act2: "Kralingse Bos",
+    act3: "Wijnbar Sobre",
+    act1Meta: "🎭 With Sarah",
+    act3Meta: "🍷 With Sarah",
+    dist1: "📍 1.2 km",
+    dist2: "📍 3.4 km",
+    dist3: "📍 0.8 km",
+    typeMuseum: "Museum",
+    typePark: "Park",
+    typeWine: "Wine bar",
+    ratings: ["★ 4.4", "★ 4.7", "★ 4.5"],
+    addDay: "+ Day",
+  },
+  de: {
+    title: "Mein Tag",
+    date: "Samstag, 11. Mai",
+    weather: "☀️ 18°C · Rotterdam · Schöner Tag",
+    arrived: "✓ Du bist da",
+    heroPlace: "Hopper Espresso Bar",
+    withSarah: "Mit Sarah",
+    routeLink: "Route",
+    freeTime: "Vielleicht interessant",
+    chips: ["☕ Kaffee", "🛍️ Einkaufen", "🌳 Spazieren", "🎨 Museum"],
+    bike1: "🚲 12 Min. Fahrrad",
+    bike2: "🚴 18 Min. Fahrrad",
+    walk: "🚶 10 Min. Fußweg",
+    act1: "DEPOT Boijmans",
+    act2: "Kralingse Bos",
+    act3: "Wijnbar Sobre",
+    act1Meta: "🎭 Mit Sarah",
+    act3Meta: "🍷 Mit Sarah",
+    dist1: "📍 1,2 km",
+    dist2: "📍 3,4 km",
+    dist3: "📍 0,8 km",
+    typeMuseum: "Museum",
+    typePark: "Park",
+    typeWine: "Weinbar",
+    ratings: ["★ 4.4", "★ 4.7", "★ 4.5"],
+    addDay: "+ Tag",
+  },
+  es: {
+    title: "Mi Día",
+    date: "Sábado, 11 mayo",
+    weather: "☀️ 18°C · Rotterdam · Buen día",
+    arrived: "✓ Ya estás",
+    heroPlace: "Hopper Espresso Bar",
+    withSarah: "Con Sarah",
+    routeLink: "Indicaciones",
+    freeTime: "Quizás te guste",
+    chips: ["☕ Café", "🛍️ Compras", "🌳 Pasear", "🎨 Museo"],
+    bike1: "🚲 12 min bici",
+    bike2: "🚴 18 min bici",
+    walk: "🚶 10 min andando",
+    act1: "DEPOT Boijmans",
+    act2: "Kralingse Bos",
+    act3: "Wijnbar Sobre",
+    act1Meta: "🎭 Con Sarah",
+    act3Meta: "🍷 Con Sarah",
+    dist1: "📍 1,2 km",
+    dist2: "📍 3,4 km",
+    dist3: "📍 0,8 km",
+    typeMuseum: "Museo",
+    typePark: "Parque",
+    typeWine: "Bar de vinos",
+    ratings: ["★ 4.4", "★ 4.7", "★ 4.5"],
+    addDay: "+ Día",
+  },
+  fr: {
+    title: "Ma Journée",
+    date: "Samedi, 11 mai",
+    weather: "☀️ 18°C · Rotterdam · Belle journée",
+    arrived: "✓ Tu y es",
+    heroPlace: "Hopper Espresso Bar",
+    withSarah: "Avec Sarah",
+    routeLink: "Itinéraire",
+    freeTime: "Peut-être sympa",
+    chips: ["☕ Café", "🛍️ Shopping", "🌳 Promenade", "🎨 Musée"],
+    bike1: "🚲 12 min vélo",
+    bike2: "🚴 18 min vélo",
+    walk: "🚶 10 min à pied",
+    act1: "DEPOT Boijmans",
+    act2: "Kralingse Bos",
+    act3: "Wijnbar Sobre",
+    act1Meta: "🎭 Avec Sarah",
+    act3Meta: "🍷 Avec Sarah",
+    dist1: "📍 1,2 km",
+    dist2: "📍 3,4 km",
+    dist3: "📍 0,8 km",
+    typeMuseum: "Musée",
+    typePark: "Parc",
+    typeWine: "Bar à vin",
+    ratings: ["★ 4.4", "★ 4.7", "★ 4.5"],
+    addDay: "+ Jour",
+  },
+};
+
+function PlacePhotoImg({ src }: { src: string }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      style={{
+        width: "64px",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        flexShrink: 0,
+        borderRadius: "14px 0 0 14px",
+      }}
+    />
+  );
+}
+
+export function MyDayMockup({ locale }: { locale?: string }) {
+  const loc = normalizeLocale(locale);
+  const t = MY_DAY_TR[loc] ?? MY_DAY_TR.en;
+
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -104,6 +301,8 @@ export function MyDayMockup() {
     };
   }, [runCycle]);
 
+  const chips = useMemo(() => t.chips, [t]);
+
   const cls = [
     "wm-mock",
     "wm-app",
@@ -123,7 +322,7 @@ export function MyDayMockup() {
       <div className="wm-app__main">
         <div className="wm-mock__scroll wm-day__outer">
           <MockupTopBar
-            title={t("topMyDay")}
+            title={t.title}
             right={
               <span className="wm-appTopBar__bellWrap" aria-hidden>
                 🔔
@@ -133,8 +332,8 @@ export function MyDayMockup() {
           />
 
           <div className="wm-day__intro">
-            <div className="wm-day__date">{t("myDayDate")}</div>
-            <div className="wm-day__wx">{t("myDayWeather")}</div>
+            <div className="wm-day__date">{t.date}</div>
+            <div className="wm-day__wx">{t.weather}</div>
           </div>
 
           <div className="wm-day__hero">
@@ -146,13 +345,15 @@ export function MyDayMockup() {
               <span className="wm-day__heroTime">09:00</span>
               <span className="wm-day__heroHere">
                 <span className="wm-day__hereDot" aria-hidden />
-                {t("myDayHeroHere")}
+                {t.arrived}
               </span>
             </div>
-            <div className="wm-day__heroName">{t("myDayHeroTitle")}</div>
+            <div className="wm-day__heroName">{t.heroPlace}</div>
             <div className="wm-day__heroBottom">
-              <span className="wm-day__heroBadge">{t("myDayMetSarah")}</span>
-              <span className="wm-day__heroRoute">{t("myDayRouteLink")}</span>
+              <span className="wm-day__heroBadge">
+                ☕ {t.withSarah}
+              </span>
+              <span className="wm-day__heroRoute">{t.routeLink}</span>
             </div>
           </div>
 
@@ -160,9 +361,7 @@ export function MyDayMockup() {
             <div className="wm-day__timeline">
               <div className="wm-day__line" aria-hidden />
 
-              <div className="wm-day__bridge wm-day__bridge--mid">
-                {t("myDayPillBike12")}
-              </div>
+              <div className="wm-day__bridge wm-day__bridge--mid">{t.bike1}</div>
 
               <div className="wm-day__slot">
                 <div className="wm-day__timeCol">
@@ -171,28 +370,24 @@ export function MyDayMockup() {
                 </div>
                 <div className="wm-placeCard wm-placeCard--museum wm-dayCard">
                   <div className="wm-placeCard__photo">
-                    <span>🏛️</span>
+                    <PlacePhotoImg src={MOCK_IMG_MUSEUM} />
                   </div>
                   <div className="wm-placeCard__body">
                     <div className="wm-placeCard__top">
-                      <span className="wm-placeCard__name">{t("myDayAct1")}</span>
-                      <span className="wm-placeCard__rating">
-                        {t("ratingFmt", { rating: "4.4" })}
-                      </span>
+                      <span className="wm-placeCard__name">{t.act1}</span>
+                      <span className="wm-placeCard__rating">{t.ratings[0]}</span>
                     </div>
-                    <div className="wm-placeCard__badge">{t("typeMuseum")}</div>
+                    <div className="wm-placeCard__badge">{t.typeMuseum}</div>
                     <div className="wm-placeCard__bottom">
-                      <span className="wm-placeCard__dist">{t("myDayDist1")}</span>
-                      <span className="wm-placeCard__add">{t("addDay")}</span>
+                      <span className="wm-placeCard__dist">{t.dist1}</span>
+                      <span className="wm-placeCard__add">{t.addDay}</span>
                     </div>
                   </div>
-                  <span className="wm-dayCard__with">{t("myDayAct1Meta")}</span>
+                  <span className="wm-dayCard__with">{t.act1Meta}</span>
                 </div>
               </div>
 
-              <div className="wm-day__bridge wm-day__bridge--mid">
-                {t("myDayPillBike18")}
-              </div>
+              <div className="wm-day__bridge wm-day__bridge--mid">{t.bike2}</div>
 
               <div className="wm-day__slot">
                 <div className="wm-day__timeCol">
@@ -201,27 +396,23 @@ export function MyDayMockup() {
                 </div>
                 <div className="wm-placeCard wm-placeCard--park wm-dayCard">
                   <div className="wm-placeCard__photo">
-                    <span>🌿</span>
+                    <PlacePhotoImg src={MOCK_IMG_PARK} />
                   </div>
                   <div className="wm-placeCard__body">
                     <div className="wm-placeCard__top">
-                      <span className="wm-placeCard__name">{t("myDayAct2")}</span>
-                      <span className="wm-placeCard__rating">
-                        {t("ratingFmt", { rating: "4.7" })}
-                      </span>
+                      <span className="wm-placeCard__name">{t.act2}</span>
+                      <span className="wm-placeCard__rating">{t.ratings[1]}</span>
                     </div>
-                    <div className="wm-placeCard__badge">{t("typePark")}</div>
+                    <div className="wm-placeCard__badge">{t.typePark}</div>
                     <div className="wm-placeCard__bottom">
-                      <span className="wm-placeCard__dist">{t("myDayDist2")}</span>
-                      <span className="wm-placeCard__add">{t("addDay")}</span>
+                      <span className="wm-placeCard__dist">{t.dist2}</span>
+                      <span className="wm-placeCard__add">{t.addDay}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="wm-day__bridge wm-day__bridge--mid">
-                {t("myDayPillWalk10")}
-              </div>
+              <div className="wm-day__bridge wm-day__bridge--mid">{t.walk}</div>
 
               <div className="wm-day__slot">
                 <div className="wm-day__timeCol">
@@ -230,49 +421,42 @@ export function MyDayMockup() {
                 </div>
                 <div className="wm-placeCard wm-placeCard--bar wm-dayCard">
                   <div className="wm-placeCard__photo">
-                    <span>🍷</span>
+                    <PlacePhotoImg src={MOCK_IMG_WINE} />
                   </div>
                   <div className="wm-placeCard__body">
                     <div className="wm-placeCard__top">
-                      <span className="wm-placeCard__name">{t("myDayAct3")}</span>
-                      <span className="wm-placeCard__rating">
-                        {t("ratingFmt", { rating: "4.5" })}
-                      </span>
+                      <span className="wm-placeCard__name">{t.act3}</span>
+                      <span className="wm-placeCard__rating">{t.ratings[2]}</span>
                     </div>
-                    <div className="wm-placeCard__badge">{t("typeWineBar")}</div>
+                    <div className="wm-placeCard__badge">{t.typeWine}</div>
                     <div className="wm-placeCard__bottom">
-                      <span className="wm-placeCard__dist">{t("myDayDist3")}</span>
-                      <span className="wm-placeCard__add">{t("addDay")}</span>
+                      <span className="wm-placeCard__dist">{t.dist3}</span>
+                      <span className="wm-placeCard__add">{t.addDay}</span>
                     </div>
                   </div>
-                  <span className="wm-dayCard__with">{t("myDayAct3Meta")}</span>
+                  <span className="wm-dayCard__with">{t.act3Meta}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="wm-day__freeLabel">{t("freeTimeLabel")}</div>
+          <div className="wm-day__freeLabel">{t.freeTime}</div>
           <div className="wm-day__freeRow">
-            <div className="wm-day__freeChip">
-              <span>☕</span>
-              <span>{t("suggCoffee")}</span>
-            </div>
-            <div className="wm-day__freeChip">
-              <span>🛍️</span>
-              <span>{t("suggShop")}</span>
-            </div>
-            <div className="wm-day__freeChip">
-              <span>🌳</span>
-              <span>{t("suggWalk")}</span>
-            </div>
-            <div className="wm-day__freeChip">
-              <span>🎨</span>
-              <span>{t("suggMuseum")}</span>
-            </div>
+            {chips.map((label) => {
+              const sp = label.indexOf(" ");
+              const emoji = sp >= 0 ? label.slice(0, sp) : label;
+              const text = sp >= 0 ? label.slice(sp + 1).trim() : "";
+              return (
+                <div key={label} className="wm-day__freeChip">
+                  <span>{emoji}</span>
+                  <span>{text}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-      <MockupBottomNav active="myDay" />
+      <MockupBottomNav active="myDay" locale={locale} />
     </div>
   );
 }
