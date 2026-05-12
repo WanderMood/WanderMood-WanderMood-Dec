@@ -412,6 +412,34 @@
 }
 
 /* ----- Explore ----- */
+.wm-explore__search {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(26, 23, 20, 0.38);
+  padding: 7px 11px;
+  border-radius: 12px;
+  background: rgba(26, 23, 20, 0.06);
+  margin-bottom: 4px;
+  opacity: 0;
+  transition: opacity 0.4s var(--wm-ease);
+}
+
+.wm-explore--s2 .wm-explore__search,
+.wm-explore--s3 .wm-explore__search,
+.wm-explore--s4 .wm-explore__search,
+.wm-explore--s5 .wm-explore__search,
+.wm-explore--s6 .wm-explore__search,
+.wm-explore--s7 .wm-explore__search,
+.wm-explore--s8 .wm-explore__search,
+.wm-explore--s9 .wm-explore__search,
+.wm-explore--s10 .wm-explore__search,
+.wm-explore--s11 .wm-explore__search,
+.wm-explore--s12 .wm-explore__search,
+.wm-explore--s13 .wm-explore__search,
+.wm-explore--s14 .wm-explore__search {
+  opacity: 1;
+}
+
 .wm-explore__chipsRow {
   display: flex;
   flex-wrap: nowrap;
@@ -1090,6 +1118,10 @@
 }
 
 .wm-mm .wm-card__name {
+  color: #f5f0e8;
+}
+
+.wm-mm .wm-card__rating {
   color: #f5f0e8;
 }
 

@@ -35,6 +35,10 @@ type DayT = {
   route: string;
   typePark: string;
   addDay: string;
+  heroPlace: string;
+  tlDepot: string;
+  tlPark: string;
+  tlWine: string;
 };
 
 const DAY: Record<MockLocale, DayT> = {
@@ -59,6 +63,10 @@ const DAY: Record<MockLocale, DayT> = {
     route: "Routebeschrijving",
     typePark: "Park",
     addDay: "+ Dag",
+    heroPlace: "Hopper Espresso Bar",
+    tlDepot: "DEPOT Boijmans",
+    tlPark: "Kralingse Bos",
+    tlWine: "Wijnbar Sobre",
   },
   en: {
     nav: {
@@ -81,6 +89,10 @@ const DAY: Record<MockLocale, DayT> = {
     route: "Directions",
     typePark: "Park",
     addDay: "+ Day",
+    heroPlace: "Hopper Espresso Bar",
+    tlDepot: "DEPOT Boijmans",
+    tlPark: "Kralingse Bos",
+    tlWine: "Wijnbar Sobre",
   },
   de: {
     nav: {
@@ -103,6 +115,10 @@ const DAY: Record<MockLocale, DayT> = {
     route: "Route",
     typePark: "Park",
     addDay: "+ Tag",
+    heroPlace: "Hopper Espresso Bar",
+    tlDepot: "DEPOT Boijmans",
+    tlPark: "Kralingse Bos",
+    tlWine: "Wijnbar Sobre",
   },
   es: {
     nav: {
@@ -125,6 +141,10 @@ const DAY: Record<MockLocale, DayT> = {
     route: "Ruta",
     typePark: "Parque",
     addDay: "+ Día",
+    heroPlace: "Hopper Espresso Bar",
+    tlDepot: "DEPOT Boijmans",
+    tlPark: "Kralingse Bos",
+    tlWine: "Wijnbar Sobre",
   },
   fr: {
     nav: {
@@ -147,6 +167,10 @@ const DAY: Record<MockLocale, DayT> = {
     route: "Itinéraire",
     typePark: "Parc",
     addDay: "+ Jour",
+    heroPlace: "Hopper Espresso Bar",
+    tlDepot: "DEPOT Boijmans",
+    tlPark: "Kralingse Bos",
+    tlWine: "Wijnbar Sobre",
   },
 };
 
@@ -176,9 +200,16 @@ function DayCardSm({
       <img
         src={src}
         alt=""
-        className="wm-card__photoImg"
         width={80}
         height={72}
+        style={{
+          width: "80px",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+          flexShrink: 0,
+          borderRadius: "14px 0 0 14px",
+        }}
       />
       <div className="wm-card__body">
         <div className="wm-card__top">
@@ -347,7 +378,7 @@ export function MyDayMockup({ locale }: { locale: string }) {
               <span className="wm-day__heroTime">09:00</span>
               <span className="wm-day__heroStatus">{t.arrived}</span>
             </div>
-            <div className="wm-day__heroName">Hopper Espresso Bar</div>
+            <div className="wm-day__heroName">{t.heroPlace}</div>
             <div className="wm-day__heroBot">
               <span className="wm-day__heroBadge">
                 ☕ {t.withSarah}
@@ -369,7 +400,7 @@ export function MyDayMockup({ locale }: { locale: string }) {
               <div className="wm-day__tlCard wm-day__tlCard--1">
                 <DayCardSm
                   src={U.museum}
-                  name="DEPOT Boijmans"
+                  name={t.tlDepot}
                   rating="★ 4.4"
                   badge={sarahMuseum}
                   dist="📍 1.2 km"
@@ -388,7 +419,7 @@ export function MyDayMockup({ locale }: { locale: string }) {
               <div className="wm-day__tlCard wm-day__tlCard--2">
                 <DayCardSm
                   src={U.park}
-                  name="Kralingse Bos"
+                  name={t.tlPark}
                   rating="★ 4.7"
                   badge={t.typePark}
                   dist="📍 3.4 km"
@@ -407,7 +438,7 @@ export function MyDayMockup({ locale }: { locale: string }) {
               <div className="wm-day__tlCard wm-day__tlCard--3">
                 <DayCardSm
                   src={U.bar}
-                  name="Wijnbar Sobre"
+                  name={t.tlWine}
                   rating="★ 4.6"
                   badge={sarahWine}
                   dist="📍 0.8 km"

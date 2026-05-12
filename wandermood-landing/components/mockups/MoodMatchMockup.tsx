@@ -23,6 +23,7 @@ type MM = {
   nav: WmNavLabels;
   title: string;
   you: string;
+  partner: string;
   match: string;
   balance: string;
   moodyMsg: string;
@@ -37,6 +38,9 @@ type MM = {
   meta1: string;
   meta2: string;
   meta3: string;
+  placeCoffee: string;
+  placeMuseum: string;
+  placeWine: string;
 };
 
 const MM_I18N: Record<MockLocale, MM> = {
@@ -50,6 +54,7 @@ const MM_I18N: Record<MockLocale, MM> = {
     },
     title: "Mood Match",
     you: "Jij",
+    partner: "Sarah",
     match: "match",
     balance: "Goede balans",
     moodyMsg: "Ik heb plekken gevonden die voor jullie allebei werken 💚",
@@ -64,6 +69,9 @@ const MM_I18N: Record<MockLocale, MM> = {
     meta1: "09:00 · Specialty coffee · 📍 0.8km",
     meta2: "13:00 · Museum · 📍 2.1km",
     meta3: "19:00 · Wijnbar · 📍 1.2km",
+    placeCoffee: "Hopper Espresso Bar",
+    placeMuseum: "DEPOT Boijmans",
+    placeWine: "Wijnbar Sobre",
   },
   en: {
     nav: {
@@ -75,6 +83,7 @@ const MM_I18N: Record<MockLocale, MM> = {
     },
     title: "Mood Match",
     you: "You",
+    partner: "Sarah",
     match: "match",
     balance: "Good balance",
     moodyMsg: "I found places that work for both of you 💚",
@@ -89,6 +98,9 @@ const MM_I18N: Record<MockLocale, MM> = {
     meta1: "09:00 · Specialty coffee · 📍 0.8km",
     meta2: "13:00 · Museum · 📍 2.1km",
     meta3: "19:00 · Wine bar · 📍 1.2km",
+    placeCoffee: "Hopper Espresso Bar",
+    placeMuseum: "DEPOT Boijmans",
+    placeWine: "Wijnbar Sobre",
   },
   de: {
     nav: {
@@ -100,6 +112,7 @@ const MM_I18N: Record<MockLocale, MM> = {
     },
     title: "Mood Match",
     you: "Du",
+    partner: "Sarah",
     match: "Match",
     balance: "Gute Balance",
     moodyMsg: "Ich habe Orte gefunden, die für euch beide passen 💚",
@@ -114,6 +127,9 @@ const MM_I18N: Record<MockLocale, MM> = {
     meta1: "09:00 · Specialty coffee · 📍 0.8km",
     meta2: "13:00 · Museum · 📍 2.1km",
     meta3: "19:00 · Weinbar · 📍 1.2km",
+    placeCoffee: "Hopper Espresso Bar",
+    placeMuseum: "DEPOT Boijmans",
+    placeWine: "Wijnbar Sobre",
   },
   es: {
     nav: {
@@ -125,6 +141,7 @@ const MM_I18N: Record<MockLocale, MM> = {
     },
     title: "Mood Match",
     you: "Tú",
+    partner: "Sarah",
     match: "match",
     balance: "Buen equilibrio",
     moodyMsg: "Encontré lugares que funcionan para ambos 💚",
@@ -139,6 +156,9 @@ const MM_I18N: Record<MockLocale, MM> = {
     meta1: "09:00 · Specialty coffee · 📍 0.8km",
     meta2: "13:00 · Museo · 📍 2.1km",
     meta3: "19:00 · Bar de vinos · 📍 1.2km",
+    placeCoffee: "Hopper Espresso Bar",
+    placeMuseum: "DEPOT Boijmans",
+    placeWine: "Wijnbar Sobre",
   },
   fr: {
     nav: {
@@ -150,6 +170,7 @@ const MM_I18N: Record<MockLocale, MM> = {
     },
     title: "Mood Match",
     you: "Toi",
+    partner: "Sarah",
     match: "match",
     balance: "Bon équilibre",
     moodyMsg: "J'ai trouvé des endroits qui conviennent à vous deux 💚",
@@ -164,6 +185,9 @@ const MM_I18N: Record<MockLocale, MM> = {
     meta1: "09:00 · Specialty coffee · 📍 0.8km",
     meta2: "13:00 · Musée · 📍 2.1km",
     meta3: "19:00 · Bar à vin · 📍 1.2km",
+    placeCoffee: "Hopper Espresso Bar",
+    placeMuseum: "DEPOT Boijmans",
+    placeWine: "Wijnbar Sobre",
   },
 };
 
@@ -179,7 +203,8 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [typed, setTyped] = useState("");
-  const [ringDraw, setRingDraw] = useState(false);
+  const [ringSession, setRingSession] = useState(0);
+  const [ringAnimate, setRingAnimate] = useState(false);
   const [exiting, setExiting] = useState(false);
 
   const clearT = () => {
@@ -201,7 +226,8 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
     }
     setTyped("");
     setScore(0);
-    setRingDraw(false);
+    setRingSession((s) => s + 1);
+    setRingAnimate(false);
     setExiting(false);
     setOn(true);
     setStep(1);
@@ -224,7 +250,7 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
       setStep(0);
       setTyped("");
       setScore(0);
-      setRingDraw(false);
+      setRingAnimate(false);
       setExiting(false);
     }, 17000);
     q(() => runRef.current?.(), 17000);
@@ -269,33 +295,35 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
 
   useEffect(() => {
     if (step !== 4) return;
-    setRingDraw(false);
+    setRingAnimate(false);
     const tmr = window.setTimeout(() => {
-      setRingDraw(true);
+      setRingAnimate(true);
     }, 50);
     return () => clearTimeout(tmr);
   }, [step]);
 
   useEffect(() => {
-    if (!ringDraw) return;
+    if (!ringAnimate) return;
+    let cancelled = false;
     const TARGET = 78;
     const DURATION = 1500;
     const startTime = performance.now();
     const tick = (now: number) => {
+      if (cancelled) return;
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / DURATION, 1);
-      const current = Math.round(progress * TARGET);
-      setScore(current);
+      setScore(progress >= 1 ? TARGET : Math.round(progress * TARGET));
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
       }
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
+      cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
     };
-  }, [ringDraw]);
+  }, [ringAnimate]);
 
   useEffect(() => {
     if (step !== 7) return;
@@ -345,7 +373,7 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
           <div className="wm-mm__dash" aria-hidden />
           <div className="wm-mm__user">
             <div className="wm-mm__av wm-mm__av--s">S</div>
-            <span className="wm-mm__userLbl">Sarah</span>
+            <span className="wm-mm__userLbl">{t.partner}</span>
           </div>
         </div>
 
@@ -366,14 +394,14 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
               strokeWidth={8}
             />
             <circle
-              className={`wm-mm__prog ${ringDraw ? "wm-mm__prog--draw" : ""}`}
+              key={ringSession}
+              className={`wm-mm__prog ${ringAnimate ? "wm-mm__prog--draw" : ""}`}
               cx={60}
               cy={60}
               r={50}
               fill="none"
               strokeWidth={8}
               strokeDasharray={314}
-              strokeDashoffset={314}
               strokeLinecap="round"
               transform="rotate(-90 60 60)"
             />
@@ -404,13 +432,20 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
             <img
               src={IMG.coffee}
               alt=""
-              className="wm-card__photoImg"
               width={80}
               height={72}
+              style={{
+                width: "80px",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                flexShrink: 0,
+                borderRadius: "14px 0 0 14px",
+              }}
             />
             <div className="wm-card__body">
               <div className="wm-card__top">
-                <span className="wm-card__name">Hopper Espresso Bar</span>
+                <span className="wm-card__name">{t.placeCoffee}</span>
                 <span className="wm-card__rating">★ 4.6</span>
               </div>
               <span className="wm-card__badge">{t.typeCoffee}</span>
@@ -437,13 +472,20 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
             <img
               src={IMG.museum}
               alt=""
-              className="wm-card__photoImg"
               width={80}
               height={72}
+              style={{
+                width: "80px",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                flexShrink: 0,
+                borderRadius: "14px 0 0 14px",
+              }}
             />
             <div className="wm-card__body">
               <div className="wm-card__top">
-                <span className="wm-card__name">DEPOT Boijmans</span>
+                <span className="wm-card__name">{t.placeMuseum}</span>
                 <span className="wm-card__rating">★ 4.4</span>
               </div>
               <span className="wm-card__badge">{t.typeMuseum}</span>
@@ -472,13 +514,20 @@ export function MoodMatchMockup({ locale }: { locale: string }) {
             <img
               src={IMG.bar}
               alt=""
-              className="wm-card__photoImg"
               width={80}
               height={72}
+              style={{
+                width: "80px",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                flexShrink: 0,
+                borderRadius: "14px 0 0 14px",
+              }}
             />
             <div className="wm-card__body">
               <div className="wm-card__top">
-                <span className="wm-card__name">Wijnbar Sobre</span>
+                <span className="wm-card__name">{t.placeWine}</span>
                 <span className="wm-card__rating">★ 4.6</span>
               </div>
               <span className="wm-card__badge">{t.typeWine}</span>

@@ -44,6 +44,7 @@ type Row = {
 type ExploreT = {
   nav: WmNavLabels;
   screenTitle: string;
+  search: string;
   trending: string;
   addDay: string;
   trendingPill: string;
@@ -77,6 +78,7 @@ const EXPLORE: Record<MockLocale, ExploreT> = {
       profile: "Profiel",
     },
     screenTitle: "Explore",
+    search: "Ontdek Rotterdam...",
     trending: "Trending op WanderMood",
     addDay: "+ Dag",
     trendingPill: "🔥 Trending",
@@ -108,6 +110,7 @@ const EXPLORE: Record<MockLocale, ExploreT> = {
       profile: "Profile",
     },
     screenTitle: "Explore",
+    search: "Discover Rotterdam...",
     trending: "Trending on WanderMood",
     addDay: "+ Day",
     trendingPill: "🔥 Trending",
@@ -139,6 +142,7 @@ const EXPLORE: Record<MockLocale, ExploreT> = {
       profile: "Profil",
     },
     screenTitle: "Explore",
+    search: "Rotterdam entdecken...",
     trending: "Trending auf WanderMood",
     addDay: "+ Tag",
     trendingPill: "🔥 Trending",
@@ -170,6 +174,7 @@ const EXPLORE: Record<MockLocale, ExploreT> = {
       profile: "Perfil",
     },
     screenTitle: "Explore",
+    search: "Descubre Rotterdam...",
     trending: "Tendencias en WanderMood",
     addDay: "+ Día",
     trendingPill: "🔥 Trending",
@@ -201,6 +206,7 @@ const EXPLORE: Record<MockLocale, ExploreT> = {
       profile: "Profil",
     },
     screenTitle: "Explore",
+    search: "Découvrir Rotterdam...",
     trending: "Tendances sur WanderMood",
     addDay: "+ Jour",
     trendingPill: "🔥 Trending",
@@ -320,9 +326,16 @@ function PlaceCard({
       <img
         src={row.src}
         alt=""
-        className="wm-card__photoImg"
         width={80}
         height={100}
+        style={{
+          width: "80px",
+          height: "100%",
+          objectFit: "cover",
+          display: "block",
+          flexShrink: 0,
+          borderRadius: "14px 0 0 14px",
+        }}
       />
       <div className="wm-card__body">
         <div className="wm-card__top">
@@ -497,6 +510,10 @@ export function ExploreMockup({ locale }: { locale: string }) {
             ⚙️
           </div>
         </header>
+
+        <div className="wm-explore__search" aria-hidden>
+          {t.search}
+        </div>
 
         <div className="wm-explore__chipsRow">
           {moodLabels.map((label, i) => (

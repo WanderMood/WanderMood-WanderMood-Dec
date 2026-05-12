@@ -21,6 +21,7 @@ type MoodyT = {
   msg1: string;
   userMsg: string;
   msg2: string;
+  placeName: string;
   placeMeta: string;
   addBtn: string;
   moreBtn: string;
@@ -43,6 +44,7 @@ const MOODY: Record<MockLocale, MoodyT> = {
     msg1: "Goedemorgen ☀️ Luie vibe vandaag of wil je echt iets doen?",
     userMsg: "Iets gezelligs, niet te ver",
     msg2: "Dan weet ik precies waar ik je heen stuur 💚",
+    placeName: "Hopper Espresso Bar",
     placeMeta: "★ 4.6 · 8 min lopen",
     addBtn: "Voeg toe",
     moreBtn: "Meer",
@@ -64,6 +66,7 @@ const MOODY: Record<MockLocale, MoodyT> = {
       "Good morning ☀️ Lazy day or do you want to actually do something?",
     userMsg: "Something cozy, not too far",
     msg2: "Then I know exactly where to send you 💚",
+    placeName: "Hopper Espresso Bar",
     placeMeta: "★ 4.6 · 8 min walk",
     addBtn: "Add",
     moreBtn: "More",
@@ -84,6 +87,7 @@ const MOODY: Record<MockLocale, MoodyT> = {
     msg1: "Guten Morgen ☀️ Fauler Tag oder willst du was unternehmen?",
     userMsg: "Etwas Gemütliches, nicht zu weit",
     msg2: "Dann weiß ich genau wohin 💚",
+    placeName: "Hopper Espresso Bar",
     placeMeta: "★ 4.6 · 8 Min. Fußweg",
     addBtn: "Hinzufügen",
     moreBtn: "Mehr",
@@ -104,6 +108,7 @@ const MOODY: Record<MockLocale, MoodyT> = {
     msg1: "Buenos días ☀️ ¿Día tranquilo o quieres hacer algo?",
     userMsg: "Algo acogedor, no muy lejos",
     msg2: "Entonces sé exactamente adónde enviarte 💚",
+    placeName: "Hopper Espresso Bar",
     placeMeta: "★ 4.6 · 8 min andando",
     addBtn: "Añadir",
     moreBtn: "Más",
@@ -125,6 +130,7 @@ const MOODY: Record<MockLocale, MoodyT> = {
       "Bonjour ☀️ Journée tranquille ou tu veux faire quelque chose?",
     userMsg: "Quelque chose de cosy, pas trop loin",
     msg2: "Alors je sais exactement où t'envoyer 💚",
+    placeName: "Hopper Espresso Bar",
     placeMeta: "★ 4.6 · 8 min à pied",
     addBtn: "Ajouter",
     moreBtn: "Plus",
@@ -282,13 +288,20 @@ export function MoodyChatMockup({ locale }: { locale: string }) {
               <img
                 src={IMG_COFFEE}
                 alt=""
-                className="wm-card__photoImg"
                 width={80}
                 height={100}
+                style={{
+                  width: "80px",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                  flexShrink: 0,
+                  borderRadius: "14px 0 0 14px",
+                }}
               />
               <div className="wm-card__body">
                 <div className="wm-card__top">
-                  <span className="wm-card__name">Hopper Espresso Bar</span>
+                  <span className="wm-card__name">{t.placeName}</span>
                   <span className="wm-card__rating">★ 4.6</span>
                 </div>
                 <span className="wm-card__badge">{t.typeCoffee}</span>
