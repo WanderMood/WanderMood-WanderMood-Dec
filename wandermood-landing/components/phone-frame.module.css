@@ -77,6 +77,18 @@
   overflow: hidden;
 }
 
+/*
+ * Desktop / tablet (landing site): inset the live HTML so it clears the painted
+ * Dynamic Island, side curves, and home-indicator corner — without changing the
+ * real-phone layout (max-width: 767px) where the frame is full-bleed inside.
+ */
+@media (min-width: 768px) {
+  .screenSlot {
+    inset: 14px 5px 17px 5px;
+    border-radius: 36px;
+  }
+}
+
 .img {
   object-fit: cover;
   object-position: top center;

@@ -1059,6 +1059,46 @@
   color: rgba(26, 23, 20, 0.35);
 }
 
+/*
+ * Landing desktop only: mockups sit inside PhoneFrame; viewport ≥768px tightens
+ * chat density so bubbles match the scaled device — unchanged on phones (<768).
+ */
+@media (min-width: 768px) {
+  .wm-moody__thread {
+    gap: 6px;
+    padding: 4px 0 8px;
+  }
+
+  .wm-moody__bubble {
+    max-width: 86%;
+    padding: 7px 9px;
+    font-size: 11px;
+    line-height: 1.42;
+  }
+
+  .wm-moody__bubble--u {
+    max-width: 80%;
+  }
+
+  .wm-moody__typing {
+    padding: 8px 11px;
+  }
+
+  .wm-moody__inputBar {
+    padding: 8px 10px;
+    font-size: 9px;
+  }
+
+  .wm-mock__status {
+    height: 18px;
+    padding: 2px 6px 2px;
+  }
+
+  .wm-mock__time {
+    font-size: 9px;
+  }
+}
+
 /* ----- Mood Match (espresso shell) ----- */
 .wm-mm.wm-mock {
   background: #1a1714;
