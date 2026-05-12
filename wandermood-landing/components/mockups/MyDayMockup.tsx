@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   MockupBottomNav,
   MockupStatusBar,
@@ -28,8 +28,6 @@ type DayCopy = {
   heroPlace: string;
   withSarah: string;
   routeLink: string;
-  freeTime: string;
-  chips: [string, string, string, string];
   bike1: string;
   bike2: string;
   walk: string;
@@ -57,8 +55,6 @@ const MY_DAY_TR: Record<MockupLocale, DayCopy> = {
     heroPlace: "Hopper Espresso Bar",
     withSarah: "Met Sarah",
     routeLink: "Routebeschrijving",
-    freeTime: "Misschien leuk in je vrije tijd",
-    chips: ["☕ Koffie halen", "🛍️ Winkelen", "🌳 Wandelen", "🎨 Museum"],
     bike1: "🚲 12 min fietsen",
     bike2: "🚴 18 min fietsen",
     walk: "🚶 10 min lopen",
@@ -84,8 +80,6 @@ const MY_DAY_TR: Record<MockupLocale, DayCopy> = {
     heroPlace: "Hopper Espresso Bar",
     withSarah: "With Sarah",
     routeLink: "Directions",
-    freeTime: "Maybe fun in your free time",
-    chips: ["☕ Get coffee", "🛍️ Shopping", "🌳 Walking", "🎨 Museum"],
     bike1: "🚲 12 min bike",
     bike2: "🚴 18 min bike",
     walk: "🚶 10 min walk",
@@ -111,8 +105,6 @@ const MY_DAY_TR: Record<MockupLocale, DayCopy> = {
     heroPlace: "Hopper Espresso Bar",
     withSarah: "Mit Sarah",
     routeLink: "Route",
-    freeTime: "Vielleicht interessant",
-    chips: ["☕ Kaffee", "🛍️ Einkaufen", "🌳 Spazieren", "🎨 Museum"],
     bike1: "🚲 12 Min. Fahrrad",
     bike2: "🚴 18 Min. Fahrrad",
     walk: "🚶 10 Min. Fußweg",
@@ -138,8 +130,6 @@ const MY_DAY_TR: Record<MockupLocale, DayCopy> = {
     heroPlace: "Hopper Espresso Bar",
     withSarah: "Con Sarah",
     routeLink: "Indicaciones",
-    freeTime: "Quizás te guste",
-    chips: ["☕ Café", "🛍️ Compras", "🌳 Pasear", "🎨 Museo"],
     bike1: "🚲 12 min bici",
     bike2: "🚴 18 min bici",
     walk: "🚶 10 min andando",
@@ -165,8 +155,6 @@ const MY_DAY_TR: Record<MockupLocale, DayCopy> = {
     heroPlace: "Hopper Espresso Bar",
     withSarah: "Avec Sarah",
     routeLink: "Itinéraire",
-    freeTime: "Peut-être sympa",
-    chips: ["☕ Café", "🛍️ Shopping", "🌳 Promenade", "🎨 Musée"],
     bike1: "🚲 12 min vélo",
     bike2: "🚴 18 min vélo",
     walk: "🚶 10 min à pied",
@@ -208,6 +196,7 @@ export function MyDayMockup({ locale }: { locale?: string }) {
   const t = MY_DAY_TR[loc] ?? MY_DAY_TR.en;
 
   const root = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
   const [on, setOn] = useState(false);
@@ -242,11 +231,6 @@ export function MyDayMockup({ locale }: { locale?: string }) {
     q(() => setStep(7), 3200);
     q(() => setStep(8), 3600);
     q(() => setStep(9), 4000);
-    q(() => setStep(10), 5000);
-    q(() => setStep(11), 5500);
-    q(() => setStep(12), 5700);
-    q(() => setStep(13), 5900);
-    q(() => setStep(14), 6100);
     q(() => {
       setPulse(true);
       setBright(true);
@@ -260,8 +244,8 @@ export function MyDayMockup({ locale }: { locale?: string }) {
     q(() => {
       setOn(false);
       setStep(0);
-    }, 14500);
-    q(() => runRef.current?.(), 16200);
+    }, 12000);
+    q(() => runRef.current?.(), 13700);
   }, []);
 
   useEffect(() => {
@@ -301,7 +285,15 @@ export function MyDayMockup({ locale }: { locale?: string }) {
     };
   }, [runCycle]);
 
-  const chips = useMemo(() => t.chips, [t]);
+  useEffect(() => {
+    if (!scrollSim) return;
+    const el = outerRef.current;
+    if (!el) return;
+    const id = window.requestAnimationFrame(() => {
+      el.scrollTo({ top: Math.min(140, el.scrollHeight - el.clientHeight), behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [scrollSim]);
 
   const cls = [
     "wm-mock",
@@ -320,7 +312,7 @@ export function MyDayMockup({ locale }: { locale?: string }) {
     <div ref={root} role="presentation" aria-hidden className={cls}>
       <MockupStatusBar />
       <div className="wm-app__main">
-        <div className="wm-mock__scroll wm-day__outer">
+        <div ref={outerRef} className="wm-mock__scroll wm-day__outer">
           <MockupTopBar
             title={t.title}
             right={
@@ -438,21 +430,6 @@ export function MyDayMockup({ locale }: { locale?: string }) {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="wm-day__freeLabel">{t.freeTime}</div>
-          <div className="wm-day__freeRow">
-            {chips.map((label) => {
-              const sp = label.indexOf(" ");
-              const emoji = sp >= 0 ? label.slice(0, sp) : label;
-              const text = sp >= 0 ? label.slice(sp + 1).trim() : "";
-              return (
-                <div key={label} className="wm-day__freeChip">
-                  <span>{emoji}</span>
-                  <span>{text}</span>
-                </div>
-              );
-            })}
           </div>
         </div>
       </div>
