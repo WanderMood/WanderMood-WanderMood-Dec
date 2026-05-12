@@ -1,25 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-
-function WmStatusBar() {
-  return (
-    <div className="wm-mock__status">
-      <span className="wm-mock__time">9:41</span>
-      <div className="wm-mock__sys">
-        <span className="wm-mock__signal" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </span>
-        <span className="wm-mock__wifi" aria-hidden />
-        <span className="wm-mock__battery" aria-hidden>
-          <span className="wm-mock__battery-fill" />
-        </span>
-      </div>
-    </div>
-  );
-}
+import { WmBottomNav, WmStatusBar } from "./mockup_chrome";
 
 export function MoodyChatMockup() {
   const root = useRef<HTMLDivElement>(null);
@@ -115,14 +97,13 @@ export function MoodyChatMockup() {
       className={`wm-mock wm-moody wm-moody--s${Math.min(step, 9)} ${on ? "wm-mock--on" : ""} ${exiting ? "wm-mock--exiting" : ""}`}
     >
       <WmStatusBar />
-      <div className="wm-mock__scroll">
-        <header className="wm-moody__header">
-          <div className="wm-moody__avatar" aria-hidden>
-            M
-          </div>
-          <div className="wm-moody__headlines">
-            <div className="wm-moody__brand">Moody</div>
-            <div className="wm-moody__sub">Je stadskenner</div>
+      <div className="wm-mock__scroll wm-moody__shell">
+        <header className="wm-topbar">
+          <div className="wm-topbar__left">
+            <div className="wm-topbar__avatar" aria-hidden>
+              M
+            </div>
+            <span className="wm-topbar__title">Moody</span>
           </div>
         </header>
 
@@ -162,20 +143,19 @@ export function MoodyChatMockup() {
           ) : null}
 
           {showCard ? (
-            <div className="wm-moody__placeCard wm-moody__placeCard--in">
-              <div className="wm-moody__placeCircle" aria-hidden>
+            <div className="wm-card wm-moody__placeCard wm-moody__placeCard--in">
+              <div className="wm-card__photo wm-card__photo--coffee" aria-hidden>
                 ☕
               </div>
-              <div className="wm-moody__placeMid">
-                <div className="wm-moody__placeName">Hopper Espresso Bar</div>
-                <div className="wm-moody__placeMeta">★ 4.6 · 8 min lopen</div>
-                <div className="wm-moody__placeBtns">
-                  <button type="button" className="wm-moody__btn wm-moody__btn--pri">
-                    Voeg toe
-                  </button>
-                  <button type="button" className="wm-moody__btn wm-moody__btn--sec">
-                    Meer
-                  </button>
+              <div className="wm-card__body">
+                <div className="wm-card__top">
+                  <span className="wm-card__name">Hopper Espresso Bar</span>
+                  <span className="wm-card__rating">★ 4.6</span>
+                </div>
+                <span className="wm-card__badge">Specialty coffee</span>
+                <div className="wm-card__bottom">
+                  <span className="wm-card__dist">📍 8 min lopen</span>
+                  <span className="wm-card__add">+ Dag</span>
                 </div>
               </div>
             </div>
@@ -190,6 +170,7 @@ export function MoodyChatMockup() {
 
         <div className="wm-moody__inputBar">Bericht aan Moody…</div>
       </div>
+      <WmBottomNav active="moody" />
     </div>
   );
 }

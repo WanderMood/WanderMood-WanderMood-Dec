@@ -1,97 +1,165 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { WmBottomNav, WmStatusBar } from "./mockup_chrome";
 
-function WmStatusBar() {
-  return (
-    <div className="wm-mock__status">
-      <span className="wm-mock__time">9:41</span>
-      <div className="wm-mock__sys">
-        <span className="wm-mock__signal" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </span>
-        <span className="wm-mock__wifi" aria-hidden />
-        <span className="wm-mock__battery" aria-hidden>
-          <span className="wm-mock__battery-fill" />
-        </span>
-      </div>
-    </div>
-  );
-}
+type PhotoGrad = "coffee" | "museum" | "park" | "rest" | "bar";
 
-type Phase = "geo" | "food" | "cult";
-
-type CardCopy = {
+type Row = {
   name: string;
-  meta: string;
-  quote: string;
+  rating: string;
+  badge: string;
+  dist: string;
   emoji: string;
+  grad: PhotoGrad;
+  trending?: boolean;
 };
 
-const PHASE_CARDS: Record<Phase, [CardCopy, CardCopy, CardCopy]> = {
+type Phase = "geo" | "food" | "halal";
+
+const PHASE_ROWS: Record<Phase, [Row, Row, Row]> = {
   geo: [
     {
       name: "Hopper Espresso Bar",
-      meta: "★ 4.6 · Specialty coffee",
-      quote: "Flat white, goed licht.",
+      rating: "★ 4.6",
+      badge: "Specialty coffee",
+      dist: "📍 8 min lopen",
       emoji: "☕",
+      grad: "coffee",
     },
     {
       name: "DEPOT Boijmans",
-      meta: "★ 4.4 · Museum",
-      quote: "Neem je tijd in de eerste zaal.",
+      rating: "★ 4.4",
+      badge: "Museum",
+      dist: "🚲 12 min fietsen",
       emoji: "🏛️",
+      grad: "museum",
+      trending: true,
     },
     {
       name: "Kralingse Bos",
-      meta: "★ 4.7 · Natuur",
-      quote: "Even ontsnappen aan de stad.",
+      rating: "★ 4.7",
+      badge: "Park",
+      dist: "📍 15 min lopen",
       emoji: "🌿",
+      grad: "park",
     },
   ],
   food: [
     {
-      name: "Bazar",
-      meta: "★ 4.5 · Wereldkeuken",
-      quote: "Shared plates & gezellig gedruis.",
+      name: "Bazar Rotterdam",
+      rating: "★ 4.5",
+      badge: "Wereldkeuken",
+      dist: "📍 10 min lopen",
       emoji: "🍽️",
+      grad: "rest",
     },
     {
       name: "Fenix Food Factory",
-      meta: "★ 4.6 · Foodhall",
-      quote: "Veel keus aan kraampjes.",
+      rating: "★ 4.6",
+      badge: "Foodhall",
+      dist: "📍 6 min lopen",
       emoji: "🍽️",
+      grad: "rest",
+      trending: true,
     },
     {
-      name: "Kralingse Bos",
-      meta: "★ 4.7 · Lunch buiten",
-      quote: "Picknick na je hap.",
-      emoji: "🌿",
+      name: "De Biertuin",
+      rating: "★ 4.5",
+      badge: "Bar & bites",
+      dist: "🚶 12 min lopen",
+      emoji: "🍺",
+      grad: "bar",
     },
   ],
-  cult: [
+  halal: [
     {
-      name: "DEPOT Boijmans",
-      meta: "★ 4.4 · Depot",
-      quote: "Iconische containers.",
-      emoji: "🏛️",
+      name: "Sultan Döner",
+      rating: "★ 4.7",
+      badge: "Halal",
+      dist: "📍 5 min lopen",
+      emoji: "🥙",
+      grad: "rest",
     },
     {
-      name: "Museum Boijmans",
-      meta: "★ 4.5 · Kunst",
-      quote: "Klassieke meesters.",
-      emoji: "🎨",
+      name: "Merhaba Grill",
+      rating: "★ 4.6",
+      badge: "Halal",
+      dist: "📍 8 min lopen",
+      emoji: "🍖",
+      grad: "rest",
+      trending: true,
     },
     {
-      name: "Kralingse Bos",
-      meta: "★ 4.7 · Rust",
-      quote: "Na de musea.",
-      emoji: "🌿",
+      name: "De Halal Kitchen",
+      rating: "★ 4.5",
+      badge: "Halal",
+      dist: "🚲 9 min fietsen",
+      emoji: "🍽️",
+      grad: "rest",
     },
   ],
 };
+
+const PEEK_ROW: Row = {
+  name: "Hotel New York",
+  rating: "★ 4.5",
+  badge: "Restaurant",
+  dist: "📍 20 min lopen",
+  emoji: "🍽️",
+  grad: "rest",
+};
+
+const MOOD_CHIPS = [
+  "✨ Gezellig",
+  "🍽️ Foodie",
+  "🎭 Cultureel",
+  "🚀 Avontuurlijk",
+  "Meer →",
+];
+
+function photoClass(g: PhotoGrad) {
+  const map: Record<PhotoGrad, string> = {
+    coffee: "wm-card__photo--coffee",
+    museum: "wm-card__photo--museum",
+    park: "wm-card__photo--park",
+    rest: "wm-card__photo--rest",
+    bar: "wm-card__photo--bar",
+  };
+  return map[g];
+}
+
+function PlaceCard({
+  row,
+  trending,
+}: {
+  row: Row;
+  trending?: boolean;
+}) {
+  return (
+    <div className="wm-card">
+      <div className={`wm-card__photo ${photoClass(row.grad)}`} aria-hidden>
+        {row.emoji}
+      </div>
+      <div className="wm-card__body">
+        <div className="wm-card__top">
+          <span className="wm-card__name">{row.name}</span>
+          <span className="wm-card__rating">{row.rating}</span>
+        </div>
+        <span className="wm-card__badge">{row.badge}</span>
+        <div className="wm-card__bottom">
+          <span className="wm-card__dist">{row.dist}</span>
+          <span className="wm-card__add">+ Dag</span>
+        </div>
+      </div>
+      {trending ? (
+        <span className="wm-explore__trending" aria-hidden>
+          🔥 Trending
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
 export function ExploreMockup() {
   const root = useRef<HTMLDivElement>(null);
@@ -100,7 +168,9 @@ export function ExploreMockup() {
   const [on, setOn] = useState(false);
   const [step, setStep] = useState(0);
   const [phase, setPhase] = useState<Phase>("geo");
-  const [chipActive, setChipActive] = useState(0);
+  const [moodIdx, setMoodIdx] = useState(0);
+  const [halalOn, setHalalOn] = useState(false);
+  const [shimmer, setShimmer] = useState(false);
   const [exiting, setExiting] = useState(false);
 
   const clearT = () => {
@@ -117,39 +187,51 @@ export function ExploreMockup() {
   const runCycle = useCallback(() => {
     clearT();
     setPhase("geo");
-    setChipActive(0);
+    setMoodIdx(0);
+    setHalalOn(false);
+    setShimmer(false);
     setExiting(false);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 300);
-    q(() => setStep(3), 700);
+    q(() => setStep(2), 400);
+    q(() => setStep(3), 900);
     q(() => setStep(4), 1400);
-    q(() => setStep(5), 2200);
-    q(() => setStep(6), 2800);
-    q(() => setStep(7), 3400);
+    q(() => setStep(5), 2000);
+    q(() => setStep(6), 2500);
+    q(() => setStep(7), 3000);
+    q(() => setStep(8), 3400);
     q(() => {
-      setStep(8);
-      setChipActive(1);
-    }, 5000);
-    q(() => {
+      setMoodIdx(1);
+      setShimmer(true);
       setStep(9);
-      setPhase("food");
-    }, 7000);
+    }, 5000);
+    q(() => setShimmer(false), 5600);
     q(() => {
+      setPhase("food");
       setStep(10);
-      setChipActive(2);
-      setPhase("cult");
+    }, 6500);
+    q(() => {
+      setHalalOn(true);
+      setShimmer(true);
+      setStep(11);
     }, 9000);
-    q(() => setStep(11), 11500);
-    q(() => setExiting(true), 13000);
+    q(() => setShimmer(false), 9600);
+    q(() => {
+      setPhase("halal");
+      setStep(12);
+    }, 10500);
+    q(() => setStep(13), 13000);
+    q(() => setStep(14), 13500);
+    q(() => setExiting(true), 15000);
     q(() => {
       setExiting(false);
       setOn(false);
       setStep(0);
       setPhase("geo");
-      setChipActive(0);
-    }, 14500);
-    q(() => runRef.current?.(), 15000);
+      setMoodIdx(0);
+      setHalalOn(false);
+    }, 16500);
+    q(() => runRef.current?.(), 16500);
   }, []);
 
   useEffect(() => {
@@ -189,13 +271,11 @@ export function ExploreMockup() {
     };
   }, [runCycle]);
 
-  const cards = PHASE_CARDS[phase];
+  const rows = PHASE_ROWS[phase];
 
   const chipCls = (i: number) => {
     const base = "wm-explore__chip";
-    if (chipActive === 0 && i === 0) return `${base} wm-explore__chip--active`;
-    if (chipActive === 1 && i === 1) return `${base} wm-explore__chip--active2`;
-    if (chipActive === 2 && i === 2) return `${base} wm-explore__chip--active3`;
+    if (moodIdx === i) return `${base} wm-explore__chip--on`;
     return base;
   };
 
@@ -204,83 +284,76 @@ export function ExploreMockup() {
       ref={root}
       role="presentation"
       aria-hidden
-      className={`wm-mock wm-explore wm-explore--s${step} ${on ? "wm-mock--on" : ""} ${exiting ? "wm-mock--exiting" : ""}`}
+      className={`wm-mock wm-explore wm-explore--s${step} ${shimmer ? "wm-explore--shimmer" : ""} ${on ? "wm-mock--on" : ""} ${exiting ? "wm-mock--exiting" : ""}`}
     >
       <WmStatusBar />
       <div className="wm-mock__scroll">
-        <div className="wm-explore__search">
-          <span aria-hidden>🔍</span>
-          <span>Ontdek Rotterdam…</span>
+        <header className="wm-topbar">
+          <div className="wm-topbar__left">
+            <span className="wm-topbar__title">Explore</span>
+          </div>
+          <div className="wm-topbar__right" aria-hidden>
+            ⚙️
+          </div>
+        </header>
+
+        <div className="wm-explore__chipsRow">
+          {MOOD_CHIPS.map((label, i) => (
+            <span key={label} className={chipCls(i)}>
+              {moodIdx === i && i < 4 ? `${label} ✓` : label}
+            </span>
+          ))}
         </div>
-        <div className="wm-explore__chips">
-          <span className={chipCls(0)}>{chipActive === 0 ? "Gezellig ✓" : "Gezellig"}</span>
-          <span className={chipCls(1)}>{chipActive === 1 ? "Foodie ✓" : "Foodie"}</span>
-          <span className={chipCls(2)}>{chipActive === 2 ? "Cultureel ✓" : "Cultureel"}</span>
-          <span className="wm-explore__chip">Avontuurlijk</span>
-          <span className="wm-explore__chip">Meer</span>
+
+        <div className="wm-explore__filters">
+          <span
+            className={`wm-explore__filter ${halalOn ? "wm-explore__filter--on" : ""}`}
+          >
+            Halal
+          </span>
+          <span className="wm-explore__filter">Gezinsvriendelijk</span>
+          <span className="wm-explore__filter">🐕 Honden</span>
         </div>
+
+        <div className="wm-explore__secLabel">TRENDING OP WANDERMOOD</div>
+
         <div className="wm-explore__storiesBlock">
-          <div className="wm-explore__trendLabel">Trending op WanderMood</div>
           <div className="wm-explore__stories">
             <div className="wm-explore__storyItem">
-              <div className="wm-explore__dot" />
+              <div className="wm-explore__storyDot" />
               <span className="wm-explore__storyLbl">Hopper</span>
             </div>
             <div className="wm-explore__storyItem">
-              <div className="wm-explore__dot" />
+              <div className="wm-explore__storyDot" />
               <span className="wm-explore__storyLbl">DEPOT</span>
             </div>
             <div className="wm-explore__storyItem">
-              <div className="wm-explore__dot" />
+              <div className="wm-explore__storyDot" />
               <span className="wm-explore__storyLbl">Kralingen</span>
             </div>
           </div>
         </div>
+
         <div className="wm-explore__cardsViewport">
           <div className="wm-explore__cards">
-            <div className="wm-explore__card wm-explore__card--a">
-              <div className="wm-explore__thumb" aria-hidden>
-                {cards[0].emoji}
-              </div>
-              <div className="wm-explore__cardBody">
-                <div className="wm-explore__name">{cards[0].name}</div>
-                <div className="wm-explore__meta">{cards[0].meta}</div>
-                <div className="wm-explore__quote">{cards[0].quote}</div>
-              </div>
-              <span className="wm-explore__bookmark" aria-hidden>
-                🔖
-              </span>
+            <div className="wm-explore__cardWrap wm-explore__cardWrap--1">
+              <PlaceCard row={rows[0]} trending={rows[0].trending === true} />
             </div>
-            <div className="wm-explore__card wm-explore__card--b">
-              <span className="wm-explore__trendingPill">🔥 Trending</span>
-              <div className="wm-explore__thumb" aria-hidden>
-                {cards[1].emoji}
-              </div>
-              <div className="wm-explore__cardBody">
-                <div className="wm-explore__name">{cards[1].name}</div>
-                <div className="wm-explore__meta">{cards[1].meta}</div>
-                <div className="wm-explore__quote">{cards[1].quote}</div>
-              </div>
-              <span className="wm-explore__bookmark" aria-hidden>
-                🔖
-              </span>
+            <div className="wm-explore__cardWrap wm-explore__cardWrap--2">
+              <PlaceCard row={rows[1]} trending={rows[1].trending === true} />
             </div>
-            <div className="wm-explore__card wm-explore__card--c">
-              <div className="wm-explore__thumb" aria-hidden>
-                {cards[2].emoji}
+            <div className="wm-explore__cardWrap wm-explore__cardWrap--3">
+              <PlaceCard row={rows[2]} trending={rows[2].trending === true} />
+            </div>
+            <div className="wm-explore__peekClip">
+              <div className="wm-explore__cardWrap wm-explore__cardWrap--4">
+                <PlaceCard row={PEEK_ROW} />
               </div>
-              <div className="wm-explore__cardBody">
-                <div className="wm-explore__name">{cards[2].name}</div>
-                <div className="wm-explore__meta">{cards[2].meta}</div>
-                <div className="wm-explore__quote">{cards[2].quote}</div>
-              </div>
-              <span className="wm-explore__bookmark" aria-hidden>
-                🔖
-              </span>
             </div>
           </div>
         </div>
       </div>
+      <WmBottomNav active="explore" />
     </div>
   );
 }

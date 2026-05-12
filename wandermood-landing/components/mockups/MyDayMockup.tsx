@@ -1,21 +1,50 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { WmBottomNav, WmStatusBar } from "./mockup_chrome";
 
-function WmStatusBar() {
+type Grad = "coffee" | "museum" | "park" | "bar";
+
+function photoClass(g: Grad) {
+  const map: Record<Grad, string> = {
+    coffee: "wm-card__photo--coffee",
+    museum: "wm-card__photo--museum",
+    park: "wm-card__photo--park",
+    bar: "wm-card__photo--bar",
+  };
+  return map[g];
+}
+
+function DayCardSm({
+  grad,
+  emoji,
+  name,
+  rating,
+  badge,
+  dist,
+}: {
+  grad: Grad;
+  emoji: string;
+  name: string;
+  rating: string;
+  badge: string;
+  dist: string;
+}) {
   return (
-    <div className="wm-mock__status">
-      <span className="wm-mock__time">9:41</span>
-      <div className="wm-mock__sys">
-        <span className="wm-mock__signal" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </span>
-        <span className="wm-mock__wifi" aria-hidden />
-        <span className="wm-mock__battery" aria-hidden>
-          <span className="wm-mock__battery-fill" />
-        </span>
+    <div className="wm-card wm-card--sm">
+      <div className={`wm-card__photo ${photoClass(grad)}`} aria-hidden>
+        {emoji}
+      </div>
+      <div className="wm-card__body">
+        <div className="wm-card__top">
+          <span className="wm-card__name">{name}</span>
+          <span className="wm-card__rating">{rating}</span>
+        </div>
+        <span className="wm-card__badge">{badge}</span>
+        <div className="wm-card__bottom">
+          <span className="wm-card__dist">{dist}</span>
+          <span className="wm-card__add">+ Dag</span>
+        </div>
       </div>
     </div>
   );
@@ -30,6 +59,7 @@ export function MyDayMockup() {
   const [pKick, setPKick] = useState(false);
   const [pulse, setPulse] = useState(false);
   const [bright, setBright] = useState(false);
+  const [scrollSim, setScrollSim] = useState(false);
   const [exiting, setExiting] = useState(false);
 
   const clearT = () => {
@@ -48,37 +78,45 @@ export function MyDayMockup() {
     setPKick(false);
     setPulse(false);
     setBright(false);
+    setScrollSim(false);
     setExiting(false);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 500);
-    q(() => setStep(3), 1200);
+    q(() => setStep(2), 400);
     q(() => {
-      setStep(4);
+      setStep(3);
       setPKick(true);
-    }, 1800);
-    q(() => setPKick(false), 2480);
-    q(() => setStep(5), 2800);
-    q(() => setStep(6), 3500);
+    }, 900);
+    q(() => setPKick(false), 1480);
+    q(() => setStep(4), 1800);
+    q(() => setStep(5), 2400);
+    q(() => setStep(6), 2800);
+    q(() => setStep(7), 3200);
+    q(() => setStep(8), 3600);
+    q(() => setStep(9), 3800);
+    q(() => setStep(10), 4000);
+    q(() => setStep(11), 5000);
+    q(() => setStep(12), 5500);
+    q(() => setStep(13), 5700);
+    q(() => setStep(14), 5900);
+    q(() => setStep(15), 6100);
     q(() => {
-      setStep(7);
       setPulse(true);
       setBright(true);
-    }, 5000);
+    }, 7500);
     q(() => {
       setPulse(false);
       setBright(false);
-    }, 6200);
-    q(() => setStep(8), 7000);
-    q(() => setStep(9), 9000);
-    q(() => setStep(10), 10500);
-    q(() => setExiting(true), 12000);
+    }, 8300);
+    q(() => setScrollSim(true), 9000);
+    q(() => setScrollSim(false), 11000);
+    q(() => setExiting(true), 14500);
     q(() => {
       setExiting(false);
       setOn(false);
       setStep(0);
-    }, 13500);
-    q(() => runRef.current?.(), 14000);
+    }, 16000);
+    q(() => runRef.current?.(), 16000);
   }, []);
 
   useEffect(() => {
@@ -126,7 +164,7 @@ export function MyDayMockup() {
     pKick ? "wm-day--pKick" : "",
     pulse ? "wm-day--pulse" : "",
     bright ? "wm-day--bright" : "",
-    step === 8 ? "wm-day--scroll" : "",
+    scrollSim ? "wm-day--scroll" : "",
     exiting ? "wm-mock--exiting" : "",
   ]
     .filter(Boolean)
@@ -136,69 +174,132 @@ export function MyDayMockup() {
     <div ref={root} role="presentation" aria-hidden className={cls}>
       <WmStatusBar />
       <div className="wm-mock__scroll">
+        <header className="wm-topbar">
+          <div className="wm-topbar__left">
+            <span className="wm-topbar__title">Mijn Dag</span>
+          </div>
+          <div className="wm-topbar__bell" aria-hidden>
+            🔔
+            <span className="wm-topbar__bellDot" />
+          </div>
+        </header>
+
         <div className="wm-day__panorama">
-          <div className="wm-day__titleRow">
-            <header className="wm-day__head">
-              <div className="wm-day__date">Zaterdag, 11 mei</div>
-              <div className="wm-day__title">Jouw dag</div>
-            </header>
-            <div className="wm-day__bell" aria-hidden>
-              🔔
+          <div className="wm-day__dateWx">
+            <div className="wm-day__dateLine">Zaterdag, 11 mei</div>
+            <div className="wm-day__wxInline">☀️ 18°C · Rotterdam</div>
+          </div>
+
+          <div className="wm-day__hero">
+            <span className="wm-day__heroEmoji" aria-hidden>
+              ☕
+            </span>
+            <div className="wm-day__heroTop">
+              <span className="wm-day__heroTime">09:00</span>
+              <span className="wm-day__heroStatus">✓ Je bent er</span>
+            </div>
+            <div className="wm-day__heroName">Hopper Espresso Bar</div>
+            <div className="wm-day__heroBot">
+              <span className="wm-day__heroBadge">☕ Met Sarah</span>
+              <span className="wm-day__heroLink">Routebeschrijving</span>
             </div>
           </div>
-          <div className="wm-day__wx">☀️ 18°C · Rotterdam · Lekker dagje uit</div>
+
           <div className="wm-day__timeline">
             <div className="wm-day__line" aria-hidden />
-            <div className="wm-day__slot">
-              <div className="wm-day__dot" aria-hidden />
-              <div className="wm-day__hero">
-                <span className="wm-day__heroEmoji" aria-hidden>
-                  ☕
-                </span>
-                <div className="wm-day__heroTop">
-                  <span className="wm-day__heroTime">09:00</span>
-                  <span className="wm-day__heroStatus">
-                    <span className="wm-day__heroDot" aria-hidden />
-                    ✓ Je bent er
-                  </span>
-                </div>
-                <div className="wm-day__heroName">Hopper Espresso Bar</div>
-                <span className="wm-day__heroBadge">☕ Met Sarah</span>
+
+            <div className="wm-day__between wm-day__between--1">
+              <span className="wm-day__betweenPill">🚲 12 min fietsen</span>
+            </div>
+
+            <div className="wm-day__tlItem">
+              <div className="wm-day__timeLbl">13:00</div>
+              <div className="wm-day__dot wm-day__dot--out" aria-hidden />
+              <div className="wm-day__tlCard wm-day__tlCard--1">
+                <DayCardSm
+                  grad="museum"
+                  emoji="🏛️"
+                  name="DEPOT Boijmans"
+                  rating="★ 4.4"
+                  badge="🎭 Met Sarah"
+                  dist="📍 1.2 km"
+                />
               </div>
             </div>
-            <div className="wm-day__slot">
-              <div className="wm-day__dot" aria-hidden />
-              <div className="wm-day__slotRow">
-                <span className="wm-day__compactTime">13:00</span>
-                <div className="wm-day__compact wm-day__compact--b">
-                  <div className="wm-day__compactMid">
-                    <div className="wm-day__compactName">DEPOT Boijmans Van Beuningen</div>
-                    <span className="wm-day__compactBadge">🎭 Met Sarah</span>
-                  </div>
-                  <span className="wm-day__compactChev" aria-hidden>
-                    ›
-                  </span>
-                </div>
+
+            <div className="wm-day__between wm-day__between--2">
+              <span className="wm-day__betweenPill">🚴 18 min fietsen</span>
+            </div>
+
+            <div className="wm-day__tlItem">
+              <div className="wm-day__timeLbl">15:30</div>
+              <div className="wm-day__dot wm-day__dot--out" aria-hidden />
+              <div className="wm-day__tlCard wm-day__tlCard--2">
+                <DayCardSm
+                  grad="park"
+                  emoji="🌿"
+                  name="Kralingse Bos"
+                  rating="★ 4.7"
+                  badge="Park"
+                  dist="📍 3.4 km"
+                />
               </div>
             </div>
-            <div className="wm-day__slot">
-              <div className="wm-day__dot" aria-hidden />
-              <div className="wm-day__slotRow">
-                <span className="wm-day__compactTime">19:00</span>
-                <div className="wm-day__compact wm-day__compact--c">
-                  <div className="wm-day__compactMid">
-                    <div className="wm-day__compactName">Wijnbar Sobre</div>
-                    <span className="wm-day__compactBadge">🍷 Met Sarah</span>
-                  </div>
-                  <span className="wm-day__compactChev" aria-hidden>
-                    ›
-                  </span>
-                </div>
+
+            <div className="wm-day__between wm-day__between--3">
+              <span className="wm-day__betweenPill">🚶 10 min lopen</span>
+            </div>
+
+            <div className="wm-day__tlItem">
+              <div className="wm-day__timeLbl">19:00</div>
+              <div className="wm-day__dot wm-day__dot--out" aria-hidden />
+              <div className="wm-day__tlCard wm-day__tlCard--3">
+                <DayCardSm
+                  grad="bar"
+                  emoji="🍷"
+                  name="Wijnbar Sobre"
+                  rating="★ 4.6"
+                  badge="🍷 Met Sarah"
+                  dist="📍 0.8 km"
+                />
               </div>
+            </div>
+          </div>
+
+          <div className="wm-day__freeLabel">Misschien leuk in je vrije tijd</div>
+          <div className="wm-day__freeRow">
+            <div className="wm-day__freeChip">
+              <span className="wm-day__freeEmoji" aria-hidden>
+                ☕
+              </span>
+              <span className="wm-day__freeTxt">
+                Koffie
+                <br />
+                halen
+              </span>
+            </div>
+            <div className="wm-day__freeChip">
+              <span className="wm-day__freeEmoji" aria-hidden>
+                🛍️
+              </span>
+              <span className="wm-day__freeTxt">Winkelen</span>
+            </div>
+            <div className="wm-day__freeChip">
+              <span className="wm-day__freeEmoji" aria-hidden>
+                🌳
+              </span>
+              <span className="wm-day__freeTxt">Wandelen</span>
+            </div>
+            <div className="wm-day__freeChip">
+              <span className="wm-day__freeEmoji" aria-hidden>
+                🎨
+              </span>
+              <span className="wm-day__freeTxt">Museum</span>
             </div>
           </div>
         </div>
       </div>
+      <WmBottomNav active="day" />
     </div>
   );
 }
