@@ -1,11 +1,58 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import {
+  MockupBottomNav,
+  MockupStatusBar,
+  MockupTopBar,
+} from "./MockupChrome";
 
-/** 0 = Gezellig content, 1 = Foodie, 2 = Cultureel */
+import type { TranslationValues } from "next-intl";
+
+/** 0 default, 1 foodie swap, 2 halal swap */
 type MoodPhase = 0 | 1 | 2;
 
+type MockupT = (key: string, values?: TranslationValues) => string;
+
+function cardTriple(phase: MoodPhase, t: MockupT): [string, string, string] {
+  if (phase === 1)
+    return [
+      t("exploreCard1b"),
+      t("exploreCard2b"),
+      t("exploreCard3b"),
+    ];
+  if (phase === 2)
+    return [
+      t("exploreCard1c"),
+      t("exploreCard2c"),
+      t("exploreCard3c"),
+    ];
+  return [t("exploreCard1a"), t("exploreCard2a"), t("exploreCard3a")];
+}
+
+function typeTriple(phase: MoodPhase, t: MockupT): [string, string, string] {
+  if (phase === 1)
+    return [
+      t("typeFoodHall"),
+      t("typeStreetfood"),
+      t("typeNature"),
+    ];
+  if (phase === 2)
+    return [
+      t("exploreFilterHalal"),
+      t("exploreFilterHalal"),
+      t("exploreFilterHalal"),
+    ];
+  return [
+    t("typeSpecialtyCoffee"),
+    t("typeMuseum"),
+    t("typeNature"),
+  ];
+}
+
 export function ExploreMockup() {
+  const t = useTranslations("landing.mockups");
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -13,6 +60,7 @@ export function ExploreMockup() {
   const [step, setStep] = useState(0);
   const [moodPhase, setMoodPhase] = useState<MoodPhase>(0);
   const [chipIdx, setChipIdx] = useState(0);
+  const [filterHalal, setFilterHalal] = useState(false);
   const [shimmer, setShimmer] = useState(false);
 
   const clearT = () => {
@@ -30,40 +78,37 @@ export function ExploreMockup() {
     clearT();
     setMoodPhase(0);
     setChipIdx(0);
+    setFilterHalal(false);
     setShimmer(false);
     setOn(true);
     setStep(1);
-    q(() => setStep(2), 300);
-    q(() => setStep(3), 700);
+    q(() => setStep(2), 400);
+    q(() => setStep(3), 900);
     q(() => setStep(4), 1400);
-    q(() => setStep(5), 2200);
-    q(() => setStep(6), 2800);
-    q(() => setStep(7), 3400);
+    q(() => setStep(5), 2000);
+    q(() => setStep(6), 2500);
+    q(() => setStep(7), 3000);
+    q(() => setStep(8), 3400);
     q(() => {
-      setStep(8);
       setChipIdx(1);
       setShimmer(true);
     }, 5000);
     q(() => setShimmer(false), 5600);
+    q(() => setMoodPhase(1), 6500);
     q(() => {
-      setStep(9);
-      setMoodPhase(1);
-    }, 7000);
-    q(() => {
-      setStep(10);
-      setChipIdx(2);
+      setFilterHalal(true);
       setShimmer(true);
-      setMoodPhase(2);
     }, 9000);
     q(() => setShimmer(false), 9600);
-    q(() => setStep(11), 11500);
+    q(() => setMoodPhase(2), 10500);
     q(() => {
       setOn(false);
       setStep(0);
       setMoodPhase(0);
       setChipIdx(0);
-    }, 13000);
-    q(() => runRef.current?.(), 13000 + 1500 + 500);
+      setFilterHalal(false);
+    }, 15000);
+    q(() => runRef.current?.(), 16700);
   }, []);
 
   useEffect(() => {
@@ -103,41 +148,8 @@ export function ExploreMockup() {
     };
   }, [runCycle]);
 
-  const labels = [
-    {
-      n1: "Hopper Espresso Bar",
-      m1: "★ 4.6 · Specialty coffee",
-      q1: "Flat white, goed licht.",
-      n2: "DEPOT Boijmans",
-      m2: "★ 4.4 · Museum",
-      q2: "Neem je tijd in de zaal.",
-      n3: "Kralingse Bos",
-      m3: "★ 4.7 · Natuur",
-      q3: "Frisse wandeling.",
-    },
-    {
-      n1: "Bazar",
-      m1: "★ 4.5 · Food hall",
-      q1: "Veel keus, bruisend.",
-      n2: "Fenix Food Factory",
-      m2: "★ 4.6 · Streetfood",
-      q2: "Harbor views & bites.",
-      n3: "Kralingse Bos",
-      m3: "★ 4.7 · Natuur",
-      q3: "Lekker uitwaaien.",
-    },
-    {
-      n1: "DEPOT Boijmans",
-      m1: "★ 4.6 · Museum",
-      q1: "Iconen en nieuw werk.",
-      n2: "Museum Boijmans",
-      m2: "★ 4.5 · Tentoonstelling",
-      q2: "Samen cultuur snuiven.",
-      n3: "Kralingse Bos",
-      m3: "★ 4.7 · Natuur",
-      q3: "Rust na museums.",
-    },
-  ][moodPhase];
+  const names = cardTriple(moodPhase, t);
+  const types = typeTriple(moodPhase, t);
 
   return (
     <div
@@ -145,105 +157,153 @@ export function ExploreMockup() {
       role="presentation"
       aria-hidden
       data-phase={moodPhase}
+      data-filter-halal={filterHalal ? "1" : "0"}
+      data-chip={chipIdx}
       data-shimmer={shimmer ? "1" : "0"}
-      className={`wm-mock wm-explore wm-explore--s${step} ${on ? "wm-mock--on" : ""}`}
+      className={`wm-mock wm-app wm-explore wm-explore--s${step} ${on ? "wm-mock--on" : ""}`}
     >
-      <div className="wm-statusBar">
-        <span className="wm-statusBar__time">9:41</span>
-        <div className="wm-statusBar__icons" aria-hidden>
-          <span className="wm-statusBar__signal">
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className="wm-statusBar__wifi" />
-          <span className="wm-statusBar__bat">
-            <span className="wm-statusBar__batTerm" />
-          </span>
-        </div>
-      </div>
-
-      <div className="wm-mock__scroll wm-explore__scroll">
-        <div className="wm-explore__search">
-          <span aria-hidden>🔍</span>
-          <span>Ontdek Rotterdam…</span>
-        </div>
-
-        <div className="wm-explore__chips">
-          <span className={`wm-explore__chip ${chipIdx === 0 ? "wm-explore__chip--active" : ""}`}>
-            {chipIdx === 0 ? "Gezellig ✓" : "Gezellig"}
-          </span>
-          <span className={`wm-explore__chip ${chipIdx === 1 ? "wm-explore__chip--activeFood" : ""}`}>
-            {chipIdx === 1 ? "Foodie ✓" : "Foodie"}
-          </span>
-          <span className={`wm-explore__chip ${chipIdx === 2 ? "wm-explore__chip--activeCult" : ""}`}>
-            {chipIdx === 2 ? "Cultureel ✓" : "Cultureel"}
-          </span>
-          <span className="wm-explore__chip">Avontuurlijk</span>
-          <span className="wm-explore__chip">Meer</span>
-        </div>
-
-        <div className="wm-explore__trend">
-          <div className="wm-explore__trendRow">
-            <div className="wm-explore__storiesLabel">Trending op WanderMood</div>
-          </div>
-          <div className="wm-explore__stories">
-            <div className="wm-explore__story">
-              <div className="wm-explore__storyDot" />
-              <span className="wm-explore__storyCap">Hopper</span>
-            </div>
-            <div className="wm-explore__story">
-              <div className="wm-explore__storyDot wm-explore__storyDot--b" />
-              <span className="wm-explore__storyCap">DEPOT</span>
-            </div>
-            <div className="wm-explore__story">
-              <div className="wm-explore__storyDot wm-explore__storyDot--c" />
-              <span className="wm-explore__storyCap">Sobre</span>
-            </div>
-          </div>
-        </div>
-
-        <div className={`wm-explore__cards ${shimmer ? "wm-explore__cards--shimmer" : ""}`}>
-          <div className="wm-explore__cardRow wm-explore__cardRow--a">
-            <div className="wm-explore__thumb">☕</div>
-            <div className="wm-explore__cardMain">
-              <div className="wm-explore__name">{labels.n1}</div>
-              <div className="wm-explore__meta">{labels.m1}</div>
-              <div className="wm-explore__quote">{labels.q1}</div>
-            </div>
-            <span className="wm-explore__bookmark" aria-hidden>
-              🔖
-            </span>
-          </div>
-
-          <div className="wm-explore__cardRow wm-explore__cardRow--b">
-            <div className="wm-explore__thumb wm-explore__thumb--b">🏛️</div>
-            <div className="wm-explore__cardMain">
-              <div className="wm-explore__name">{labels.n2}</div>
-              <div className="wm-explore__meta">{labels.m2}</div>
-              <div className="wm-explore__quote">{labels.q2}</div>
-              <div className="wm-explore__trendingPill">🔥 Trending</div>
-            </div>
-            <span className="wm-explore__bookmark" aria-hidden>
-              🔖
-            </span>
-          </div>
-
-          <div className="wm-explore__peekWrap">
-            <div className="wm-explore__cardRow wm-explore__cardRow--c wm-explore__cardRow--peek">
-              <div className="wm-explore__thumb wm-explore__thumb--c">🌿</div>
-              <div className="wm-explore__cardMain">
-                <div className="wm-explore__name">{labels.n3}</div>
-                <div className="wm-explore__meta">{labels.m3}</div>
-                <div className="wm-explore__quote">{labels.q3}</div>
-              </div>
-              <span className="wm-explore__bookmark" aria-hidden>
-                🔖
+      <MockupStatusBar />
+      <div className="wm-app__main">
+        <div className="wm-mock__scroll wm-explore__scroll">
+          <MockupTopBar
+            title={t("topExplore")}
+            right={
+              <span className="wm-appTopBar__iconBtn" aria-hidden>
+                ≡
               </span>
+            }
+          />
+
+          <div className="wm-explore__chips">
+            <span
+              className={`wm-explore__chip ${chipIdx === 0 ? "wm-explore__chip--active" : ""}`}
+            >
+              ✨ {chipIdx === 0 ? `${t("exploreChipCozy")} ✓` : t("exploreChipCozy")}
+            </span>
+            <span
+              className={`wm-explore__chip ${chipIdx === 1 ? "wm-explore__chip--activeFood" : ""}`}
+            >
+              🍽️{" "}
+              {chipIdx === 1 ? `${t("exploreChipFoodie")} ✓` : t("exploreChipFoodie")}
+            </span>
+            <span className="wm-explore__chip">🎭 {t("exploreChipCulture")}</span>
+            <span className="wm-explore__chip">
+              🚀 {t("exploreChipAdventure")}
+            </span>
+            <span className="wm-explore__chip">{t("exploreChipMore")}</span>
+          </div>
+
+          <div className="wm-explore__filters">
+            <span
+              className={`wm-explore__filter ${filterHalal ? "wm-explore__filter--active" : ""}`}
+            >
+              {t("exploreFilterHalal")}
+            </span>
+            <span className="wm-explore__filter">{t("exploreFilterFamily")}</span>
+            <span className="wm-explore__filter">{t("exploreFilterDogs")}</span>
+          </div>
+
+          <div className="wm-explore__trend">
+            <div className="wm-explore__storiesLabel">{t("exploreTrending")}</div>
+            <div className="wm-explore__stories">
+              <div className="wm-explore__story">
+                <div className="wm-explore__storyDot" />
+                <span className="wm-explore__storyCap">{t("exploreStory1")}</span>
+              </div>
+              <div className="wm-explore__story">
+                <div className="wm-explore__storyDot wm-explore__storyDot--b" />
+                <span className="wm-explore__storyCap">{t("exploreStory2")}</span>
+              </div>
+              <div className="wm-explore__story">
+                <div className="wm-explore__storyDot wm-explore__storyDot--c" />
+                <span className="wm-explore__storyCap">{t("exploreStory3")}</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`wm-explore__cards ${shimmer ? "wm-explore__cards--shimmer" : ""}`}
+          >
+            <div className="wm-placeCard wm-placeCard--coffee wm-explore__cardRow wm-explore__cardRow--a">
+              <div className="wm-placeCard__photo">
+                <span>☕</span>
+              </div>
+              <div className="wm-placeCard__body">
+                <div className="wm-placeCard__top">
+                  <span className="wm-placeCard__name">{names[0]}</span>
+                  <span className="wm-placeCard__rating">
+                    {t("ratingFmt", { rating: "4.6" })}
+                  </span>
+                </div>
+                <div className="wm-placeCard__badge">{types[0]}</div>
+                <div className="wm-placeCard__bottom">
+                  <span className="wm-placeCard__dist">
+                    📍 {t("distWalk", { minutes: 8 })}
+                  </span>
+                  <span className="wm-placeCard__add">{t("addDay")}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="wm-placeCard wm-placeCard--museum wm-explore__cardRow wm-explore__cardRow--b">
+              <div className="wm-placeCard__photo">
+                <span>🏛️</span>
+              </div>
+              <div className="wm-placeCard__body">
+                <div className="wm-placeCard__top">
+                  <span className="wm-placeCard__name">{names[1]}</span>
+                  <span className="wm-placeCard__rating">
+                    {t("ratingFmt", { rating: "4.4" })}
+                  </span>
+                </div>
+                <div className="wm-placeCard__badge">{types[1]}</div>
+                <div className="wm-placeCard__bottom">
+                  <span className="wm-placeCard__dist">
+                    🚲 {t("distBike", { minutes: 12 })}
+                  </span>
+                  <span className="wm-placeCard__add">{t("addDay")}</span>
+                </div>
+              </div>
+              <span className="wm-placeCard__trending">{t("trendingPill")}</span>
+            </div>
+
+            <div className="wm-placeCard wm-placeCard--park wm-explore__cardRow wm-explore__cardRow--c">
+              <div className="wm-placeCard__photo">
+                <span>🌿</span>
+              </div>
+              <div className="wm-placeCard__body">
+                <div className="wm-placeCard__top">
+                  <span className="wm-placeCard__name">{names[2]}</span>
+                  <span className="wm-placeCard__rating">
+                    {t("ratingFmt", { rating: "4.7" })}
+                  </span>
+                </div>
+                <div className="wm-placeCard__badge">{types[2]}</div>
+                <div className="wm-placeCard__bottom">
+                  <span className="wm-placeCard__dist">
+                    📍 {t("distWalk", { minutes: 15 })}
+                  </span>
+                  <span className="wm-placeCard__add">{t("addDay")}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="wm-explore__peekWrap">
+              <div className="wm-placeCard wm-placeCard--bar wm-explore__peekCard">
+                <div className="wm-placeCard__photo">
+                  <span>🍸</span>
+                </div>
+                <div className="wm-placeCard__body">
+                  <div className="wm-placeCard__top">
+                    <span className="wm-placeCard__name">…</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <MockupBottomNav active="explore" />
     </div>
   );
 }

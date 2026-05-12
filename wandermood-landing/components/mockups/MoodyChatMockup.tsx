@@ -1,8 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import {
+  MockupBottomNav,
+  MockupStatusBar,
+  MockupTopBar,
+} from "./MockupChrome";
 
 export function MoodyChatMockup() {
+  const t = useTranslations("landing.mockups");
   const root = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
@@ -20,7 +27,6 @@ export function MoodyChatMockup() {
 
   const runRef = useRef<(() => void) | null>(null);
 
-  /* Steps 1–9 visible; fade at ~11500ms; restart after 1.5s fade + 0.5s blank */
   const runCycle = useCallback(() => {
     clearT();
     setOn(true);
@@ -37,7 +43,7 @@ export function MoodyChatMockup() {
       setOn(false);
       setStep(0);
     }, 11500);
-    q(() => runRef.current?.(), 11500 + 1500 + 500);
+    q(() => runRef.current?.(), 13200);
   }, []);
 
   useEffect(() => {
@@ -82,89 +88,77 @@ export function MoodyChatMockup() {
       ref={root}
       role="presentation"
       aria-hidden
-      className={`wm-mock wm-moody wm-moody--s${step} ${on ? "wm-mock--on" : ""}`}
+      className={`wm-mock wm-app wm-moody wm-moody--s${step} ${on ? "wm-mock--on" : ""}`}
     >
-      <div className="wm-statusBar">
-        <span className="wm-statusBar__time">9:41</span>
-        <div className="wm-statusBar__icons" aria-hidden>
-          <span className="wm-statusBar__signal">
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className="wm-statusBar__wifi" />
-          <span className="wm-statusBar__bat">
-            <span className="wm-statusBar__batTerm" />
-          </span>
-        </div>
-      </div>
-      <div className="wm-mock__scroll wm-moody__scroll">
-        <header className="wm-moody__top">
-          <div className="wm-moody__ava" aria-hidden>
-            M
-          </div>
-          <div className="wm-moody__brand">
-            <div className="wm-moody__brandTitle">Moody</div>
-            <div className="wm-moody__brandSub">Je stadskenner</div>
-          </div>
-        </header>
+      <MockupStatusBar />
+      <div className="wm-app__main">
+        <div className="wm-mock__scroll wm-moody__scroll">
+          <MockupTopBar
+            title={t("topMoody")}
+            leftExtra={
+              <span className="wm-appTopBar__moodyAva" aria-hidden>
+                M
+              </span>
+            }
+          />
 
-        <div className="wm-moody__thread">
-          <div className="wm-moody__typing" aria-hidden>
-            <span />
-            <span />
-            <span />
-          </div>
-
-          <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__msg1">
-            Goedemorgen ☀️ Luie vibe vandaag of wil je echt iets doen?
-          </div>
-
-          <div className="wm-moody__bubble wm-moody__bubble--u">
-            Iets gezelligs, niet te ver
-          </div>
-
-          <div className="wm-moody__typing wm-moody__typing--2" aria-hidden>
-            <span />
-            <span />
-            <span />
-          </div>
-
-          <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__msg2">
-            Dan weet ik precies waar ik je heen stuur 💚
-          </div>
-
-          <div className="wm-moody__place">
-            <div className="wm-moody__placeDot" aria-hidden>
-              <span>☕</span>
+          <div className="wm-moody__thread">
+            <div className="wm-moody__typing" aria-hidden>
+              <span />
+              <span />
+              <span />
             </div>
-            <div className="wm-moody__placeBody">
-              <div className="wm-moody__placeTop">
-                <div>
-                  <div className="wm-moody__placeName">Hopper Espresso Bar</div>
-                  <div className="wm-moody__placeMeta">★ 4.6 · 8 min lopen</div>
+
+            <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__msg1">
+              {t("moodyMsg1")}
+            </div>
+
+            <div className="wm-moody__bubble wm-moody__bubble--u">{t("moodyMsg2")}</div>
+
+            <div className="wm-moody__typing wm-moody__typing--2" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
+
+            <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__msg2">
+              {t("moodyMsg3")}
+            </div>
+
+            <div className="wm-moody__place">
+              <div className="wm-placeCard wm-placeCard--coffee wm-moody__placeInner">
+                <div className="wm-placeCard__photo">
+                  <span>☕</span>
+                </div>
+                <div className="wm-placeCard__body">
+                  <div className="wm-placeCard__top">
+                    <span className="wm-placeCard__name">{t("myDayHeroTitle")}</span>
+                    <span className="wm-placeCard__rating">
+                      {t("ratingFmt", { rating: "4.6" })}
+                    </span>
+                  </div>
+                  <div className="wm-placeCard__badge">{t("typeSpecialtyCoffee")}</div>
+                  <div className="wm-placeCard__bottom">
+                    <span className="wm-placeCard__dist">
+                      📍 {t("moodyDistWalk", { minutes: 8 })}
+                    </span>
+                    <span className="wm-placeCard__add">{t("addDay")}</span>
+                  </div>
                 </div>
               </div>
-              <div className="wm-moody__placeBtns">
-                <button type="button" className="wm-moody__pill wm-moody__pill--pri">
-                  Voeg toe
-                </button>
-                <button type="button" className="wm-moody__pill wm-moody__pill--sec">
-                  Meer
-                </button>
-              </div>
+            </div>
+
+            <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--quote wm-moody__msg3">
+              {t("moodyPlaceQuote")}
             </div>
           </div>
 
-          <div className="wm-moody__bubble wm-moody__bubble--m wm-moody__bubble--quote wm-moody__msg3">
-            Flat white, goed licht, geen haast.
+          <div className="wm-moody__composer" aria-hidden>
+            <span className="wm-moody__composerPh">{t("moodyComposerPh")}</span>
           </div>
         </div>
-
-        <div className="wm-moody__composer" aria-hidden>
-          <span className="wm-moody__composerPh">Bericht…</span>
-        </div>
       </div>
+      <MockupBottomNav active="moody" />
     </div>
   );
 }
