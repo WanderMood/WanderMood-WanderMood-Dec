@@ -42,7 +42,7 @@ function normalizeLanguageForDetails(language: string | undefined): string {
 }
 
 /** DB row TTL for Place Details (editorial/reviews are language-specific). */
-const PLACES_DETAILS_DB_CACHE_DAYS = 21
+const PLACES_DETAILS_DB_CACHE_DAYS = 90
 
 /** Same-instance burst dedupe before Postgres read (cold starts miss; hot scroll wins). */
 const detailsHotMemory = new Map<string, { exp: number; data: unknown }>()
