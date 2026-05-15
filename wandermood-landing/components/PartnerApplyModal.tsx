@@ -253,8 +253,8 @@ export function PartnerApplyModal({ open, onClose }: Props) {
     else if (!EMAIL_RE.test(em)) err.contact_email = tForm("errorEmail");
     if (!form.contact_phone.trim()) err.contact_phone = tForm("errorRequired");
     const kvk = form.kvk_number.replace(/\s/g, "");
-    if (!kvk) err.kvk_number = tForm("errorRequired");
-    else if (!/^\d{8}$/.test(kvk)) err.kvk_number = t("errorKvK");
+    if (kvk && !/^\d{8}$/.test(kvk)) err.kvk_number = t("errorKvK");
+    if (!form.vat_number.trim()) err.vat_number = tForm("errorRequired");
     setFieldErrors((e) => {
       const next = { ...e };
       Object.keys(err).forEach((k) => delete next[k]);
@@ -561,11 +561,6 @@ export function PartnerApplyModal({ open, onClose }: Props) {
                 inputMode="url"
                 autoComplete="off"
               />
-              <p className={styles.help}>{t("venue.googleMapsHelp")}</p>
-              <details className={styles.details}>
-                <summary>{t("mapsTipTitle")}</summary>
-                <div className={styles.detailsBody}>{t("mapsTipBody")}</div>
-              </details>
               {fieldErrors.google_place_url ? (
                 <p className={styles.err}>{fieldErrors.google_place_url}</p>
               ) : null}
@@ -617,81 +612,87 @@ export function PartnerApplyModal({ open, onClose }: Props) {
               ) : null}
             </div>
 
-            <div className={styles.field}>
-              <span className={styles.label}>{t("venue.openingHours")}</span>
-              <p className={styles.help}>{t("venue.openingHoursHelp")}</p>
-              {form.opening_days.map((row) => (
-                <div key={row.id} className={styles.openingRow}>
-                  <button
-                    type="button"
-                    className={`${styles.toggleTrack} ${row.open ? styles.toggleTrackOn : ""}`}
-                    aria-pressed={row.open}
-                    aria-label={t("openingToggleAria", { day: dayLabels[row.id] })}
-                    onClick={() => patchOpeningDay(row.id, { open: !row.open })}
-                  >
-                    <span
-                      className={`${styles.toggleKnob} ${row.open ? styles.toggleKnobOn : ""}`}
-                    />
-                  </button>
-                  <span className={styles.dayLabel}>{dayLabels[row.id]}</span>
-                  <select
-                    className={styles.timeSelect}
-                    value={row.openTime}
-                    disabled={!row.open}
-                    aria-label={t("openTimeAria", { day: dayLabels[row.id] })}
-                    onChange={(e) => patchOpeningDay(row.id, { openTime: e.target.value })}
-                  >
-                    {OPEN_TIME_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                  <span className={styles.timeSep}>—</span>
-                  <select
-                    className={styles.timeSelect}
-                    value={row.closeTime}
-                    disabled={!row.open}
-                    aria-label={t("closeTimeAria", { day: dayLabels[row.id] })}
-                    onChange={(e) => patchOpeningDay(row.id, { closeTime: e.target.value })}
-                  >
-                    {OPEN_TIME_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                    <option value="24:00">{midnightLabel}</option>
-                  </select>
+            <details className={`${styles.details} ${styles.optionalVenueDetails}`}>
+              <summary>{t("venue.optionalVenueSectionTitle")}</summary>
+              <div className={styles.optionalVenuePanel}>
+                <p className={styles.help}>{t("venue.optionalVenueSectionHelp")}</p>
+                <div className={styles.field}>
+                  <span className={styles.label}>{t("venue.openingHours")}</span>
+                  <p className={styles.help}>{t("venue.openingHoursHelp")}</p>
+                  {form.opening_days.map((row) => (
+                    <div key={row.id} className={styles.openingRow}>
+                      <button
+                        type="button"
+                        className={`${styles.toggleTrack} ${row.open ? styles.toggleTrackOn : ""}`}
+                        aria-pressed={row.open}
+                        aria-label={t("openingToggleAria", { day: dayLabels[row.id] })}
+                        onClick={() => patchOpeningDay(row.id, { open: !row.open })}
+                      >
+                        <span
+                          className={`${styles.toggleKnob} ${row.open ? styles.toggleKnobOn : ""}`}
+                        />
+                      </button>
+                      <span className={styles.dayLabel}>{dayLabels[row.id]}</span>
+                      <select
+                        className={styles.timeSelect}
+                        value={row.openTime}
+                        disabled={!row.open}
+                        aria-label={t("openTimeAria", { day: dayLabels[row.id] })}
+                        onChange={(e) => patchOpeningDay(row.id, { openTime: e.target.value })}
+                      >
+                        {OPEN_TIME_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <span className={styles.timeSep}>—</span>
+                      <select
+                        className={styles.timeSelect}
+                        value={row.closeTime}
+                        disabled={!row.open}
+                        aria-label={t("closeTimeAria", { day: dayLabels[row.id] })}
+                        onChange={(e) => patchOpeningDay(row.id, { closeTime: e.target.value })}
+                      >
+                        {OPEN_TIME_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                        <option value="24:00">{midnightLabel}</option>
+                      </select>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="pm-web">
-                {t("venue.website")}
-              </label>
-              <input
-                id="pm-web"
-                className={styles.input}
-                value={form.website}
-                onChange={(e) => setField("website", e.target.value)}
-                placeholder={t("venue.websitePh")}
-                inputMode="url"
-              />
-            </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="pm-web">
+                    {t("venue.website")}
+                  </label>
+                  <input
+                    id="pm-web"
+                    className={styles.input}
+                    value={form.website}
+                    onChange={(e) => setField("website", e.target.value)}
+                    placeholder={t("venue.websitePh")}
+                    inputMode="url"
+                  />
+                </div>
 
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="pm-ig">
-                {t("venue.instagram")}
-              </label>
-              <input
-                id="pm-ig"
-                className={styles.input}
-                value={form.instagram_handle}
-                onChange={(e) => setField("instagram_handle", e.target.value)}
-                placeholder={t("venue.instagramPh")}
-              />
-            </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="pm-ig">
+                    {t("venue.instagram")}
+                  </label>
+                  <input
+                    id="pm-ig"
+                    className={styles.input}
+                    value={form.instagram_handle}
+                    onChange={(e) => setField("instagram_handle", e.target.value)}
+                    placeholder={t("venue.instagramPh")}
+                  />
+                </div>
+              </div>
+            </details>
           </>
         ) : null}
 
@@ -753,7 +754,7 @@ export function PartnerApplyModal({ open, onClose }: Props) {
 
             <div className={styles.field}>
               <label className={styles.label} htmlFor="pm-kvk">
-                {req(t("details.kvk"))}
+                {t("details.kvk")}
               </label>
               <input
                 id="pm-kvk"
@@ -798,7 +799,7 @@ export function PartnerApplyModal({ open, onClose }: Props) {
 
             <div className={styles.field}>
               <label className={styles.label} htmlFor="pm-vat">
-                {t("details.vat")}
+                {req(t("details.vat"))}
               </label>
               <input
                 id="pm-vat"
@@ -808,6 +809,9 @@ export function PartnerApplyModal({ open, onClose }: Props) {
                 placeholder={t("details.vatPh")}
               />
               <p className={styles.help}>{t("details.vatHelp")}</p>
+              {fieldErrors.vat_number ? (
+                <p className={styles.err}>{fieldErrors.vat_number}</p>
+              ) : null}
             </div>
           </>
         ) : null}

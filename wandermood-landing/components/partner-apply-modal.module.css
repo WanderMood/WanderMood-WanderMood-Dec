@@ -517,6 +517,42 @@
   line-height: 1.45;
 }
 
+.optionalVenueDetails summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.optionalVenueDetails summary::after {
+  content: "";
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid rgba(245, 240, 232, 0.45);
+  transition: transform 0.2s ease;
+}
+
+.optionalVenueDetails[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.optionalVenuePanel {
+  padding: 0 12px 12px;
+  border-top: 1px solid rgba(245, 240, 232, 0.06);
+}
+
+.optionalVenuePanel > .help {
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.optionalVenuePanel .field:first-of-type {
+  margin-top: 4px;
+}
+
 .honeypot {
   position: absolute;
   left: -9999px;

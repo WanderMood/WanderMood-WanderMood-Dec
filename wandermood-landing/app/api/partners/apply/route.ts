@@ -136,9 +136,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
-    if (!kvkRaw || !/^\d{8}$/.test(kvkRaw)) {
+    if (kvkRaw && !/^\d{8}$/.test(kvkRaw)) {
       return NextResponse.json(
         { error: "KvK-nummer moet 8 cijfers bevatten" },
+        { status: 400 },
+      );
+    }
+
+    if (!vatNumber) {
+      return NextResponse.json(
+        { error: "BTW-/belastingnummer is verplicht." },
         { status: 400 },
       );
     }
@@ -182,7 +189,7 @@ export async function POST(req: NextRequest) {
         contact_name: contactName,
         contact_email: contactEmail,
         contact_phone: contactPhone,
-        kvk_number: kvkRaw,
+        kvk_number: kvkRaw && /^\d{8}$/.test(kvkRaw) ? kvkRaw : null,
         billing_name: billingName,
         billing_address: billingAddress,
         vat_number: vatNumber,
@@ -230,7 +237,8 @@ export async function POST(req: NextRequest) {
                 <p><strong>Type:</strong> ${escapeHtml(businessType)}</p>
                 <p><strong>Adres:</strong> ${escapeHtml(streetAddress)}, ${escapeHtml(city)}</p>
                 <p><strong>Contact:</strong> ${escapeHtml(contactName)} — ${escapeHtml(contactEmail)} — ${escapeHtml(contactPhone)}</p>
-                <p><strong>KvK:</strong> ${escapeHtml(kvkRaw)}</p>
+                <p><strong>KvK:</strong> ${kvkRaw ? escapeHtml(kvkRaw) : "—"}</p>
+                <p><strong>BTW:</strong> ${escapeHtml(vatNumber)}</p>
                 <p><strong>Prijsniveau:</strong> ${escapeHtml(priceRange)}</p>
                 <p><strong>Website:</strong> ${website ? escapeHtml(website) : "—"}</p>
                 <p><strong>Instagram:</strong> ${instagram ? escapeHtml(instagram) : "—"}</p>

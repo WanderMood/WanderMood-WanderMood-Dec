@@ -75,6 +75,9 @@
   inset: 0;
   border-radius: inherit;
   overflow: hidden;
+  /* Let vertical drags reach inner mockup scrollers on mobile (nested scroll + iOS). */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .img {

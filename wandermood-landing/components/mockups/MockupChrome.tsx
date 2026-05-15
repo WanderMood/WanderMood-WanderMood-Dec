@@ -12,9 +12,9 @@ const NAV_LABELS: Record<
 > = {
   nl: {
     myDay: "Mijn Dag",
-    explore: "Explore",
+    explore: "Ontdekken",
     moody: "Moody",
-    plans: "Plans",
+    plans: "Plannen",
     profile: "Profiel",
   },
   en: {

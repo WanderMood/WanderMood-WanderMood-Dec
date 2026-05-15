@@ -23,9 +23,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 4px 4px 0;
+  padding: 4px 4px 3px;
   opacity: 0;
   transition: opacity 1.5s ease;
+  position: relative;
 }
 
 .wm-mock.wm-mock--on {
@@ -171,6 +172,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 /* ----- Top bar ----- */
@@ -236,43 +238,60 @@
   gap: 6px;
 }
 
-/* ----- Bottom nav ----- */
+/* ----- Bottom nav (in-phone tab bar only) ----- */
 .wm-appNav {
   flex-shrink: 0;
-  height: 52px;
   display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  padding: 0 2px;
-  background: #ffffff;
-  border-top: 1px solid rgba(26, 23, 20, 0.08);
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 0;
+  padding: 8px 8px calc(12px + env(safe-area-inset-bottom, 0px));
+  gap: 0;
+  background: var(--wm-bg);
+  border-top: 1px solid rgba(26, 23, 20, 0.07);
 }
 
 .wm-appNav__tab {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-width: 0;
+  padding: 0 2px;
+  text-align: center;
 }
 
 .wm-appNav__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 15px;
   line-height: 1;
+  opacity: 0.62;
 }
 
 .wm-appNav__label {
-  font-size: 7px;
-  font-weight: 600;
-  line-height: 1.15;
-  color: rgba(26, 23, 20, 0.3);
-  letter-spacing: 0;
-  white-space: nowrap;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
   max-width: 100%;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: rgba(26, 23, 20, 0.4);
+  text-align: center;
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .wm-appNav__tab--active .wm-appNav__label {
@@ -290,10 +309,8 @@
 }
 
 .wm-appNav--espresso .wm-appNav__label {
-  font-size: 7px;
-  line-height: 1.15;
-  letter-spacing: 0;
-  color: rgba(245, 240, 232, 0.3);
+  line-height: 1.1;
+  color: rgba(245, 240, 232, 0.42);
 }
 
 .wm-appNav--espresso .wm-appNav__tab--active .wm-appNav__label {
@@ -440,10 +457,12 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 12px;
+  padding-bottom: 28px;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .wm-explore__scroll::-webkit-scrollbar {
@@ -575,9 +594,9 @@
 }
 
 .wm-explore__cards {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -799,10 +818,13 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 12px;
+  /* Room to scroll last timeline card fully above the in-phone bottom nav */
+  padding-bottom: 28px;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .wm-day__outer::-webkit-scrollbar {
@@ -923,10 +945,12 @@
   color: rgba(255, 255, 255, 0.45);
 }
 
+/* Let timeline define its own height so the outer scroller can reach the last card.
+   flex:1 + overflow:hidden was clipping slots below the fold. */
 .wm-day__track {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   transition: transform 0.45s var(--wm-ease);
 }
 
@@ -1134,65 +1158,16 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 12px;
+  padding-bottom: 22px;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .wm-moody__scroll::-webkit-scrollbar {
   display: none;
-}
-
-.wm-moody__floatWrap {
-  position: relative;
-  flex-shrink: 0;
-  height: 28px;
-  margin: -2px 0 4px;
-}
-
-.wm-moody__floater {
-  position: absolute;
-  right: 4px;
-  top: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, rgba(93, 202, 165, 0.35), rgba(42, 96, 73, 0.5));
-  border: 2px solid rgba(42, 96, 73, 0.45);
-  box-shadow: 0 4px 12px rgba(42, 96, 73, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  line-height: 1;
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.4s var(--wm-ease);
-  animation: wmMoodyFloat 2.4s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes wmMoodyFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.wm-moody--s1 .wm-moody__floater,
-.wm-moody--s2 .wm-moody__floater,
-.wm-moody--s3 .wm-moody__floater,
-.wm-moody--s4 .wm-moody__floater,
-.wm-moody--s5 .wm-moody__floater,
-.wm-moody--s6 .wm-moody__floater,
-.wm-moody--s7 .wm-moody__floater,
-.wm-moody--s8 .wm-moody__floater,
-.wm-moody--s9 .wm-moody__floater {
-  opacity: 1;
 }
 
 .wm-moody__thread {
@@ -1829,4 +1804,151 @@
 .wm-mm--espresso .wm-mm__confirm {
   background: #5dcaa5;
   color: #1a1714;
+}
+
+/* ----- Hero phone (homepage — mood → place; static, scroll if needed) ----- */
+.wm-mock.wm-hero {
+  opacity: 1;
+  transition: none;
+  padding: 3px 4px 4px;
+}
+
+.wm-hero__scroll {
+  gap: 8px;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 2px 2px 18px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.wm-hero__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-hero__locRow {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 0 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--wm-ink);
+}
+
+.wm-hero__locPin {
+  opacity: 0.55;
+  font-size: 11px;
+}
+
+.wm-hero__locText {
+  min-width: 0;
+  letter-spacing: -0.01em;
+}
+
+.wm-hero__locChev {
+  font-size: 8px;
+  opacity: 0.42;
+  margin-left: 1px;
+}
+
+.wm-hero__spacer {
+  flex: 1;
+}
+
+.wm-hero__bell {
+  opacity: 0.48;
+  font-size: 13px;
+}
+
+.wm-hero__toggle {
+  display: flex;
+  align-self: center;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(26, 23, 20, 0.07);
+  border: 1px solid rgba(26, 23, 20, 0.06);
+  gap: 2px;
+}
+
+.wm-hero__toggleSeg {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 600;
+  color: rgba(26, 23, 20, 0.45);
+}
+
+.wm-hero__toggleSeg--on {
+  background: #fff;
+  color: var(--wm-ink);
+  box-shadow: 0 1px 3px rgba(26, 23, 20, 0.08);
+}
+
+.wm-hero__question {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--wm-ink);
+  text-align: center;
+  padding: 0 4px;
+}
+
+.wm-hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  padding: 2px 0 4px;
+}
+
+.wm-hero__chip {
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(26, 23, 20, 0.06);
+  border: 1px solid transparent;
+  color: var(--wm-muted);
+}
+
+.wm-hero__chip--on {
+  background: #fff;
+  border-color: var(--wm-forest);
+  color: var(--wm-forest);
+}
+
+.wm-hero__bubble {
+  margin-top: 2px;
+  align-self: flex-start;
+  max-width: 94%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  line-height: 1.45;
+  color: rgba(26, 23, 20, 0.92);
+  background: linear-gradient(180deg, #fff 0%, #f8faf8 100%);
+  border: 1.5px solid rgba(42, 96, 73, 0.35);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+.wm-hero__card {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.wm-hero__tagline {
+  margin: 6px 0 0;
+  font-size: 8px;
+  line-height: 1.35;
+  color: rgba(26, 23, 20, 0.42);
+  text-align: center;
+  font-style: italic;
+  padding: 0 6px;
 }

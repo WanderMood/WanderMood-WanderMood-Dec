@@ -290,7 +290,8 @@ export function MyDayMockup({ locale }: { locale?: string }) {
     const el = outerRef.current;
     if (!el) return;
     const id = window.requestAnimationFrame(() => {
-      el.scrollTo({ top: Math.min(140, el.scrollHeight - el.clientHeight), behavior: "smooth" });
+      const max = el.scrollHeight - el.clientHeight;
+      el.scrollTo({ top: max > 0 ? max : 0, behavior: "smooth" });
     });
     return () => cancelAnimationFrame(id);
   }, [scrollSim]);

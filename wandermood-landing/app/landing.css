@@ -27,7 +27,8 @@
   padding: 0;
 }
 
-.landing-root nav {
+/* Site chrome only: do NOT match in-phone mockups (`nav.wm-appNav`). */
+.landing-root nav:not(.wm-appNav) {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -874,7 +875,7 @@
 }
 
 @media (max-width: 900px) {
-  .landing-root nav {
+  .landing-root nav:not(.wm-appNav) {
     padding: 0 24px;
   }
 

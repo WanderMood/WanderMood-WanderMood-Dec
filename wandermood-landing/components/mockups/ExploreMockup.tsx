@@ -47,7 +47,7 @@ type ExploreCopy = {
 
 const EXPLORE_TR: Record<MockupLocale, ExploreCopy> = {
   nl: {
-    topTitle: "Explore",
+    topTitle: "Ontdekken",
     chipMore: "Meer →",
     trending: "Trending op WanderMood",
     trendingPill: "🔥 Trending",
@@ -197,6 +197,7 @@ export function ExploreMockup({ locale }: { locale?: string }) {
   const t = EXPLORE_TR[loc] ?? EXPLORE_TR.en;
 
   const root = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const inView = useRef(false);
   const [on, setOn] = useState(false);
@@ -291,6 +292,24 @@ export function ExploreMockup({ locale }: { locale?: string }) {
     };
   }, [runCycle]);
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (!on) el.scrollTop = 0;
+  }, [on]);
+
+  useEffect(() => {
+    if (!on || step < 8) return;
+    const id = window.setTimeout(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const max = el.scrollHeight - el.clientHeight;
+      if (max <= 8) return;
+      el.scrollTo({ top: max, behavior: "smooth" });
+    }, 220);
+    return () => clearTimeout(id);
+  }, [on, step, moodPhase, filterHalal, chipIdx, shimmer]);
+
   const names = useMemo(() => namesForPhase(moodPhase, t), [moodPhase, t]);
   const types = useMemo(() => typesForPhase(moodPhase, t), [moodPhase, t]);
   const cardImgs = useMemo(() => imgsForPhase(moodPhase), [moodPhase]);
@@ -308,7 +327,7 @@ export function ExploreMockup({ locale }: { locale?: string }) {
     >
       <MockupStatusBar />
       <div className="wm-app__main">
-        <div className="wm-mock__scroll wm-explore__scroll">
+        <div ref={scrollRef} className="wm-mock__scroll wm-explore__scroll">
           <MockupTopBar
             title={t.topTitle}
             right={
@@ -407,19 +426,6 @@ export function ExploreMockup({ locale }: { locale?: string }) {
                 <div className="wm-placeCard__bottom">
                   <span className="wm-placeCard__dist">{t.distances[2]}</span>
                   <span className="wm-placeCard__add">{t.addDay}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="wm-explore__peekWrap">
-              <div className="wm-placeCard wm-placeCard--bar wm-explore__peekCard">
-                <div className="wm-placeCard__photo">
-                  <PlacePhotoImg src={MOCK_IMG_WINE} />
-                </div>
-                <div className="wm-placeCard__body">
-                  <div className="wm-placeCard__top">
-                    <span className="wm-placeCard__name">…</span>
-                  </div>
                 </div>
               </div>
             </div>

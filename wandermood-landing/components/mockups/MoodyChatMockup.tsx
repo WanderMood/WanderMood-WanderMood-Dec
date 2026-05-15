@@ -208,10 +208,6 @@ export function MoodyChatMockup({ locale }: { locale?: string }) {
             }
           />
 
-          <div className="wm-moody__floatWrap" aria-hidden>
-            <span className="wm-moody__floater">✨</span>
-          </div>
-
           <div className="wm-moody__thread">
             <div className="wm-moody__typing" aria-hidden>
               <span />

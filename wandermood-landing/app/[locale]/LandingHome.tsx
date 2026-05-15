@@ -8,6 +8,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { AppStoreCtaLink } from "@/components/AppStoreCtaLink";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ExploreMockup } from "@/components/mockups/ExploreMockup";
+import { HeroPhoneMockup } from "@/components/mockups/HeroPhoneMockup";
 import { MoodMatchMockup } from "@/components/mockups/MoodMatchMockup";
 import { MoodyChatMockup } from "@/components/mockups/MoodyChatMockup";
 import { MyDayMockup } from "@/components/mockups/MyDayMockup";
@@ -130,7 +131,7 @@ export default function LandingHome() {
   const [menuPortalReady, setMenuPortalReady] = useState(false);
   const [stats, setStats] = useState<PublicStats | null>(null);
 
-  const screens = useMemo(() => getHomepageScreens(currentLocale), [currentLocale]);
+  const { placeDetail } = useMemo(() => getHomepageScreens(currentLocale), [currentLocale]);
 
   const featureSlides = useMemo(
     () => [
@@ -183,20 +184,35 @@ export default function LandingHome() {
         panels.forEach((p) => p.classList.remove("home-feature-panel--active"));
         return;
       }
-      const mid = window.innerHeight * 0.45;
-      const edge = 100;
+      const vh = window.innerHeight;
       let best = 0;
-      let bestDist = Infinity;
+      let bestScore = -1;
+      // Prefer the panel with the largest visible height in the viewport (so the 3rd
+      // feature reliably wins when scrolled into view; avoids the old 100px edge filter
+      // skipping panels or keeping an earlier panel "closest to mid").
       panels.forEach((p, i) => {
         const r = p.getBoundingClientRect();
-        if (r.bottom < edge || r.top > window.innerHeight - edge) return;
-        const c = r.top + r.height / 2;
-        const d = Math.abs(c - mid);
-        if (d < bestDist) {
-          bestDist = d;
+        const interTop = Math.max(r.top, 0);
+        const interBottom = Math.min(r.bottom, vh);
+        const visibleH = Math.max(0, interBottom - interTop);
+        if (visibleH > bestScore) {
+          bestScore = visibleH;
           best = i;
         }
       });
+      if (bestScore < 8) {
+        const mid = vh * 0.42;
+        let bestDist = Infinity;
+        panels.forEach((p, i) => {
+          const r = p.getBoundingClientRect();
+          const c = r.top + r.height / 2;
+          const d = Math.abs(c - mid);
+          if (d < bestDist) {
+            bestDist = d;
+            best = i;
+          }
+        });
+      }
       panels.forEach((p, i) => {
         p.classList.toggle("home-feature-panel--active", i === best);
       });
@@ -427,12 +443,9 @@ export default function LandingHome() {
           </div>
           <div className="home-hero-visual">
             <div className="home-hero-phone-wrap home-phone-elevated">
-              <PhoneFrame
-                src={screens.hero}
-                alt={th("imgHero")}
-                priority
-                className="home-hero-phone"
-              />
+              <PhoneFrame className="home-hero-phone" key={`hero-mock-${currentLocale}`}>
+                <HeroPhoneMockup locale={currentLocale} />
+              </PhoneFrame>
             </div>
           </div>
         </div>
@@ -507,7 +520,7 @@ export default function LandingHome() {
                 </div>
                 <div className="home-sticky-mobile-visual">
                   <div className="home-feature-mobile-phone-wrap home-phone-elevated home-phone-elevated--band">
-                    <PhoneFrame variant="band">
+                    <PhoneFrame variant="band" key={`feat-band-${currentLocale}-${i}`}>
                       <FeatureBandPhoneMock index={i} locale={currentLocale} />
                     </PhoneFrame>
                   </div>
@@ -520,7 +533,7 @@ export default function LandingHome() {
               className={`home-sticky-phone-slot ${featurePhoneFade ? "is-dim" : ""}`}
             >
               <div className="home-phone-elevated home-phone-elevated--band">
-                <PhoneFrame variant="band">
+                <PhoneFrame variant="band" key={`feat-band-sticky-${currentLocale}-${featurePhoneIdx}`}>
                   <FeatureBandPhoneMock index={featurePhoneIdx} locale={currentLocale} />
                 </PhoneFrame>
               </div>
@@ -543,12 +556,12 @@ export default function LandingHome() {
           <div className="home-mm-phones-wrap">
             <div className="home-mm-phones">
               <div className="home-mm-phone1 home-phone-elevated">
-                <PhoneFrame variant="band">
+                <PhoneFrame variant="band" key={`mm-band-${currentLocale}`}>
                   <MoodMatchMockup locale={currentLocale} />
                 </PhoneFrame>
               </div>
               <div className="home-mm-phone2 home-phone-elevated">
-                <PhoneFrame variant="band" src={screens.placeDetail} alt={th("imgPlace")} />
+                <PhoneFrame variant="band" src={placeDetail} alt={th("imgPlace")} />
               </div>
             </div>
           </div>
