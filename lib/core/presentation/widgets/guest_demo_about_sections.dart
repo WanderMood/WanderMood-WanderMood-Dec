@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 
 /// Sections in [guestDemo*MoodyAbout] ARB strings: `\n---\n` between blocks.
@@ -70,6 +71,9 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
     /// Optional smaller type for tight cards (e.g. Explore grid).
     this.compactTitleFontSize,
     this.compactBodyFontSize,
+
+    /// Explore list card: one sentence + ` ...` (detail on tap).
+    this.exploreTeaserBody = false,
   });
 
   final String source;
@@ -77,6 +81,7 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
   final int compactBodyMaxLines;
   final double? compactTitleFontSize;
   final double? compactBodyFontSize;
+  final bool exploreTeaserBody;
 
   static const Color _forest = Color(0xFF2A6049);
   static const Color _charcoal = Color(0xFF374151);
@@ -119,6 +124,9 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
     final first = sections.first;
     final titleFs = compactTitleFontSize ?? 13;
     final bodyFs = compactBodyFontSize ?? 13;
+    final body = exploreTeaserBody
+        ? ExplorePlaceCardCopy.firstSentenceTeaser(first.body)
+        : first.body;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -133,14 +141,14 @@ class GuestDemoAboutSectionsView extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          first.body,
+          body,
           style: GoogleFonts.poppins(
             fontSize: bodyFs,
             color: _charcoal,
             height: 1.45,
           ),
-          maxLines: bodyMaxLines.clamp(1, 12),
-          overflow: TextOverflow.ellipsis,
+          maxLines: exploreTeaserBody ? null : bodyMaxLines.clamp(1, 12),
+          overflow: exploreTeaserBody ? null : TextOverflow.ellipsis,
         ),
       ],
     );

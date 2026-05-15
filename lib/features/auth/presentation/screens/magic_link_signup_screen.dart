@@ -363,7 +363,24 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
     }
   }
 
+  /// Account existed before (finished preferences or used magic link on this device).
+  bool _isReturningAccountHolder() {
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs.getBool('hasCompletedPreferences') == true) return true;
+    if (prefs.getBool('has_seen_onboarding') == true &&
+        CachedMagicLinkEmailService(prefs).getValidEmail() != null) {
+      return true;
+    }
+    return false;
+  }
+
   void _goBack() {
+    if (_isReturningAccountHolder()) {
+      if (context.canPop()) {
+        context.pop();
+      }
+      return;
+    }
     final useNewFlow = ref.read(useNewOnboardingFlowProvider);
     if (useNewFlow) {
       final mood = ref.read(guestDemoMoodProvider);
@@ -389,24 +406,28 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
 
   Widget _buildFormState() {
     final l10n = AppLocalizations.of(context)!;
+    final isReturning = _isReturningAccountHolder();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: _goBack,
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  color: _wmCharcoal,
-                  padding: EdgeInsets.zero,
+            if (!isReturning)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: _goBack,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    color: _wmCharcoal,
+                    padding: EdgeInsets.zero,
+                  ),
                 ),
-              ),
-            ),
+              )
+            else
+              const SizedBox(height: 48),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -456,7 +477,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              l10n.signupJoinWanderMood,
+                              isReturning
+                                  ? l10n.signupMagicLinkReturningTitle
+                                  : l10n.signupJoinWanderMood,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 26,
@@ -467,7 +490,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              l10n.signupNoPasswordNeeded,
+                              isReturning
+                                  ? l10n.signupMagicLinkReturningSubtitle
+                                  : l10n.signupNoPasswordNeeded,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
@@ -597,7 +622,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                                           ),
                                         )
                                       : Text(
-                                          l10n.signupSendMagicLink,
+                                          isReturning
+                                              ? l10n.signupMagicLinkReturningCta
+                                              : l10n.signupSendMagicLink,
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w700,
@@ -609,7 +636,9 @@ class _MagicLinkSignupScreenState extends ConsumerState<MagicLinkSignupScreen>
                             ),
                             const SizedBox(height: 18),
                             Text(
-                              l10n.signupRatingBadge,
+                              isReturning
+                                  ? l10n.signupMagicLinkReturningFooter
+                                  : l10n.signupRatingBadge,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 12,

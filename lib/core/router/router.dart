@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wandermood/core/navigation/root_navigator_key.dart';
-import 'package:wandermood/features/wishlist/presentation/screens/plan_with_friend_screen.dart';
+import 'package:wandermood/features/wishlist/domain/plan_met_vriend_flow.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/availability_picker_screen.dart';
+import 'package:wandermood/features/group_planning/presentation/group_planning_day_picker_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/invite_response_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/match_found_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/no_overlap_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/plan_met_vriend_pending_detail_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/plan_met_vriend_plans_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/plan_with_friend_route_host.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/waiting_for_friend_screen.dart';
 import 'package:wandermood/features/wishlist/presentation/screens/wishlist_screen.dart';
 import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
@@ -99,6 +108,29 @@ const Color _routerWmForest = Color(0xFF2A6049);
 const Color _routerWmWhite = Color(0xFFFFFFFF);
 const Color _routerWmCharcoal = Color(0xFF1E1C18);
 const Color _routerWmError = Color(0xFFE05C5C);
+
+/// Plan-met-vriend flows must not bounce to `/preferences/communication` mid-invite.
+bool isPlanMetVriendWishlistRoute(String location) {
+  if (!location.startsWith('/wishlist')) return false;
+  const exact = {
+    '/wishlist/friend-plans',
+    '/wishlist/plan',
+    '/wishlist/availability',
+    '/wishlist/waiting',
+    '/wishlist/invite-response',
+    '/wishlist/match-found',
+    '/wishlist/no-overlap',
+  };
+  if (exact.contains(location)) return true;
+  return location.startsWith('/wishlist/pending-plan/') ||
+      location.startsWith('/wishlist/day-picker/');
+}
+
+/// [GoRouterState.extra] is not always a [Map] (e.g. [PlanMetVriendPlanListItem]).
+bool routeExtraBypassesPreferences(Object? extra) {
+  if (extra is! Map) return false;
+  return extra['bypass_preferences'] == true;
+}
 
 // Helper function to handle email verification
 // CRITICAL FIX: With PKCE flow, Supabase Flutter processes deep links automatically
@@ -1061,7 +1093,96 @@ GoRouter router(RouterRef ref) {
               if (args is! PlanWithFriendArgs) {
                 return const WishlistScreen();
               }
-              return PlanWithFriendScreen(args: args);
+              return PlanWithFriendRouteHost(args: args);
+            },
+          ),
+          GoRoute(
+            path: 'availability',
+            name: 'wishlist-availability',
+            builder: (context, state) {
+              final extra = state.extra;
+              if (extra is! Map<String, dynamic>) {
+                return const WishlistScreen();
+              }
+              final friend = extra['friend'];
+              final place = extra['place'];
+              if (friend is! PlanMetVriendFriend ||
+                  place is! PlanMetVriendPlace) {
+                return const WishlistScreen();
+              }
+              return AvailabilityPickerScreen(friend: friend, place: place);
+            },
+          ),
+          GoRoute(
+            path: 'day-picker/:sessionId',
+            name: 'wishlist-day-picker',
+            builder: (context, state) {
+              final sessionId = state.pathParameters['sessionId']!;
+              return GroupPlanningDayPickerScreen(
+                sessionId: sessionId,
+                planMetVriendMode: true,
+              );
+            },
+          ),
+          GoRoute(
+            path: 'waiting',
+            name: 'wishlist-waiting',
+            builder: (context, state) {
+              final args = state.extra;
+              if (args is! PlanMetVriendWaitingArgs) {
+                return const WishlistScreen();
+              }
+              return WaitingForFriendScreen(args: args);
+            },
+          ),
+          GoRoute(
+            path: 'invite-response',
+            name: 'wishlist-invite-response',
+            builder: (context, state) {
+              final args = state.extra;
+              if (args is! PlanMetVriendInviteResponseArgs) {
+                return const WishlistScreen();
+              }
+              return InviteResponseScreen(args: args);
+            },
+          ),
+          GoRoute(
+            path: 'match-found',
+            name: 'wishlist-match-found',
+            builder: (context, state) {
+              final args = state.extra;
+              if (args is! PlanMetVriendMatchArgs) {
+                return const WishlistScreen();
+              }
+              return MatchFoundScreen(args: args);
+            },
+          ),
+          GoRoute(
+            path: 'no-overlap',
+            name: 'wishlist-no-overlap',
+            builder: (context, state) {
+              final args = state.extra;
+              if (args is! PlanMetVriendNoOverlapArgs) {
+                return const WishlistScreen();
+              }
+              return NoOverlapScreen(args: args);
+            },
+          ),
+          GoRoute(
+            path: 'friend-plans',
+            name: 'wishlist-friend-plans',
+            builder: (context, state) => const PlanMetVriendPlansScreen(),
+          ),
+          GoRoute(
+            path: 'pending-plan/:sessionId',
+            name: 'wishlist-pending-plan',
+            builder: (context, state) {
+              final sessionId = state.pathParameters['sessionId']!;
+              final extra = state.extra;
+              if (extra is PlanMetVriendPlanListItem) {
+                return PlanMetVriendPendingDetailScreen(plan: extra);
+              }
+              return PlanMetVriendPendingDetailLoader(sessionId: sessionId);
             },
           ),
         ],
@@ -1297,10 +1418,7 @@ GoRouter router(RouterRef ref) {
           debugPrint('🔍 Authenticated user - hasCompletedPreferences: $hasCompletedPreferences, currentLocation: $currentLocation');
 
           // Check for bypass flag (e.g. onboarding shortcuts)
-          final extra = state.extra as Map<String, dynamic>?;
-          final bypassPreferences = extra?['bypass_preferences'] == true;
-          
-          if (bypassPreferences) {
+          if (routeExtraBypassesPreferences(state.extra)) {
             debugPrint('🚀 Bypass preferences flag detected - allowing navigation to main');
             return null;
           }
@@ -1311,6 +1429,15 @@ GoRouter router(RouterRef ref) {
             // Allow navigation within preferences flow
             if (currentLocation.startsWith('/preferences/')) {
               debugPrint('✅ User is in preferences flow - allowing navigation');
+              return null;
+            }
+
+            // Plan with friend: do not hijack to communication-style onboarding
+            if (isPlanMetVriendWishlistRoute(currentLocation) ||
+                isPlanMetVriendWishlistRoute(uriPath)) {
+              debugPrint(
+                '✅ Plan met vriend route — allowing despite incomplete preferences',
+              );
               return null;
             }
             
@@ -1329,9 +1456,22 @@ GoRouter router(RouterRef ref) {
           debugPrint('✅ User has completed preferences - allowing navigation');
         } catch (e) {
           debugPrint('❌ Error checking preferences: $e');
+          if (isPlanMetVriendWishlistRoute(currentLocation) ||
+              isPlanMetVriendWishlistRoute(uriPath)) {
+            return null;
+          }
+          final prefs = await SharedPreferences.getInstance();
+          if (prefs.getBool('hasCompletedPreferences') == true) {
+            return null;
+          }
           // On error, if user is trying to access main app, redirect to preferences
-          if (isMainAppPage || currentLocation == '/' || currentLocation == '/home' || currentLocation == '/main') {
-            debugPrint('🚫 Error checking preferences but on main app - redirecting to preferences');
+          if (isMainAppPage ||
+              currentLocation == '/' ||
+              currentLocation == '/home' ||
+              currentLocation == '/main') {
+            debugPrint(
+              '🚫 Error checking preferences but on main app - redirecting to preferences',
+            );
             return '/preferences/communication';
           }
         }

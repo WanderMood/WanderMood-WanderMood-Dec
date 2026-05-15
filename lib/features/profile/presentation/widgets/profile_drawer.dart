@@ -141,110 +141,120 @@ class ProfileDrawer extends ConsumerWidget {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _sectionHeader(l10n.drawerNavigation),
-                  _DrawerMenuItem(
-                    icon: Icons.favorite_border,
-                    label: l10n.drawerSavedPlaces,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/places/saved');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.bookmark_outline,
-                    label: 'Mijn Wishlist',
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/wishlist');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.groups_outlined,
-                    label: l10n.moodMatchWithFriendMenu,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/group-planning');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.calendar_month_outlined,
-                    label: l10n.drawerMyAgenda,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/agenda');
-                    },
-                  ),
-                  _sectionHeader(l10n.drawerSettings),
-                  _DrawerMenuItem(
-                    leading: const MoodySettingsGlyph(size: 20),
-                    label: l10n.drawerAppSettings,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/settings');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.notifications_outlined,
-                    label: l10n.drawerNotifications,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/notifications');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.language,
-                    label: l10n.drawerLanguage,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/settings/language');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.help_outline,
-                    label: l10n.drawerHelpSupport,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/settings/help');
-                    },
-                  ),
-                  _sectionHeader(l10n.drawerAccount),
-                  _DrawerMenuItem(
-                    icon: Icons.person_outline,
-                    label: l10n.drawerProfile,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/profile');
-                    },
-                  ),
-                  _DrawerMenuItem(
-                    icon: Icons.logout,
-                    label: l10n.drawerLogOut,
-                    isDestructive: true,
-                    showChevron: false,
-                    onTap: () async {
-                      try {
-                        await Supabase.instance.client.auth.signOut();
-                        if (context.mounted) {
-                          context.go('/auth/magic-link');
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          showWanderMoodToast(
-                            context,
-                            message: AppLocalizations.of(context)!.drawerErrorSigningOut(e.toString()),
-                            isError: true,
-                          );
-                        }
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 8),
+              children: [
+                _sectionHeader(l10n.drawerNavigation),
+                _DrawerMenuItem(
+                  icon: Icons.favorite_border,
+                  label: l10n.drawerSavedPlaces,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/places/saved');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.bookmark_outline,
+                  label: 'Mijn Wishlist',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/wishlist');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.groups_outlined,
+                  label: l10n.moodMatchWithFriendMenu,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/group-planning');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.event_available_outlined,
+                  label: l10n.planMetVriendPlansTitle,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/wishlist/friend-plans');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.calendar_month_outlined,
+                  label: l10n.drawerMyAgenda,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/agenda');
+                  },
+                ),
+                _sectionHeader(l10n.drawerSettings),
+                _DrawerMenuItem(
+                  leading: const MoodySettingsGlyph(size: 20),
+                  label: l10n.drawerAppSettings,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/settings');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.notifications_outlined,
+                  label: l10n.drawerNotifications,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/notifications');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.language,
+                  label: l10n.drawerLanguage,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/settings/language');
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.help_outline,
+                  label: l10n.drawerHelpSupport,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/settings/help');
+                  },
+                ),
+                _sectionHeader(l10n.drawerAccount),
+                _DrawerMenuItem(
+                  icon: Icons.person_outline,
+                  label: l10n.drawerProfile,
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/profile');
+                  },
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, thickness: 0.5, color: _wmParchment),
+          SafeArea(
+            top: false,
+            child: _DrawerMenuItem(
+              icon: Icons.logout,
+              label: l10n.drawerLogOut,
+              isDestructive: true,
+              showChevron: false,
+              onTap: () async {
+                try {
+                  await Supabase.instance.client.auth.signOut();
+                  if (context.mounted) {
+                    context.go('/auth/magic-link');
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    showWanderMoodToast(
+                      context,
+                      message: AppLocalizations.of(context)!
+                          .drawerErrorSigningOut(e.toString()),
+                      isError: true,
+                    );
+                  }
+                }
+              },
             ),
           ),
         ],

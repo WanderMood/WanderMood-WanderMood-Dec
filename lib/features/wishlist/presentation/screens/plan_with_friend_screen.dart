@@ -5,7 +5,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/features/places/models/place.dart';
-import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart';
+import 'package:wandermood/features/wishlist/domain/plan_met_vriend_flow.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_met_vriend_navigation.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart' show PlanWithFriendArgs;
 
 const _wmCream = Color(0xFFF5F0E8);
 const _wmForest = Color(0xFF2A6049);
@@ -140,35 +142,46 @@ class _PlanWithFriendScreenState extends ConsumerState<PlanWithFriendScreen> {
           ),
           if (_selected != null) ...[
             const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE8E2D8)),
+            FilledButton(
+              onPressed: () {
+                final placeData = widget.args.placeData ??
+                    (widget.args.place != null
+                        ? {
+                            'place_id': widget.args.placeId,
+                            'name': widget.args.placeName,
+                          }
+                        : <String, dynamic>{});
+                openAvailabilityPicker(
+                  context,
+                  friend: PlanMetVriendFriend(
+                    userId: _selected!.id,
+                    displayName: _selected!.displayName,
+                    username: _selected!.username,
+                    avatarUrl: _selected!.avatarUrl,
+                  ),
+                  place: PlanMetVriendPlace(
+                    placeId: widget.args.placeId,
+                    placeName: widget.args.placeName,
+                    placeData: placeData,
+                    place: _place,
+                    sourceUrl: widget.args.sourceUrl,
+                  ),
+                );
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: _wmForest,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-              child: Column(
-                children: [
-                  Text(
-                    'Binnenkort beschikbaar',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: _wmForest,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Beschikbaarheid kiezen met ${_selected!.displayName} komt in een volgende update.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: _wmMuted,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Kies beschikbaarheid →',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: _wmCream,
+                ),
               ),
             ),
           ],

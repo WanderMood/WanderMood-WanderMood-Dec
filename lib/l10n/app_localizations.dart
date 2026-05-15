@@ -2408,6 +2408,30 @@ abstract class AppLocalizations {
   /// **'Want this every day?'**
   String get signupJoinWanderMood;
 
+  /// No description provided for @signupMagicLinkReturningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get signupMagicLinkReturningTitle;
+
+  /// No description provided for @signupMagicLinkReturningSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and we\'ll send you a sign-in link.'**
+  String get signupMagicLinkReturningSubtitle;
+
+  /// No description provided for @signupMagicLinkReturningCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Send sign-in link'**
+  String get signupMagicLinkReturningCta;
+
+  /// No description provided for @signupMagicLinkReturningFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'No password — just tap the link in your inbox.'**
+  String get signupMagicLinkReturningFooter;
+
   /// No description provided for @signupSubtitle.
   ///
   /// In en, this message translates to:
@@ -6809,7 +6833,7 @@ abstract class AppLocalizations {
   /// No description provided for @dayPlanCardAddToMyDay.
   ///
   /// In en, this message translates to:
-  /// **'+ Add to My Day'**
+  /// **'+ My Day'**
   String get dayPlanCardAddToMyDay;
 
   /// No description provided for @moodHubGreetingFriendly.
@@ -11885,8 +11909,86 @@ abstract class AppLocalizations {
   /// No description provided for @explorePeekViewFullPlace.
   ///
   /// In en, this message translates to:
-  /// **'View full place'**
+  /// **'View all details →'**
   String get explorePeekViewFullPlace;
+
+  /// No description provided for @explorePeekMoodyTakeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Moody\'s take'**
+  String get explorePeekMoodyTakeTitle;
+
+  /// No description provided for @explorePeekWhyFits.
+  ///
+  /// In en, this message translates to:
+  /// **'Fits your {mood} mood today'**
+  String explorePeekWhyFits(String mood);
+
+  /// No description provided for @explorePeekFitsForTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Good for'**
+  String get explorePeekFitsForTitle;
+
+  /// No description provided for @explorePeekFitsCoffee.
+  ///
+  /// In en, this message translates to:
+  /// **'Coffee'**
+  String get explorePeekFitsCoffee;
+
+  /// No description provided for @explorePeekFitsWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get explorePeekFitsWork;
+
+  /// No description provided for @explorePeekFitsFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get explorePeekFitsFriends;
+
+  /// No description provided for @explorePeekFitsSolo.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo'**
+  String get explorePeekFitsSolo;
+
+  /// No description provided for @explorePeekFitsCozy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cozy'**
+  String get explorePeekFitsCozy;
+
+  /// No description provided for @explorePeekFitsDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date night'**
+  String get explorePeekFitsDate;
+
+  /// No description provided for @explorePeekFitsCulture.
+  ///
+  /// In en, this message translates to:
+  /// **'Culture'**
+  String get explorePeekFitsCulture;
+
+  /// No description provided for @explorePeekFitsBrunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Brunch'**
+  String get explorePeekFitsBrunch;
+
+  /// No description provided for @explorePeekFitsOutdoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdoors'**
+  String get explorePeekFitsOutdoor;
+
+  /// No description provided for @explorePeekVisitorNote.
+  ///
+  /// In en, this message translates to:
+  /// **'From a visitor'**
+  String get explorePeekVisitorNote;
 
   /// No description provided for @chatSheetMoodyName.
   ///
@@ -20294,6 +20396,504 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Plan with a friend'**
   String get groupPlanWithFriendMenu;
+
+  /// No description provided for @planMetVriendCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan with friend'**
+  String get planMetVriendCta;
+
+  /// No description provided for @planMetVriendSearchFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Search friend…'**
+  String get planMetVriendSearchFriend;
+
+  /// No description provided for @planMetVriendMessageOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Message (optional)'**
+  String get planMetVriendMessageOptional;
+
+  /// No description provided for @planMetVriendMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel like going here together? ☕️'**
+  String get planMetVriendMessageHint;
+
+  /// No description provided for @planMetVriendCtaGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Together'**
+  String get planMetVriendCtaGrid;
+
+  /// No description provided for @planMetVriendNoteFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String planMetVriendNoteFrom(String name);
+
+  /// No description provided for @planMetVriendReplyFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply from {name}'**
+  String planMetVriendReplyFrom(String name);
+
+  /// No description provided for @planMetVriendReplyOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply (optional)'**
+  String get planMetVriendReplyOptional;
+
+  /// No description provided for @planMetVriendReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Say something to {name}…'**
+  String planMetVriendReplyHint(String name);
+
+  /// No description provided for @planMetVriendReplySend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get planMetVriendReplySend;
+
+  /// No description provided for @planMetVriendReplySaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get planMetVriendReplySaving;
+
+  /// No description provided for @planMetVriendReplySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent ✓'**
+  String get planMetVriendReplySent;
+
+  /// No description provided for @planMetVriendInviteViaLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite via link'**
+  String get planMetVriendInviteViaLink;
+
+  /// No description provided for @planMetVriendLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get planMetVriendLinkCopied;
+
+  /// No description provided for @planMetVriendDateTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get planMetVriendDateTomorrow;
+
+  /// No description provided for @planMetVriendDateThisWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'This weekend'**
+  String get planMetVriendDateThisWeekend;
+
+  /// No description provided for @planMetVriendDatePick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick date'**
+  String get planMetVriendDatePick;
+
+  /// No description provided for @planMetVriendTimeMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning 9–12'**
+  String get planMetVriendTimeMorning;
+
+  /// No description provided for @planMetVriendTimeAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon 12–17'**
+  String get planMetVriendTimeAfternoon;
+
+  /// No description provided for @planMetVriendTimeEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening 17–22'**
+  String get planMetVriendTimeEvening;
+
+  /// No description provided for @planMetVriendSendInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invite'**
+  String get planMetVriendSendInvite;
+
+  /// No description provided for @planMetVriendSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get planMetVriendSending;
+
+  /// No description provided for @planMetVriendSendError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get planMetVriendSendError;
+
+  /// No description provided for @planMetVriendInviteSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite sent! 🎉'**
+  String get planMetVriendInviteSentTitle;
+
+  /// No description provided for @planMetVriendInviteSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{friendName} will get a notification.'**
+  String planMetVriendInviteSentBody(String friendName);
+
+  /// No description provided for @planMetVriendDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get planMetVriendDone;
+
+  /// No description provided for @planMetVriendAddToMyDayToo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to My Day too'**
+  String get planMetVriendAddToMyDayToo;
+
+  /// No description provided for @planMetVriendWithFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'With {friendName}'**
+  String planMetVriendWithFriend(String friendName);
+
+  /// No description provided for @planMetVriendLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to plan with a friend.'**
+  String get planMetVriendLoginRequired;
+
+  /// No description provided for @planMetVriendSearchMinChars.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least 2 characters to search'**
+  String get planMetVriendSearchMinChars;
+
+  /// No description provided for @planMetVriendNoFriendsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends found — try the invite link'**
+  String get planMetVriendNoFriendsFound;
+
+  /// No description provided for @planMetVriendPickDateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a date'**
+  String get planMetVriendPickDateTitle;
+
+  /// No description provided for @planMetVriendPickDateDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get planMetVriendPickDateDone;
+
+  /// No description provided for @planMetVriendRecentFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get planMetVriendRecentFriends;
+
+  /// No description provided for @planMetVriendPlansTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans with friends'**
+  String get planMetVriendPlansTitle;
+
+  /// No description provided for @planMetVriendPlansEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No friend plans yet. Tap Plan with friend on a place in the app.'**
+  String get planMetVriendPlansEmpty;
+
+  /// No description provided for @planMetVriendPlansLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your plans. Pull to refresh.'**
+  String get planMetVriendPlansLoadError;
+
+  /// No description provided for @planMetVriendPlansStatusWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for reply'**
+  String get planMetVriendPlansStatusWaiting;
+
+  /// No description provided for @planMetVriendPlansStatusProposed.
+  ///
+  /// In en, this message translates to:
+  /// **'Date proposed'**
+  String get planMetVriendPlansStatusProposed;
+
+  /// No description provided for @planMetVriendPlansStatusMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Date agreed'**
+  String get planMetVriendPlansStatusMatched;
+
+  /// No description provided for @planMetVriendPlansStatusNoOverlap.
+  ///
+  /// In en, this message translates to:
+  /// **'No overlap'**
+  String get planMetVriendPlansStatusNoOverlap;
+
+  /// No description provided for @planMetVriendPlansChipWaitingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {friendName}'**
+  String planMetVriendPlansChipWaitingFor(String friendName);
+
+  /// No description provided for @planMetVriendPlansChipWaitingGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for reply'**
+  String get planMetVriendPlansChipWaitingGeneric;
+
+  /// No description provided for @planMetVriendPlansChipConfirmedTonight.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed for tonight'**
+  String get planMetVriendPlansChipConfirmedTonight;
+
+  /// No description provided for @planMetVriendPlansChipConfirmedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed for {dateLabel}'**
+  String planMetVriendPlansChipConfirmedFor(String dateLabel);
+
+  /// No description provided for @planMetVriendPlansChipNeedsReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your reply'**
+  String get planMetVriendPlansChipNeedsReply;
+
+  /// No description provided for @planMetVriendPlansMetaInviteSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite sent'**
+  String get planMetVriendPlansMetaInviteSent;
+
+  /// No description provided for @planMetVriendPlansMetaFriendSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'{friendName} suggested'**
+  String planMetVriendPlansMetaFriendSuggested(String friendName);
+
+  /// No description provided for @planMetVriendPlansMetaWaitingOnFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on {friendName}'**
+  String planMetVriendPlansMetaWaitingOnFriend(String friendName);
+
+  /// No description provided for @planMetVriendPlansTonight.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonight'**
+  String get planMetVriendPlansTonight;
+
+  /// No description provided for @planMetVriendPlansSlotMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get planMetVriendPlansSlotMorning;
+
+  /// No description provided for @planMetVriendPlansSlotAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get planMetVriendPlansSlotAfternoon;
+
+  /// No description provided for @planMetVriendPlansSlotEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get planMetVriendPlansSlotEvening;
+
+  /// No description provided for @planMetVriendPlansOpenPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Open plan'**
+  String get planMetVriendPlansOpenPlan;
+
+  /// No description provided for @planMetVriendPlansHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a place in the app, invite a friend, and agree on a date together.'**
+  String get planMetVriendPlansHeroSubtitle;
+
+  /// No description provided for @planMetVriendPlansHeroHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe a plan left to remove it from your list.'**
+  String get planMetVriendPlansHeroHint;
+
+  /// No description provided for @planMetVriendPlansInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep track of invites, replies, and shared plans'**
+  String get planMetVriendPlansInfoTitle;
+
+  /// No description provided for @planMetVriendPlansInfoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See what\'s confirmed, what\'s pending, and what\'s next.'**
+  String get planMetVriendPlansInfoBody;
+
+  /// No description provided for @planMetVriendPlansTabActiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Invites and dates still in progress.'**
+  String get planMetVriendPlansTabActiveHint;
+
+  /// No description provided for @planMetVriendPlansTabCompletedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans you\'ve added to My Day.'**
+  String get planMetVriendPlansTabCompletedHint;
+
+  /// No description provided for @planMetVriendPlansTabActiveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active plans — tap Plan with friend on a place in the app.'**
+  String get planMetVriendPlansTabActiveEmpty;
+
+  /// No description provided for @planMetVriendPlansTabCompletedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet — when you add an agreed plan to My Day, it shows up here.'**
+  String get planMetVriendPlansTabCompletedEmpty;
+
+  /// No description provided for @planMetVriendDeleteInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this plan?'**
+  String get planMetVriendDeleteInviteTitle;
+
+  /// No description provided for @planMetVriendDeleteInviteBodyHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friend will no longer see this invite. This cannot be undone.'**
+  String get planMetVriendDeleteInviteBodyHost;
+
+  /// No description provided for @planMetVriendDeleteInviteBodyGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'You will leave this plan. The invite will stay open for your friend.'**
+  String get planMetVriendDeleteInviteBodyGuest;
+
+  /// No description provided for @planMetVriendDeleteInviteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get planMetVriendDeleteInviteConfirm;
+
+  /// No description provided for @planMetVriendDeleteInviteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan removed'**
+  String get planMetVriendDeleteInviteSuccess;
+
+  /// No description provided for @planMetVriendDeleteInviteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove plan. Try again.'**
+  String get planMetVriendDeleteInviteError;
+
+  /// No description provided for @planMetVriendPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {friendName}'**
+  String planMetVriendPendingTitle(String friendName);
+
+  /// No description provided for @planMetVriendPendingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite sent · {slot} · {date}'**
+  String planMetVriendPendingSubtitle(String slot, String date);
+
+  /// No description provided for @planMetVriendPendingMoodyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{friendName} hasn\'t replied yet.'**
+  String planMetVriendPendingMoodyTitle(String friendName);
+
+  /// No description provided for @planMetVriendPendingMoodyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you when they confirm or suggest another time.'**
+  String get planMetVriendPendingMoodyBody;
+
+  /// No description provided for @planMetVriendPendingSendReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reminder'**
+  String get planMetVriendPendingSendReminder;
+
+  /// No description provided for @planMetVriendPendingReminderSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder sent'**
+  String get planMetVriendPendingReminderSent;
+
+  /// No description provided for @planMetVriendPendingEditInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit invite'**
+  String get planMetVriendPendingEditInvite;
+
+  /// No description provided for @planMetVriendPendingEditSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite updated'**
+  String get planMetVriendPendingEditSaved;
+
+  /// No description provided for @planMetVriendPendingShareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share invite link again'**
+  String get planMetVriendPendingShareLink;
+
+  /// No description provided for @planMetVriendPendingCancelPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel plan'**
+  String get planMetVriendPendingCancelPlan;
+
+  /// No description provided for @planMetVriendPendingCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this plan?'**
+  String get planMetVriendPendingCancelTitle;
+
+  /// No description provided for @planMetVriendPendingCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friend will no longer see this invite. This cannot be undone.'**
+  String get planMetVriendPendingCancelBody;
+
+  /// No description provided for @planMetVriendPendingBottomNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Still no reply? You can nudge {friendName} or change the time.'**
+  String planMetVriendPendingBottomNote(String friendName);
+
+  /// No description provided for @planMetVriendPendingEditSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change date & time'**
+  String get planMetVriendPendingEditSheetTitle;
+
+  /// No description provided for @planMetVriendPendingSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get planMetVriendPendingSaveChanges;
 
   /// No description provided for @groupPlanTogetherTitle.
   ///

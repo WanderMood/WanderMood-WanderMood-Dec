@@ -80,13 +80,28 @@ extension _ExploreScreenMapView on _ExploreScreenState {
               return;
             }
             HapticFeedback.lightImpact();
+            final city =
+                ref.read(locationNotifierProvider).valueOrNull?.trim() ??
+                    'Rotterdam';
+            final userLocation = ref.read(userLocationProvider).valueOrNull;
             await showExplorePlaceQuickPeekSheet(
               context: context,
               place: place,
               photoSelectionSeed: _explorePlacePhotoRefreshSeed,
-              onViewFullPlace: () => _openPlaceFromExplore(place),
+              userLocation: userLocation,
+              cityName: city,
+              onViewFullPlace: () => _openPlaceDetailFromExplore(place),
               onAddToMyDay: () {
                 unawaited(_showAddToMyDaySheet(place));
+              },
+              onPlanWithFriend: () {
+                openPlanWithFriend(
+                  context,
+                  PlanWithFriendArgs.fromPlace(
+                    place,
+                    onAddToMyDay: () => unawaited(_showAddToMyDaySheet(place)),
+                  ),
+                );
               },
             );
           },

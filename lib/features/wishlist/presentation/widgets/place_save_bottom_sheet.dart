@@ -168,7 +168,7 @@ class _PlaceSaveBottomSheetState extends ConsumerState<PlaceSaveBottomSheet> {
         await Future<void>.delayed(const Duration(milliseconds: 400));
         if (!mounted) return;
         Navigator.of(context).pop();
-        openPlanWithFriendScreen(
+        openPlanWithFriend(
           context,
           PlanWithFriendArgs.fromExtracted(payload, sourceUrl: widget.url),
         );

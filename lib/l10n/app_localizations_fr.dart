@@ -1318,6 +1318,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get signupJoinWanderMood => 'Tu veux ça au quotidien ?';
 
   @override
+  String get signupMagicLinkReturningTitle => 'Bon retour';
+
+  @override
+  String get signupMagicLinkReturningSubtitle =>
+      'Entre ton e-mail et on t\'envoie un lien de connexion.';
+
+  @override
+  String get signupMagicLinkReturningCta => 'Envoyer le lien';
+
+  @override
+  String get signupMagicLinkReturningFooter =>
+      'Pas de mot de passe — ouvre le lien dans ta boîte mail.';
+
+  @override
   String get signupSubtitle =>
       'Entre ton email pour commencer.\nPas de mot de passe !';
 
@@ -3791,7 +3805,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get dayPlanCardAddToMyDay => '+ Ajouter à Mon Jour';
+  String get dayPlanCardAddToMyDay => '+ Mon jour';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -6725,7 +6739,48 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get explorePeekViewFullPlace => 'Voir le lieu';
+  String get explorePeekViewFullPlace => 'Voir tous les détails →';
+
+  @override
+  String get explorePeekMoodyTakeTitle => 'Moody dit';
+
+  @override
+  String explorePeekWhyFits(String mood) {
+    return 'Correspond à ton humeur $mood aujourd\'hui';
+  }
+
+  @override
+  String get explorePeekFitsForTitle => 'Idéal pour';
+
+  @override
+  String get explorePeekFitsCoffee => 'Café';
+
+  @override
+  String get explorePeekFitsWork => 'Travail';
+
+  @override
+  String get explorePeekFitsFriends => 'Amis';
+
+  @override
+  String get explorePeekFitsSolo => 'Solo';
+
+  @override
+  String get explorePeekFitsCozy => 'Cosy';
+
+  @override
+  String get explorePeekFitsDate => 'Date';
+
+  @override
+  String get explorePeekFitsCulture => 'Culture';
+
+  @override
+  String get explorePeekFitsBrunch => 'Brunch';
+
+  @override
+  String get explorePeekFitsOutdoor => 'Plein air';
+
+  @override
+  String get explorePeekVisitorNote => 'D\'un visiteur';
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -11796,6 +11851,298 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get groupPlanWithFriendMenu => 'Planifier avec un ami';
+
+  @override
+  String get planMetVriendCta => 'Planifier avec un ami';
+
+  @override
+  String get planMetVriendSearchFriend => 'Chercher un ami…';
+
+  @override
+  String get planMetVriendMessageOptional => 'Message (optionnel)';
+
+  @override
+  String get planMetVriendMessageHint => 'Envie d\'y aller ensemble ? ☕️';
+
+  @override
+  String get planMetVriendCtaGrid => 'Ensemble';
+
+  @override
+  String planMetVriendNoteFrom(String name) {
+    return 'De $name';
+  }
+
+  @override
+  String planMetVriendReplyFrom(String name) {
+    return 'Réponse de $name';
+  }
+
+  @override
+  String get planMetVriendReplyOptional => 'Réponse (optionnel)';
+
+  @override
+  String planMetVriendReplyHint(String name) {
+    return 'Un mot pour $name…';
+  }
+
+  @override
+  String get planMetVriendReplySend => 'Envoyer';
+
+  @override
+  String get planMetVriendReplySaving => 'Envoi…';
+
+  @override
+  String get planMetVriendReplySent => 'Envoyé ✓';
+
+  @override
+  String get planMetVriendInviteViaLink => 'Inviter par lien';
+
+  @override
+  String get planMetVriendLinkCopied => 'Lien copié';
+
+  @override
+  String get planMetVriendDateTomorrow => 'Demain';
+
+  @override
+  String get planMetVriendDateThisWeekend => 'Ce week-end';
+
+  @override
+  String get planMetVriendDatePick => 'Choisir une date';
+
+  @override
+  String get planMetVriendTimeMorning => 'Matin 9–12';
+
+  @override
+  String get planMetVriendTimeAfternoon => 'Après-midi 12–17';
+
+  @override
+  String get planMetVriendTimeEvening => 'Soir 17–22';
+
+  @override
+  String get planMetVriendSendInvite => 'Envoyer l\'invitation';
+
+  @override
+  String get planMetVriendSending => 'Envoi…';
+
+  @override
+  String get planMetVriendSendError => 'Une erreur s\'est produite. Réessayez.';
+
+  @override
+  String get planMetVriendInviteSentTitle => 'Invitation envoyée ! 🎉';
+
+  @override
+  String planMetVriendInviteSentBody(String friendName) {
+    return '$friendName recevra une notification.';
+  }
+
+  @override
+  String get planMetVriendDone => 'Terminé';
+
+  @override
+  String get planMetVriendAddToMyDayToo => 'Ajouter aussi à Ma journée';
+
+  @override
+  String planMetVriendWithFriend(String friendName) {
+    return 'Avec $friendName';
+  }
+
+  @override
+  String get planMetVriendLoginRequired =>
+      'Connectez-vous pour planifier avec un ami.';
+
+  @override
+  String get planMetVriendSearchMinChars => 'Tapez au moins 2 caractères';
+
+  @override
+  String get planMetVriendNoFriendsFound =>
+      'Aucun ami trouvé — essayez le lien';
+
+  @override
+  String get planMetVriendPickDateTitle => 'Choisir une date';
+
+  @override
+  String get planMetVriendPickDateDone => 'Terminé';
+
+  @override
+  String get planMetVriendRecentFriends => 'Récents';
+
+  @override
+  String get planMetVriendPlansTitle => 'Plans avec des amis';
+
+  @override
+  String get planMetVriendPlansEmpty =>
+      'Aucun plan avec des amis. Utilisez Planifier avec un ami sur un lieu dans l\'app.';
+
+  @override
+  String get planMetVriendPlansLoadError => 'Impossible de charger les plans.';
+
+  @override
+  String get planMetVriendPlansStatusWaiting => 'En attente';
+
+  @override
+  String get planMetVriendPlansStatusProposed => 'Date proposée';
+
+  @override
+  String get planMetVriendPlansStatusMatched => 'Date confirmée';
+
+  @override
+  String get planMetVriendPlansStatusNoOverlap => 'Pas de chevauchement';
+
+  @override
+  String planMetVriendPlansChipWaitingFor(String friendName) {
+    return 'En attente de $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansChipWaitingGeneric => 'En attente de réponse';
+
+  @override
+  String get planMetVriendPlansChipConfirmedTonight => 'Confirmé pour ce soir';
+
+  @override
+  String planMetVriendPlansChipConfirmedFor(String dateLabel) {
+    return 'Confirmé pour $dateLabel';
+  }
+
+  @override
+  String get planMetVriendPlansChipNeedsReply => 'Votre réponse attendue';
+
+  @override
+  String get planMetVriendPlansMetaInviteSent => 'Invitation envoyée';
+
+  @override
+  String planMetVriendPlansMetaFriendSuggested(String friendName) {
+    return '$friendName a proposé';
+  }
+
+  @override
+  String planMetVriendPlansMetaWaitingOnFriend(String friendName) {
+    return 'En attente de $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansTonight => 'Ce soir';
+
+  @override
+  String get planMetVriendPlansSlotMorning => 'Matin';
+
+  @override
+  String get planMetVriendPlansSlotAfternoon => 'Après-midi';
+
+  @override
+  String get planMetVriendPlansSlotEvening => 'Soir';
+
+  @override
+  String get planMetVriendPlansOpenPlan => 'Ouvrir le plan';
+
+  @override
+  String get planMetVriendPlansHeroSubtitle =>
+      'Choisissez un lieu dans l\'app, invitez un ami et convenez d\'une date.';
+
+  @override
+  String get planMetVriendPlansHeroHint =>
+      'Glissez un plan vers la gauche pour le retirer de la liste.';
+
+  @override
+  String get planMetVriendPlansInfoTitle =>
+      'Suivez invitations, réponses et plans partagés';
+
+  @override
+  String get planMetVriendPlansInfoBody =>
+      'Voyez ce qui est confirmé, en attente et à venir.';
+
+  @override
+  String get planMetVriendPlansTabActiveHint =>
+      'Invitations et dates en cours.';
+
+  @override
+  String get planMetVriendPlansTabCompletedHint =>
+      'Plans ajoutés à Ma journée.';
+
+  @override
+  String get planMetVriendPlansTabActiveEmpty =>
+      'Aucun plan actif — utilisez Planifier avec un ami sur un lieu dans l\'app.';
+
+  @override
+  String get planMetVriendPlansTabCompletedEmpty =>
+      'Rien pour l\'instant — après Ajouter à Ma journée, cela apparaît ici.';
+
+  @override
+  String get planMetVriendDeleteInviteTitle => 'Supprimer ce plan ?';
+
+  @override
+  String get planMetVriendDeleteInviteBodyHost =>
+      'Votre ami ne verra plus cette invitation. Action irréversible.';
+
+  @override
+  String get planMetVriendDeleteInviteBodyGuest =>
+      'Vous quittez ce plan. L\'invitation reste ouverte pour votre ami.';
+
+  @override
+  String get planMetVriendDeleteInviteConfirm => 'Supprimer';
+
+  @override
+  String get planMetVriendDeleteInviteSuccess => 'Plan supprimé';
+
+  @override
+  String get planMetVriendDeleteInviteError =>
+      'Impossible de supprimer. Réessayez.';
+
+  @override
+  String planMetVriendPendingTitle(String friendName) {
+    return 'En attente de $friendName';
+  }
+
+  @override
+  String planMetVriendPendingSubtitle(String slot, String date) {
+    return 'Invitation envoyée · $slot · $date';
+  }
+
+  @override
+  String planMetVriendPendingMoodyTitle(String friendName) {
+    return '$friendName n\'a pas encore répondu.';
+  }
+
+  @override
+  String get planMetVriendPendingMoodyBody =>
+      'Nous vous préviendrons dès qu\'elle confirme ou propose un autre moment.';
+
+  @override
+  String get planMetVriendPendingSendReminder => 'Envoyer un rappel';
+
+  @override
+  String get planMetVriendPendingReminderSent => 'Rappel envoyé';
+
+  @override
+  String get planMetVriendPendingEditInvite => 'Modifier l\'invitation';
+
+  @override
+  String get planMetVriendPendingEditSaved => 'Invitation mise à jour';
+
+  @override
+  String get planMetVriendPendingShareLink => 'Partager le lien d\'invitation';
+
+  @override
+  String get planMetVriendPendingCancelPlan => 'Annuler le plan';
+
+  @override
+  String get planMetVriendPendingCancelTitle => 'Annuler ce plan ?';
+
+  @override
+  String get planMetVriendPendingCancelBody =>
+      'Votre ami ne verra plus cette invitation. Cette action est irréversible.';
+
+  @override
+  String planMetVriendPendingBottomNote(String friendName) {
+    return 'Toujours pas de réponse ? Rappelez $friendName ou changez l\'horaire.';
+  }
+
+  @override
+  String get planMetVriendPendingEditSheetTitle =>
+      'Changer la date et l\'heure';
+
+  @override
+  String get planMetVriendPendingSaveChanges => 'Enregistrer';
 
   @override
   String get groupPlanTogetherTitle => 'Planifier ensemble';

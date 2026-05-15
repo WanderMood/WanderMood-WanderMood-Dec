@@ -1311,6 +1311,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signupJoinWanderMood => '¿Quieres esto cada día?';
 
   @override
+  String get signupMagicLinkReturningTitle => 'Bienvenido de nuevo';
+
+  @override
+  String get signupMagicLinkReturningSubtitle =>
+      'Introduce tu correo y te enviaremos un enlace para entrar.';
+
+  @override
+  String get signupMagicLinkReturningCta => 'Enviar enlace de acceso';
+
+  @override
+  String get signupMagicLinkReturningFooter =>
+      'Sin contraseña — abre el enlace en tu bandeja de entrada.';
+
+  @override
   String get signupSubtitle =>
       'Introduce tu email para empezar.\n¡No hace falta contraseña!';
 
@@ -3783,7 +3797,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get dayPlanCardAddToMyDay => '+ Añadir a Mi Día';
+  String get dayPlanCardAddToMyDay => '+ Mi día';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -6700,7 +6714,48 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get explorePeekViewFullPlace => 'Ver lugar';
+  String get explorePeekViewFullPlace => 'Ver todos los detalles →';
+
+  @override
+  String get explorePeekMoodyTakeTitle => 'Moody dice';
+
+  @override
+  String explorePeekWhyFits(String mood) {
+    return 'Encaja con tu mood $mood hoy';
+  }
+
+  @override
+  String get explorePeekFitsForTitle => 'Ideal para';
+
+  @override
+  String get explorePeekFitsCoffee => 'Café';
+
+  @override
+  String get explorePeekFitsWork => 'Trabajo';
+
+  @override
+  String get explorePeekFitsFriends => 'Amigos';
+
+  @override
+  String get explorePeekFitsSolo => 'Solo';
+
+  @override
+  String get explorePeekFitsCozy => 'Acogedor';
+
+  @override
+  String get explorePeekFitsDate => 'Cita';
+
+  @override
+  String get explorePeekFitsCulture => 'Cultura';
+
+  @override
+  String get explorePeekFitsBrunch => 'Brunch';
+
+  @override
+  String get explorePeekFitsOutdoor => 'Aire libre';
+
+  @override
+  String get explorePeekVisitorNote => 'De un visitante';
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -11746,6 +11801,298 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get groupPlanWithFriendMenu => 'Planifica con un amigo';
+
+  @override
+  String get planMetVriendCta => 'Plan con amigo';
+
+  @override
+  String get planMetVriendSearchFriend => 'Buscar amigo…';
+
+  @override
+  String get planMetVriendMessageOptional => 'Mensaje (opcional)';
+
+  @override
+  String get planMetVriendMessageHint => '¿Te apetece ir juntos? ☕️';
+
+  @override
+  String get planMetVriendCtaGrid => 'Juntos';
+
+  @override
+  String planMetVriendNoteFrom(String name) {
+    return 'De $name';
+  }
+
+  @override
+  String planMetVriendReplyFrom(String name) {
+    return 'Respuesta de $name';
+  }
+
+  @override
+  String get planMetVriendReplyOptional => 'Respuesta (opcional)';
+
+  @override
+  String planMetVriendReplyHint(String name) {
+    return 'Algo para $name…';
+  }
+
+  @override
+  String get planMetVriendReplySend => 'Enviar';
+
+  @override
+  String get planMetVriendReplySaving => 'Enviando…';
+
+  @override
+  String get planMetVriendReplySent => 'Enviado ✓';
+
+  @override
+  String get planMetVriendInviteViaLink => 'Invitar por enlace';
+
+  @override
+  String get planMetVriendLinkCopied => 'Enlace copiado';
+
+  @override
+  String get planMetVriendDateTomorrow => 'Mañana';
+
+  @override
+  String get planMetVriendDateThisWeekend => 'Este fin de semana';
+
+  @override
+  String get planMetVriendDatePick => 'Elegir fecha';
+
+  @override
+  String get planMetVriendTimeMorning => 'Mañana 9–12';
+
+  @override
+  String get planMetVriendTimeAfternoon => 'Tarde 12–17';
+
+  @override
+  String get planMetVriendTimeEvening => 'Noche 17–22';
+
+  @override
+  String get planMetVriendSendInvite => 'Enviar invitación';
+
+  @override
+  String get planMetVriendSending => 'Enviando…';
+
+  @override
+  String get planMetVriendSendError => 'Algo salió mal. Inténtalo de nuevo.';
+
+  @override
+  String get planMetVriendInviteSentTitle => '¡Invitación enviada! 🎉';
+
+  @override
+  String planMetVriendInviteSentBody(String friendName) {
+    return '$friendName recibirá una notificación.';
+  }
+
+  @override
+  String get planMetVriendDone => 'Listo';
+
+  @override
+  String get planMetVriendAddToMyDayToo => 'Añadir también a Mi día';
+
+  @override
+  String planMetVriendWithFriend(String friendName) {
+    return 'Con $friendName';
+  }
+
+  @override
+  String get planMetVriendLoginRequired =>
+      'Inicia sesión para planear con un amigo.';
+
+  @override
+  String get planMetVriendSearchMinChars => 'Escribe al menos 2 caracteres';
+
+  @override
+  String get planMetVriendNoFriendsFound =>
+      'No se encontraron amigos — prueba el enlace';
+
+  @override
+  String get planMetVriendPickDateTitle => 'Elegir fecha';
+
+  @override
+  String get planMetVriendPickDateDone => 'Listo';
+
+  @override
+  String get planMetVriendRecentFriends => 'Recientes';
+
+  @override
+  String get planMetVriendPlansTitle => 'Planes con amigos';
+
+  @override
+  String get planMetVriendPlansEmpty =>
+      'Aún no hay planes con amigos. Usa Plan con amigo en un lugar de la app.';
+
+  @override
+  String get planMetVriendPlansLoadError => 'No se pudieron cargar los planes.';
+
+  @override
+  String get planMetVriendPlansStatusWaiting => 'Esperando respuesta';
+
+  @override
+  String get planMetVriendPlansStatusProposed => 'Fecha propuesta';
+
+  @override
+  String get planMetVriendPlansStatusMatched => 'Fecha acordada';
+
+  @override
+  String get planMetVriendPlansStatusNoOverlap => 'Sin coincidencia';
+
+  @override
+  String planMetVriendPlansChipWaitingFor(String friendName) {
+    return 'Esperando a $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansChipWaitingGeneric => 'Esperando respuesta';
+
+  @override
+  String get planMetVriendPlansChipConfirmedTonight =>
+      'Confirmado para esta noche';
+
+  @override
+  String planMetVriendPlansChipConfirmedFor(String dateLabel) {
+    return 'Confirmado para $dateLabel';
+  }
+
+  @override
+  String get planMetVriendPlansChipNeedsReply => 'Necesita tu respuesta';
+
+  @override
+  String get planMetVriendPlansMetaInviteSent => 'Invitación enviada';
+
+  @override
+  String planMetVriendPlansMetaFriendSuggested(String friendName) {
+    return '$friendName propuso';
+  }
+
+  @override
+  String planMetVriendPlansMetaWaitingOnFriend(String friendName) {
+    return 'Esperando a $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansTonight => 'Esta noche';
+
+  @override
+  String get planMetVriendPlansSlotMorning => 'Mañana';
+
+  @override
+  String get planMetVriendPlansSlotAfternoon => 'Tarde';
+
+  @override
+  String get planMetVriendPlansSlotEvening => 'Noche';
+
+  @override
+  String get planMetVriendPlansOpenPlan => 'Abrir plan';
+
+  @override
+  String get planMetVriendPlansHeroSubtitle =>
+      'Elige un lugar en la app, invita a un amigo y acordad la fecha juntos.';
+
+  @override
+  String get planMetVriendPlansHeroHint =>
+      'Desliza un plan a la izquierda para quitarlo de la lista.';
+
+  @override
+  String get planMetVriendPlansInfoTitle =>
+      'Sigue invitaciones, respuestas y planes compartidos';
+
+  @override
+  String get planMetVriendPlansInfoBody =>
+      'Mira qué está confirmado, pendiente y qué viene después.';
+
+  @override
+  String get planMetVriendPlansTabActiveHint =>
+      'Invitaciones y fechas en curso.';
+
+  @override
+  String get planMetVriendPlansTabCompletedHint =>
+      'Planes que añadiste a Mi día.';
+
+  @override
+  String get planMetVriendPlansTabActiveEmpty =>
+      'No hay planes activos — usa Plan con amigo en un lugar de la app.';
+
+  @override
+  String get planMetVriendPlansTabCompletedEmpty =>
+      'Nada aún — al añadir a Mi día, aparecerá aquí.';
+
+  @override
+  String get planMetVriendDeleteInviteTitle => '¿Eliminar este plan?';
+
+  @override
+  String get planMetVriendDeleteInviteBodyHost =>
+      'Tu amigo ya no verá esta invitación. No se puede deshacer.';
+
+  @override
+  String get planMetVriendDeleteInviteBodyGuest =>
+      'Abandonas este plan. La invitación sigue abierta para tu amigo.';
+
+  @override
+  String get planMetVriendDeleteInviteConfirm => 'Eliminar';
+
+  @override
+  String get planMetVriendDeleteInviteSuccess => 'Plan eliminado';
+
+  @override
+  String get planMetVriendDeleteInviteError =>
+      'No se pudo eliminar. Inténtalo de nuevo.';
+
+  @override
+  String planMetVriendPendingTitle(String friendName) {
+    return 'Esperando a $friendName';
+  }
+
+  @override
+  String planMetVriendPendingSubtitle(String slot, String date) {
+    return 'Invitación enviada · $slot · $date';
+  }
+
+  @override
+  String planMetVriendPendingMoodyTitle(String friendName) {
+    return '$friendName aún no ha respondido.';
+  }
+
+  @override
+  String get planMetVriendPendingMoodyBody =>
+      'Te avisaremos cuando confirme o proponga otra hora.';
+
+  @override
+  String get planMetVriendPendingSendReminder => 'Enviar recordatorio';
+
+  @override
+  String get planMetVriendPendingReminderSent => 'Recordatorio enviado';
+
+  @override
+  String get planMetVriendPendingEditInvite => 'Editar invitación';
+
+  @override
+  String get planMetVriendPendingEditSaved => 'Invitación actualizada';
+
+  @override
+  String get planMetVriendPendingShareLink => 'Compartir enlace de invitación';
+
+  @override
+  String get planMetVriendPendingCancelPlan => 'Cancelar plan';
+
+  @override
+  String get planMetVriendPendingCancelTitle => '¿Cancelar este plan?';
+
+  @override
+  String get planMetVriendPendingCancelBody =>
+      'Tu amigo ya no verá esta invitación. No se puede deshacer.';
+
+  @override
+  String planMetVriendPendingBottomNote(String friendName) {
+    return '¿Sin respuesta? Recuerda a $friendName o cambia la hora.';
+  }
+
+  @override
+  String get planMetVriendPendingEditSheetTitle => 'Cambiar fecha y hora';
+
+  @override
+  String get planMetVriendPendingSaveChanges => 'Guardar';
 
   @override
   String get groupPlanTogetherTitle => 'Planificar juntos';

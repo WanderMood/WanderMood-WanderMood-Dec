@@ -1297,6 +1297,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupJoinWanderMood => 'Want this every day?';
 
   @override
+  String get signupMagicLinkReturningTitle => 'Welcome back';
+
+  @override
+  String get signupMagicLinkReturningSubtitle =>
+      'Enter your email and we\'ll send you a sign-in link.';
+
+  @override
+  String get signupMagicLinkReturningCta => 'Send sign-in link';
+
+  @override
+  String get signupMagicLinkReturningFooter =>
+      'No password — just tap the link in your inbox.';
+
+  @override
   String get signupSubtitle =>
       'Enter your email to get started.\nNo password needed!';
 
@@ -3731,7 +3745,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get dayPlanCardAddToMyDay => '+ Add to My Day';
+  String get dayPlanCardAddToMyDay => '+ My Day';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -6634,7 +6648,48 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get explorePeekViewFullPlace => 'View full place';
+  String get explorePeekViewFullPlace => 'View all details →';
+
+  @override
+  String get explorePeekMoodyTakeTitle => 'Moody\'s take';
+
+  @override
+  String explorePeekWhyFits(String mood) {
+    return 'Fits your $mood mood today';
+  }
+
+  @override
+  String get explorePeekFitsForTitle => 'Good for';
+
+  @override
+  String get explorePeekFitsCoffee => 'Coffee';
+
+  @override
+  String get explorePeekFitsWork => 'Work';
+
+  @override
+  String get explorePeekFitsFriends => 'Friends';
+
+  @override
+  String get explorePeekFitsSolo => 'Solo';
+
+  @override
+  String get explorePeekFitsCozy => 'Cozy';
+
+  @override
+  String get explorePeekFitsDate => 'Date night';
+
+  @override
+  String get explorePeekFitsCulture => 'Culture';
+
+  @override
+  String get explorePeekFitsBrunch => 'Brunch';
+
+  @override
+  String get explorePeekFitsOutdoor => 'Outdoors';
+
+  @override
+  String get explorePeekVisitorNote => 'From a visitor';
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -11632,6 +11687,298 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupPlanWithFriendMenu => 'Plan with a friend';
+
+  @override
+  String get planMetVriendCta => 'Plan with friend';
+
+  @override
+  String get planMetVriendSearchFriend => 'Search friend…';
+
+  @override
+  String get planMetVriendMessageOptional => 'Message (optional)';
+
+  @override
+  String get planMetVriendMessageHint => 'Feel like going here together? ☕️';
+
+  @override
+  String get planMetVriendCtaGrid => 'Together';
+
+  @override
+  String planMetVriendNoteFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String planMetVriendReplyFrom(String name) {
+    return 'Reply from $name';
+  }
+
+  @override
+  String get planMetVriendReplyOptional => 'Reply (optional)';
+
+  @override
+  String planMetVriendReplyHint(String name) {
+    return 'Say something to $name…';
+  }
+
+  @override
+  String get planMetVriendReplySend => 'Send';
+
+  @override
+  String get planMetVriendReplySaving => 'Sending…';
+
+  @override
+  String get planMetVriendReplySent => 'Sent ✓';
+
+  @override
+  String get planMetVriendInviteViaLink => 'Invite via link';
+
+  @override
+  String get planMetVriendLinkCopied => 'Link copied';
+
+  @override
+  String get planMetVriendDateTomorrow => 'Tomorrow';
+
+  @override
+  String get planMetVriendDateThisWeekend => 'This weekend';
+
+  @override
+  String get planMetVriendDatePick => 'Pick date';
+
+  @override
+  String get planMetVriendTimeMorning => 'Morning 9–12';
+
+  @override
+  String get planMetVriendTimeAfternoon => 'Afternoon 12–17';
+
+  @override
+  String get planMetVriendTimeEvening => 'Evening 17–22';
+
+  @override
+  String get planMetVriendSendInvite => 'Send invite';
+
+  @override
+  String get planMetVriendSending => 'Sending…';
+
+  @override
+  String get planMetVriendSendError => 'Something went wrong. Try again.';
+
+  @override
+  String get planMetVriendInviteSentTitle => 'Invite sent! 🎉';
+
+  @override
+  String planMetVriendInviteSentBody(String friendName) {
+    return '$friendName will get a notification.';
+  }
+
+  @override
+  String get planMetVriendDone => 'Done';
+
+  @override
+  String get planMetVriendAddToMyDayToo => 'Add to My Day too';
+
+  @override
+  String planMetVriendWithFriend(String friendName) {
+    return 'With $friendName';
+  }
+
+  @override
+  String get planMetVriendLoginRequired => 'Sign in to plan with a friend.';
+
+  @override
+  String get planMetVriendSearchMinChars =>
+      'Type at least 2 characters to search';
+
+  @override
+  String get planMetVriendNoFriendsFound =>
+      'No friends found — try the invite link';
+
+  @override
+  String get planMetVriendPickDateTitle => 'Pick a date';
+
+  @override
+  String get planMetVriendPickDateDone => 'Done';
+
+  @override
+  String get planMetVriendRecentFriends => 'Recent';
+
+  @override
+  String get planMetVriendPlansTitle => 'Plans with friends';
+
+  @override
+  String get planMetVriendPlansEmpty =>
+      'No friend plans yet. Tap Plan with friend on a place in the app.';
+
+  @override
+  String get planMetVriendPlansLoadError =>
+      'Could not load your plans. Pull to refresh.';
+
+  @override
+  String get planMetVriendPlansStatusWaiting => 'Waiting for reply';
+
+  @override
+  String get planMetVriendPlansStatusProposed => 'Date proposed';
+
+  @override
+  String get planMetVriendPlansStatusMatched => 'Date agreed';
+
+  @override
+  String get planMetVriendPlansStatusNoOverlap => 'No overlap';
+
+  @override
+  String planMetVriendPlansChipWaitingFor(String friendName) {
+    return 'Waiting for $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansChipWaitingGeneric => 'Waiting for reply';
+
+  @override
+  String get planMetVriendPlansChipConfirmedTonight => 'Confirmed for tonight';
+
+  @override
+  String planMetVriendPlansChipConfirmedFor(String dateLabel) {
+    return 'Confirmed for $dateLabel';
+  }
+
+  @override
+  String get planMetVriendPlansChipNeedsReply => 'Needs your reply';
+
+  @override
+  String get planMetVriendPlansMetaInviteSent => 'Invite sent';
+
+  @override
+  String planMetVriendPlansMetaFriendSuggested(String friendName) {
+    return '$friendName suggested';
+  }
+
+  @override
+  String planMetVriendPlansMetaWaitingOnFriend(String friendName) {
+    return 'Waiting on $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansTonight => 'Tonight';
+
+  @override
+  String get planMetVriendPlansSlotMorning => 'Morning';
+
+  @override
+  String get planMetVriendPlansSlotAfternoon => 'Afternoon';
+
+  @override
+  String get planMetVriendPlansSlotEvening => 'Evening';
+
+  @override
+  String get planMetVriendPlansOpenPlan => 'Open plan';
+
+  @override
+  String get planMetVriendPlansHeroSubtitle =>
+      'Pick a place in the app, invite a friend, and agree on a date together.';
+
+  @override
+  String get planMetVriendPlansHeroHint =>
+      'Swipe a plan left to remove it from your list.';
+
+  @override
+  String get planMetVriendPlansInfoTitle =>
+      'Keep track of invites, replies, and shared plans';
+
+  @override
+  String get planMetVriendPlansInfoBody =>
+      'See what\'s confirmed, what\'s pending, and what\'s next.';
+
+  @override
+  String get planMetVriendPlansTabActiveHint =>
+      'Invites and dates still in progress.';
+
+  @override
+  String get planMetVriendPlansTabCompletedHint =>
+      'Plans you\'ve added to My Day.';
+
+  @override
+  String get planMetVriendPlansTabActiveEmpty =>
+      'No active plans — tap Plan with friend on a place in the app.';
+
+  @override
+  String get planMetVriendPlansTabCompletedEmpty =>
+      'Nothing here yet — when you add an agreed plan to My Day, it shows up here.';
+
+  @override
+  String get planMetVriendDeleteInviteTitle => 'Remove this plan?';
+
+  @override
+  String get planMetVriendDeleteInviteBodyHost =>
+      'Your friend will no longer see this invite. This cannot be undone.';
+
+  @override
+  String get planMetVriendDeleteInviteBodyGuest =>
+      'You will leave this plan. The invite will stay open for your friend.';
+
+  @override
+  String get planMetVriendDeleteInviteConfirm => 'Remove';
+
+  @override
+  String get planMetVriendDeleteInviteSuccess => 'Plan removed';
+
+  @override
+  String get planMetVriendDeleteInviteError =>
+      'Could not remove plan. Try again.';
+
+  @override
+  String planMetVriendPendingTitle(String friendName) {
+    return 'Waiting for $friendName';
+  }
+
+  @override
+  String planMetVriendPendingSubtitle(String slot, String date) {
+    return 'Invite sent · $slot · $date';
+  }
+
+  @override
+  String planMetVriendPendingMoodyTitle(String friendName) {
+    return '$friendName hasn\'t replied yet.';
+  }
+
+  @override
+  String get planMetVriendPendingMoodyBody =>
+      'We\'ll notify you when they confirm or suggest another time.';
+
+  @override
+  String get planMetVriendPendingSendReminder => 'Send reminder';
+
+  @override
+  String get planMetVriendPendingReminderSent => 'Reminder sent';
+
+  @override
+  String get planMetVriendPendingEditInvite => 'Edit invite';
+
+  @override
+  String get planMetVriendPendingEditSaved => 'Invite updated';
+
+  @override
+  String get planMetVriendPendingShareLink => 'Share invite link again';
+
+  @override
+  String get planMetVriendPendingCancelPlan => 'Cancel plan';
+
+  @override
+  String get planMetVriendPendingCancelTitle => 'Cancel this plan?';
+
+  @override
+  String get planMetVriendPendingCancelBody =>
+      'Your friend will no longer see this invite. This cannot be undone.';
+
+  @override
+  String planMetVriendPendingBottomNote(String friendName) {
+    return 'Still no reply? You can nudge $friendName or change the time.';
+  }
+
+  @override
+  String get planMetVriendPendingEditSheetTitle => 'Change date & time';
+
+  @override
+  String get planMetVriendPendingSaveChanges => 'Save changes';
 
   @override
   String get groupPlanTogetherTitle => 'Plan together';

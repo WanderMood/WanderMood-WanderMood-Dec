@@ -120,6 +120,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         });
       }
     });
+    // Bottom tab (inside /main): no back. Drawer pushes /agenda on the stack: show back.
+    final openedAsOwnRoute =
+        GoRouterState.of(context).matchedLocation == '/agenda';
+
     final scrollBody = CustomScrollView(
           slivers: [
             // Header Section
@@ -129,6 +133,18 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               floating: true,
               snap: true,
               automaticallyImplyLeading: false,
+              leading: openedAsOwnRoute
+                  ? IconButton(
+                      tooltip: MaterialLocalizations.of(context)
+                          .backButtonTooltip,
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                        color: _wmCharcoal,
+                      ),
+                      onPressed: () => context.pop(),
+                    )
+                  : null,
               centerTitle: true,
               title: Text(
                 AppLocalizations.of(context)!.agendaTitle,

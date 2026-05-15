@@ -454,7 +454,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .upsert({
             'user_id': userId,
             'selected_moods': _favoriteVibes,
-            'moods': _favoriteVibes,
+            'favorite_moods': _favoriteVibes,
             'age_group': _deriveAgeGroup(_dateOfBirth),
             'dietary_restrictions': dietaryList,
             'updated_at': DateTime.now().toIso8601String(),

@@ -29,6 +29,7 @@ import 'package:wandermood/core/services/distance_service.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_detail_about_block.dart';
 import 'package:wandermood/core/utils/places_cache_utils.dart';
+import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/mood/providers/daily_mood_state_provider.dart';
 import 'package:wandermood/core/services/taste_profile_service.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
@@ -3170,8 +3171,8 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '⭐ Reviews',
@@ -3181,24 +3182,32 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 color: Colors.black87,
               ),
             ),
-            Row(
-              children: [
-                const Icon(
-                  Icons.star,
-                  size: 16,
-                  color: Colors.amber,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${place.rating.toStringAsFixed(1)} (${reviews.length} reviews)',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
+            if (place.rating > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.star,
+                    size: 16,
+                    color: Colors.amber,
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      '${place.rating.toStringAsFixed(1)} · ${reviews.length}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 12),
@@ -3666,18 +3675,22 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
     final column = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Reviews header with rating summary
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Reviews header — stacked so title + badges never overflow on narrow widths.
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Text(
-                  '⭐ ${l10n.placeDetailReviewsSectionTitle}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                Flexible(
+                  child: Text(
+                    '⭐ ${l10n.placeDetailReviewsSectionTitle}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (_realReviews.isNotEmpty) ...[
@@ -3689,51 +3702,62 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                 ],
               ],
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEAF5EE),
-                borderRadius: BorderRadius.circular(20),
-                border:
-                    Border.all(color: const Color(0xFF2A6049).withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.star,
-                    size: 16,
-                    color: Colors.amber,
+            if (place.rating > 0) ...[
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.sizeOf(context).width - 48,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${place.rating.toStringAsFixed(1)}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2A6049),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF5EE),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF2A6049).withValues(alpha: 0.3),
                     ),
                   ),
-                  if (place.reviewCount > 0) ...[
-                    const SizedBox(width: 4),
-                    Text(
-                      '(${place.reviewCount} reviews)',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[600],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        size: 16,
+                        color: Colors.amber,
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const DataSourceBadge(
-                      source: DataSource.real,
-                      tooltip: 'Rating and review count from Google Places API',
-                      size: 10,
-                    ),
-                  ],
-                ],
+                      const SizedBox(width: 4),
+                      Text(
+                        place.rating.toStringAsFixed(1),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF2A6049),
+                        ),
+                      ),
+                      if (place.reviewCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '· ${ExplorePlaceCardCopy.formatReviewCount(place.reviewCount)}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         const SizedBox(height: 16),
@@ -4000,7 +4024,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
               width: double.infinity,
               height: 48,
               child: OutlinedButton(
-                onPressed: () => openPlanWithFriendScreen(
+                onPressed: () => openPlanWithFriend(
                   context,
                   PlanWithFriendArgs.fromPlace(place),
                 ),
@@ -4012,7 +4036,7 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
                   ),
                 ),
                 child: Text(
-                  'Plan met vriend →',
+                  AppLocalizations.of(context)!.planMetVriendCta,
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,

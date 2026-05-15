@@ -7,6 +7,7 @@ import 'package:wandermood/features/places/presentation/screens/place_detail_scr
 import 'package:wandermood/features/wishlist/data/wishlist_service.dart';
 import 'package:wandermood/features/wishlist/domain/wishlist_entry.dart';
 import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart';
+import 'package:wandermood/l10n/app_localizations.dart';
 
 const _wmCream = Color(0xFFF5F0E8);
 const _wmForest = Color(0xFF2A6049);
@@ -183,7 +184,7 @@ class _WishlistCard extends ConsumerWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.groups_outlined, color: _wmForest),
-                  title: const Text('Plan met vriend'),
+                  title: Text(AppLocalizations.of(ctx)!.planMetVriendCta),
                   onTap: () => Navigator.pop(ctx, 'plan'),
                 ),
                 ListTile(
@@ -197,7 +198,7 @@ class _WishlistCard extends ConsumerWidget {
         );
         if (action == 'plan') {
           if (context.mounted) {
-            openPlanWithFriendScreen(
+            openPlanWithFriend(
               context,
               PlanWithFriendArgs.fromPlace(
                 entry.place,
@@ -241,7 +242,7 @@ class _WishlistCard extends ConsumerWidget {
                     ListTile(
                       leading:
                           const Icon(Icons.groups_outlined, color: _wmForest),
-                      title: const Text('Plan met vriend'),
+                      title: Text(AppLocalizations.of(ctx)!.planMetVriendCta),
                       onTap: () => Navigator.pop(ctx, 'plan'),
                     ),
                     ListTile(
@@ -256,7 +257,7 @@ class _WishlistCard extends ConsumerWidget {
             );
             if (!context.mounted) return;
             if (action == 'plan') {
-              openPlanWithFriendScreen(
+              openPlanWithFriend(
                 context,
                 PlanWithFriendArgs.fromPlace(
                   entry.place,
@@ -342,7 +343,7 @@ class _WishlistCard extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.groups_outlined,
                       color: _wmForest, size: 22),
-                  onPressed: () => openPlanWithFriendScreen(
+                  onPressed: () => openPlanWithFriend(
                     context,
                     PlanWithFriendArgs.fromPlace(
                       entry.place,

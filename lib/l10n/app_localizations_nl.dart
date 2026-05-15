@@ -1309,6 +1309,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get signupJoinWanderMood => 'Wil je dit elke dag?';
 
   @override
+  String get signupMagicLinkReturningTitle => 'Welkom terug';
+
+  @override
+  String get signupMagicLinkReturningSubtitle =>
+      'Vul je e-mail in en we sturen je een inloglink.';
+
+  @override
+  String get signupMagicLinkReturningCta => 'Inloglink sturen';
+
+  @override
+  String get signupMagicLinkReturningFooter =>
+      'Geen wachtwoord — tik op de link in je inbox.';
+
+  @override
   String get signupSubtitle =>
       'Voer je e-mail in om te beginnen.\nGeen wachtwoord nodig!';
 
@@ -3748,7 +3762,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get dayPlanCardAddToMyDay => '+ Toevoegen aan Mijn Dag';
+  String get dayPlanCardAddToMyDay => '+ Mijn dag';
 
   @override
   String moodHubGreetingFriendly(String name) {
@@ -6667,7 +6681,48 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get explorePeekViewFullPlace => 'Bekijk plek';
+  String get explorePeekViewFullPlace => 'Bekijk alle details →';
+
+  @override
+  String get explorePeekMoodyTakeTitle => 'Moody zegt';
+
+  @override
+  String explorePeekWhyFits(String mood) {
+    return 'Past bij je $mood-vibe vandaag';
+  }
+
+  @override
+  String get explorePeekFitsForTitle => 'Past bij';
+
+  @override
+  String get explorePeekFitsCoffee => 'Koffie';
+
+  @override
+  String get explorePeekFitsWork => 'Werken';
+
+  @override
+  String get explorePeekFitsFriends => 'Vrienden';
+
+  @override
+  String get explorePeekFitsSolo => 'Solo';
+
+  @override
+  String get explorePeekFitsCozy => 'Gezellig';
+
+  @override
+  String get explorePeekFitsDate => 'Date';
+
+  @override
+  String get explorePeekFitsCulture => 'Cultuur';
+
+  @override
+  String get explorePeekFitsBrunch => 'Brunch';
+
+  @override
+  String get explorePeekFitsOutdoor => 'Buiten';
+
+  @override
+  String get explorePeekVisitorNote => 'Van een bezoeker';
 
   @override
   String get chatSheetMoodyName => 'Moody';
@@ -11676,6 +11731,300 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get groupPlanWithFriendMenu => 'Samen plannen';
+
+  @override
+  String get planMetVriendCta => 'Plan met vriend';
+
+  @override
+  String get planMetVriendSearchFriend => 'Zoek vriend…';
+
+  @override
+  String get planMetVriendMessageOptional => 'Bericht (optioneel)';
+
+  @override
+  String get planMetVriendMessageHint => 'Zin om hier samen heen te gaan? ☕️';
+
+  @override
+  String get planMetVriendCtaGrid => 'Samen';
+
+  @override
+  String planMetVriendNoteFrom(String name) {
+    return 'Van $name';
+  }
+
+  @override
+  String planMetVriendReplyFrom(String name) {
+    return 'Antwoord van $name';
+  }
+
+  @override
+  String get planMetVriendReplyOptional => 'Antwoord (optioneel)';
+
+  @override
+  String planMetVriendReplyHint(String name) {
+    return 'Iets terug naar $name…';
+  }
+
+  @override
+  String get planMetVriendReplySend => 'Verstuur';
+
+  @override
+  String get planMetVriendReplySaving => 'Versturen…';
+
+  @override
+  String get planMetVriendReplySent => 'Verstuurd ✓';
+
+  @override
+  String get planMetVriendInviteViaLink => 'Uitnodigen via link';
+
+  @override
+  String get planMetVriendLinkCopied => 'Link gekopieerd';
+
+  @override
+  String get planMetVriendDateTomorrow => 'Morgen';
+
+  @override
+  String get planMetVriendDateThisWeekend => 'Dit weekend';
+
+  @override
+  String get planMetVriendDatePick => 'Kies datum';
+
+  @override
+  String get planMetVriendTimeMorning => 'Ochtend 9–12';
+
+  @override
+  String get planMetVriendTimeAfternoon => 'Middag 12–17';
+
+  @override
+  String get planMetVriendTimeEvening => 'Avond 17–22';
+
+  @override
+  String get planMetVriendSendInvite => 'Uitnodiging versturen';
+
+  @override
+  String get planMetVriendSending => 'Versturen…';
+
+  @override
+  String get planMetVriendSendError => 'Er ging iets mis. Probeer het opnieuw.';
+
+  @override
+  String get planMetVriendInviteSentTitle => 'Uitnodiging verstuurd! 🎉';
+
+  @override
+  String planMetVriendInviteSentBody(String friendName) {
+    return '$friendName krijgt nu een melding.';
+  }
+
+  @override
+  String get planMetVriendDone => 'Klaar';
+
+  @override
+  String get planMetVriendAddToMyDayToo => 'Zelf ook aan Mijn Dag toevoegen';
+
+  @override
+  String planMetVriendWithFriend(String friendName) {
+    return 'Met $friendName';
+  }
+
+  @override
+  String get planMetVriendLoginRequired =>
+      'Log in om met een vriend te plannen.';
+
+  @override
+  String get planMetVriendSearchMinChars =>
+      'Typ minstens 2 tekens om te zoeken';
+
+  @override
+  String get planMetVriendNoFriendsFound =>
+      'Geen vrienden gevonden — probeer de link';
+
+  @override
+  String get planMetVriendPickDateTitle => 'Kies een datum';
+
+  @override
+  String get planMetVriendPickDateDone => 'Klaar';
+
+  @override
+  String get planMetVriendRecentFriends => 'Recent';
+
+  @override
+  String get planMetVriendPlansTitle => 'Plannen met vrienden';
+
+  @override
+  String get planMetVriendPlansEmpty =>
+      'Nog geen plannen met vrienden. Tik op Plan met vriend bij een plek in de app.';
+
+  @override
+  String get planMetVriendPlansLoadError =>
+      'Plannen laden mislukt. Trek om te vernieuwen.';
+
+  @override
+  String get planMetVriendPlansStatusWaiting => 'Wacht op reactie';
+
+  @override
+  String get planMetVriendPlansStatusProposed => 'Datum voorgesteld';
+
+  @override
+  String get planMetVriendPlansStatusMatched => 'Datum afgestemd';
+
+  @override
+  String get planMetVriendPlansStatusNoOverlap => 'Geen overlap';
+
+  @override
+  String planMetVriendPlansChipWaitingFor(String friendName) {
+    return 'Wacht op $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansChipWaitingGeneric => 'Wacht op reactie';
+
+  @override
+  String get planMetVriendPlansChipConfirmedTonight =>
+      'Bevestigd voor vanavond';
+
+  @override
+  String planMetVriendPlansChipConfirmedFor(String dateLabel) {
+    return 'Bevestigd voor $dateLabel';
+  }
+
+  @override
+  String get planMetVriendPlansChipNeedsReply => 'Jouw reactie nodig';
+
+  @override
+  String get planMetVriendPlansMetaInviteSent => 'Uitnodiging verstuurd';
+
+  @override
+  String planMetVriendPlansMetaFriendSuggested(String friendName) {
+    return '$friendName stelde voor';
+  }
+
+  @override
+  String planMetVriendPlansMetaWaitingOnFriend(String friendName) {
+    return 'Wacht op $friendName';
+  }
+
+  @override
+  String get planMetVriendPlansTonight => 'Vanavond';
+
+  @override
+  String get planMetVriendPlansSlotMorning => 'Ochtend';
+
+  @override
+  String get planMetVriendPlansSlotAfternoon => 'Middag';
+
+  @override
+  String get planMetVriendPlansSlotEvening => 'Avond';
+
+  @override
+  String get planMetVriendPlansOpenPlan => 'Open plan';
+
+  @override
+  String get planMetVriendPlansHeroSubtitle =>
+      'Kies een plek in de app, nodig een vriend uit en stem samen een datum af.';
+
+  @override
+  String get planMetVriendPlansHeroHint =>
+      'Veeg een plan naar links om het van je lijst te verwijderen.';
+
+  @override
+  String get planMetVriendPlansInfoTitle =>
+      'Houd uitnodigingen, reacties en plannen bij';
+
+  @override
+  String get planMetVriendPlansInfoBody =>
+      'Zie wat bevestigd is, wat nog openstaat en wat hierna komt.';
+
+  @override
+  String get planMetVriendPlansTabActiveHint =>
+      'Uitnodigingen en data die nog lopen.';
+
+  @override
+  String get planMetVriendPlansTabCompletedHint =>
+      'Plannen die je aan Mijn dag hebt toegevoegd.';
+
+  @override
+  String get planMetVriendPlansTabActiveEmpty =>
+      'Geen actieve plannen — tik ergens in de app op Plan met vriend.';
+
+  @override
+  String get planMetVriendPlansTabCompletedEmpty =>
+      'Nog niets hier — na Toevoegen aan Mijn dag verschijnt het hier.';
+
+  @override
+  String get planMetVriendDeleteInviteTitle => 'Dit plan verwijderen?';
+
+  @override
+  String get planMetVriendDeleteInviteBodyHost =>
+      'Je vriend ziet de uitnodiging niet meer. Dit kan niet ongedaan worden gemaakt.';
+
+  @override
+  String get planMetVriendDeleteInviteBodyGuest =>
+      'Je verlaat dit plan. De uitnodiging blijft open voor je vriend.';
+
+  @override
+  String get planMetVriendDeleteInviteConfirm => 'Verwijderen';
+
+  @override
+  String get planMetVriendDeleteInviteSuccess => 'Plan verwijderd';
+
+  @override
+  String get planMetVriendDeleteInviteError =>
+      'Verwijderen mislukt. Probeer het opnieuw.';
+
+  @override
+  String planMetVriendPendingTitle(String friendName) {
+    return 'Wachten op $friendName';
+  }
+
+  @override
+  String planMetVriendPendingSubtitle(String slot, String date) {
+    return 'Uitnodiging verstuurd · $slot · $date';
+  }
+
+  @override
+  String planMetVriendPendingMoodyTitle(String friendName) {
+    return '$friendName heeft nog niet gereageerd.';
+  }
+
+  @override
+  String get planMetVriendPendingMoodyBody =>
+      'We laten het weten zodra ze bevestigt of een ander moment voorstelt.';
+
+  @override
+  String get planMetVriendPendingSendReminder => 'Herinnering sturen';
+
+  @override
+  String get planMetVriendPendingReminderSent => 'Herinnering verstuurd';
+
+  @override
+  String get planMetVriendPendingEditInvite => 'Uitnodiging aanpassen';
+
+  @override
+  String get planMetVriendPendingEditSaved => 'Uitnodiging bijgewerkt';
+
+  @override
+  String get planMetVriendPendingShareLink => 'Uitnodigingslink opnieuw delen';
+
+  @override
+  String get planMetVriendPendingCancelPlan => 'Plan annuleren';
+
+  @override
+  String get planMetVriendPendingCancelTitle => 'Dit plan annuleren?';
+
+  @override
+  String get planMetVriendPendingCancelBody =>
+      'Je vriend ziet de uitnodiging niet meer. Dit kan niet ongedaan worden gemaakt.';
+
+  @override
+  String planMetVriendPendingBottomNote(String friendName) {
+    return 'Nog geen reactie? Je kunt $friendName een reminder sturen of het moment aanpassen.';
+  }
+
+  @override
+  String get planMetVriendPendingEditSheetTitle => 'Datum en tijd wijzigen';
+
+  @override
+  String get planMetVriendPendingSaveChanges => 'Opslaan';
 
   @override
   String get groupPlanTogetherTitle => 'Samen plannen';

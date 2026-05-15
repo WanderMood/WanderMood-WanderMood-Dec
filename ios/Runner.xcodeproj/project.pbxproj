@@ -15,11 +15,11 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		A1B2C3D41E01000000000002 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41E01000000000001 /* ShareViewController.swift */; };
+		A1B2C3D41E01000000000010 /* WanderMoodShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1B2C3D41E01000000000004 /* WanderMoodShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ABBB9D865620F21576A4F6B0 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F1EF3CD2410815BEDCA63FF /* Pods_RunnerTests.framework */; };
 		BB00000B1E000000000000AA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BB00000A1E000000000000AA /* PrivacyInfo.xcprivacy */; };
 		FF9D7B89E8FC31E7332CACB3 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FC96843BA116ADB0148FB7 /* Pods_Runner.framework */; };
-		A1B2C3D41E01000000000002 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41E01000000000001 /* ShareViewController.swift */; };
-		A1B2C3D41E01000000000010 /* WanderMoodShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1B2C3D41E01000000000004 /* WanderMoodShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,16 +84,17 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D41E01000000000001 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D41E01000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D41E01000000000004 /* WanderMoodShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WanderMoodShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D41E01000000000013 /* WanderMoodShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WanderMoodShare.entitlements; sourceTree = "<group>"; };
+		A1B2C3D41E01000000000018 /* WanderMoodShare.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WanderMoodShare.xcconfig; sourceTree = "<group>"; };
 		A1E87C8E2D35360C0083082F /* Profile.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Profile.xcconfig; path = Flutter/Profile.xcconfig; sourceTree = "<group>"; };
 		A422F7735850C61C0737414B /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		B22CA26BAEBFEDB32B9A595A /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		B2A8687C06E05C3BDF3A6910 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		BB00000A1E000000000000AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E5FC96843BA116ADB0148FB7 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1B2C3D41E01000000000001 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
-		A1B2C3D41E01000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A1B2C3D41E01000000000004 /* WanderMoodShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WanderMoodShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1B2C3D41E01000000000013 /* WanderMoodShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WanderMoodShare.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,16 +166,6 @@
 			);
 			sourceTree = "<group>";
 		};
-		A1B2C3D41E01000000000005 /* WanderMoodShare */ = {
-			isa = PBXGroup;
-			children = (
-				A1B2C3D41E01000000000001 /* ShareViewController.swift */,
-				A1B2C3D41E01000000000003 /* Info.plist */,
-				A1B2C3D41E01000000000013 /* WanderMoodShare.entitlements */,
-			);
-			path = WanderMoodShare;
-			sourceTree = "<group>";
-		};
 		97C146EF1CF9000F007C117D /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -200,6 +191,17 @@
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		A1B2C3D41E01000000000005 /* WanderMoodShare */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D41E01000000000001 /* ShareViewController.swift */,
+				A1B2C3D41E01000000000003 /* Info.plist */,
+				A1B2C3D41E01000000000013 /* WanderMoodShare.entitlements */,
+				A1B2C3D41E01000000000018 /* WanderMoodShare.xcconfig */,
+			);
+			path = WanderMoodShare;
 			sourceTree = "<group>";
 		};
 		B66E23636C32DDEE19BF76F7 /* Pods */ = {
@@ -577,7 +579,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 6LL3QHH76M;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
@@ -770,7 +772,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 6LL3QHH76M;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
@@ -798,7 +800,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 6LL3QHH76M;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
@@ -820,10 +822,11 @@
 		};
 		A1B2C3D41E01000000000014 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1B2C3D41E01000000000018 /* WanderMoodShare.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = WanderMoodShare/WanderMoodShare.entitlements;
-				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 6LL3QHH76M;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WanderMoodShare/Info.plist;
@@ -833,7 +836,6 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.edviennemer.wandermood.WanderMoodShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -844,10 +846,11 @@
 		};
 		A1B2C3D41E01000000000015 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1B2C3D41E01000000000018 /* WanderMoodShare.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = WanderMoodShare/WanderMoodShare.entitlements;
-				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 6LL3QHH76M;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WanderMoodShare/Info.plist;
@@ -857,7 +860,6 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.edviennemer.wandermood.WanderMoodShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -868,10 +870,11 @@
 		};
 		A1B2C3D41E01000000000016 /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1B2C3D41E01000000000018 /* WanderMoodShare.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = WanderMoodShare/WanderMoodShare.entitlements;
-				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 6LL3QHH76M;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WanderMoodShare/Info.plist;
@@ -881,7 +884,6 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.edviennemer.wandermood.WanderMoodShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

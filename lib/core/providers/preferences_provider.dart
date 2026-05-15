@@ -45,8 +45,10 @@ extension UserPreferencesExtension on UserPreferences {
   Map<String, dynamic> toSupabaseJson() {
     return {
       'communication_style': communicationStyle,
-      'moods': selectedMoods,
+      'selected_moods': selectedMoods,
+      'favorite_moods': favoriteMoods.isNotEmpty ? favoriteMoods : selectedMoods,
       'interests': travelInterests,
+      'travel_interests': travelInterests,
       'home_base': homeBase,
       'social_vibe': socialVibe,
       'planning_pace': planningPace,
@@ -95,14 +97,20 @@ class UserPreferencesHelper {
       communicationStyle: canonicalCommunicationStyleKey(
         json['communication_style'] as String?,
       ),
-      selectedMoods: _normalizeListField(json['moods']),
-      travelInterests: _normalizeListField(json['interests']),
+      selectedMoods: _normalizeListField(
+        json['selected_moods'] ?? json['moods'],
+      ),
+      travelInterests: _normalizeListField(
+        json['travel_interests'] ?? json['interests'],
+      ),
       homeBase: json['home_base'] ?? 'Local Explorer',
       socialVibe: _normalizeListField(json['social_vibe']),
       planningPace: json['planning_pace'] ?? 'Same Day Planner',
       travelStyles: _normalizeListField(json['travel_styles']),
       budgetLevel: 'Mid-Range', // Default since no budget screen
-      favoriteMoods: _normalizeListField(json['moods']),
+      favoriteMoods: _normalizeListField(
+        json['favorite_moods'] ?? json['selected_moods'] ?? json['moods'],
+      ),
       preferredTimeSlots:
           _normalizeListField(json['preferred_time_slots']).isNotEmpty
               ? _normalizeListField(json['preferred_time_slots'])
@@ -167,7 +175,6 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       final prefsData = {
         'user_id': user.id,
         'communication_style': state.communicationStyle,
-        'moods': state.selectedMoods,
         'selected_moods': state.selectedMoods,
         'interests': state.travelInterests,
         'travel_interests': state.travelInterests,
@@ -201,7 +208,6 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
             final prefsData = {
               'user_id': user.id,
               'communication_style': state.communicationStyle,
-              'moods': state.selectedMoods,
               'selected_moods': state.selectedMoods,
               'interests': state.travelInterests,
               'travel_interests': state.travelInterests,

@@ -4,10 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/core/providers/notification_provider.dart';
+import 'package:wandermood/core/navigation/root_navigator_key.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_push_intent.dart';
+import 'package:wandermood/features/wishlist/data/plan_met_vriend_service.dart';
+import 'package:wandermood/features/wishlist/domain/plan_met_vriend_flow.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_met_vriend_navigation.dart';
 import 'package:wandermood/features/group_planning/data/mood_match_session_prefs.dart';
 import 'package:wandermood/features/group_planning/domain/group_session_models.dart';
 import 'package:wandermood/features/group_planning/presentation/group_planning_providers.dart';
@@ -120,9 +125,51 @@ Future<void> applyWmFcmDataNavigation(
   BuildContext? snackContext,
 }) async {
   final event = data['event']?.toString() ?? '';
+  final dataType = data['type']?.toString() ?? '';
   final sessionIdRaw = data['session_id']?.toString().trim();
   final sessionId =
       sessionIdRaw != null && sessionIdRaw.isNotEmpty ? sessionIdRaw : null;
+  final inviteIdRaw = data['invite_id']?.toString().trim();
+  final inviteId =
+      inviteIdRaw != null && inviteIdRaw.isNotEmpty ? inviteIdRaw : null;
+
+  if ((dataType == 'plan_met_vriend_invite_reply' ||
+          event == 'plan_met_vriend_invite_reply') &&
+      sessionId != null) {
+    router.push('/wishlist/plan-met-vriend/pending/$sessionId');
+    return;
+  }
+
+  if (dataType == 'plan_met_vriend_invite' ||
+      event == 'plan_met_vriend_invite') {
+    if (sessionId != null && inviteId != null) {
+      try {
+        await PlanMetVriendService(Supabase.instance.client)
+            .joinInviteForDayPicker(
+          sessionId: sessionId,
+          inviteId: inviteId,
+        );
+      } catch (e) {
+        if (kDebugMode) debugPrint('[notifications] pmv join invite: $e');
+      }
+      router.push('/wishlist/day-picker/$sessionId');
+    }
+    return;
+  }
+
+  if ((dataType == 'plan_met_vriend_match' ||
+          event == 'plan_met_vriend_match') &&
+      sessionId != null &&
+      inviteId != null) {
+    await _openPlanMetVriendMatchFromSession(
+      router: router,
+      ref: ref,
+      sessionId: sessionId,
+      inviteId: inviteId,
+    );
+    return;
+  }
+
   final postId =
       data['post_id']?.toString() ?? data['related_post_id']?.toString();
 
@@ -217,6 +264,13 @@ Future<void> applyWmFcmDataNavigation(
     case 'day_counter_proposed':
     case 'day_guest_declined_original':
       if (sessionId != null && sessionId.isNotEmpty) {
+        if (await _tryNavigatePlanMetVriendDayPicker(
+          router,
+          sessionId,
+          inviteId: inviteId,
+        )) {
+          break;
+        }
         await _navigateMoodMatchFromNotificationData(
           router: router,
           ref: ref,
@@ -363,6 +417,81 @@ Future<void> applyWmFcmDataNavigation(
         );
       }
       router.push('/notifications');
+  }
+}
+
+Future<bool> _tryNavigatePlanMetVriendDayPicker(
+  GoRouter router,
+  String sessionId, {
+  String? inviteId,
+}) async {
+  final service = PlanMetVriendService(Supabase.instance.client);
+  final isPmv = await service.isPlanMetVriendSession(sessionId);
+  final invite = inviteId != null && inviteId.isNotEmpty
+      ? await service.fetchInvite(inviteId)
+      : await service.fetchInviteBySession(sessionId);
+  final looksLikePmvInvite = invite != null &&
+      (invite['invitee_user_id'] != null || invite['inviter_user_id'] != null);
+  if (!isPmv && !looksLikePmvInvite) return false;
+  try {
+    await service.ensureInviteeSessionAccess(sessionId, inviteId: inviteId);
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('[notifications] pmv ensureInviteeSessionAccess: $e');
+    }
+  }
+  router.push('/wishlist/day-picker/$sessionId');
+  return true;
+}
+
+Future<void> _openPlanMetVriendMatchFromSession({
+  required GoRouter router,
+  required WidgetRef ref,
+  required String sessionId,
+  required String inviteId,
+}) async {
+  final service = PlanMetVriendService(Supabase.instance.client);
+  final session = await service.fetchSession(sessionId);
+  final invite = await service.fetchInvite(inviteId);
+  if (session == null || invite == null) {
+    router.go('/wishlist');
+    return;
+  }
+  final planned = session['planned_date']?.toString();
+  final d = planned != null ? DateTime.tryParse(planned) : null;
+  if (d == null) {
+    router.go('/wishlist');
+    return;
+  }
+  final inviterId = invite['inviter_user_id'] as String;
+  final uid = Supabase.instance.client.auth.currentUser?.id;
+  final friendId = uid == inviterId
+      ? invite['invitee_user_id'] as String
+      : inviterId;
+  final profile = await service.fetchProfile(friendId);
+  final args = PlanMetVriendMatchArgs(
+    sessionId: sessionId,
+    inviteId: inviteId,
+    friend: PlanMetVriendFriend(
+      userId: friendId,
+      displayName: profile['displayName'] ?? 'Je vriend',
+      username: profile['username'],
+      avatarUrl: profile['avatarUrl'],
+    ),
+    place: PlanMetVriendPlace(
+      placeId: invite['place_id'] as String,
+      placeName: invite['place_name'] as String,
+      placeData: Map<String, dynamic>.from(
+        invite['place_data'] as Map? ?? {},
+      ),
+    ),
+    matchedDate: DateTime(d.year, d.month, d.day),
+  );
+  final ctx = rootNavigatorKey.currentContext;
+  if (ctx != null) {
+    openMatchFound(ctx, args);
+  } else {
+    router.push('/wishlist/match-found', extra: args);
   }
 }
 

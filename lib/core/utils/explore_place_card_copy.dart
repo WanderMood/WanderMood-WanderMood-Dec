@@ -723,6 +723,42 @@ class ExplorePlaceCardCopy {
     return place.isFree || place.priceLevel == 0;
   }
 
+  /// Typical visit length for quick-view chips (matches My Day save heuristics).
+  static int suggestedVisitDurationMinutes(Place place) {
+    for (final type in place.types) {
+      final t = type.toLowerCase();
+      if (['museum', 'tourist_attraction', 'amusement_park'].contains(t)) {
+        return 120;
+      }
+      if (['store', 'shopping_mall'].contains(t)) {
+        return 90;
+      }
+    }
+    return 60;
+  }
+
+  /// First sentence of card body + ` ...` when more copy exists (tap for detail).
+  static String firstSentenceTeaser(String text) {
+    final normalized = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (normalized.isEmpty) return '';
+
+    final sentenceEnd = RegExp(r'[.!?…]\s');
+    final match = sentenceEnd.firstMatch(normalized);
+    String first;
+    if (match != null) {
+      first = normalized.substring(0, match.start + 1).trim();
+    } else {
+      final cap = normalized.length > 140 ? 140 : normalized.length;
+      final chunk = normalized.substring(0, cap);
+      final lastSpace = chunk.lastIndexOf(' ');
+      first = (lastSpace > 40 ? chunk.substring(0, lastSpace) : chunk).trim();
+    }
+    if (first.isEmpty) return '';
+    final hasMore = normalized.length > first.length + 2;
+    return hasMore ? '$first ...' : first;
+  }
+
+  /// Explore cards: `€`, `€€`, or `€€€` (max 3) — not ranges or "price varies".
   static String explorePriceBadgeText(
     Place place,
     AppLocalizations l10n, {
@@ -731,18 +767,36 @@ class ExplorePlaceCardCopy {
     if (_showFreePill(place)) {
       return l10n.dayPlanCardFree;
     }
-    if (place.priceRange != null && place.priceRange!.trim().isNotEmpty) {
-      return place.priceRange!.replaceAll(RegExp(r'[€£\$]'), currency);
-    }
+    return explorePriceSymbolString(place, currency: currency);
+  }
+
+  static bool explorePriceBadgeIsSymbolOnly(Place place) {
+    return !_showFreePill(place);
+  }
+
+  static String explorePriceSymbolString(
+    Place place, {
+    String currency = '€',
+  }) {
     final pl = place.priceLevel;
-    if (pl != null && pl >= 1 && pl <= 4) {
-      return _priceLevelLabel(pl, currency, l10n);
+    var count = 2;
+    if (pl != null && pl >= 1) {
+      count = pl.clamp(1, 3);
+    } else if (place.priceRange != null && place.priceRange!.trim().isNotEmpty) {
+      count = _inferPriceSymbolCount(place.priceRange!) ?? 2;
     }
-    final types = _typesLower(place);
-    if (typesImplyTypicallyPaid(types) && !_showFreePill(place)) {
-      return l10n.placeCardPriceVaries;
+    return List.filled(count, currency).join();
+  }
+
+  static int? _inferPriceSymbolCount(String priceRange) {
+    final t = priceRange.toLowerCase();
+    if (RegExp(r'50\+|>\s*50|above\s*50').hasMatch(t)) return 3;
+    if (RegExp(r'30|40|50').hasMatch(t) && !RegExp(r'5-15|5\s*[-–]\s*15').hasMatch(t)) {
+      return 3;
     }
-    return '';
+    if (RegExp(r'15\s*[-–]\s*30|15-30').hasMatch(t)) return 2;
+    if (RegExp(r'5\s*[-–]\s*15|5-15').hasMatch(t)) return 1;
+    return null;
   }
 
   static Color explorePriceBadgeColor(Place place) {
@@ -771,22 +825,4 @@ class ExplorePlaceCardCopy {
     return const Color(0xFF4A4640);
   }
 
-  static String _priceLevelLabel(
-    int priceLevel,
-    String currency,
-    AppLocalizations l10n,
-  ) {
-    switch (priceLevel) {
-      case 1:
-        return '$currency 5-15';
-      case 2:
-        return '$currency 15-30';
-      case 3:
-        return '$currency 30-50';
-      case 4:
-        return '$currency 50+';
-      default:
-        return l10n.placeCardPriceVaries;
-    }
-  }
 }

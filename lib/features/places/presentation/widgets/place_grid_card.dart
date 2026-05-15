@@ -13,7 +13,7 @@ import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
-import 'package:wandermood/features/wishlist/presentation/widgets/plan_with_friend_icon_button.dart';
+import 'package:wandermood/features/wishlist/presentation/widgets/plan_with_friend_button.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -21,7 +21,6 @@ const Color _wmForest = Color(0xFF2A6049);
 const Color _wmSunset = Color(0xFFE8784A);
 const Color _wmError = Color(0xFFE05C5C);
 const Color _wmDusk = Color(0xFF4A4640);
-const Color _wmForestTint = Color(0xFFEBF3EE);
 const Color _wmStone = Color(0xFF8C8780);
 
 /// A compact grid card for displaying places in a grid layout
@@ -374,8 +373,6 @@ class PlaceGridCard extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        PlanWithFriendIconButton(place: place, size: 28),
                       ],
                     ),
                   ),
@@ -384,12 +381,9 @@ class PlaceGridCard extends ConsumerWidget {
               ),
             ),
 
-            // Title + rating on separate lines (full-width name → less ugly truncation).
-            // Body is top-aligned in a scroll view so we do not stretch content to fill
-            // the whole flex region (that created tall bands of empty white).
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 5, 8, 2),
+                padding: const EdgeInsets.fromLTRB(8, 5, 8, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -443,122 +437,112 @@ class PlaceGridCard extends ConsumerWidget {
                       ),
                     ],
                     const SizedBox(height: 3),
+                    PlaceCardMoodyDescription(
+                      place: place,
+                      maxLines: 1,
+                      paddingTop: 0,
+                      useCardStackLayout: false,
+                      hookLineOnly: true,
+                      cacheOnly: !allowVisibilityEnrichment,
+                      textStyle: GoogleFonts.poppins(
+                        fontSize: 10.5,
+                        height: 1.28,
+                        color: _wmDusk,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    _buildGridMetaPills(
+                      l10n: l10n,
+                      explorePriceLabel: explorePriceLabel,
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            ),
+            if (onAddToMyDayTap != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
+                child: Row(
+                  children: [
                     Expanded(
-                      child: SingleChildScrollView(
-                        physics: const ClampingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PlaceCardMoodyDescription(
-                              place: place,
-                              maxLines: 3,
-                              paddingTop: 0,
-                              useCardStackLayout: false,
-                              cacheOnly: !allowVisibilityEnrichment,
-                              textStyle: GoogleFonts.poppins(
-                                fontSize: 10.5,
-                                height: 1.32,
-                                color: _wmDusk,
+                      child: PlanWithFriendButton(
+                        place: place,
+                        height: 30,
+                        labelOverride: l10n.planMetVriendCtaGrid,
+                        onAddToMyDay: onAddToMyDayTap,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Material(
+                        color: _wmForest,
+                        borderRadius: BorderRadius.circular(999),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(999),
+                          onTap: onAddToMyDayTap,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 7),
+                            child: Center(
+                              child: Text(
+                                _gridAddToMyDayLabel(l10n),
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Builder(
-                              builder: (context) {
-                                final bestTime =
-                                    ExplorePlaceCardCopy.bestTimePillForExploreCard(
-                                  place,
-                                  l10n,
-                                );
-                                return Wrap(
-                                  spacing: 3,
-                                  runSpacing: 3,
-                                  crossAxisAlignment:
-                                      WrapCrossAlignment.center,
-                                  children: [
-                                    if (bestTime != null)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: _wmForestTint,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: _wmParchment,
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          bestTime,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 9,
-                                            color: _wmForest,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    if (_calculateDistance() != null)
-                                      _buildCategoryPill(
-                                        icon: Icons.directions_walk,
-                                        label: _calculateDistance()!,
-                                        color: _wmForest,
-                                      ),
-                                    if (explorePriceLabel.isNotEmpty)
-                                      _buildCategoryPill(
-                                        icon: _getCurrencyIcon(),
-                                        label: explorePriceLabel,
-                                        color: ExplorePlaceCardCopy
-                                            .explorePriceBadgeColor(place),
-                                      ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            if (onAddToMyDayTap != null)
-              Material(
-                color: _wmForest,
-                child: InkWell(
-                  onTap: onAddToMyDayTap,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add, color: Colors.white, size: 15),
-                        const SizedBox(width: 5),
-                        Expanded(
-                          child: Text(
-                            l10n.dayPlanAddToMyDay,
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
+  }
+
+  /// Grid: distance + price only (best-time pill dropped to avoid CTA overlap).
+  Widget _buildGridMetaPills({
+    required AppLocalizations l10n,
+    required String explorePriceLabel,
+  }) {
+    final distance = _calculateDistance();
+    final pills = <Widget>[];
+    if (distance != null) {
+      pills.add(
+        _buildCategoryPill(
+          icon: Icons.directions_walk,
+          label: distance,
+          color: _wmForest,
+        ),
+      );
+    }
+    if (explorePriceLabel.isNotEmpty) {
+      pills.add(
+        _buildCategoryPill(
+          icon: _getCurrencyIcon(),
+          label: explorePriceLabel,
+          color: ExplorePlaceCardCopy.explorePriceBadgeColor(place),
+        ),
+      );
+    }
+    if (pills.isEmpty) return const SizedBox.shrink();
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: pills,
+    );
+  }
+
+  static String _gridAddToMyDayLabel(AppLocalizations l10n) {
+    return l10n.dayPlanCardAddToMyDay.replaceFirst(RegExp(r'^\+\s*'), '');
   }
 
   // Build category pill with icon and optional label - overflow protected

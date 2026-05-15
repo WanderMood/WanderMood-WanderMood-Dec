@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,14 +20,26 @@ import 'package:wandermood/features/group_planning/presentation/group_planning_p
 import 'package:wandermood/features/group_planning/presentation/group_planning_ui.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:wandermood/core/providers/preferences_provider.dart';
+import 'package:wandermood/features/wishlist/data/plan_met_vriend_service.dart';
+import 'package:wandermood/features/wishlist/domain/plan_met_vriend_flow.dart';
+import 'package:wandermood/features/profile/domain/providers/current_user_profile_provider.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_met_vriend_navigation.dart';
+import 'package:wandermood/features/wishlist/presentation/widgets/plan_invite_note_strip.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 
 /// Change 3 — Day picker screen.
 /// OWNER picks the shared day; GUEST waits and then confirms.
 class GroupPlanningDayPickerScreen extends ConsumerStatefulWidget {
-  const GroupPlanningDayPickerScreen({super.key, required this.sessionId});
+  const GroupPlanningDayPickerScreen({
+    super.key,
+    required this.sessionId,
+    this.planMetVriendMode = false,
+  });
 
   final String sessionId;
+
+  /// Plan met vriend: date-only ping-pong (no moods, no time slots, no AI plan).
+  final bool planMetVriendMode;
 
   @override
   ConsumerState<GroupPlanningDayPickerScreen> createState() =>
@@ -60,6 +73,19 @@ class _GroupPlanningDayPickerScreenState
 
   /// Latest `group_plans.plan_data` (for `dayProposal` ping-pong recovery).
   Map<String, dynamic>? _planData;
+  late bool _planMetVriend;
+  Map<String, dynamic>? _pmvSessionMeta;
+  /// Other participant avatar when [GroupMemberView.avatarUrl] is empty.
+  String? _otherMemberAvatarUrl;
+  /// Invite peer (often not in [group_session_members] until they open the link).
+  String? _invitePeerUserId;
+  String? _invitePeerFullName;
+  String? _invitePeerUsername;
+  String? _invitePeerAvatarUrl;
+  String? _pmvInviteId;
+  String? _pmvInviteeId;
+  String? _pmvInviterMessage;
+  String? _pmvInviteeReply;
   /// Guest: ISO date of the owner's proposal being answered (for counter copy).
   String? _pendingOwnerProposalIso;
 
@@ -84,6 +110,7 @@ class _GroupPlanningDayPickerScreenState
   @override
   void initState() {
     super.initState();
+    _planMetVriend = widget.planMetVriendMode;
     _ownerDayWheelController = FixedExtentScrollController(initialItem: 0);
     _pulse = AnimationController(
       vsync: this,
@@ -110,6 +137,16 @@ class _GroupPlanningDayPickerScreenState
     }
     try {
       final repo = ref.read(groupPlanningRepositoryProvider);
+      final pmvService = PlanMetVriendService(Supabase.instance.client);
+      if (widget.planMetVriendMode) {
+        try {
+          await pmvService.ensureInviteeSessionAccess(widget.sessionId);
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('[DayPicker] pmv ensureInviteeSessionAccess: $e');
+          }
+        }
+      }
       final results = await Future.wait([
         repo.fetchSession(widget.sessionId),
         repo.fetchMembersWithProfiles(widget.sessionId),
@@ -118,6 +155,23 @@ class _GroupPlanningDayPickerScreenState
       final session = results[0] as GroupSessionRow;
       final members = results[1] as List<GroupMemberView>;
       final plan = results[2] as GroupPlanRow?;
+      if (!widget.planMetVriendMode) {
+        final isPmv = await pmvService.isPlanMetVriendSession(widget.sessionId);
+        if (isPmv) _planMetVriend = true;
+      }
+      if (_planMetVriend) {
+        _pmvSessionMeta =
+            await pmvService.fetchSessionMeta(widget.sessionId);
+        final invite =
+            await pmvService.fetchInviteBySession(widget.sessionId);
+        if (invite != null) {
+          _pmvInviteId = invite['id']?.toString();
+          _pmvInviteeId = invite['invitee_user_id']?.toString();
+          _pmvInviterMessage = PlanMetVriendService.inviteNoteText(invite);
+          _pmvInviteeReply =
+              PlanMetVriendService.inviteNoteText(invite, reply: true);
+        }
+      }
       final uid = Supabase.instance.client.auth.currentUser?.id;
       final isOwner = session.createdBy == uid;
       Map<String, dynamic>? planData;
@@ -126,6 +180,12 @@ class _GroupPlanningDayPickerScreenState
           Map<String, dynamic>.from(plan.planData),
         );
       }
+      final peer = await _resolveInvitePeerProfile(
+        uid: uid,
+        members: members,
+        planData: planData,
+        pmvService: pmvService,
+      );
 
       if (!mounted) return;
       var ownerWaiting = false;
@@ -148,6 +208,11 @@ class _GroupPlanningDayPickerScreenState
         _members = members;
         _planData = planData;
         _isOwner = isOwner;
+        _otherMemberAvatarUrl = peer.avatarUrl;
+        _invitePeerUserId = peer.userId;
+        _invitePeerFullName = peer.fullName;
+        _invitePeerUsername = peer.username;
+        _invitePeerAvatarUrl = peer.avatarUrl;
         _loading = false;
         _selectedDayIndex = nextSelectedDay;
         _selectedSlot = nextSelectedSlot;
@@ -200,6 +265,61 @@ class _GroupPlanningDayPickerScreenState
     final dt = DateTime.tryParse(iso);
     if (dt == null) return iso;
     return DateFormat('EEE d MMM').format(dt);
+  }
+
+  void _goAfterDayConfirmed() {
+    if (!mounted) return;
+    if (_planMetVriend) {
+      unawaited(_openPlanMetVriendMatchFound());
+    } else {
+      _goAfterDayConfirmed();
+    }
+  }
+
+  Future<void> _openPlanMetVriendMatchFound() async {
+    final meta = _pmvSessionMeta;
+    final planned = (meta?['planned_date'] ?? _session?.plannedDate ?? '')
+        .toString()
+        .trim();
+    final d = DateTime.tryParse(planned);
+    if (d == null || !mounted) return;
+
+    final service = PlanMetVriendService(Supabase.instance.client);
+    final invite = await service.fetchInviteBySession(widget.sessionId);
+    if (invite == null || !mounted) return;
+
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final inviterId = invite['inviter_user_id'] as String;
+    final inviteeId = invite['invitee_user_id'] as String;
+    final friendId = uid == inviterId ? inviteeId : inviterId;
+    final profile = await service.fetchProfile(friendId);
+
+    final place = PlanMetVriendPlace(
+      placeId: (meta?['anchor_place_id'] ?? invite['place_id']).toString(),
+      placeName: (meta?['anchor_place_name'] ?? invite['place_name']).toString(),
+      placeData: Map<String, dynamic>.from(
+        meta?['anchor_place_data'] as Map? ??
+            invite['place_data'] as Map? ??
+            {},
+      ),
+    );
+
+    if (!mounted) return;
+    openMatchFound(
+      context,
+      PlanMetVriendMatchArgs(
+        sessionId: widget.sessionId,
+        inviteId: invite['id'] as String,
+        friend: PlanMetVriendFriend(
+          userId: friendId,
+          displayName: profile['displayName'] ?? 'Je vriend',
+          username: profile['username'],
+          avatarUrl: profile['avatarUrl'],
+        ),
+        place: place,
+        matchedDate: DateTime(d.year, d.month, d.day),
+      ),
+    );
   }
 
   Future<void> _recoverDayProposalIfNeeded() async {
@@ -284,7 +404,7 @@ class _GroupPlanningDayPickerScreenState
     final status = session.status;
     if (status == 'day_confirmed' || status == 'generating') {
       if (!mounted) return;
-      context.go('/group-planning/match-loading/${widget.sessionId}');
+      _goAfterDayConfirmed();
       return;
     }
     if (status != 'day_counter_proposed') return;
@@ -379,8 +499,7 @@ class _GroupPlanningDayPickerScreenState
                 return;
               }
               if (event == 'day_accepted') {
-                context.go(
-                    '/group-planning/match-loading/${widget.sessionId}');
+                _goAfterDayConfirmed();
                 return;
               }
               if (event == 'plan_ready' &&
@@ -430,7 +549,7 @@ class _GroupPlanningDayPickerScreenState
             if (nextSession.status == 'day_confirmed' ||
                 nextSession.status == 'generating') {
               if (!mounted) return;
-              context.go('/group-planning/match-loading/${widget.sessionId}');
+              _goAfterDayConfirmed();
               return;
             }
 
@@ -492,7 +611,7 @@ class _GroupPlanningDayPickerScreenState
     final status = session.status;
     if (status == 'day_confirmed' || status == 'generating') {
       if (!mounted) return;
-      context.go('/group-planning/match-loading/${widget.sessionId}');
+      _goAfterDayConfirmed();
       return;
     }
     if (status != 'day_proposed') return;
@@ -549,12 +668,264 @@ class _GroupPlanningDayPickerScreenState
     return null;
   }
 
+  /// Session member or invite peer — invitee is often not a member until they open the link.
+  GroupMemberView? _otherParticipantView() {
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    if (uid != null) {
+      for (final m in _members) {
+        if (m.member.userId != uid) return m;
+      }
+    }
+    final peerId = _invitePeerUserId?.trim();
+    if (peerId == null || peerId.isEmpty) return null;
+    return GroupMemberView(
+      member: GroupMemberRow(
+        id: 'invite-peer',
+        sessionId: widget.sessionId,
+        userId: peerId,
+      ),
+      fullName: _invitePeerFullName,
+      username: _invitePeerUsername,
+      avatarUrl: _invitePeerAvatarUrl,
+    );
+  }
+
+  String _otherParticipantFirstName(AppLocalizations l10n) {
+    final other = _otherParticipantView();
+    if (other != null) {
+      final name = _firstName(other.displayName);
+      if (name != '?') return name;
+    }
+    return l10n.moodMatchFriendThey;
+  }
+
+  Future<({
+    String? userId,
+    String? fullName,
+    String? username,
+    String? avatarUrl,
+  })> _resolveInvitePeerProfile({
+    required String? uid,
+    required List<GroupMemberView> members,
+    required Map<String, dynamic>? planData,
+    required PlanMetVriendService pmvService,
+  }) async {
+    if (uid == null) {
+      return (userId: null, fullName: null, username: null, avatarUrl: null);
+    }
+
+    for (final m in members) {
+      if (m.member.userId == uid) continue;
+      final fromMember = m.avatarUrl?.trim();
+      if (fromMember != null && fromMember.isNotEmpty) {
+        return (
+          userId: m.member.userId,
+          fullName: m.fullName,
+          username: m.username,
+          avatarUrl: fromMember,
+        );
+      }
+    }
+
+    Map<String, dynamic>? invite;
+    final rawInvite = planData?['planMetVriendInvite'];
+    if (rawInvite is Map) {
+      invite = Map<String, dynamic>.from(rawInvite);
+    } else {
+      invite = await pmvService.fetchInviteBySession(widget.sessionId);
+    }
+
+    if (invite != null) {
+      final inviterId = invite['inviter_user_id']?.toString();
+      final inviteeId = invite['invitee_user_id']?.toString();
+      final isInviter = uid == inviterId;
+      final otherId = isInviter ? inviteeId : inviterId;
+      if (otherId != null && otherId.isNotEmpty) {
+        var avatar = isInviter
+            ? (invite['invitee_avatar_url'] as String?)?.trim()
+            : null;
+        var fullName = isInviter
+            ? (invite['invitee_display_name'] as String?)?.trim()
+            : null;
+        var username = isInviter
+            ? (invite['invitee_username'] as String?)?.trim()
+            : null;
+
+        if (avatar == null || avatar.isEmpty ||
+            fullName == null || fullName.isEmpty) {
+          final profile = await pmvService.fetchProfile(otherId);
+          avatar ??= profile['avatarUrl']?.trim();
+          fullName ??= profile['displayName']?.trim();
+          username ??= profile['username']?.trim();
+        }
+
+        for (final m in members) {
+          if (m.member.userId == otherId) {
+            avatar ??= m.avatarUrl?.trim();
+            fullName ??= m.fullName?.trim();
+            username ??= m.username?.trim();
+            break;
+          }
+        }
+
+        return (
+          userId: otherId,
+          fullName: fullName,
+          username: username,
+          avatarUrl: avatar,
+        );
+      }
+    }
+
+    for (final m in members) {
+      if (m.member.userId == uid) continue;
+      final profile = await pmvService.fetchProfile(m.member.userId);
+      final avatar = profile['avatarUrl']?.trim();
+      return (
+        userId: m.member.userId,
+        fullName: m.fullName ?? profile['displayName']?.trim(),
+        username: m.username ?? profile['username']?.trim(),
+        avatarUrl: avatar,
+      );
+    }
+
+    return (userId: null, fullName: null, username: null, avatarUrl: null);
+  }
+
   GroupMemberView? _myMember() {
     final uid = Supabase.instance.client.auth.currentUser?.id;
     for (final m in _members) {
       if (m.member.userId == uid) return m;
     }
     return null;
+  }
+
+  String? _resolvedMeAvatarUrl() {
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
+    final fromProfile = profile?.avatarUrl?.trim();
+    if (fromProfile != null && fromProfile.isNotEmpty) return fromProfile;
+    return _myMember()?.avatarUrl?.trim();
+  }
+
+  String _resolvedMeFallbackLabel() {
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
+    final name = profile?.fullName?.trim();
+    if (name != null && name.isNotEmpty) return name[0].toUpperCase();
+    final user = profile?.username?.trim();
+    if (user != null && user.isNotEmpty) {
+      final u = user.startsWith('@') ? user.substring(1) : user;
+      if (u.isNotEmpty) return u[0].toUpperCase();
+    }
+    final me = _myMember();
+    if (me != null) return _firstName(me.displayName).substring(0, 1);
+    return 'J';
+  }
+
+  String? _resolvedFriendAvatarUrl(GroupMemberView? friend) {
+    final fromMember = friend?.avatarUrl?.trim();
+    if (fromMember != null && fromMember.isNotEmpty) return fromMember;
+    final cached = _otherMemberAvatarUrl?.trim();
+    if (cached != null && cached.isNotEmpty) return cached;
+    return _invitePeerAvatarUrl?.trim();
+  }
+
+  String _resolvedFriendFallbackLabel(GroupMemberView? friend) {
+    if (friend != null) {
+      final initial = _firstName(friend.displayName);
+      if (initial != '?' && initial.isNotEmpty) {
+        return initial.substring(0, 1).toUpperCase();
+      }
+    }
+    final peerName = _invitePeerFullName?.trim();
+    if (peerName != null && peerName.isNotEmpty) {
+      return peerName[0].toUpperCase();
+    }
+    final peerUser = _invitePeerUsername?.trim();
+    if (peerUser != null && peerUser.isNotEmpty) {
+      final u = peerUser.startsWith('@') ? peerUser.substring(1) : peerUser;
+      if (u.isNotEmpty) return u[0].toUpperCase();
+    }
+    return '?';
+  }
+
+  Future<void> _reloadPmvInvite() async {
+    final invite = await PlanMetVriendService(Supabase.instance.client)
+        .fetchInviteBySession(widget.sessionId);
+    if (!mounted || invite == null) return;
+    setState(() {
+      _pmvInviteId = invite['id']?.toString();
+      _pmvInviterMessage = PlanMetVriendService.inviteNoteText(invite);
+      _pmvInviteeReply =
+          PlanMetVriendService.inviteNoteText(invite, reply: true);
+    });
+  }
+
+  Widget _buildPmvInviteNotes(AppLocalizations l10n, {bool compact = false}) {
+    if (!_planMetVriend) return const SizedBox.shrink();
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final isInvitee = uid != null && uid == _pmvInviteeId;
+    final hasInviterNote = _pmvInviterMessage?.trim().isNotEmpty ?? false;
+    final hasReply = _pmvInviteeReply?.trim().isNotEmpty ?? false;
+    if (!hasInviterNote && !hasReply && !isInvitee) {
+      return const SizedBox.shrink();
+    }
+
+    final owner = _ownerMemberView();
+    final guest = _guestMember();
+    final inviterName = _isOwner
+        ? (ref.watch(currentUserProfileProvider).valueOrNull?.fullName?.trim() ??
+            owner?.fullName?.trim() ??
+            _firstName(owner?.displayName ?? ''))
+        : (owner != null
+            ? _firstName(owner.displayName)
+            : _otherParticipantFirstName(l10n));
+    final inviterAvatar = _isOwner
+        ? _resolvedMeAvatarUrl()
+        : _resolvedFriendAvatarUrl(owner);
+    final inviteeDisplayName = guest != null
+        ? _firstName(guest.displayName)
+        : _otherParticipantFirstName(l10n);
+
+    final inviteId = _pmvInviteId;
+    return Padding(
+      padding: EdgeInsets.only(bottom: compact ? 8 : 14),
+      child: PlanInviteNoteStrip(
+        inviterName: inviterName,
+        inviterAvatarUrl: inviterAvatar,
+        inviterMessage: _pmvInviterMessage,
+        inviteeName: inviteeDisplayName,
+        inviteeReply: _pmvInviteeReply,
+        compact: compact,
+        canReply: isInvitee && inviteId != null,
+        onSaveReply: isInvitee && inviteId != null
+            ? (text) async {
+                await PlanMetVriendService(Supabase.instance.client)
+                    .saveInviteReply(
+                  inviteId: inviteId,
+                  sessionId: widget.sessionId,
+                  reply: text,
+                );
+                await _reloadPmvInvite();
+              }
+            : null,
+      ),
+    );
+  }
+
+  Widget _teamHero({
+    GroupMemberView? me,
+    GroupMemberView? friend,
+  }) {
+    final resolvedMe = me ?? _myMember();
+    final resolvedFriend = friend ?? _otherParticipantView();
+    return _DayPickerTeamHero(
+      me: resolvedMe,
+      friend: resolvedFriend,
+      meAvatarUrl: _resolvedMeAvatarUrl(),
+      friendAvatarUrl: _resolvedFriendAvatarUrl(resolvedFriend),
+      meFallbackLabel: _resolvedMeFallbackLabel(),
+      friendFallbackLabel: _resolvedFriendFallbackLabel(resolvedFriend),
+    );
   }
 
   DateTime _dayFromIndex(int i) {
@@ -658,7 +1029,7 @@ class _GroupPlanningDayPickerScreenState
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _DayPickerTeamHero(me: me, friend: guest),
+                      _teamHero(me: me, friend: guest),
                       const SizedBox(height: 18),
                       Container(
                         height: 188,
@@ -795,9 +1166,6 @@ class _GroupPlanningDayPickerScreenState
     try {
       final repo = ref.read(groupPlanningRepositoryProvider);
       final iso = _isoDate(_selectedDayIndex!);
-      // Slot is now OPTIONAL — when present, Moody plans only that part of
-      // the day. When null, Moody plans the whole day (morning + afternoon
-      // + evening).
       final slot = _selectedSlot;
 
       // Persist locally first so the flow continues even when the DB write
@@ -1009,7 +1377,7 @@ class _GroupPlanningDayPickerScreenState
         await repo.clearProposedSlot(widget.sessionId);
       } catch (_) {}
       if (!mounted) return;
-      context.go('/group-planning/match-loading/${widget.sessionId}');
+      _goAfterDayConfirmed();
     } else if (choice == 'counter' && mounted) {
       await _openOwnerDaySlotSheet(l10n);
       if (mounted && _selectedDayIndex != null) {
@@ -1295,7 +1663,12 @@ class _GroupPlanningDayPickerScreenState
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  l10n.moodMatchGuestConfirmTitleWithTime(dayLabel, timeLabel),
+                  _planMetVriend
+                      ? dayLabel
+                      : l10n.moodMatchGuestConfirmTitleWithTime(
+                          dayLabel,
+                          timeLabel,
+                        ),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
@@ -1306,7 +1679,13 @@ class _GroupPlanningDayPickerScreenState
               ),
               const SizedBox(height: 14),
               Text(
-                l10n.moodMatchGuestConfirmBody(ownerName, dayLabel, timeLabel),
+                _planMetVriend
+                    ? '$ownerName stelt $dayLabel voor. Past dit voor jullie?'
+                    : l10n.moodMatchGuestConfirmBody(
+                        ownerName,
+                        dayLabel,
+                        timeLabel,
+                      ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
@@ -1315,6 +1694,10 @@ class _GroupPlanningDayPickerScreenState
                   height: 1.35,
                 ),
               ),
+              if (_planMetVriend) ...[
+                const SizedBox(height: 14),
+                _buildPmvInviteNotes(l10n, compact: true),
+              ],
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -1371,7 +1754,7 @@ class _GroupPlanningDayPickerScreenState
           );
         } catch (_) {}
         if (!mounted) return;
-        context.go('/group-planning/match-loading/${widget.sessionId}');
+        _goAfterDayConfirmed();
       } else if (confirmed == false) {
         await _notifyOwnerGuestDeclinedOriginal(
           proposedDate: isoDate,
@@ -1526,30 +1909,32 @@ class _GroupPlanningDayPickerScreenState
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Text(
-                    l10n.moodMatchTimePickerTitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: GroupPlanningUi.charcoal,
+                  ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      l10n.moodMatchTimePickerTitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: GroupPlanningUi.charcoal,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.moodMatchDayPickerTimeHint,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: GroupPlanningUi.stone,
-                      height: 1.35,
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.moodMatchDayPickerTimeHint,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: GroupPlanningUi.stone,
+                        height: 1.35,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWholeDayAndSlotPickers(
-                    l10n: l10n,
-                    selectedSlot: slot,
-                    onSlotChanged: (next) => setSheet(() => slot = next),
-                  ),
+                    const SizedBox(height: 12),
+                    _buildWholeDayAndSlotPickers(
+                      l10n: l10n,
+                      selectedSlot: slot,
+                      onSlotChanged: (next) => setSheet(() => slot = next),
+                    ),
+                  ],
                   const SizedBox(height: 18),
                   GroupPlanningUi.primaryCta(
                     label: l10n.moodMatchGuestCounterSendCta,
@@ -1695,9 +2080,15 @@ class _GroupPlanningDayPickerScreenState
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => context.go('/group-planning'),
+                      onPressed: () {
+                        if (_planMetVriend) {
+                          Navigator.of(context).pop();
+                        } else {
+                          context.go('/group-planning');
+                        }
+                      },
                       child: Text(
-                        l10n.moodMatchTitle,
+                        _planMetVriend ? 'Sluiten' : l10n.moodMatchTitle,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: GroupPlanningUi.stone,
@@ -1732,8 +2123,8 @@ class _GroupPlanningDayPickerScreenState
     Widget creamBody,
   ) {
     final topInset = MediaQuery.paddingOf(context).top;
-    final title = _isOwner
-        ? l10n.moodMatchDayPickerStep
+    final title = _planMetVriend
+        ? 'Jullie datum'
         : l10n.moodMatchDayPickerStep;
 
     return Column(
@@ -1750,11 +2141,14 @@ class _GroupPlanningDayPickerScreenState
                   size: 18,
                   color: Colors.white70,
                 ),
-                // Always exit to the Mood Match hub instead of popping back
-                // into the lobby. The lobby auto-resumes any in-progress
-                // session and would immediately bounce the user right back
-                // here (the "pill flicker → stuck on the same screen" bug).
-                onPressed: () => context.go('/group-planning'),
+                onPressed: () {
+                  if (_planMetVriend) {
+                    Navigator.of(context).pop();
+                  } else {
+                    // Mood Match: hub avoids lobby bounce ("pill flicker").
+                    context.go('/group-planning');
+                  }
+                },
               ),
               Expanded(
                 child: Text(
@@ -1810,10 +2204,8 @@ class _GroupPlanningDayPickerScreenState
   }
 
   Widget _buildOwnerWaitingBody(AppLocalizations l10n, String communicationStyle) {
-    final guest = _guestMember();
-    final guestName = guest != null
-        ? _firstName(guest.displayName)
-        : l10n.moodMatchFriendThey;
+    final guest = _otherParticipantView();
+    final guestName = _otherParticipantFirstName(l10n);
     final me = _myMember();
     return SafeArea(
       top: false,
@@ -1829,7 +2221,8 @@ class _GroupPlanningDayPickerScreenState
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _DayPickerTeamHero(me: me, friend: guest),
+                      _teamHero(me: me, friend: guest),
+                      _buildPmvInviteNotes(l10n),
                       const SizedBox(height: 24),
                       Text(
                         _ownerWaitingTitleByStyle(guestName, communicationStyle),
@@ -1867,10 +2260,8 @@ class _GroupPlanningDayPickerScreenState
   }
 
   Widget _buildOwnerBody(AppLocalizations l10n) {
-    final guest = _guestMember();
-    final guestName = guest != null
-        ? _firstName(guest.displayName)
-        : l10n.moodMatchFriendThey;
+    final guest = _otherParticipantView();
+    final guestName = _otherParticipantFirstName(l10n);
     final me = _myMember();
     final myName = me != null ? _firstName(me.displayName) : 'You';
     final communicationStyle = ref.watch(preferencesProvider).communicationStyle;
@@ -1892,10 +2283,13 @@ class _GroupPlanningDayPickerScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _DayPickerTeamHero(me: me, friend: guest),
+                    _teamHero(me: me, friend: guest),
+                    _buildPmvInviteNotes(l10n),
                     const SizedBox(height: 18),
                     Text(
-                      _ownerDateTitleByStyle(l10n, communicationStyle),
+                      _planMetVriend
+                          ? 'Kies jullie datum'
+                          : _ownerDateTitleByStyle(l10n, communicationStyle),
                       style: GoogleFonts.poppins(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
@@ -1905,7 +2299,12 @@ class _GroupPlanningDayPickerScreenState
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      _ownerDateSubtitleByStyle(guestName, communicationStyle),
+                      _planMetVriend
+                          ? 'Jij stelt een dag voor — $guestName kan bevestigen of een ander voorstel doen.'
+                          : _ownerDateSubtitleByStyle(
+                              guestName,
+                              communicationStyle,
+                            ),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: GroupPlanningUi.stone,
@@ -1928,13 +2327,13 @@ class _GroupPlanningDayPickerScreenState
                             Row(
                               children: [
                                 _NoteAvatar(
-                                    url: me?.avatarUrl,
+                                    url: _resolvedMeAvatarUrl(),
                                     fallback: myName,
                                     ring: const Color(0xFFE8784A)),
                                 Transform.translate(
                                   offset: const Offset(-8, 0),
                                   child: _NoteAvatar(
-                                      url: guest?.avatarUrl,
+                                      url: _resolvedFriendAvatarUrl(guest),
                                       fallback: guestName,
                                       ring: GroupPlanningUi.forest),
                                 ),
@@ -2206,7 +2605,8 @@ class _GroupPlanningDayPickerScreenState
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _DayPickerTeamHero(me: me, friend: owner),
+                      _teamHero(me: me, friend: owner),
+                      _buildPmvInviteNotes(l10n),
                       const SizedBox(height: 24),
                       Text(
                         _guestWaitingHeadlineByStyle(ownerName, communicationStyle),
@@ -2276,17 +2676,32 @@ class _GroupPlanningDayPickerScreenState
 /// Top-of-screen team hero: [me] — [Moody] — [match] reinforces the "we're in
 /// this together" feel across every Mood Match step.
 class _DayPickerTeamHero extends StatelessWidget {
-  const _DayPickerTeamHero({this.me, this.friend});
+  const _DayPickerTeamHero({
+    this.me,
+    this.friend,
+    this.meAvatarUrl,
+    this.friendAvatarUrl,
+    this.meFallbackLabel = 'J',
+    this.friendFallbackLabel = '?',
+  });
 
   final GroupMemberView? me;
   final GroupMemberView? friend;
+  final String? meAvatarUrl;
+  final String? friendAvatarUrl;
+  final String meFallbackLabel;
+  final String friendFallbackLabel;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _DayPickerAvatar(member: me, fallbackLabel: 'J'),
+        _DayPickerAvatar(
+          member: me,
+          avatarUrl: meAvatarUrl,
+          fallbackLabel: meFallbackLabel,
+        ),
         const SizedBox(width: 10),
         const SizedBox(
           width: 52,
@@ -2296,7 +2711,11 @@ class _DayPickerTeamHero extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        _DayPickerAvatar(member: friend, fallbackLabel: '?'),
+        _DayPickerAvatar(
+          member: friend,
+          avatarUrl: friendAvatarUrl,
+          fallbackLabel: friendFallbackLabel,
+        ),
       ],
     );
   }
@@ -2306,16 +2725,23 @@ class _DayPickerAvatar extends StatelessWidget {
   const _DayPickerAvatar({
     required this.member,
     required this.fallbackLabel,
+    this.avatarUrl,
   });
 
   final GroupMemberView? member;
+  final String? avatarUrl;
   final String fallbackLabel;
 
   @override
   Widget build(BuildContext context) {
-    final avatar = member?.avatarUrl;
+    final resolved = avatarUrl?.trim();
+    final fromMember = member?.avatarUrl?.trim();
+    final url = (resolved != null && resolved.isNotEmpty)
+        ? resolved
+        : fromMember;
     final name = member?.displayName ?? '';
-    final initial = name.isNotEmpty ? name[0].toUpperCase() : fallbackLabel;
+    final initial =
+        name.isNotEmpty ? name[0].toUpperCase() : fallbackLabel;
 
     return Container(
       width: 62,
@@ -2333,9 +2759,9 @@ class _DayPickerAvatar extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: avatar != null && avatar.isNotEmpty
+        child: url != null && url.isNotEmpty
             ? WmNetworkImage(
-                avatar,
+                url,
                 width: 62,
                 height: 62,
                 fit: BoxFit.cover,

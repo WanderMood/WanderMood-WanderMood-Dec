@@ -862,13 +862,17 @@ class _GroupPlanningHubScreenState extends ConsumerState<GroupPlanningHubScreen>
                           boxShadow: [
                             BoxShadow(
                               color: const Color(0xFFBFD8FF)
-                                  .withValues(alpha: 0.55),
-                              blurRadius: 28,
-                              spreadRadius: 2,
+                                  .withValues(alpha: 0.2),
+                              blurRadius: 14,
+                              spreadRadius: 0,
                             ),
                           ],
                         ),
-                        child: const MoodyCharacter(size: 56, mood: 'happy'),
+                        child: const MoodyCharacter(
+                          size: 56,
+                          mood: 'happy',
+                          glowOpacityScale: 0.42,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),

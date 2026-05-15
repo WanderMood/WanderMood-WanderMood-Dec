@@ -241,6 +241,7 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
                 compactBodyMaxLines: bodyLines,
                 compactTitleFontSize: structuredTitleFontSize,
                 compactBodyFontSize: structuredBodyFontSize,
+                exploreTeaserBody: true,
               ),
             ],
           ),
@@ -325,13 +326,17 @@ class PlaceCardMoodyDescription extends ConsumerWidget {
         ),
       );
     }
+    final plainBody = displayPlain(plain);
+    final teaser = useCardStackLayout
+        ? ExplorePlaceCardCopy.firstSentenceTeaser(plainBody)
+        : plainBody;
     return Padding(
       padding: EdgeInsets.only(top: paddingTop),
       child: Text(
-        displayPlain(plain),
+        teaser,
         style: textStyle,
-        maxLines: lineCap,
-        overflow: TextOverflow.ellipsis,
+        maxLines: useCardStackLayout ? null : lineCap,
+        overflow: useCardStackLayout ? null : TextOverflow.ellipsis,
       ),
     );
   }

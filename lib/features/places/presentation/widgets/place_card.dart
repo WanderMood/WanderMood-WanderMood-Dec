@@ -25,7 +25,7 @@ import 'package:wandermood/core/utils/place_card_photo_index.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
-import 'package:wandermood/features/wishlist/presentation/widgets/plan_with_friend_icon_button.dart';
+import 'package:wandermood/features/wishlist/presentation/widgets/plan_with_friend_button.dart';
 
 // WM v2 tokens (aligned with My Day cards)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -42,9 +42,9 @@ const Color _wmError = Color(0xFFE05C5C);
 const double _kPlaceCardRadius = 16;
 const double _kPlaceCardTopAccentWidth = 3;
 
-/// Full-width "Add to My Day" — slightly taller than minimum for easier taps.
-const double _kPlaceCardAddToMyDayCtaHeight = 48;
-const double _kPlaceCardAddToMyDayCtaRadius = 24;
+/// Side-by-side CTAs on Explore cards (Plan met vriend + Mijn dag).
+const double _kPlaceCardAddToMyDayCtaHeight = 42;
+const double _kPlaceCardAddToMyDayCtaRadius = 21;
 
 /// [compactMoodCopy]: reserve two title lines so pills + CTA align across carousel cards.
 const double _kPlaceCardCompactTitleSlotHeight = 16.0 * 1.3 * 2;
@@ -52,6 +52,36 @@ const double _kPlaceCardCompactTitleSlotHeight = 16.0 * 1.3 * 2;
 /// Matches [PlaceCardMoodyDescription] hook-only slot: paddingTop 6 + (13 * 1.35 * 2 + 8).
 const double _kPlaceCardCompactMoodBlockOuterHeight =
     6.0 + (13.0 * 1.35 * 2.0 + 8.0);
+
+Widget _explorePricePillLabel({
+  required Place place,
+  required AppLocalizations l10n,
+  required String currencySymbol,
+  required IconData currencyIcon,
+}) {
+  final text = ExplorePlaceCardCopy.explorePriceBadgeText(
+    place,
+    l10n,
+    currency: currencySymbol,
+  );
+  final color = ExplorePlaceCardCopy.explorePriceBadgeColor(place);
+  final style = GoogleFonts.poppins(
+    fontSize: 12,
+    color: color,
+    fontWeight: FontWeight.w700,
+  );
+  if (ExplorePlaceCardCopy.explorePriceBadgeIsSymbolOnly(place)) {
+    return Text(text, style: style);
+  }
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(currencyIcon, color: color, size: 13),
+      const SizedBox(width: 4),
+      Text(text, style: style),
+    ],
+  );
+}
 
 class PlaceCard extends ConsumerWidget {
   final Place place;
@@ -1180,7 +1210,7 @@ class PlaceCard extends ConsumerWidget {
                   else
                     PlaceCardMoodyDescription(
                       place: place,
-                      maxLines: 8,
+                      maxLines: 5,
                       paddingTop: 8,
                       useCardStackLayout: true,
                       hookLineOnly: false,
@@ -1204,19 +1234,14 @@ class PlaceCard extends ConsumerWidget {
                           ExplorePlaceCardCopy.bestTimePillForExploreCard(
                               place, l10n);
                       final hasBestTimePill = bestTimeLabel != null;
-                      final durationLabel =
-                          ExplorePlaceCardCopy.exploreCardVisitDurationLabel(
-                              place, l10n);
-                      final hasDurationPill = durationLabel.isNotEmpty;
                       final showAnything = hasPricePill ||
                           hasDistancePill ||
                           hasBestTimePill ||
-                          hasDurationPill ||
                           showAddToMyDayButton;
                       if (!showAnything) return const SizedBox(height: 2);
 
                       /// Partner carousel: price + best time first (max 2), then
-                      /// distance / duration as fill — no Google type labels.
+                      /// distance as fill — no Google type labels.
                       List<Widget> buildCompactPills() {
                         final out = <Widget>[];
                         void push(Widget w) {
@@ -1242,30 +1267,11 @@ class PlaceCard extends ConsumerWidget {
                                   width: 1.25,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getCurrencyIcon(),
-                                    color: ExplorePlaceCardCopy
-                                        .explorePriceBadgeColor(place),
-                                    size: 13,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    ExplorePlaceCardCopy.explorePriceBadgeText(
-                                      place,
-                                      l10n,
-                                      currency: _getCurrencySymbol(),
-                                    ),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: ExplorePlaceCardCopy
-                                          .explorePriceBadgeColor(place),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
+                              child: _explorePricePillLabel(
+                                place: place,
+                                l10n: l10n,
+                                currencySymbol: _getCurrencySymbol(),
+                                currencyIcon: _getCurrencyIcon(),
                               ),
                             ),
                           );
@@ -1325,28 +1331,6 @@ class PlaceCard extends ConsumerWidget {
                             ),
                           );
                         }
-                        if (hasDurationPill) {
-                          push(
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: _wmForestTint,
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: _wmParchment, width: 1),
-                              ),
-                              child: Text(
-                                durationLabel,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: _wmForest,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
                         return out;
                       }
 
@@ -1388,50 +1372,11 @@ class PlaceCard extends ConsumerWidget {
                                       width: 1.25,
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        _getCurrencyIcon(),
-                                        color: ExplorePlaceCardCopy
-                                            .explorePriceBadgeColor(place),
-                                        size: 13,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        ExplorePlaceCardCopy
-                                            .explorePriceBadgeText(
-                                          place,
-                                          l10n,
-                                          currency: _getCurrencySymbol(),
-                                        ),
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: ExplorePlaceCardCopy
-                                              .explorePriceBadgeColor(place),
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              if (hasDurationPill)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: _wmForestTint,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: _wmParchment, width: 1),
-                                  ),
-                                  child: Text(
-                                    durationLabel,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: _wmForest,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  child: _explorePricePillLabel(
+                                    place: place,
+                                    l10n: l10n,
+                                    currencySymbol: _getCurrencySymbol(),
+                                    currencyIcon: _getCurrencyIcon(),
                                   ),
                                 ),
                               if (hasDistancePill)
@@ -1469,11 +1414,10 @@ class PlaceCard extends ConsumerWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Pills: best time, visit length, price, distance — no Google type label.
+                          // Pills: best time, price, distance — no Google type label.
                           if (hasPricePill ||
                               hasDistancePill ||
-                              hasBestTimePill ||
-                              hasDurationPill) ...[
+                              hasBestTimePill) ...[
                             SizedBox(height: compactMoodCopy ? 8 : 14),
                             Wrap(
                               spacing: 10,
@@ -1487,11 +1431,15 @@ class PlaceCard extends ConsumerWidget {
                             SizedBox(height: compactMoodCopy ? 10 : 16),
                             Row(
                               children: [
-                                PlanWithFriendIconButton(
-                                  place: place,
-                                  size: _kPlaceCardAddToMyDayCtaHeight,
+                                Expanded(
+                                  child: PlanWithFriendButton(
+                                    place: place,
+                                    height: _kPlaceCardAddToMyDayCtaHeight,
+                                    onAddToMyDay: onAddToMyDayTap ??
+                                        () => _addToMyDay(context, ref),
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 Expanded(
                                   child: SizedBox(
                                     height: _kPlaceCardAddToMyDayCtaHeight,
@@ -1511,28 +1459,27 @@ class PlaceCard extends ConsumerWidget {
                                               BoxShadow(
                                                 color: _wmForest
                                                     .withValues(alpha: 0.22),
-                                                blurRadius: 10,
-                                                offset: const Offset(0, 4),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 3),
                                               ),
                                             ],
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Icon(Icons.add_rounded,
-                                                  color: Colors.white,
-                                                  size: 16),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                l10n.dayPlanAddToMyDay,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                l10n.dayPlanCardAddToMyDay,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: GoogleFonts.poppins(
                                                   color: Colors.white,
-                                                  fontSize: 13,
+                                                  fontSize: 11,
                                                   fontWeight: FontWeight.w700,
                                                 ),
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       ),

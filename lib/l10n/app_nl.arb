@@ -444,6 +444,10 @@
   },
   "guestHours": "Openingstijden",
   "signupJoinWanderMood": "Wil je dit elke dag?",
+  "signupMagicLinkReturningTitle": "Welkom terug",
+  "signupMagicLinkReturningSubtitle": "Vul je e-mail in en we sturen je een inloglink.",
+  "signupMagicLinkReturningCta": "Inloglink sturen",
+  "signupMagicLinkReturningFooter": "Geen wachtwoord — tik op de link in je inbox.",
   "signupSubtitle": "Voer je e-mail in om te beginnen.\nGeen wachtwoord nodig!",
   "signupEmailLabel": "E-mail",
   "signupEmailHint": "jouw@voorbeeld.nl",
@@ -1412,7 +1416,7 @@
   "dayPlanCardAddedToMyDay": "{name} toegevoegd aan Mijn Dag.",
   "dayPlanCardAdded": "Toegevoegd",
   "dayPlanCardAddRemainingToMyDay": "Voeg de rest toe aan Mijn Dag",
-  "dayPlanCardAddToMyDay": "+ Toevoegen aan Mijn Dag",
+  "dayPlanCardAddToMyDay": "+ Mijn dag",
   "dayPlanCardMatch": "{percent}% match",
   "moodHubGreetingFriendly": "Hoi, {name}!",
   "moodHubGreetingBestie": "Hoi, {name}! 😊",
@@ -2325,7 +2329,25 @@
       }
     }
   },
-  "explorePeekViewFullPlace": "Bekijk plek",
+  "explorePeekViewFullPlace": "Bekijk alle details →",
+  "explorePeekMoodyTakeTitle": "Moody zegt",
+  "explorePeekWhyFits": "Past bij je {mood}-vibe vandaag",
+  "@explorePeekWhyFits": {
+    "placeholders": {
+      "mood": { "type": "String" }
+    }
+  },
+  "explorePeekFitsForTitle": "Past bij",
+  "explorePeekFitsCoffee": "Koffie",
+  "explorePeekFitsWork": "Werken",
+  "explorePeekFitsFriends": "Vrienden",
+  "explorePeekFitsSolo": "Solo",
+  "explorePeekFitsCozy": "Gezellig",
+  "explorePeekFitsDate": "Date",
+  "explorePeekFitsCulture": "Cultuur",
+  "explorePeekFitsBrunch": "Brunch",
+  "explorePeekFitsOutdoor": "Buiten",
+  "explorePeekVisitorNote": "Van een bezoeker",
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Oeps! Ik heb momenteel verbindingsproblemen. Kun je het opnieuw proberen? 🤔",
   "chatSheetEmptyStateBody": "Ik ken de stad als mijn broekzak! Vertel me je stemming en ik maak de perfecte dag voor je. Of je je avontuurlijk voelt, romantisch, of gewoon wilt chilllen - ik heb je! 🎯",
@@ -4719,6 +4741,177 @@
     }
   },
   "groupPlanWithFriendMenu": "Samen plannen",
+  "planMetVriendCta": "Plan met vriend",
+  "planMetVriendSearchFriend": "Zoek vriend…",
+  "planMetVriendMessageOptional": "Bericht (optioneel)",
+  "planMetVriendMessageHint": "Zin om hier samen heen te gaan? ☕️",
+  "planMetVriendCtaGrid": "Samen",
+  "planMetVriendNoteFrom": "Van {name}",
+  "@planMetVriendNoteFrom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "planMetVriendReplyFrom": "Antwoord van {name}",
+  "@planMetVriendReplyFrom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "planMetVriendReplyOptional": "Antwoord (optioneel)",
+  "planMetVriendReplyHint": "Iets terug naar {name}…",
+  "@planMetVriendReplyHint": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "planMetVriendReplySend": "Verstuur",
+  "planMetVriendReplySaving": "Versturen…",
+  "planMetVriendReplySent": "Verstuurd ✓",
+  "planMetVriendInviteViaLink": "Uitnodigen via link",
+  "planMetVriendLinkCopied": "Link gekopieerd",
+  "planMetVriendDateTomorrow": "Morgen",
+  "planMetVriendDateThisWeekend": "Dit weekend",
+  "planMetVriendDatePick": "Kies datum",
+  "planMetVriendTimeMorning": "Ochtend 9–12",
+  "planMetVriendTimeAfternoon": "Middag 12–17",
+  "planMetVriendTimeEvening": "Avond 17–22",
+  "planMetVriendSendInvite": "Uitnodiging versturen",
+  "planMetVriendSending": "Versturen…",
+  "planMetVriendSendError": "Er ging iets mis. Probeer het opnieuw.",
+  "planMetVriendInviteSentTitle": "Uitnodiging verstuurd! 🎉",
+  "planMetVriendInviteSentBody": "{friendName} krijgt nu een melding.",
+  "@planMetVriendInviteSentBody": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendDone": "Klaar",
+  "planMetVriendAddToMyDayToo": "Zelf ook aan Mijn Dag toevoegen",
+  "planMetVriendWithFriend": "Met {friendName}",
+  "@planMetVriendWithFriend": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendLoginRequired": "Log in om met een vriend te plannen.",
+  "planMetVriendSearchMinChars": "Typ minstens 2 tekens om te zoeken",
+  "planMetVriendNoFriendsFound": "Geen vrienden gevonden — probeer de link",
+  "planMetVriendPickDateTitle": "Kies een datum",
+  "planMetVriendPickDateDone": "Klaar",
+  "planMetVriendRecentFriends": "Recent",
+  "planMetVriendPlansTitle": "Plannen met vrienden",
+  "planMetVriendPlansEmpty": "Nog geen plannen met vrienden. Tik op Plan met vriend bij een plek in de app.",
+  "planMetVriendPlansLoadError": "Plannen laden mislukt. Trek om te vernieuwen.",
+  "planMetVriendPlansStatusWaiting": "Wacht op reactie",
+  "planMetVriendPlansStatusProposed": "Datum voorgesteld",
+  "planMetVriendPlansStatusMatched": "Datum afgestemd",
+  "planMetVriendPlansStatusNoOverlap": "Geen overlap",
+  "planMetVriendPlansChipWaitingFor": "Wacht op {friendName}",
+  "@planMetVriendPlansChipWaitingFor": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansChipWaitingGeneric": "Wacht op reactie",
+  "planMetVriendPlansChipConfirmedTonight": "Bevestigd voor vanavond",
+  "planMetVriendPlansChipConfirmedFor": "Bevestigd voor {dateLabel}",
+  "@planMetVriendPlansChipConfirmedFor": {
+    "placeholders": {
+      "dateLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansChipNeedsReply": "Jouw reactie nodig",
+  "planMetVriendPlansMetaInviteSent": "Uitnodiging verstuurd",
+  "planMetVriendPlansMetaFriendSuggested": "{friendName} stelde voor",
+  "@planMetVriendPlansMetaFriendSuggested": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansMetaWaitingOnFriend": "Wacht op {friendName}",
+  "@planMetVriendPlansMetaWaitingOnFriend": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansTonight": "Vanavond",
+  "planMetVriendPlansSlotMorning": "Ochtend",
+  "planMetVriendPlansSlotAfternoon": "Middag",
+  "planMetVriendPlansSlotEvening": "Avond",
+  "planMetVriendPlansOpenPlan": "Open plan",
+  "planMetVriendPlansHeroSubtitle": "Kies een plek in de app, nodig een vriend uit en stem samen een datum af.",
+  "planMetVriendPlansHeroHint": "Veeg een plan naar links om het van je lijst te verwijderen.",
+  "planMetVriendPlansInfoTitle": "Houd uitnodigingen, reacties en plannen bij",
+  "planMetVriendPlansInfoBody": "Zie wat bevestigd is, wat nog openstaat en wat hierna komt.",
+  "planMetVriendPlansTabActiveHint": "Uitnodigingen en data die nog lopen.",
+  "planMetVriendPlansTabCompletedHint": "Plannen die je aan Mijn dag hebt toegevoegd.",
+  "planMetVriendPlansTabActiveEmpty": "Geen actieve plannen — tik ergens in de app op Plan met vriend.",
+  "planMetVriendPlansTabCompletedEmpty": "Nog niets hier — na Toevoegen aan Mijn dag verschijnt het hier.",
+  "planMetVriendDeleteInviteTitle": "Dit plan verwijderen?",
+  "planMetVriendDeleteInviteBodyHost": "Je vriend ziet de uitnodiging niet meer. Dit kan niet ongedaan worden gemaakt.",
+  "planMetVriendDeleteInviteBodyGuest": "Je verlaat dit plan. De uitnodiging blijft open voor je vriend.",
+  "planMetVriendDeleteInviteConfirm": "Verwijderen",
+  "planMetVriendDeleteInviteSuccess": "Plan verwijderd",
+  "planMetVriendDeleteInviteError": "Verwijderen mislukt. Probeer het opnieuw.",
+  "planMetVriendPendingTitle": "Wachten op {friendName}",
+  "@planMetVriendPendingTitle": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingSubtitle": "Uitnodiging verstuurd · {slot} · {date}",
+  "@planMetVriendPendingSubtitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingMoodyTitle": "{friendName} heeft nog niet gereageerd.",
+  "@planMetVriendPendingMoodyTitle": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingMoodyBody": "We laten het weten zodra ze bevestigt of een ander moment voorstelt.",
+  "planMetVriendPendingSendReminder": "Herinnering sturen",
+  "planMetVriendPendingReminderSent": "Herinnering verstuurd",
+  "planMetVriendPendingEditInvite": "Uitnodiging aanpassen",
+  "planMetVriendPendingEditSaved": "Uitnodiging bijgewerkt",
+  "planMetVriendPendingShareLink": "Uitnodigingslink opnieuw delen",
+  "planMetVriendPendingCancelPlan": "Plan annuleren",
+  "planMetVriendPendingCancelTitle": "Dit plan annuleren?",
+  "planMetVriendPendingCancelBody": "Je vriend ziet de uitnodiging niet meer. Dit kan niet ongedaan worden gemaakt.",
+  "planMetVriendPendingBottomNote": "Nog geen reactie? Je kunt {friendName} een reminder sturen of het moment aanpassen.",
+  "@planMetVriendPendingBottomNote": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingEditSheetTitle": "Datum en tijd wijzigen",
+  "planMetVriendPendingSaveChanges": "Opslaan",
   "groupPlanTogetherTitle": "Samen plannen",
   "groupPlanHubBody": "Combineer stemmingen met je reisgenoot. Jullie gebruiken allebei je eigen telefoon — deel een korte code of open de link uit een bericht.",
   "groupPlanTileStartTitle": "Start een sessie",

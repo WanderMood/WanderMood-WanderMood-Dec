@@ -334,3 +334,108 @@ abstract final class GroupPlanningUi {
     );
   }
 }
+
+/// Pill switcher: Active vs Completed (Mood Match hub, Plans with friends).
+class GroupPlanningActiveCompletedToggle extends StatelessWidget {
+  const GroupPlanningActiveCompletedToggle({
+    super.key,
+    required this.activeLabel,
+    required this.completedLabel,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final String activeLabel;
+  final String completedLabel;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: GroupPlanningUi.stone.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          children: [
+            Expanded(
+              child: _segment(
+                emoji: '⚡️',
+                label: activeLabel,
+                selected: selectedIndex == 0,
+                onTap: () => onSelected(0),
+              ),
+            ),
+            Expanded(
+              child: _segment(
+                emoji: '✔️',
+                label: completedLabel,
+                selected: selectedIndex == 1,
+                onTap: () => onSelected(1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _segment({
+    required String emoji,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final textStyle = GoogleFonts.poppins(
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.15,
+      color: selected ? GroupPlanningUi.charcoal : GroupPlanningUi.stone,
+    );
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          decoration: BoxDecoration(
+            color: selected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: GroupPlanningUi.moodMatchShadow(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 14)),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: textStyle,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

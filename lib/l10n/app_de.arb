@@ -444,6 +444,10 @@
   },
   "guestHours": "Öffnungszeiten",
   "signupJoinWanderMood": "Willst du das jeden Tag?",
+  "signupMagicLinkReturningTitle": "Willkommen zurück",
+  "signupMagicLinkReturningSubtitle": "Gib deine E-Mail ein — wir senden dir einen Anmeldelink.",
+  "signupMagicLinkReturningCta": "Anmeldelink senden",
+  "signupMagicLinkReturningFooter": "Kein Passwort — tippe einfach auf den Link in deinem Postfach.",
   "signupSubtitle": "Gib deine E-Mail ein, um loszulegen.\nKein Passwort nötig!",
   "signupEmailLabel": "E-Mail",
   "signupEmailHint": "du@beispiel.de",
@@ -1329,7 +1333,7 @@
   "dayPlanCardAddedToMyDay": "{name} zu Mein Tag hinzugefügt.",
   "dayPlanCardAdded": "Hinzugefügt",
   "dayPlanCardAddRemainingToMyDay": "Rest zu Mein Tag hinzufügen",
-  "dayPlanCardAddToMyDay": "+ Zu Mein Tag hinzufügen",
+  "dayPlanCardAddToMyDay": "+ Mein Tag",
   "dayPlanCardMatch": "{percent}% Match",
   "moodHubGreetingFriendly": "Hey, {name}!",
   "moodHubGreetingBestie": "Hey, {name}! 😊",
@@ -2269,7 +2273,25 @@
       }
     }
   },
-  "explorePeekViewFullPlace": "Ort ansehen",
+  "explorePeekViewFullPlace": "Alle Details ansehen →",
+  "explorePeekMoodyTakeTitle": "Moody sagt",
+  "explorePeekWhyFits": "Passt zu deiner {mood}-Stimmung heute",
+  "@explorePeekWhyFits": {
+    "placeholders": {
+      "mood": { "type": "String" }
+    }
+  },
+  "explorePeekFitsForTitle": "Gut für",
+  "explorePeekFitsCoffee": "Kaffee",
+  "explorePeekFitsWork": "Arbeiten",
+  "explorePeekFitsFriends": "Freunde",
+  "explorePeekFitsSolo": "Solo",
+  "explorePeekFitsCozy": "Gemütlich",
+  "explorePeekFitsDate": "Date",
+  "explorePeekFitsCulture": "Kultur",
+  "explorePeekFitsBrunch": "Brunch",
+  "explorePeekFitsOutdoor": "Draußen",
+  "explorePeekVisitorNote": "Von einem Besucher",
   "chatSheetMoodyName": "Moody",
   "chatSheetErrorMessage": "Ups! Ich habe gerade Verbindungsprobleme. Kannst du es nochmal versuchen? 🤔",
   "chatSheetEmptyStateBody": "Ich kenne die Stadt wie meine Westentasche! Sag mir deine Stimmung und ich gestalte den perfekten Tag für dich. Ob du dich abenteuerlustig, romantisch oder entspannt fühlst - ich hab dich! 🎯",
@@ -4633,6 +4655,177 @@
     }
   },
   "groupPlanWithFriendMenu": "Mit einem Freund planen",
+  "planMetVriendCta": "Mit Freund planen",
+  "planMetVriendSearchFriend": "Freund suchen…",
+  "planMetVriendMessageOptional": "Nachricht (optional)",
+  "planMetVriendMessageHint": "Lust, das gemeinsam zu machen? ☕️",
+  "planMetVriendCtaGrid": "Zusammen",
+  "planMetVriendNoteFrom": "Von {name}",
+  "@planMetVriendNoteFrom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "planMetVriendReplyFrom": "Antwort von {name}",
+  "@planMetVriendReplyFrom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "planMetVriendReplyOptional": "Antwort (optional)",
+  "planMetVriendReplyHint": "Etwas an {name}…",
+  "@planMetVriendReplyHint": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "planMetVriendReplySend": "Senden",
+  "planMetVriendReplySaving": "Wird gesendet…",
+  "planMetVriendReplySent": "Gesendet ✓",
+  "planMetVriendInviteViaLink": "Per Link einladen",
+  "planMetVriendLinkCopied": "Link kopiert",
+  "planMetVriendDateTomorrow": "Morgen",
+  "planMetVriendDateThisWeekend": "Dieses Wochenende",
+  "planMetVriendDatePick": "Datum wählen",
+  "planMetVriendTimeMorning": "Morgen 9–12",
+  "planMetVriendTimeAfternoon": "Mittag 12–17",
+  "planMetVriendTimeEvening": "Abend 17–22",
+  "planMetVriendSendInvite": "Einladung senden",
+  "planMetVriendSending": "Senden…",
+  "planMetVriendSendError": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+  "planMetVriendInviteSentTitle": "Einladung gesendet! 🎉",
+  "planMetVriendInviteSentBody": "{friendName} erhält eine Benachrichtigung.",
+  "@planMetVriendInviteSentBody": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendDone": "Fertig",
+  "planMetVriendAddToMyDayToo": "Auch zu Mein Tag hinzufügen",
+  "planMetVriendWithFriend": "Mit {friendName}",
+  "@planMetVriendWithFriend": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendLoginRequired": "Melde dich an, um mit einem Freund zu planen.",
+  "planMetVriendSearchMinChars": "Mindestens 2 Zeichen eingeben",
+  "planMetVriendNoFriendsFound": "Keine Freunde gefunden — Link teilen",
+  "planMetVriendPickDateTitle": "Datum wählen",
+  "planMetVriendPickDateDone": "Fertig",
+  "planMetVriendRecentFriends": "Zuletzt",
+  "planMetVriendPlansTitle": "Pläne mit Freunden",
+  "planMetVriendPlansEmpty": "Noch keine Pläne mit Freunden. Tippe in der App auf Mit Freund planen.",
+  "planMetVriendPlansLoadError": "Pläne konnten nicht geladen werden.",
+  "planMetVriendPlansStatusWaiting": "Warte auf Antwort",
+  "planMetVriendPlansStatusProposed": "Datum vorgeschlagen",
+  "planMetVriendPlansStatusMatched": "Datum vereinbart",
+  "planMetVriendPlansStatusNoOverlap": "Keine Übereinstimmung",
+  "planMetVriendPlansChipWaitingFor": "Warte auf {friendName}",
+  "@planMetVriendPlansChipWaitingFor": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansChipWaitingGeneric": "Warte auf Antwort",
+  "planMetVriendPlansChipConfirmedTonight": "Bestätigt für heute Abend",
+  "planMetVriendPlansChipConfirmedFor": "Bestätigt für {dateLabel}",
+  "@planMetVriendPlansChipConfirmedFor": {
+    "placeholders": {
+      "dateLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansChipNeedsReply": "Deine Antwort nötig",
+  "planMetVriendPlansMetaInviteSent": "Einladung gesendet",
+  "planMetVriendPlansMetaFriendSuggested": "{friendName} schlug vor",
+  "@planMetVriendPlansMetaFriendSuggested": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansMetaWaitingOnFriend": "Warte auf {friendName}",
+  "@planMetVriendPlansMetaWaitingOnFriend": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPlansTonight": "Heute Abend",
+  "planMetVriendPlansSlotMorning": "Morgen",
+  "planMetVriendPlansSlotAfternoon": "Nachmittag",
+  "planMetVriendPlansSlotEvening": "Abend",
+  "planMetVriendPlansOpenPlan": "Plan öffnen",
+  "planMetVriendPlansHeroSubtitle": "Wähle einen Ort in der App, lade einen Freund ein und stimmt das Datum ab.",
+  "planMetVriendPlansHeroHint": "Wische einen Plan nach links, um ihn aus der Liste zu entfernen.",
+  "planMetVriendPlansInfoTitle": "Einladungen, Antworten und Pläne im Blick",
+  "planMetVriendPlansInfoBody": "Sieh, was bestätigt ist, was offen ist und was als Nächstes kommt.",
+  "planMetVriendPlansTabActiveHint": "Einladungen und Termine in Bearbeitung.",
+  "planMetVriendPlansTabCompletedHint": "Pläne, die du zu Mein Tag hinzugefügt hast.",
+  "planMetVriendPlansTabActiveEmpty": "Keine aktiven Pläne — tippe in der App auf Mit Freund planen.",
+  "planMetVriendPlansTabCompletedEmpty": "Noch nichts hier — nach Hinzufügen zu Mein Tag erscheint es hier.",
+  "planMetVriendDeleteInviteTitle": "Diesen Plan entfernen?",
+  "planMetVriendDeleteInviteBodyHost": "Dein Freund sieht die Einladung nicht mehr. Das kann nicht rückgängig gemacht werden.",
+  "planMetVriendDeleteInviteBodyGuest": "Du verlässt diesen Plan. Die Einladung bleibt für deinen Freund offen.",
+  "planMetVriendDeleteInviteConfirm": "Entfernen",
+  "planMetVriendDeleteInviteSuccess": "Plan entfernt",
+  "planMetVriendDeleteInviteError": "Entfernen fehlgeschlagen. Bitte erneut versuchen.",
+  "planMetVriendPendingTitle": "Warten auf {friendName}",
+  "@planMetVriendPendingTitle": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingSubtitle": "Einladung gesendet · {slot} · {date}",
+  "@planMetVriendPendingSubtitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingMoodyTitle": "{friendName} hat noch nicht geantwortet.",
+  "@planMetVriendPendingMoodyTitle": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingMoodyBody": "Wir benachrichtigen dich, sobald sie bestätigt oder eine andere Zeit vorschlägt.",
+  "planMetVriendPendingSendReminder": "Erinnerung senden",
+  "planMetVriendPendingReminderSent": "Erinnerung gesendet",
+  "planMetVriendPendingEditInvite": "Einladung bearbeiten",
+  "planMetVriendPendingEditSaved": "Einladung aktualisiert",
+  "planMetVriendPendingShareLink": "Einladungslink erneut teilen",
+  "planMetVriendPendingCancelPlan": "Plan abbrechen",
+  "planMetVriendPendingCancelTitle": "Diesen Plan abbrechen?",
+  "planMetVriendPendingCancelBody": "Dein Freund sieht die Einladung nicht mehr. Das kann nicht rückgängig gemacht werden.",
+  "planMetVriendPendingBottomNote": "Noch keine Antwort? Erinnere {friendName} oder passe die Zeit an.",
+  "@planMetVriendPendingBottomNote": {
+    "placeholders": {
+      "friendName": {
+        "type": "String"
+      }
+    }
+  },
+  "planMetVriendPendingEditSheetTitle": "Datum und Uhrzeit ändern",
+  "planMetVriendPendingSaveChanges": "Speichern",
   "groupPlanTogetherTitle": "Gemeinsam planen",
   "groupPlanHubBody": "Kombiniert eure Stimmungen mit eurem Reisepartner. Ihr nutzt beide euer eigenes Handy — teilt einen kurzen Code oder öffnet den Link aus einer Nachricht.",
   "groupPlanTileStartTitle": "Sitzung starten",

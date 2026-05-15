@@ -33,7 +33,7 @@ import 'package:wandermood/core/services/user_preferences_service.dart';
 import '../widgets/conversational_explore_header.dart';
 import '../widgets/explore_feed_loading_surface.dart';
 import '../widgets/explore_place_quick_peek_sheet.dart';
-import 'package:wandermood/features/home/presentation/widgets/planner_activity_detail_sheet.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_character.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/providers/language_provider.dart';
@@ -1399,78 +1399,47 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  /// Opens place quick sheet (same body as full detail) + CTAs; full route on demand.
-  void _openPlaceFromExplore(Place place) {
-    String normalizedId(String raw) {
-      final t = raw.trim();
-      if (t.startsWith('google_')) return t;
-      if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return 'google_$t';
-      return t;
-    }
+  String _normalizedExplorePlaceId(String raw) {
+    final t = raw.trim();
+    if (t.startsWith('google_')) return t;
+    if (t.startsWith('ChIJ') || t.startsWith('EhIJ')) return 'google_$t';
+    return t;
+  }
 
-    final targetId = normalizedId(place.id);
+  void _openPlaceDetailFromExplore(Place place) {
+    final targetId = _normalizedExplorePlaceId(place.id);
+    if (!mounted) return;
+    context.push('/place/$targetId');
+  }
+
+  /// Compact quick-view sheet; full [PlaceDetailScreen] only on explicit action.
+  void _openPlaceFromExplore(Place place) {
+    final targetId = _normalizedExplorePlaceId(place.id);
     HapticFeedback.lightImpact();
     unawaited(_trackExploreTasteInteraction(place, 'tapped'));
     final seeded = targetId != place.id ? place.copyWith(id: targetId) : place;
     ref.read(placesServiceProvider.notifier).cachePlaceObject(seeded);
 
-    final l10n = AppLocalizations.of(context)!;
+    final city =
+        ref.read(locationNotifierProvider).valueOrNull?.trim() ?? 'Rotterdam';
+    final userLocation = ref.read(userLocationProvider).valueOrNull;
+
     unawaited(
-      showPlaceQuickDetailSheet(
-        context,
+      showExplorePlaceQuickPeekSheet(
+        context: context,
         place: seeded,
-        footerBuilder: (pop) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        pop();
-                        unawaited(_openDirectionsForPlace(seeded));
-                      },
-                      icon: const Icon(Icons.directions),
-                      label: Text(l10n.activityDetailDirections),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2A6049),
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        pop();
-                        _showAddToMyDaySheet(seeded);
-                      },
-                      icon: const Icon(Icons.calendar_today_outlined),
-                      label: Text(l10n.placeQuickSheetAddToMyDayCta),
-                      style: placeQuickSheetSecondaryFilledButtonStyle(),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () {
-                  pop();
-                  if (!mounted) return;
-                  context.push('/place/$targetId');
-                },
-                icon: const Icon(Icons.open_in_new_rounded, size: 20),
-                label: Text(l10n.myDayOpenFullPlaceDetails),
-                style: placeQuickSheetOutlinedButtonStyle(),
-              ),
-            ],
+        photoSelectionSeed: _explorePlacePhotoRefreshSeed,
+        userLocation: userLocation,
+        cityName: city,
+        onViewFullPlace: () => _openPlaceDetailFromExplore(seeded),
+        onAddToMyDay: () => _showAddToMyDaySheet(seeded),
+        onPlanWithFriend: () {
+          openPlanWithFriend(
+            context,
+            PlanWithFriendArgs.fromPlace(
+              seeded,
+              onAddToMyDay: () => _showAddToMyDaySheet(seeded),
+            ),
           );
         },
       ),
@@ -3417,7 +3386,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               // Wider vs height = shorter cards; tuned with [PlaceGridCard] padding + photo height.
-              childAspectRatio: 0.70,
+              childAspectRatio: 0.64,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
