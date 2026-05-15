@@ -1,10 +1,13 @@
 import UIKit
 import UniformTypeIdentifiers
 
+/// Share extension: forward a URL into the main app via `wandermood://share?url=…`.
+/// Extensions cannot use `UIApplication.shared.open` — use `NSExtensionContext.open`.
 class ShareViewController: UIViewController {
 
   private let appGroupId = "group.com.edviennemer.wandermood.share"
   private var progressView: UIActivityIndicatorView?
+  private var didFinish = false
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -47,60 +50,223 @@ class ShareViewController: UIViewController {
 
   private func extractAndForward() {
     guard let item = extensionContext?.inputItems.first as? NSExtensionItem,
-          let attachments = item.attachments else {
+          let attachments = item.attachments,
+          !attachments.isEmpty else {
       finishExtension()
       return
     }
 
-    let urlType = UTType.url.identifier
-    guard let provider = attachments.first(where: {
-      $0.hasItemConformingToTypeIdentifier(urlType) ||
-        $0.hasItemConformingToTypeIdentifier("public.url")
-    }) else {
+    let ordered = attachments.sorted { a, b in
+      // Prefer explicit URL types before plain text (TikTok often provides text + metadata).
+      let aScore = typePriority(a)
+      let bScore = typePriority(b)
+      if aScore != bScore { return aScore < bScore }
+      return false
+    }
+
+    loadSharedURL(from: ordered, index: 0)
+  }
+
+  /// Lower = try first (URL providers before plain text).
+  private func typePriority(_ provider: NSItemProvider) -> Int {
+    if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier)
+      || provider.hasItemConformingToTypeIdentifier("public.url") { return 0 }
+    if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
+      || provider.hasItemConformingToTypeIdentifier("public.plain-text")
+      || provider.hasItemConformingToTypeIdentifier("public.text") { return 1 }
+    return 9
+  }
+
+  private func loadSharedURL(from providers: [NSItemProvider], index: Int) {
+    if index >= providers.count {
       finishExtension()
       return
     }
+    let provider = providers[index]
 
-    provider.loadItem(forTypeIdentifier: urlType, options: nil) { [weak self] item, _ in
-      let urlString: String?
-      if let url = item as? URL {
-        urlString = url.absoluteString
-      } else if let str = item as? String {
-        urlString = str
-      } else {
-        urlString = nil
+    if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier)
+      || provider.hasItemConformingToTypeIdentifier("public.url") {
+      loadItemAsURL(provider) { [weak self] raw in
+        guard let self else { return }
+        if let raw, let link = self.deepLink(forSharedURL: raw) {
+          self.persistPending(raw)
+          self.openHostApp(deepLink: link)
+        } else {
+          self.loadSharedURL(from: providers, index: index + 1)
+        }
       }
+      return
+    }
 
-      guard let raw = urlString,
-            let encoded = raw.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-            let deepLink = URL(string: "wandermood://share?url=\(encoded)") else {
-        self?.finishExtension()
+    if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
+      || provider.hasItemConformingToTypeIdentifier("public.plain-text")
+      || provider.hasItemConformingToTypeIdentifier("public.text") {
+      loadItemAsText(provider) { [weak self] text in
+        guard let self else { return }
+        let raw = text.flatMap { self.extractURLFromPlainText($0) }
+        if let raw, let link = self.deepLink(forSharedURL: raw) {
+          self.persistPending(raw)
+          self.openHostApp(deepLink: link)
+        } else {
+          self.loadSharedURL(from: providers, index: index + 1)
+        }
+      }
+      return
+    }
+
+    tryUnknownProvider(provider) { [weak self] raw in
+      guard let self else { return }
+      if let raw, let link = self.deepLink(forSharedURL: raw) {
+        self.persistPending(raw)
+        self.openHostApp(deepLink: link)
+      } else {
+        self.loadSharedURL(from: providers, index: index + 1)
+      }
+    }
+  }
+
+  /// Instagram / TikTok sometimes use UTIs we do not map explicitly — walk [registeredTypeIdentifiers].
+  private func tryUnknownProvider(
+    _ provider: NSItemProvider,
+    completion: @escaping (String?) -> Void
+  ) {
+    let types = provider.registeredTypeIdentifiers
+    tryLoadRegisteredType(provider, types: types, index: 0, completion: completion)
+  }
+
+  private func tryLoadRegisteredType(
+    _ provider: NSItemProvider,
+    types: [String],
+    index: Int,
+    completion: @escaping (String?) -> Void
+  ) {
+    if index >= types.count {
+      completion(nil)
+      return
+    }
+    let typeId = types[index]
+    provider.loadItem(forTypeIdentifier: typeId, options: nil) { [weak self] item, _ in
+      let urlString = self?.coerceItemToSharedURLString(item)
+      if let s = urlString, !s.isEmpty {
+        completion(s)
         return
       }
+      self?.tryLoadRegisteredType(provider, types: types, index: index + 1, completion: completion)
+    }
+  }
 
-      if let defaults = UserDefaults(suiteName: self?.appGroupId ?? "") {
-        defaults.set(raw, forKey: "pending_share_url")
-        defaults.synchronize()
-      }
-
-      self?.extensionContext?.completeRequest(returningItems: nil) { _ in
-        _ = self?.openURL(deepLink)
+  private func coerceItemToSharedURLString(_ item: Any?) -> String? {
+    if let url = item as? URL, url.scheme != nil {
+      return url.absoluteString
+    }
+    if let str = item as? String {
+      if let u = URL(string: str), u.scheme != nil { return u.absoluteString }
+      return extractURLFromPlainText(str)
+    }
+    if let data = item as? Data, let str = String(data: data, encoding: .utf8) {
+      return extractURLFromPlainText(str)
+    }
+    if let dict = item as? [String: Any] {
+      for (_, val) in dict {
+        if let s = coerceItemToSharedURLString(val) { return s }
       }
     }
+    return nil
+  }
+
+  private func loadItemAsURL(
+    _ provider: NSItemProvider,
+    completion: @escaping (String?) -> Void
+  ) {
+    let typeId =
+      provider.hasItemConformingToTypeIdentifier(UTType.url.identifier)
+      ? UTType.url.identifier : "public.url"
+    provider.loadItem(forTypeIdentifier: typeId, options: nil) { item, _ in
+      if let url = item as? URL {
+        completion(url.absoluteString)
+        return
+      }
+      if let str = item as? String, let u = URL(string: str), u.scheme != nil {
+        completion(u.absoluteString)
+        return
+      }
+      completion(nil)
+    }
+  }
+
+  private func loadItemAsText(
+    _ provider: NSItemProvider,
+    completion: @escaping (String?) -> Void
+  ) {
+    let typeId: String = {
+      if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) {
+        return UTType.plainText.identifier
+      }
+      if provider.hasItemConformingToTypeIdentifier("public.plain-text") {
+        return "public.plain-text"
+      }
+      return "public.text"
+    }()
+    provider.loadItem(forTypeIdentifier: typeId, options: nil) { item, _ in
+      if let str = item as? String {
+        completion(str)
+        return
+      }
+      if let data = item as? Data, let str = String(data: data, encoding: .utf8) {
+        completion(str)
+        return
+      }
+      completion(nil)
+    }
+  }
+
+  private func extractURLFromPlainText(_ text: String) -> String? {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    if let u = URL(string: trimmed), u.scheme != nil {
+      return u.absoluteString
+    }
+    guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+      return nil
+    }
+    let ns = trimmed as NSString
+    let full = NSRange(location: 0, length: ns.length)
+    if let match = detector.firstMatch(in: trimmed, options: [], range: full),
+       let url = match.url {
+      return url.absoluteString
+    }
+    return nil
+  }
+
+  /// Builds `wandermood://share?url=…` with correct query encoding (avoids broken `&` in TikTok URLs).
+  private func deepLink(forSharedURL raw: String) -> URL? {
+    var c = URLComponents()
+    c.scheme = "wandermood"
+    c.host = "share"
+    c.queryItems = [URLQueryItem(name: "url", value: raw)]
+    return c.url
+  }
+
+  private func persistPending(_ raw: String) {
+    if let defaults = UserDefaults(suiteName: appGroupId) {
+      defaults.set(raw, forKey: "pending_share_url")
+      defaults.synchronize()
+    }
+  }
+
+  /// Opens the containing app; **must** use extension context (not UIApplication).
+  private func openHostApp(deepLink: URL) {
+    guard let ctx = extensionContext else {
+      finishExtension()
+      return
+    }
+    ctx.open(deepLink, completionHandler: { [weak self] _ in
+      self?.finishExtension()
+    })
   }
 
   private func finishExtension() {
+    guard !didFinish else { return }
+    didFinish = true
     extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
-  }
-
-  @objc func openURL(_ url: URL) -> Bool {
-    var responder: UIResponder? = self
-    while let current = responder {
-      if let application = current as? UIApplication {
-        return application.perform(#selector(openURL(_:)), with: url) != nil
-      }
-      responder = current.next
-    }
-    return false
   }
 }
