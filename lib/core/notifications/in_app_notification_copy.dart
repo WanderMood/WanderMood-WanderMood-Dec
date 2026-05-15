@@ -265,8 +265,8 @@ class InAppNotificationCopy {
     }
     if (event == 'moody_nudge_plan_today') {
       return nl
-          ? 'Je hebt nog niks vandaag in je dag — zal ik helpen plannen?'
-          : 'Nothing on your day yet — want help planning?';
+          ? 'Je dag is nog leeg. Ik heb ideeën.'
+          : 'Your day is wide open. I have thoughts.';
     }
     if (event == 'moody_post_trip_reflection') {
       return nl

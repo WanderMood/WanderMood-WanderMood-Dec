@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/notifications/in_app_notification_copy.dart';
+import 'package:wandermood/core/notifications/moody_plan_today_nudge_copy.dart';
 import 'package:wandermood/core/utils/moody_clock.dart';
 import 'package:wandermood/core/utils/nl_engagement_public_days.dart';
 
@@ -35,9 +36,10 @@ class EngagementInAppNudges {
       Future<void> sendRpc({
         required String event,
         required Map<String, dynamic> data,
+        String? messageOverride,
       }) async {
         if (sent) return;
-        final message =
+        final message = messageOverride ??
             InAppNotificationCopy.moodyMessage(nl: nl, event: event, data: data);
         await client.rpc(
           'send_realtime_notification',
@@ -105,7 +107,12 @@ class EngagementInAppNudges {
           final hasPlan = await _hasScheduledToday(client, userId);
           if (!hasPlan) {
             try {
-              await sendRpc(event: 'moody_nudge_plan_today', data: const {});
+              final planMessage = await MoodyPlanTodayNudgeCopy.pick(nl: nl);
+              await sendRpc(
+                event: 'moody_nudge_plan_today',
+                data: const {},
+                messageOverride: planMessage,
+              );
               await prefs.setBool(pk, true);
             } catch (e, st) {
               if (kDebugMode) {
