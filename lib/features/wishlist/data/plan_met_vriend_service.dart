@@ -151,6 +151,49 @@ class PlanMetVriendService {
         msg.contains('does not exist');
   }
 
+  bool _isRpcNotFound(PostgrestException e, String fn) {
+    final msg = '${e.message} ${e.details ?? ''}'.toLowerCase();
+    return e.code == 'PGRST202' ||
+        e.code == '42883' ||
+        msg.contains(fn.toLowerCase());
+  }
+
+  /// Adds current user to [group_session_members] when invited (bypasses RLS).
+  Future<void> _joinGroupSessionAsInvitee(
+    String sessionId, {
+    String? inviteId,
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw Exception('Not authenticated');
+
+    final existing = await fetchMember(sessionId: sessionId, userId: uid);
+    if (existing != null) return;
+
+    final params = <String, dynamic>{'p_session_id': sessionId};
+    final trimmedInvite = inviteId?.trim();
+    if (trimmedInvite != null && trimmedInvite.isNotEmpty) {
+      params['p_invite_id'] = trimmedInvite;
+    }
+
+    try {
+      await _client.rpc('join_group_session_for_invitee', params: params);
+      return;
+    } on PostgrestException catch (e) {
+      if (!_isRpcNotFound(e, 'join_group_session_for_invitee')) rethrow;
+      if (kDebugMode) {
+        debugPrint(
+          'join_group_session_for_invitee missing — apply Supabase migration '
+          '20260516000000_join_group_session_for_invitee.sql',
+        );
+      }
+    }
+
+    await _client.from('group_session_members').upsert({
+      'session_id': sessionId,
+      'user_id': uid,
+    }, onConflict: 'session_id,user_id');
+  }
+
   Future<void> _storeInviteInPlanData({
     required String sessionId,
     required String inviteId,
@@ -740,13 +783,7 @@ class PlanMetVriendService {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) return;
 
-    final existing = await fetchMember(sessionId: sessionId, userId: uid);
-    if (existing != null) return;
-
-    await _client.from('group_session_members').upsert({
-      'session_id': sessionId,
-      'user_id': uid,
-    }, onConflict: 'session_id,user_id');
+    await _joinGroupSessionAsInvitee(sessionId, inviteId: inviteId);
 
     final resolvedInviteId = inviteId?.trim();
     if (resolvedInviteId != null && resolvedInviteId.isNotEmpty) {
@@ -784,10 +821,10 @@ class PlanMetVriendService {
     }
     if (invite['invitee_user_id']?.toString() != uid) return;
 
-    await _client.from('group_session_members').upsert({
-      'session_id': sessionId,
-      'user_id': uid,
-    }, onConflict: 'session_id,user_id');
+    await _joinGroupSessionAsInvitee(
+      sessionId,
+      inviteId: invite['id']?.toString(),
+    );
   }
 
   /// Ensures the current user can read the session (invitee not yet in members).
@@ -862,10 +899,7 @@ class PlanMetVriendService {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) throw Exception('Not authenticated');
 
-    await _client.from('group_session_members').upsert({
-      'session_id': sessionId,
-      'user_id': uid,
-    }, onConflict: 'session_id,user_id');
+    await _joinGroupSessionAsInvitee(sessionId, inviteId: inviteId);
 
     await _markInviteStatus(
       inviteId: inviteId,
@@ -957,12 +991,19 @@ class PlanMetVriendService {
     final now = DateTime.now().toUtc();
     final dates = datesToIso(friendDates);
 
-    await _client.from('group_session_members').upsert({
-      'session_id': sessionId,
-      'user_id': uid,
-      'availability_dates': dates,
-      'availability_submitted_at': now.toIso8601String(),
-    }, onConflict: 'session_id,user_id');
+    await _joinGroupSessionAsInvitee(sessionId, inviteId: inviteId);
+    await _updateRowResilient(
+      'group_session_members',
+      {
+        'availability_dates': dates,
+        'availability_submitted_at': now.toIso8601String(),
+      },
+      {'session_id': sessionId, 'user_id': uid},
+      droppableKeys: const [
+        'availability_dates',
+        'availability_submitted_at',
+      ],
+    );
 
     await _markInviteStatus(
       inviteId: inviteId,
