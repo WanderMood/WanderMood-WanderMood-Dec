@@ -794,6 +794,29 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               ),
             ),
             TextButton(
+              onPressed: () => context.push('/wishlist'),
+              style: TextButton.styleFrom(
+                foregroundColor: _wmForest,
+                backgroundColor: _wmWhite,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  side: const BorderSide(color: _wmParchment),
+                ),
+              ),
+              child: Text(
+                'Wishlist',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            TextButton(
               onPressed: () => context.push('/places/saved'),
               style: TextButton.styleFrom(
                 foregroundColor: _wmForest,

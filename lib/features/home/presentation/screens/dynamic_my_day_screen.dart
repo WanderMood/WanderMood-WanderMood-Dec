@@ -898,6 +898,17 @@ class _DynamicMyDayScreenState extends ConsumerState<DynamicMyDayScreen> {
                 );
               },
             ).animate().fadeIn(delay: 300.ms, duration: 600.ms),
+            const SizedBox(width: 8),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+              tooltip: 'Wishlist',
+              icon: Icon(
+                Icons.bookmark_border_rounded,
+                color: isImmersive ? Colors.white : const Color(0xFF2A6049),
+              ),
+              onPressed: () => context.push('/wishlist'),
+            ),
             MyDayUpdatesBell(isImmersive: isImmersive),
           ],
         ),

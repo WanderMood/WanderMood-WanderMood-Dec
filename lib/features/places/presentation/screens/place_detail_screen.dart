@@ -17,6 +17,7 @@ import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/places/models/place.dart';
 import 'package:wandermood/features/places/providers/moody_explore_provider.dart';
 import 'package:wandermood/features/places/services/saved_places_service.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart';
 import 'package:wandermood/features/places/presentation/widgets/booking_bottom_sheet.dart';
 import 'package:wandermood/core/services/moody_ai_service.dart';
 import 'package:wandermood/features/places/services/places_service.dart';
@@ -3992,36 +3993,66 @@ class _PlaceDetailScreenState extends ConsumerState<PlaceDetailScreen>
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: () => _openInMaps(place),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _pdWmForest,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.directions, size: 22, color: Colors.white),
-                const SizedBox(width: 10),
-                Text(
-                  AppLocalizations.of(context)!.activityDetailDirections,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: () => openPlanWithFriendScreen(
+                  context,
+                  PlanWithFriendArgs.fromPlace(place),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _pdWmForest,
+                  side: const BorderSide(color: _pdWmForest, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
                   ),
                 ),
-              ],
+                child: Text(
+                  'Plan met vriend →',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () => _openInMaps(place),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _pdWmForest,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.directions, size: 22, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Text(
+                      AppLocalizations.of(context)!.activityDetailDirections,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

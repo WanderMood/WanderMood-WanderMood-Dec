@@ -25,6 +25,7 @@ import 'package:wandermood/core/utils/place_card_photo_index.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
+import 'package:wandermood/features/wishlist/presentation/widgets/plan_with_friend_icon_button.dart';
 
 // WM v2 tokens (aligned with My Day cards)
 const Color _wmWhite = Color(0xFFFFFFFF);
@@ -1484,50 +1485,61 @@ class PlaceCard extends ConsumerWidget {
                           // Full-width CTA (no overflow risk)
                           if (showAddToMyDayButton) ...[
                             SizedBox(height: compactMoodCopy ? 10 : 16),
-                            SizedBox(
-                              width: double.infinity,
-                              height: _kPlaceCardAddToMyDayCtaHeight,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(
-                                      _kPlaceCardAddToMyDayCtaRadius),
-                                  onTap: onAddToMyDayTap ??
-                                      () => _addToMyDay(context, ref),
-                                  child: Ink(
-                                    decoration: BoxDecoration(
-                                      color: _wmForest,
-                                      borderRadius: BorderRadius.circular(
-                                          _kPlaceCardAddToMyDayCtaRadius),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color:
-                                              _wmForest.withValues(alpha: 0.22),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.add_rounded,
-                                            color: Colors.white, size: 16),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          l10n.dayPlanAddToMyDay,
-                                          style: GoogleFonts.poppins(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
+                            Row(
+                              children: [
+                                PlanWithFriendIconButton(
+                                  place: place,
+                                  size: _kPlaceCardAddToMyDayCtaHeight,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: SizedBox(
+                                    height: _kPlaceCardAddToMyDayCtaHeight,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(
+                                            _kPlaceCardAddToMyDayCtaRadius),
+                                        onTap: onAddToMyDayTap ??
+                                            () => _addToMyDay(context, ref),
+                                        child: Ink(
+                                          decoration: BoxDecoration(
+                                            color: _wmForest,
+                                            borderRadius: BorderRadius.circular(
+                                                _kPlaceCardAddToMyDayCtaRadius),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: _wmForest
+                                                    .withValues(alpha: 0.22),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.add_rounded,
+                                                  color: Colors.white,
+                                                  size: 16),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                l10n.dayPlanAddToMyDay,
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
                           ],
                         ],

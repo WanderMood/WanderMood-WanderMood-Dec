@@ -18,6 +18,8 @@
 		ABBB9D865620F21576A4F6B0 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F1EF3CD2410815BEDCA63FF /* Pods_RunnerTests.framework */; };
 		BB00000B1E000000000000AA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BB00000A1E000000000000AA /* PrivacyInfo.xcprivacy */; };
 		FF9D7B89E8FC31E7332CACB3 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FC96843BA116ADB0148FB7 /* Pods_Runner.framework */; };
+		A1B2C3D41E01000000000002 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41E01000000000001 /* ShareViewController.swift */; };
+		A1B2C3D41E01000000000010 /* WanderMoodShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1B2C3D41E01000000000004 /* WanderMoodShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +29,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
+		};
+		A1B2C3D41E01000000000012 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1B2C3D41E01000000000006;
+			remoteInfo = WanderMoodShare;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -39,6 +48,17 @@
 			files = (
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D41E01000000000009 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1B2C3D41E01000000000010 /* WanderMoodShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -70,6 +90,10 @@
 		B2A8687C06E05C3BDF3A6910 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		BB00000A1E000000000000AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E5FC96843BA116ADB0148FB7 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D41E01000000000001 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D41E01000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D41E01000000000004 /* WanderMoodShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WanderMoodShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D41E01000000000013 /* WanderMoodShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WanderMoodShare.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +110,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				FF9D7B89E8FC31E7332CACB3 /* Pods_Runner.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D41E01000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,6 +157,7 @@
 			children = (
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
+				A1B2C3D41E01000000000005 /* WanderMoodShare */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				B66E23636C32DDEE19BF76F7 /* Pods */,
@@ -133,10 +165,21 @@
 			);
 			sourceTree = "<group>";
 		};
+		A1B2C3D41E01000000000005 /* WanderMoodShare */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D41E01000000000001 /* ShareViewController.swift */,
+				A1B2C3D41E01000000000003 /* Info.plist */,
+				A1B2C3D41E01000000000013 /* WanderMoodShare.entitlements */,
+			);
+			path = WanderMoodShare;
+			sourceTree = "<group>";
+		};
 		97C146EF1CF9000F007C117D /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
+				A1B2C3D41E01000000000004 /* WanderMoodShare.appex */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 			);
 			name = Products;
@@ -204,6 +247,7 @@
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				A1B2C3D41E01000000000009 /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				FD14FF413012A43A4127E0F1 /* [CP] Embed Pods Frameworks */,
 				45023C8058030F9FE14AE207 /* [CP] Copy Pods Resources */,
@@ -211,11 +255,28 @@
 			buildRules = (
 			);
 			dependencies = (
+				A1B2C3D41E01000000000011 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A1B2C3D41E01000000000006 /* WanderMoodShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D41E01000000000017 /* Build configuration list for PBXNativeTarget "WanderMoodShare" */;
+			buildPhases = (
+				A1B2C3D41E01000000000007 /* Sources */,
+				A1B2C3D41E01000000000008 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WanderMoodShare;
+			productName = WanderMoodShare;
+			productReference = A1B2C3D41E01000000000004 /* WanderMoodShare.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -235,6 +296,9 @@
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
 					};
+					A1B2C3D41E01000000000006 = {
+						CreatedOnToolsVersion = 15.0;
+					};
 				};
 			};
 			buildConfigurationList = 97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */;
@@ -251,6 +315,7 @@
 			projectRoot = "";
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
+				A1B2C3D41E01000000000006 /* WanderMoodShare */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
 			);
 		};
@@ -409,6 +474,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1B2C3D41E01000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D41E01000000000002 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -416,6 +489,11 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		A1B2C3D41E01000000000011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1B2C3D41E01000000000006 /* WanderMoodShare */;
+			targetProxy = A1B2C3D41E01000000000012 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -740,6 +818,78 @@
 			};
 			name = Release;
 		};
+		A1B2C3D41E01000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = WanderMoodShare/WanderMoodShare.entitlements;
+				CURRENT_PROJECT_VERSION = 6;
+				DEVELOPMENT_TEAM = 6LL3QHH76M;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WanderMoodShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edviennemer.wandermood.WanderMoodShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A1B2C3D41E01000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = WanderMoodShare/WanderMoodShare.entitlements;
+				CURRENT_PROJECT_VERSION = 6;
+				DEVELOPMENT_TEAM = 6LL3QHH76M;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WanderMoodShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edviennemer.wandermood.WanderMoodShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A1B2C3D41E01000000000016 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = WanderMoodShare/WanderMoodShare.entitlements;
+				CURRENT_PROJECT_VERSION = 6;
+				DEVELOPMENT_TEAM = 6LL3QHH76M;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WanderMoodShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edviennemer.wandermood.WanderMoodShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -769,6 +919,16 @@
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
 				249021D4217E4FDB00AE95B9 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D41E01000000000017 /* Build configuration list for PBXNativeTarget "WanderMoodShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D41E01000000000014 /* Debug */,
+				A1B2C3D41E01000000000015 /* Release */,
+				A1B2C3D41E01000000000016 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

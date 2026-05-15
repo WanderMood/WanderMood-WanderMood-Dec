@@ -29,6 +29,7 @@ import 'package:wandermood/features/group_planning/domain/group_planning_deep_li
 import 'package:wandermood/core/utils/supabase_auth_deep_link.dart';
 import 'package:wandermood/features/places/data/moody_place_blurb_cache.dart';
 import 'package:wandermood/features/places/data/moody_place_card_ui_cache.dart';
+import 'package:wandermood/core/services/share_handler_service.dart';
 // Provider to initialize app data on startup
 final appInitializerProvider = FutureProvider<bool>((ref) async {
   // Do not [ref.watch] authStateChangesProvider here: that stream fires multiple
@@ -471,7 +472,11 @@ class _WanderMoodAppState extends ConsumerState<WanderMoodApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initGroupPlanningDeepLinks());
+    ShareHandlerService.initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initGroupPlanningDeepLinks();
+      ShareHandlerService.flushPendingShareIfAny();
+    });
   }
 
   Future<void> _initGroupPlanningDeepLinks() async {
@@ -490,6 +495,16 @@ class _WanderMoodAppState extends ConsumerState<WanderMoodApp> {
 
   void _handleGroupPlanningUri(Uri? uri) {
     if (uri == null || !mounted) return;
+    if (uri.scheme == 'wandermood' && uri.host == 'share') {
+      final shared = uri.queryParameters['url'];
+      if (shared != null && shared.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          unawaited(ShareHandlerService.handleIncomingShareUrl(shared));
+        });
+      }
+      return;
+    }
     final authLocation = supabaseAuthCallbackGoLocationFromUri(uri);
     final location =
         authLocation ?? groupPlanningJoinLocationFromUri(uri);

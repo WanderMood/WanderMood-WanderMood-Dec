@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wandermood/core/navigation/root_navigator_key.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/plan_with_friend_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/screens/wishlist_screen.dart';
+import 'package:wandermood/features/wishlist/presentation/utils/plan_with_friend_launcher.dart';
 import 'package:wandermood/l10n/app_localizations.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -288,6 +292,7 @@ GoRouter router(RouterRef ref) {
   final authStateSnapshot = ref.watch(authStateProvider);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/',
     debugLogDiagnostics: true,
     routes: [
@@ -1043,6 +1048,24 @@ GoRouter router(RouterRef ref) {
         name: 'saved-places',
         builder: (context, state) => const SavedPlacesScreen(),
       ),
+      GoRoute(
+        path: '/wishlist',
+        name: 'wishlist',
+        builder: (context, state) => const WishlistScreen(),
+        routes: [
+          GoRoute(
+            path: 'plan',
+            name: 'wishlist-plan',
+            builder: (context, state) {
+              final args = state.extra;
+              if (args is! PlanWithFriendArgs) {
+                return const WishlistScreen();
+              }
+              return PlanWithFriendScreen(args: args);
+            },
+          ),
+        ],
+      ),
     ],
     redirect: (context, state) async {
       // Legacy WanderFeed / diary URLs (no GoRoutes — handled here so deep links don’t 404).
@@ -1091,6 +1114,7 @@ GoRouter router(RouterRef ref) {
                            currentLocation.startsWith('/profile') ||
                            currentLocation.startsWith('/settings') ||
                            currentLocation.startsWith('/place') ||
+                           currentLocation.startsWith('/wishlist') ||
                            currentLocation.startsWith('/social') ||
                            currentLocation.startsWith('/group-planning');
       

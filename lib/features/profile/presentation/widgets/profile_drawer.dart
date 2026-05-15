@@ -155,6 +155,14 @@ class ProfileDrawer extends ConsumerWidget {
                     },
                   ),
                   _DrawerMenuItem(
+                    icon: Icons.bookmark_outline,
+                    label: 'Mijn Wishlist',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/wishlist');
+                    },
+                  ),
+                  _DrawerMenuItem(
                     icon: Icons.groups_outlined,
                     label: l10n.moodMatchWithFriendMenu,
                     onTap: () {

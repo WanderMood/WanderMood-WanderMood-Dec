@@ -15,5 +15,9 @@
 	<array>
 		<string>applinks:wandermood-landing.vercel.app</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.edviennemer.wandermood.share</string>
+	</array>
 </dict>
 </plist>

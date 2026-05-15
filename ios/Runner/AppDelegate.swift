@@ -23,4 +23,31 @@ import GoogleMaps
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+    if url.scheme == "wandermood",
+       url.host == "share",
+       let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+       let urlParam = components.queryItems?
+         .first(where: { $0.name == "url" })?.value {
+      notifyFlutterSharedUrl(urlParam)
+      return true
+    }
+    return super.application(app, open: url, options: options)
+  }
+
+  private func notifyFlutterSharedUrl(_ urlParam: String) {
+    guard let controller = window?.rootViewController as? FlutterViewController else {
+      return
+    }
+    let channel = FlutterMethodChannel(
+      name: "com.wandermood/share",
+      binaryMessenger: controller.binaryMessenger
+    )
+    channel.invokeMethod("handleSharedUrl", arguments: ["url": urlParam])
+  }
 }

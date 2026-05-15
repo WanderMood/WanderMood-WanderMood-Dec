@@ -13,6 +13,7 @@ import 'package:wandermood/core/utils/explore_place_card_copy.dart';
 import 'package:wandermood/features/places/presentation/widgets/place_card_moody_description.dart';
 import 'package:wandermood/features/places/presentation/widgets/explore_swipeable_place_photos.dart';
 import 'package:wandermood/features/home/presentation/widgets/moody_chat_sheet.dart';
+import 'package:wandermood/features/wishlist/presentation/widgets/plan_with_friend_icon_button.dart';
 
 const Color _wmWhite = Color(0xFFFFFFFF);
 const Color _wmParchment = Color(0xFFE8E2D8);
@@ -373,6 +374,8 @@ class PlaceGridCard extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 4),
+                        PlanWithFriendIconButton(place: place, size: 28),
                       ],
                     ),
                   ),
