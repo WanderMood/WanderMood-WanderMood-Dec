@@ -1811,8 +1811,8 @@ class _GroupPlanningDayPickerScreenState
     // can counter with the same options the owner had. Pre-fix this defaulted
     // to `'afternoon'` and only offered the three regular slots.
     String? slot;
+    var counterMessage = '';
     final dayWheelController = FixedExtentScrollController(initialItem: dayIdx);
-    final replyCtrl = TextEditingController();
 
     final sent = await showModalBottomSheet<bool>(
       context: context,
@@ -1977,12 +1977,12 @@ class _GroupPlanningDayPickerScreenState
                       ),
                       const SizedBox(height: 6),
                       TextField(
-                        controller: replyCtrl,
                         maxLength: 100,
                         maxLines: 2,
                         minLines: 1,
                         textCapitalization: TextCapitalization.sentences,
                         textInputAction: TextInputAction.done,
+                        onChanged: (value) => counterMessage = value.trim(),
                         onSubmitted: (_) => FocusScope.of(ctx).unfocus(),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
@@ -2039,9 +2039,7 @@ class _GroupPlanningDayPickerScreenState
       ),
     );
 
-    final counterMessage = replyCtrl.text.trim();
     dayWheelController.dispose();
-    replyCtrl.dispose();
     if (sent != true || !mounted) return;
 
     final iso = _isoDate(dayIdx);

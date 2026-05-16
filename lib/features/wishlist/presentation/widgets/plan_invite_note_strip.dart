@@ -36,6 +36,7 @@ enum _ReplySaveState { idle, saving, saved, error }
 class _PlanInviteNoteStripState extends State<PlanInviteNoteStrip> {
   final _replyCtrl = TextEditingController();
   _ReplySaveState _saveState = _ReplySaveState.idle;
+  String? _sentReplyText;
 
   @override
   void initState() {
@@ -67,20 +68,39 @@ class _PlanInviteNoteStripState extends State<PlanInviteNoteStrip> {
   }
 
   bool get _hasInviteeReply {
-    final r = widget.inviteeReply?.trim();
+    final r = _effectiveInviteeReply;
     return r != null && r.isNotEmpty;
+  }
+
+  String? get _effectiveInviteeReply {
+    final saved = widget.inviteeReply?.trim();
+    if (saved != null && saved.isNotEmpty) return saved;
+    final sent = _sentReplyText?.trim();
+    if (sent != null && sent.isNotEmpty) return sent;
+    return null;
+  }
+
+  bool get _canWriteReply {
+    return widget.canReply &&
+        widget.onSaveReply != null &&
+        !_hasInviteeReply &&
+        _saveState != _ReplySaveState.saved;
   }
 
   Future<void> _saveReply() async {
     final onSave = widget.onSaveReply;
-    if (onSave == null) return;
+    if (onSave == null || !_canWriteReply) return;
     final text = _replyCtrl.text.trim();
     if (text.isEmpty) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _saveState = _ReplySaveState.saving);
     try {
       await onSave(text);
       if (!mounted) return;
-      setState(() => _saveState = _ReplySaveState.saved);
+      setState(() {
+        _sentReplyText = text;
+        _saveState = _ReplySaveState.saved;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _saveState = _ReplySaveState.error);
@@ -89,12 +109,13 @@ class _PlanInviteNoteStripState extends State<PlanInviteNoteStrip> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_hasInviterNote && !_hasInviteeReply && !widget.canReply) {
+    if (!_hasInviterNote && !_hasInviteeReply && !_canWriteReply) {
       return const SizedBox.shrink();
     }
 
     final l10n = AppLocalizations.of(context)!;
     final inviterFirst = _firstName(widget.inviterName);
+    final replyText = _effectiveInviteeReply;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -116,7 +137,7 @@ class _PlanInviteNoteStripState extends State<PlanInviteNoteStrip> {
             compact: widget.compact,
           ),
         ],
-        if (_hasInviteeReply) ...[
+        if (replyText != null && replyText.isNotEmpty) ...[
           SizedBox(height: widget.compact ? 8 : 10),
           Text(
             l10n.planMetVriendReplyFrom(
@@ -130,12 +151,12 @@ class _PlanInviteNoteStripState extends State<PlanInviteNoteStrip> {
           ),
           SizedBox(height: widget.compact ? 4 : 6),
           _NoteBubble(
-            text: widget.inviteeReply!.trim(),
+            text: replyText,
             compact: widget.compact,
             tint: GroupPlanningUi.forestTint,
           ),
         ],
-        if (widget.canReply && widget.onSaveReply != null) ...[
+        if (_canWriteReply) ...[
           SizedBox(height: widget.compact ? 8 : 12),
           Text(
             l10n.planMetVriendReplyOptional,
