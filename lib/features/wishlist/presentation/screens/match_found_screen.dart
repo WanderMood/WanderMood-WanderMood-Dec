@@ -4,12 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wandermood/core/presentation/widgets/wm_network_image.dart';
 import 'package:wandermood/core/presentation/widgets/wm_toast.dart';
 import 'package:wandermood/features/wishlist/data/plan_met_vriend_service.dart';
 import 'package:wandermood/features/wishlist/domain/plan_met_vriend_flow.dart';
-import 'package:wandermood/features/wishlist/presentation/widgets/calendar_sync_sheet.dart';
 
 const _wmCream = Color(0xFFF5F0E8);
 const _wmForest = Color(0xFF2A6049);
@@ -46,59 +44,24 @@ class _MatchFoundScreenState extends ConsumerState<MatchFoundScreen> {
   String get _dateLabel =>
       DateFormat('EEEE d MMMM', 'nl').format(widget.args.matchedDate);
 
-  Future<void> _planWithMoody() async {
+  Future<void> _addToMyDay() async {
     setState(() => _busy = true);
     try {
-      final service = ref.read(planMetVriendServiceProvider);
-      await service.seedAnchorPlanForSession(
+      await ref.read(planMetVriendServiceProvider).saveAnchorDateToMyDay(
         sessionId: widget.args.sessionId,
         place: widget.args.place,
-        plannedDate: widget.args.matchedDate,
+        date: widget.args.matchedDate,
       );
       if (!mounted) return;
-      context.push('/group-planning/result/${widget.args.sessionId}');
+      showWanderMoodToast(context, message: 'Toegevoegd aan My Day.');
+      context.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
     } catch (e) {
       if (mounted) {
         showWanderMoodToast(
           context,
-          message: 'Plan openen mislukt. Probeer opnieuw.',
+          message: 'Opslaan mislukt. Probeer opnieuw.',
+          isError: true,
         );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _saveDateOnly() async {
-    setState(() => _busy = true);
-    try {
-      await ref.read(planMetVriendServiceProvider).saveAnchorDateToMyDay(
-            sessionId: widget.args.sessionId,
-            place: widget.args.place,
-            date: widget.args.matchedDate,
-          );
-      if (!mounted) return;
-      final uid = Supabase.instance.client.auth.currentUser?.id;
-      await CalendarSyncSheet.show(
-        context,
-        title: widget.args.place.placeName,
-        date: widget.args.matchedDate,
-        onSynced: uid == null
-            ? null
-            : () {
-                ref.read(planMetVriendServiceProvider).markCalendarSynced(
-                      sessionId: widget.args.sessionId,
-                      userId: uid,
-                    );
-              },
-      );
-      if (mounted) {
-        showWanderMoodToast(context, message: 'Datum opgeslagen in My Day.');
-        context.go('/main?tab=0', extra: <String, dynamic>{'tab': 0});
-      }
-    } catch (e) {
-      if (mounted) {
-        showWanderMoodToast(context, message: 'Opslaan mislukt.');
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -169,7 +132,7 @@ class _MatchFoundScreenState extends ConsumerState<MatchFoundScreen> {
                   ),
                   const Spacer(),
                   FilledButton(
-                    onPressed: _busy ? null : _planWithMoody,
+                    onPressed: _busy ? null : _addToMyDay,
                     style: FilledButton.styleFrom(
                       backgroundColor: _wmForest,
                       minimumSize: const Size(double.infinity, 52),
@@ -178,26 +141,8 @@ class _MatchFoundScreenState extends ConsumerState<MatchFoundScreen> {
                       ),
                     ),
                     child: Text(
-                      'Plan de avond met Moody →',
+                      _busy ? 'Toevoegen...' : 'Toevoegen aan My Day',
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  OutlinedButton(
-                    onPressed: _busy ? null : _saveDateOnly,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      side: const BorderSide(color: _wmForest),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: Text(
-                      'Alleen datum bewaren',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        color: _wmForest,
-                      ),
                     ),
                   ),
                 ],

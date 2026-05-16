@@ -1159,6 +1159,11 @@ class PlanMetVriendService {
     final dateStr = datesToIso([date]).first;
     final localStart = DateTime(date.year, date.month, date.day, 19, 0);
     final image = place.photoUrl ?? '';
+    final data = place.placeData;
+    final lat = (data['lat'] as num?)?.toDouble() ??
+        (data['latitude'] as num?)?.toDouble();
+    final lng = (data['lng'] as num?)?.toDouble() ??
+        (data['longitude'] as num?)?.toDouble();
     final row = <String, dynamic>{
       'user_id': uid,
       'activity_id': 'pmv_${sessionId}_${place.placeId}',
@@ -1166,19 +1171,54 @@ class PlanMetVriendService {
       'place_name': place.placeName,
       'name': place.placeName,
       'image_url': image,
+      'description':
+          data['description'] ?? data['editorial_summary'] ?? 'Plan met vriend',
       'scheduled_date': dateStr,
       'start_time': localStart.toUtc().toIso8601String(),
       'duration': 120,
       'duration_minutes': 120,
       'group_session_id': sessionId,
       'time_slot': 'evening',
+      'location_name':
+          data['address'] ?? data['formatted_address'] ?? data['vicinity'],
+      if (lat != null) 'latitude': lat,
+      if (lng != null) 'longitude': lng,
+      'is_confirmed': true,
+      'tags': 'plan_met_vriend',
     };
     try {
-      await _client.from('scheduled_activities').insert(row);
+      await _insertRowResilient(
+        'scheduled_activities',
+        row,
+        droppableKeys: const [
+          'place_id',
+          'place_name',
+          'image_url',
+          'description',
+          'scheduled_date',
+          'duration_minutes',
+          'group_session_id',
+          'time_slot',
+          'location_name',
+          'latitude',
+          'longitude',
+          'is_confirmed',
+          'tags',
+        ],
+      );
     } on PostgrestException catch (e) {
-      if (e.code == '23505') return;
-      rethrow;
+      if (e.code != '23505') rethrow;
     }
+    final now = DateTime.now().toUtc().toIso8601String();
+    await _updateRowResilient(
+      'group_sessions',
+      {
+        'status': 'day_confirmed',
+        'completed_at': now,
+      },
+      {'id': sessionId},
+      droppableKeys: const ['completed_at'],
+    );
   }
 
   Future<Map<String, String?>> fetchProfile(String userId) async {

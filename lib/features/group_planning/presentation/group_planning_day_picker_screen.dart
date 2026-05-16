@@ -860,7 +860,11 @@ class _GroupPlanningDayPickerScreenState
     });
   }
 
-  Widget _buildPmvInviteNotes(AppLocalizations l10n, {bool compact = false}) {
+  Widget _buildPmvInviteNotes(
+    AppLocalizations l10n, {
+    bool compact = false,
+    bool allowReply = false,
+  }) {
     if (!_planMetVriend) return const SizedBox.shrink();
     final uid = Supabase.instance.client.auth.currentUser?.id;
     final isInvitee = uid != null && uid == _pmvInviteeId;
@@ -882,9 +886,15 @@ class _GroupPlanningDayPickerScreenState
     final inviterAvatar = _isOwner
         ? _resolvedMeAvatarUrl()
         : _resolvedFriendAvatarUrl(owner);
-    final inviteeDisplayName = guest != null
-        ? _firstName(guest.displayName)
-        : _otherParticipantFirstName(l10n);
+    final currentProfile = ref.watch(currentUserProfileProvider).valueOrNull;
+    final me = _myMember();
+    final inviteeDisplayName = isInvitee
+        ? 'jou'
+        : (guest != null
+            ? _firstName(guest.displayName)
+            : (currentProfile?.fullName?.trim().isNotEmpty == true
+                ? _firstName(currentProfile!.fullName!)
+                : _firstName(me?.displayName ?? _otherParticipantFirstName(l10n))));
 
     final inviteId = _pmvInviteId;
     return Padding(
@@ -896,8 +906,8 @@ class _GroupPlanningDayPickerScreenState
         inviteeName: inviteeDisplayName,
         inviteeReply: _pmvInviteeReply,
         compact: compact,
-        canReply: isInvitee && inviteId != null,
-        onSaveReply: isInvitee && inviteId != null
+        canReply: allowReply && isInvitee && inviteId != null,
+        onSaveReply: allowReply && isInvitee && inviteId != null
             ? (text) async {
                 await PlanMetVriendService(Supabase.instance.client)
                     .saveInviteReply(
@@ -1268,6 +1278,10 @@ class _GroupPlanningDayPickerScreenState
   Future<void> _showOwnerCounterDialogInner(
       String isoDate, String slot, String guestName) async {
     if (!mounted) return;
+    if (_planMetVriend) {
+      await _reloadPmvInvite();
+      if (!mounted) return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final dt = DateTime.tryParse(isoDate);
     final dayLabel =
@@ -1325,6 +1339,10 @@ class _GroupPlanningDayPickerScreenState
                   height: 1.35,
                 ),
               ),
+              if (_planMetVriend) ...[
+                const SizedBox(height: 14),
+                _buildPmvInviteNotes(l10n, compact: true),
+              ],
               const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
@@ -1638,6 +1656,14 @@ class _GroupPlanningDayPickerScreenState
     }
   }
 
+  bool get _guestHasSentCounterProposal {
+    if (_isOwner) return false;
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    return _session?.status == 'day_counter_proposed' &&
+        uid != null &&
+        _session?.proposedByUserId == uid;
+  }
+
   Future<void> _showGuestDayConfirmDialog(
       String isoDate, String slot, String ownerName) async {
     if (!mounted || _guestDayProposalDialogActive) return;
@@ -1786,170 +1812,236 @@ class _GroupPlanningDayPickerScreenState
     // to `'afternoon'` and only offered the three regular slots.
     String? slot;
     final dayWheelController = FixedExtentScrollController(initialItem: dayIdx);
+    final replyCtrl = TextEditingController();
 
     final sent = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheet) {
-          return Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
-            ),
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
-            decoration: const BoxDecoration(
-              color: GroupPlanningUi.cream,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                  Center(
-                    child: Container(
-                      width: 42,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: GroupPlanningUi.stone.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.moodMatchGuestCounterTitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: GroupPlanningUi.charcoal,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.moodMatchGuestCounterSub(ownerName),
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: GroupPlanningUi.stone,
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Container(
-                    height: 188,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: GroupPlanningUi.cardBorder),
-                      boxShadow: [
-                        BoxShadow(
-                          color: GroupPlanningUi.moodMatchShadow(0.09),
-                          blurRadius: 14,
-                          offset: const Offset(0, 6),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+        child: StatefulBuilder(
+          builder: (ctx, setSheet) {
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+              decoration: const BoxDecoration(
+                color: GroupPlanningUi.cream,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color:
+                                GroupPlanningUi.stone.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Container(
-                            height: 44,
-                            margin: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: GroupPlanningUi.forestTint
-                                  .withValues(alpha: 0.55),
-                              border: Border.all(
-                                color: GroupPlanningUi.forest
-                                    .withValues(alpha: 0.28),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.moodMatchGuestCounterTitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: GroupPlanningUi.charcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.moodMatchGuestCounterSub(ownerName),
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: GroupPlanningUi.stone,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Container(
+                        height: 188,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                          border:
+                              Border.all(color: GroupPlanningUi.cardBorder),
+                          boxShadow: [
+                            BoxShadow(
+                              color: GroupPlanningUi.moodMatchShadow(0.09),
+                              blurRadius: 14,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Container(
+                                height: 44,
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 14),
+                                decoration: BoxDecoration(
+                                  color: GroupPlanningUi.forestTint
+                                      .withValues(alpha: 0.55),
+                                  border: Border.all(
+                                    color: GroupPlanningUi.forest
+                                        .withValues(alpha: 0.28),
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            ListWheelScrollView.useDelegate(
+                              controller: dayWheelController,
+                              itemExtent: 44,
+                              physics: const FixedExtentScrollPhysics(),
+                              diameterRatio: 2.2,
+                              perspective: 0.0025,
+                              squeeze: 1.08,
+                              onSelectedItemChanged: (i) {
+                                HapticFeedback.selectionClick();
+                                setSheet(() => dayIdx = i);
+                              },
+                              childDelegate: ListWheelChildBuilderDelegate(
+                                childCount: _horizonDays,
+                                builder: (context, i) {
+                                  final day = _dayFromIndex(i);
+                                  final isToday = i == 0;
+                                  final sel = dayIdx == i;
+                                  final label = isToday
+                                      ? '${l10n.moodMatchDayPickerToday} · ${DateFormat('EEE d MMM').format(day)}'
+                                      : DateFormat('EEE d MMM').format(day);
+                                  return Center(
+                                    child: Text(
+                                      label,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: sel ? 16 : 14,
+                                        fontWeight: sel
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: sel
+                                            ? GroupPlanningUi.charcoal
+                                            : GroupPlanningUi.stone
+                                                .withValues(alpha: 0.8),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        l10n.moodMatchTimePickerTitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: GroupPlanningUi.charcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.moodMatchDayPickerTimeHint,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: GroupPlanningUi.stone,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildWholeDayAndSlotPickers(
+                        l10n: l10n,
+                        selectedSlot: slot,
+                        onSlotChanged: (next) => setSheet(() => slot = next),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Bericht aan $ownerName (optioneel)',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: GroupPlanningUi.stone,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: replyCtrl,
+                        maxLength: 100,
+                        maxLines: 2,
+                        minLines: 1,
+                        textCapitalization: TextCapitalization.sentences,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => FocusScope.of(ctx).unfocus(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: GroupPlanningUi.charcoal,
+                          height: 1.35,
+                        ),
+                        decoration: InputDecoration(
+                          hintText:
+                              'Bijv. Ik kan dan wel, lukt dat voor jou?',
+                          counterText: '',
+                          filled: true,
+                          fillColor: Colors.white,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: GroupPlanningUi.cardBorder,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: GroupPlanningUi.cardBorder,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: GroupPlanningUi.forest,
+                              width: 1.4,
                             ),
                           ),
                         ),
-                        ListWheelScrollView.useDelegate(
-                          controller: dayWheelController,
-                          itemExtent: 44,
-                          physics: const FixedExtentScrollPhysics(),
-                          diameterRatio: 2.2,
-                          perspective: 0.0025,
-                          squeeze: 1.08,
-                          onSelectedItemChanged: (i) {
-                            HapticFeedback.selectionClick();
-                            setSheet(() => dayIdx = i);
-                          },
-                          childDelegate: ListWheelChildBuilderDelegate(
-                            childCount: _horizonDays,
-                            builder: (context, i) {
-                              final day = _dayFromIndex(i);
-                              final isToday = i == 0;
-                              final sel = dayIdx == i;
-                              final label = isToday
-                                  ? '${l10n.moodMatchDayPickerToday} · ${DateFormat('EEE d MMM').format(day)}'
-                                  : DateFormat('EEE d MMM').format(day);
-                              return Center(
-                                child: Text(
-                                  label,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: sel ? 16 : 14,
-                                    fontWeight:
-                                        sel ? FontWeight.w700 : FontWeight.w500,
-                                    color: sel
-                                        ? GroupPlanningUi.charcoal
-                                        : GroupPlanningUi.stone
-                                            .withValues(alpha: 0.8),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      l10n.moodMatchTimePickerTitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: GroupPlanningUi.charcoal,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      l10n.moodMatchDayPickerTimeHint,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: GroupPlanningUi.stone,
-                        height: 1.35,
+                      const SizedBox(height: 18),
+                      GroupPlanningUi.primaryCta(
+                        label: l10n.moodMatchGuestCounterSendCta,
+                        onPressed: () {
+                          FocusScope.of(ctx).unfocus();
+                          Navigator.of(ctx).pop(true);
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildWholeDayAndSlotPickers(
-                      l10n: l10n,
-                      selectedSlot: slot,
-                      onSlotChanged: (next) => setSheet(() => slot = next),
-                    ),
-                  ],
-                  const SizedBox(height: 18),
-                  GroupPlanningUi.primaryCta(
-                    label: l10n.moodMatchGuestCounterSendCta,
-                    onPressed: () => Navigator.of(ctx).pop(true),
+                    ],
                   ),
-                ],
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
 
+    final counterMessage = replyCtrl.text.trim();
     dayWheelController.dispose();
+    replyCtrl.dispose();
     if (sent != true || !mounted) return;
 
     final iso = _isoDate(dayIdx);
@@ -1999,6 +2091,18 @@ class _GroupPlanningDayPickerScreenState
       final prevDayLabel =
           prevIso.isNotEmpty ? _fmtDayIso(prevIso) : prevIso;
       final newDayLabel = _fmtDayIso(iso);
+      if (_pmvInviteId != null && counterMessage.isNotEmpty) {
+        try {
+          await PlanMetVriendService(Supabase.instance.client).saveInviteReply(
+            inviteId: _pmvInviteId!,
+            sessionId: widget.sessionId,
+            reply: counterMessage,
+          );
+          await _reloadPmvInvite();
+        } catch (e) {
+          if (kDebugMode) debugPrint('pmv counter reply: $e');
+        }
+      }
       await repo.sendPlanUpdateEvent(
         targetUserId: owner.member.userId,
         sessionId: widget.sessionId,
@@ -2011,6 +2115,7 @@ class _GroupPlanningDayPickerScreenState
           'previous_day': prevDayLabel,
           'new_day': newDayLabel,
           'day': newDayLabel,
+          if (counterMessage.isNotEmpty) 'counter_message': counterMessage,
         },
       );
     } catch (_) {}
@@ -2018,6 +2123,30 @@ class _GroupPlanningDayPickerScreenState
     if (!mounted) return;
     // Guest now waits on the day_accepted echo from owner before navigating.
     // We already own the realtime listener for that event.
+    final current = _session;
+    if (current != null) {
+      setState(() {
+        _session = GroupSessionRow(
+          id: current.id,
+          createdBy: current.createdBy,
+          title: current.title,
+          joinCode: current.joinCode,
+          status: 'day_counter_proposed',
+          maxMembers: current.maxMembers,
+          expiresAt: current.expiresAt,
+          createdAt: current.createdAt,
+          updatedAt: DateTime.now(),
+          plannedDate: iso,
+          proposedByUserId: myUserId,
+          proposedSlot: slotForPayload,
+          completedAt: current.completedAt,
+        );
+      });
+    }
+    showWanderMoodToast(
+      context,
+      message: 'Voorstel verstuurd naar $ownerName.',
+    );
   }
 
   @override
@@ -2590,6 +2719,7 @@ class _GroupPlanningDayPickerScreenState
     final ownerName = owner != null
         ? _firstName(owner.displayName)
         : l10n.moodMatchFriendThey;
+    final sentCounter = _guestHasSentCounterProposal;
 
     return SafeArea(
       top: false,
@@ -2609,7 +2739,12 @@ class _GroupPlanningDayPickerScreenState
                       _buildPmvInviteNotes(l10n),
                       const SizedBox(height: 24),
                       Text(
-                        _guestWaitingHeadlineByStyle(ownerName, communicationStyle),
+                        sentCounter
+                            ? 'Voorstel verstuurd'
+                            : _guestWaitingHeadlineByStyle(
+                                ownerName,
+                                communicationStyle,
+                              ),
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 17,
@@ -2618,6 +2753,18 @@ class _GroupPlanningDayPickerScreenState
                           height: 1.3,
                         ),
                       ),
+                      if (sentCounter) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Je voorstel ligt bij $ownerName. Zodra die akkoord gaat, staat jullie datum vast.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: GroupPlanningUi.stone,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 14),
                       _pendingProposalCard(l10n),
                       const SizedBox(height: 16),
